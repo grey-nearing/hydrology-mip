@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HydrologyMIP — Hydrological Model Intercomparison Project</title>
+  <meta name="description" content="Standardized hydrological model intercomparison across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes." />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="HydrologyMIP" />
+  <meta property="og:title" content="HydrologyMIP" />
+  <meta property="og:description" content="Standardized benchmarking for hydrological models." />
+  <meta property="og:url" content="https://hydrologymip.org/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261025_conusmap" />
+</head>
+<body>
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="#landing" class="brand-lockup" id="brand-home-link">
+        HydrologyMIP
+      </a>
+
+      <nav class="header-nav" role="tablist" aria-label="Main Navigation">
+        <button type="button" role="tab" aria-selected="true" class="nav-tab-btn active" id="nav-tab-landing" data-view="landing">
+          Home
+        </button>
+        <button type="button" role="tab" aria-selected="false" class="nav-tab-btn" id="nav-tab-about" data-view="about">
+          About
+        </button>
+        <button type="button" role="tab" aria-selected="false" class="nav-tab-btn" id="nav-tab-contribute" data-view="contribute">
+          Contribute a Model
+        </button>
+        <button type="button" role="tab" aria-selected="false" class="nav-tab-btn" id="nav-tab-leaderboards-hub" data-view="leaderboards-hub">
+          Leaderboards
+        </button>
+        <button type="button" role="tab" aria-selected="false" class="nav-tab-btn" id="nav-tab-publications" data-view="publications">
+          Publications
+        </button>
+        <button type="button" role="tab" aria-selected="false" class="nav-tab-btn" id="nav-tab-comments" data-view="comments">
+          Community Discussion
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="page-container">
+    <!-- ===================================================================
+         1. HOME
+         =================================================================== -->
+    <section id="view-landing" role="tabpanel" aria-labelledby="nav-tab-landing">
+      <div class="editorial-hero" id="hero-banner">
+        <div class="editorial-hero-main">
+          <p class="editorial-kicker">Hydrological Model Intercomparison Project</p>
+          <h1 class="editorial-headline">Standardized benchmarking for large-sample hydrology.</h1>
+          <p class="editorial-lede">
+            Shared experimental protocols, common catchments, and open daily hydrograph archives so hydrological modeling studies can be compared directly and built on cumulatively.
+          </p>
+          <div class="editorial-actions">
+            <button type="button" class="btn-primary-cta" id="hero-btn-open-camels-us">
+              Leaderboards &rarr;
+            </button>
+            <button type="button" class="btn-secondary" id="hero-btn-open-contribute">
+              Contribute a Model
+            </button>
+            <button type="button" class="btn-text-link" id="hero-btn-open-about">
+              Protocol &rarr;
+            </button>
+          </div>
+        </div>
+
+        <div class="editorial-hero-art" aria-label="HydrologyMIP Illustration">
+          <img
+            src="/static/hydrologymip-hero.png?v=20261023_placeholder"
+            alt="HydrologyMIP placeholder watershed illustration"
+            class="editorial-hero-img"
+          />
+          <p class="editorial-hero-caption">
+            Image NOT created by Daniel Klotz.
+          </p>
+        </div>
+      </div>
+
+      <div class="resource-index-section">
+        <div class="resource-index-grid">
+          <a href="https://github.com/grey-nearing/camels-us-mip" target="_blank" rel="noopener noreferrer" class="resource-cell">
+            <div class="resource-cell-top">
+              <span class="resource-label">Code</span>
+              <span class="resource-status">Active</span>
+            </div>
+            <h3>GitHub Repositories</h3>
+            <p>Benchmark model implementations, spatial fold definitions, and leaderboard JSONs.</p>
+            <span class="resource-link-line">github.com &#8599;</span>
+          </a>
+
+          <a href="https://zenodo.org/search?q=hydrologymip" target="_blank" rel="noopener noreferrer" class="resource-cell">
+            <div class="resource-cell-top">
+              <span class="resource-label">Archive</span>
+              <span class="resource-status">DOI</span>
+            </div>
+            <h3>Zenodo DOI Archives</h3>
+            <p>DOI-minted daily hydrograph predictions and per-basin diagnostic tables.</p>
+            <span class="resource-link-line">zenodo.org &#8599;</span>
+          </a>
+
+          <a href="https://console.cloud.google.com/storage/browser/camels-us-mip" target="_blank" rel="noopener noreferrer" class="resource-cell">
+            <div class="resource-cell-top">
+              <span class="resource-label">Cloud Store</span>
+              <span class="resource-status">Live</span>
+            </div>
+            <h3>Google Cloud Storage</h3>
+            <p>Public Zarr v2 daily hydrograph archives for direct cloud-native evaluation.</p>
+            <span class="resource-link-line">console.cloud.google.com &#8599;</span>
+          </a>
+
+          <a href="#publications" class="resource-cell" id="resource-card-publications">
+            <div class="resource-cell-top">
+              <span class="resource-label">Papers</span>
+              <span class="resource-status">In Prep</span>
+            </div>
+            <h3>Publications</h3>
+            <p>Living intercomparison manuscripts and protocol specifications across MIP suites.</p>
+            <span class="resource-link-line">Publications &rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         2. ABOUT (GENERAL) + PER-MIP ABOUT PAGES
+         =================================================================== -->
+    <section id="view-about" role="tabpanel" aria-labelledby="nav-tab-about" style="display: none;">
+      <div class="page-head">
+        <div>
+          <p class="editorial-kicker">Protocol &amp; Design</p>
+          <h2 class="page-title">About HydrologyMIP</h2>
+          <p class="page-sub">
+            Hydrological models are evaluated on identical catchments and dates within each benchmark suite, stratified by spatial regime and model inputs, and backed by DOI-minted prediction archives.
+          </p>
+        </div>
+      </div>
+
+      <div class="spec-grid-3">
+        <div class="spec-block">
+          <h3>Experimental Design</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Common Catchments</dt>
+              <dd>Shared catchment sets and target time series across all participating models in a benchmark.</dd>
+            </div>
+            <div>
+              <dt>Blind Holdout Windows</dt>
+              <dd>Strict separation between calibration/training periods and blind evaluation periods.</dd>
+            </div>
+            <div>
+              <dt>Evaluation Metrics</dt>
+              <dd>Leaderboards can be sorted by any metric. For rainfall&ndash;runoff models we use the metrics by Gauch et al. (2023).</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>Spatial Regimes &amp; Inputs</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Spatial Regimes</dt>
+              <dd>In-sample (gauged) locations, out-of-sample (ungauged) locations (PUB), and out-of-sample regions (PUR).</dd>
+            </div>
+            <div>
+              <dt>Model Inputs</dt>
+              <dd>This MIP is designed to test model structures and not end-to-end modeling systems. Different leaderboards for different model inputs help isolate differences in model structures.</dd>
+            </div>
+            <div>
+              <dt>Open Archives</dt>
+              <dd>Model predictions archived in a DOI-minted repository are required for each model entry.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>Source Categories</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Literature</dt>
+              <dd>Metrics were extracted from prior published literature where experiments used the same splits as a MIP and are therefore directly comparable.</dd>
+            </div>
+            <div>
+              <dt>MIP Re-run</dt>
+              <dd>Models from prior published literature that were reimplemented and rerun on the standard splits for a MIP.</dd>
+            </div>
+            <div>
+              <dt>Archive</dt>
+              <dd>Scored from publicly archived model predictions released with prior studies.</dd>
+            </div>
+            <div>
+              <dt>Contribution</dt>
+              <dd>New model runs submitted directly to this MIP by the community.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div style="margin-top: 2.25rem;">
+        <h3 class="sub-heading" style="margin-bottom: 0.85rem;">MIP Benchmark Specifications</h3>
+        <div class="leaderboard-cards-grid">
+          <article class="leaderboard-suite-card" id="card-about-camels-us" role="button" tabindex="0" aria-label="Open CAMELS-US Benchmark Specification">
+            <div class="lsc-top">
+              <span class="resource-label">CONUS &middot; 531 Basins</span>
+              <span class="resource-status">Active</span>
+            </div>
+            <h3 class="lsc-title">CAMELS-US Benchmark</h3>
+            <p class="lsc-desc">
+              Periods, canonical 12-fold PUB and 18-fold HUC-02 PUR split files, and the 4 CAMELS-US forcing categories.
+            </p>
+            <div class="lsc-footer">
+              <span class="lsc-cta">CAMELS-US Protocol &amp; Splits &rarr;</span>
+            </div>
+          </article>
+
+          <article class="leaderboard-suite-card" id="card-about-caravan" role="button" tabindex="0" aria-label="Open Caravan Benchmark Specification">
+            <div class="lsc-top">
+              <span class="resource-label">Global &middot; Multi-Continent</span>
+              <span class="resource-status">In Preparation</span>
+            </div>
+            <h3 class="lsc-title">Caravan Benchmark</h3>
+            <p class="lsc-desc">
+              Global evaluation periods, k-fold PUB and continental/regional PUR splits, and global forcing categories.
+            </p>
+            <div class="lsc-footer">
+              <span class="lsc-cta">Caravan Protocol &amp; Splits &rarr;</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         2A. ABOUT CAMELS-US
+         =================================================================== -->
+    <section id="view-about-camels-us" role="tabpanel" aria-labelledby="nav-tab-about" style="display: none;">
+      <div class="page-head">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-about-from-camels">
+            &larr; About HydrologyMIP
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">CAMELS-US Benchmark Specification</h2>
+          <p class="page-sub">
+            Catchment screening, temporal windows, spatial cross-validation splits, and forcing categories for the CAMELS-US Daily Deterministic MIP.
+          </p>
+        </div>
+        <div class="page-head-actions">
+          <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer" class="btn-secondary">531 Basins (.txt)</a>
+          <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer" class="btn-secondary">12-Fold PUB (.json)</a>
+          <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer" class="btn-secondary">18-Fold PUR (.json)</a>
+          <a href="/api/template/protocol.json" class="btn-secondary">Protocol Spec (.json)</a>
+        </div>
+      </div>
+
+      <div class="spec-grid-3">
+        <div class="spec-block">
+          <h3>Catchments &amp; Windows</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Catchment Set</dt>
+              <dd><a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 CAMELS-US basins</a> (&lt;2,000 km&sup2;, &le;10% area error screening)</dd>
+            </div>
+            <div>
+              <dt>Training Window</dt>
+              <dd><code>1999-10-01</code> to <code>2008-09-30</code></dd>
+            </div>
+            <div>
+              <dt>Evaluation Window</dt>
+              <dd><code>1989-10-01</code> to <code>1999-09-30</code></dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>Spatial Splits</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Gauged Simulation</dt>
+              <dd>In-sample locations: calibrated/trained on all 531 basins during <code>1999-10-01</code> to <code>2008-09-30</code> and evaluated on <code>1989-10-01</code> to <code>1999-09-30</code>.</dd>
+            </div>
+            <div>
+              <dt>12-Fold Random PUB</dt>
+              <dd>Out-of-sample locations: <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12 random folds</a> (44&ndash;45 basins/fold) trained on 11 folds and evaluated on the held-out fold.</dd>
+            </div>
+            <div>
+              <dt>18-Fold HUC-02 PUR</dt>
+              <dd>Out-of-sample regions: <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18 USGS HUC-02 regions</a> trained on 17 regions and evaluated on the held-out region.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>4 Forcing Categories</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Single CAMELS</dt>
+              <dd>Driven by a single standard CAMELS-US forcing dataset (Daymet, Maurer, or NLDAS).</dd>
+            </div>
+            <div>
+              <dt>Multiple CAMELS</dt>
+              <dd>Driven simultaneously by two or three standard CAMELS-US forcing datasets (Daymet, Maurer, NLDAS).</dd>
+            </div>
+            <div>
+              <dt>Lagged Streamflow</dt>
+              <dd>Ingests lagged observed streamflow or data assimilation alongside meteorological inputs (Gauged only).</dd>
+            </div>
+            <div>
+              <dt>Freeform</dt>
+              <dd>Driven by non-CAMELS or external forcing products (e.g., AORC, EM-Earth, ERA5-Land).</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.65rem; flex-wrap: wrap;">
+        <button type="button" class="btn-primary-cta" id="btn-open-camels-lb-from-about">
+          Open CAMELS-US Leaderboards &rarr;
+        </button>
+        <button type="button" class="btn-secondary" id="btn-contribute-camels-from-about">
+          Contribute to CAMELS-US
+        </button>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         2B. ABOUT CARAVAN
+         =================================================================== -->
+    <section id="view-about-caravan" role="tabpanel" aria-labelledby="nav-tab-about" style="display: none;">
+      <div class="page-head">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-about-from-caravan">
+            &larr; About HydrologyMIP
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">Caravan Benchmark Specification</h2>
+          <p class="page-sub">
+            Global multi-continent catchment set, temporal holdout periods, spatial cross-validation splits, and forcing categories for the Caravan MIP.
+          </p>
+        </div>
+      </div>
+
+      <div class="spec-grid-3">
+        <div class="spec-block">
+          <h3>Catchments &amp; Windows</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Catchment Set</dt>
+              <dd>Standardized global Caravan benchmark basins across multiple continents and hydroclimates.</dd>
+            </div>
+            <div>
+              <dt>Training &amp; Evaluation</dt>
+              <dd>Fixed calibration/training period and blind out-of-sample evaluation holdout period.</dd>
+            </div>
+            <div>
+              <dt>Evaluation Metrics</dt>
+              <dd>Sorted by any metric across the Gauch et al. (2023) rainfall&ndash;runoff diagnostic suite.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>Spatial Splits</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Gauged Simulation</dt>
+              <dd>In-sample locations evaluated on the blind temporal holdout across all Caravan benchmark gauges.</dd>
+            </div>
+            <div>
+              <dt>Global k-Fold PUB</dt>
+              <dd>Out-of-sample (ungauged) locations evaluated via k-fold cross-validation across global basins.</dd>
+            </div>
+            <div>
+              <dt>Regional / Continental PUR</dt>
+              <dd>Out-of-sample (ungauged) regions evaluated by holding out entire hydroclimatic or continental regions.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>Forcing Categories</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Single Caravan Forcing</dt>
+              <dd>Driven by standard Caravan ERA5-Land meteorological forcings and static catchment attributes.</dd>
+            </div>
+            <div>
+              <dt>Multiple Global Forcings</dt>
+              <dd>Driven by ERA5-Land combined with additional global products (e.g., MSWEP, CHIRPS, GLDAS).</dd>
+            </div>
+            <div>
+              <dt>Lagged Streamflow &amp; Freeform</dt>
+              <dd>Separate leaderboards for models ingesting lagged streamflow (Gauged only) or freeform external inputs.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.65rem; flex-wrap: wrap;">
+        <button type="button" class="btn-primary-cta" id="btn-contribute-caravan-from-about">
+          Contribute to Caravan &rarr;
+        </button>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         3A. LEADERBOARDS HUB
+         =================================================================== -->
+    <section id="view-leaderboards-hub" role="tabpanel" aria-labelledby="nav-tab-leaderboards-hub" style="display: none;">
+      <div class="page-head">
+        <div>
+          <p class="editorial-kicker">Benchmarks</p>
+          <h2 class="page-title">Leaderboards</h2>
+        </div>
+      </div>
+
+      <div class="leaderboard-cards-grid">
+        <article class="leaderboard-suite-card" id="card-camels-us-daily-deterministic" role="button" tabindex="0" aria-label="Open CAMELS-US Daily Deterministic Leaderboards">
+          <div class="lsc-top">
+            <span class="resource-label">531 Basins &middot; 1989-10-01 to 1999-09-30</span>
+            <span class="resource-status">10 Tables</span>
+          </div>
+          <h3 class="lsc-title">CAMELS-US Daily Deterministic</h3>
+          <p class="lsc-desc">
+            Gauged, 12-fold PUB, and 18-fold HUC-02 PUR across single-CAMELS, multi-CAMELS, lagged streamflow, and freeform forcings.
+          </p>
+          <div class="lsc-footer">
+            <span class="lsc-cta">Open Leaderboards &rarr;</span>
+          </div>
+        </article>
+
+        <article class="leaderboard-suite-card" id="card-caravan-daily-deterministic" role="button" tabindex="0" aria-label="Contribute to Caravan Global Benchmark">
+          <div class="lsc-top">
+            <span class="resource-label">Global Catchments &middot; ERA5-Land &amp; Multi-Forcing</span>
+            <span class="resource-status">In Preparation</span>
+          </div>
+          <h3 class="lsc-title">Caravan Global Daily Streamflow</h3>
+          <p class="lsc-desc">
+            Global large-sample intercomparison across Gauged, k-fold PUB, and regional PUR regimes using standardized Caravan basins and forcings.
+          </p>
+          <div class="lsc-footer">
+            <span class="lsc-cta">Contribute a Model &rarr;</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         3B. CAMELS-US LEADERBOARD TABLES
+         =================================================================== -->
+    <section id="view-leaderboards" role="tabpanel" aria-labelledby="nav-tab-leaderboards-hub" style="display: none;">
+      <div class="page-head" style="margin-bottom: 1rem;">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-leaderboards-hub">
+            &larr; All Leaderboards
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">CAMELS-US Daily Deterministic</h2>
+        </div>
+        <div class="page-head-actions">
+          <button type="button" class="btn-primary-cta" id="btn-open-hydrographs-from-lb">
+            Compare Hydrographs (<span id="lb-compare-count-badge">0</span>) &rarr;
+          </button>
+          <button type="button" class="btn-secondary" id="btn-open-models-from-lb">
+            Participating Models &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- 531-Basin CDF Inspector Drawer -->
+      <aside class="inspector-drawer" id="basin-inspector-drawer" aria-live="polite">
+        <div class="inspector-header">
+          <div>
+            <div class="lb-badge-row" style="margin-bottom: 0.25rem;">
+              <span class="lb-table-pill" id="insp-badge-leaderboard">Gauged &middot; Single CAMELS</span>
+              <span class="lb-regime-pill" id="insp-badge-source">531-Basin CDF</span>
+              <span class="cat-badge" id="insp-badge-category">Contribution</span>
+            </div>
+            <h3 id="insp-model-title">Model Diagnostic</h3>
+            <p class="lb-subtitle" id="insp-model-subtitle"></p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" class="btn-primary-cta" id="btn-insp-compare-hydrograph" style="padding: 0.36rem 0.75rem; font-size: 0.78rem;">
+              + View Hydrographs
+            </button>
+            <div id="insp-repo-links" class="row-action-buttons"></div>
+            <button type="button" class="btn-secondary" id="btn-close-inspector">Close &times;</button>
+          </div>
+        </div>
+
+        <div class="inspector-grid">
+          <div class="chart-box">
+            <h4>531-Basin Empirical NSE CDF</h4>
+            <div id="insp-svg-cdf-container" style="width: 100%; height: 260px;"></div>
+          </div>
+          <div class="chart-box">
+            <h4>USGS HUC-02 Regional Summary</h4>
+            <div class="huc-table-wrap" id="insp-huc-table-wrap"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Leaderboard Shell -->
+      <div class="lb-tabs-shell" id="lb-tabs-shell">
+        <div class="minimal-tabs-row spatial-tabs-bar" role="tablist" aria-label="Spatial Regime" id="spatial-tabs-bar">
+          <span class="minimal-tabs-label">Regime</span>
+          <button type="button" role="tab" aria-selected="true" class="minimal-tab-btn spatial-tab-btn active" data-spatial="gauged" id="spatial-tab-gauged">
+            Gauged
+          </button>
+          <button type="button" role="tab" aria-selected="false" class="minimal-tab-btn spatial-tab-btn" data-spatial="pub" id="spatial-tab-pub">
+            12-Fold PUB
+          </button>
+          <button type="button" role="tab" aria-selected="false" class="minimal-tab-btn spatial-tab-btn" data-spatial="pur" id="spatial-tab-pur">
+            18-Fold PUR
+          </button>
+        </div>
+
+        <div class="minimal-tabs-row forcing-tabs-bar" role="tablist" aria-label="Forcing Category" id="forcing-tabs-bar"></div>
+
+        <div class="filter-toolbar" id="leaderboard-filter-toolbar">
+          <div class="filter-group">
+            <div class="search-input-wrap">
+              <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="search" id="filter-search-input" class="search-input" placeholder="Filter models..." />
+            </div>
+
+            <select id="filter-category-select" class="filter-select" aria-label="Filter by Source Category">
+              <option value="">All Sources</option>
+              <option value="Literature">Literature</option>
+              <option value="MIP Re-run">MIP Re-run</option>
+              <option value="Archive">Archive</option>
+              <option value="Contribution">Contribution</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="active-leaderboard-tabpanel" role="tabpanel"></div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         3C. HYDROGRAPH, HYETOGRAPH & TEMPERATURE COMPARISON EXPLORER
+         =================================================================== -->
+    <section id="view-hydrographs" role="tabpanel" aria-labelledby="nav-tab-leaderboards-hub" style="display: none;">
+      <div class="page-head" style="margin-bottom: 1rem;">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-lb-from-hydro">
+            &larr; Back to Leaderboards
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">Hydrograph Explorer</h2>
+          <p class="page-sub">
+            Compare observed USGS discharge and simulated daily hydrographs alongside Daymet, Maurer, and NLDAS precipitation hyetographs and temperatures across all 531 CAMELS-US basins (<code>1989-10-01</code> to <code>1999-09-30</code>).
+          </p>
+        </div>
+      </div>
+
+      <!-- 1. Compared Models Bar & Multi-Leaderboard Model Picker -->
+      <div class="hydro-panel-card">
+        <div class="hydro-card-header">
+          <div class="hydro-card-title-group">
+            <span class="webchart-eyebrow">Compared Models</span>
+            <span class="hydro-hint-text">Select models from any leaderboard table or add them directly below</span>
+          </div>
+          <div class="hydro-add-model-controls">
+            <select id="hydro-add-lb-filter" class="filter-select" aria-label="Filter model picker by leaderboard">
+              <option value="">All 12 Leaderboards</option>
+              <option value="gauged__single_camels">Gauged &middot; Single CAMELS Forcing</option>
+              <option value="gauged__multi_camels">Gauged &middot; Multiple CAMELS Forcings</option>
+              <option value="gauged__lagged_streamflow">Gauged &middot; Lagged Streamflow</option>
+              <option value="gauged__freeform">Gauged &middot; Freeform</option>
+              <option value="pub__single_camels">12-Fold PUB &middot; Single CAMELS Forcing</option>
+              <option value="pub__multi_camels">12-Fold PUB &middot; Multiple CAMELS Forcings</option>
+              <option value="pub__lagged_streamflow">12-Fold PUB &middot; Lagged Streamflow</option>
+              <option value="pur__single_camels">18-Fold PUR &middot; Single CAMELS Forcing</option>
+              <option value="pur__multi_camels">18-Fold PUR &middot; Multiple CAMELS Forcings</option>
+              <option value="pur__lagged_streamflow">18-Fold PUR &middot; Lagged Streamflow</option>
+            </select>
+            <select id="hydro-add-model-select" class="filter-select hydro-model-picker-select" aria-label="Add model to hydrograph comparison">
+              <option value="">+ Add Model to Compare...</option>
+            </select>
+            <button type="button" class="btn-secondary" id="btn-hydro-clear-models" style="padding: 0.34rem 0.65rem; font-size: 0.75rem;">
+              Reset Default Models
+            </button>
+          </div>
+        </div>
+        <div id="hydro-selected-models-chips" class="hydro-selected-chips-row"></div>
+      </div>
+
+      <!-- 2. Interactive CONUS Watershed Map & Basin Selector -->
+      <div class="hydro-panel-card">
+        <div class="hydro-card-header" style="margin-bottom: 0.75rem;">
+          <div class="hydro-card-title-group">
+            <span class="webchart-eyebrow">Select Watershed (531 CAMELS-US Basins)</span>
+            <span class="hydro-hint-text">Click any watershed on the US map or use the region/search controls below</span>
+          </div>
+          <div class="hydro-map-controls-bar">
+            <label for="hydro-map-color-by" class="hydro-toolbar-label">Color Map By:</label>
+            <select id="hydro-map-color-by" class="filter-select" style="padding: 0.24rem 0.55rem; font-size: 0.75rem;">
+              <option value="nse_primary" selected>Primary Model Basin NSE</option>
+              <option value="nse_diff">Model 1 &minus; Model 2 (&Delta;NSE)</option>
+              <option value="huc02">USGS HUC-02 Region (18 Regions)</option>
+              <option value="mean_qobs">Mean Runoff (mm/day)</option>
+            </select>
+            <div class="hydro-map-zoom-btns">
+              <button type="button" class="btn-secondary hydro-map-zoom-btn" id="btn-map-zoom-in" title="Zoom In Map">+</button>
+              <button type="button" class="btn-secondary hydro-map-zoom-btn" id="btn-map-zoom-out" title="Zoom Out Map">&minus;</button>
+              <button type="button" class="btn-secondary hydro-map-zoom-btn" id="btn-map-zoom-reset" title="Reset Full US Map">Reset US</button>
+            </div>
+            <button type="button" class="btn-row-link" id="btn-toggle-hydro-map">
+              Hide Map
+            </button>
+          </div>
+        </div>
+
+        <div id="hydro-conus-map-wrap" class="hydro-conus-map-wrap">
+          <div class="hydro-conus-map-stage" id="hydro-conus-map-stage">
+            <svg
+              id="hydro-conus-svg"
+              viewBox="0 0 960 580"
+              class="hydro-conus-svg"
+              role="img"
+              aria-label="Interactive Contiguous US Map of 531 CAMELS-US Watersheds"
+            ></svg>
+            <div id="hydro-map-legend" class="hydro-map-legend"></div>
+            <div id="hydro-map-tooltip" class="hydro-tooltip" hidden></div>
+          </div>
+        </div>
+
+        <div class="hydro-basin-selector-row" style="margin-top: 0.85rem;">
+          <div class="hydro-basin-nav-group">
+            <label for="hydro-huc-filter" class="hydro-field-label">USGS Region</label>
+            <select id="hydro-huc-filter" class="filter-select">
+              <option value="">All 18 HUC-02 Regions (531 Basins)</option>
+            </select>
+          </div>
+
+          <div class="hydro-basin-nav-group" style="flex: 1 1 320px;">
+            <label for="hydro-basin-select" class="hydro-field-label">Catchment (531 CAMELS-US Basins)</label>
+            <div style="display: flex; align-items: center; gap: 0.45rem;">
+              <button type="button" class="btn-secondary hydro-step-btn" id="btn-hydro-prev-basin" title="Previous Basin">&larr;</button>
+              <select id="hydro-basin-select" class="filter-select" style="flex: 1; font-family: var(--font-mono); font-size: 0.8rem;"></select>
+              <button type="button" class="btn-secondary hydro-step-btn" id="btn-hydro-next-basin" title="Next Basin">&rarr;</button>
+            </div>
+          </div>
+
+          <div class="hydro-basin-nav-group" style="min-width: 210px;">
+            <label for="hydro-basin-search" class="hydro-field-label">Quick Search Gauge ID / River</label>
+            <input type="search" id="hydro-basin-search" class="search-input" style="padding-left: 0.65rem; width: 100%;" placeholder="e.g. 01022500 or Narraguagus..." />
+          </div>
+        </div>
+
+        <div id="hydro-basin-meta-strip" class="hydro-basin-meta-strip"></div>
+      </div>
+
+      <!-- 3. Zoom, Time Window & Forcing Controls + Synchronized 3-Panel Interactive Canvas -->
+      <div class="hydro-chart-card">
+        <div class="hydro-zoom-toolbar">
+          <div class="hydro-preset-group">
+            <span class="hydro-toolbar-label">Zoom Window:</span>
+            <button type="button" class="metric-preset-btn active" data-hydro-zoom="peak1" id="hydro-zoom-peak1">Peak Flood (&plusmn;45d)</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="peak2" id="hydro-zoom-peak2">2nd Peak (&plusmn;45d)</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="full" id="hydro-zoom-full">Full 10 Years</button>
+            <span class="hydro-wy-divider">|</span>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1990">WY90</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1991">WY91</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1992">WY92</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1993">WY93</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1994">WY94</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1995">WY95</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1996">WY96</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1997">WY97</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1998">WY98</button>
+            <button type="button" class="metric-preset-btn" data-hydro-zoom="wy1999">WY99</button>
+          </div>
+
+          <div class="hydro-date-inputs-group">
+            <input type="date" id="hydro-start-date" class="hydro-date-input" min="1989-10-01" max="1999-09-30" value="1989-10-01" aria-label="Zoom start date" />
+            <span style="color: var(--text-muted); font-size: 0.75rem;">to</span>
+            <input type="date" id="hydro-end-date" class="hydro-date-input" min="1989-10-01" max="1999-09-30" value="1999-09-30" aria-label="Zoom end date" />
+          </div>
+        </div>
+
+        <div class="hydro-options-toolbar">
+          <div class="hydro-forcing-toggles">
+            <span class="hydro-toolbar-label">CAMELS-US Forcings (Hyetograph &amp; Temp):</span>
+            <label class="hydro-forcing-pill forcing-daymet">
+              <input type="checkbox" id="chk-forcing-daymet" checked />
+              <span class="forcing-swatch" style="background: #0284c7;"></span> Daymet
+            </label>
+            <label class="hydro-forcing-pill forcing-maurer">
+              <input type="checkbox" id="chk-forcing-maurer" checked />
+              <span class="forcing-swatch" style="background: #7c3aed;"></span> Maurer
+            </label>
+            <label class="hydro-forcing-pill forcing-nldas">
+              <input type="checkbox" id="chk-forcing-nldas" checked />
+              <span class="forcing-swatch" style="background: #d97706;"></span> NLDAS
+            </label>
+          </div>
+
+          <div class="hydro-scale-toggles">
+            <label class="hydro-toolbar-label" for="hydro-q-scale">Discharge Scale:</label>
+            <select id="hydro-q-scale" class="filter-select" style="padding: 0.22rem 0.5rem; font-size: 0.75rem;">
+              <option value="linear" selected>Linear (mm/d)</option>
+              <option value="sqrt">Square-Root (&radic;mm/d)</option>
+              <option value="log">Log10 (mm/d)</option>
+            </select>
+
+            <label class="hydro-toolbar-label" for="hydro-temp-mode" style="margin-left: 0.5rem;">Temp Display:</label>
+            <select id="hydro-temp-mode" class="filter-select" style="padding: 0.22rem 0.5rem; font-size: 0.75rem;">
+              <option value="tmean_band" selected>Mean + Tmin/Tmax Band</option>
+              <option value="tmean">Daily Mean (Tmean)</option>
+              <option value="tmax_tmin">Tmax &amp; Tmin Lines</option>
+            </select>
+          </div>
+
+          <div class="hydro-interaction-tip">
+            Drag on chart to box-zoom &bull; Scroll wheel to zoom &bull; Drag bottom navigator to pan &bull; Double-click to reset
+          </div>
+        </div>
+
+        <div class="hydro-canvas-stage" id="hydro-canvas-stage">
+          <canvas id="hydro-multipanel-canvas" width="1120" height="720"></canvas>
+          <div class="hydro-tooltip" id="hydro-tooltip" hidden></div>
+        </div>
+      </div>
+
+      <!-- 4. Per-Basin Model Comparison Metrics Table -->
+      <div class="hydro-panel-card" style="margin-top: 1rem;">
+        <div class="hydro-card-header" style="margin-bottom: 0.6rem;">
+          <div class="hydro-card-title-group">
+            <span class="webchart-eyebrow">Catchment Performance Comparison</span>
+            <span id="hydro-metrics-table-subtitle" class="hydro-hint-text"></span>
+          </div>
+        </div>
+        <div id="hydro-basin-metrics-table-wrap" class="lb-table-scroll-wrap"></div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         4. PARTICIPATING MODELS
+         =================================================================== -->
+    <section id="view-models" role="tabpanel" aria-labelledby="nav-tab-leaderboards-hub" style="display: none;">
+      <div class="page-head">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-camels-lb">
+            &larr; CAMELS-US Leaderboards
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">Participating Models</h2>
+        </div>
+        <div class="page-head-actions">
+          <select id="family-type-filter" class="filter-select" aria-label="Filter by Model Type">
+            <option value="">All Model Types</option>
+            <option value="ml">Machine learning</option>
+            <option value="hybrid">Hybrid (ML + Physics)</option>
+            <option value="conceptual">Conceptual</option>
+            <option value="process">Process-based</option>
+            <option value="statistical">Statistical</option>
+          </select>
+          <input type="search" id="family-search-input" class="search-input" style="padding-left: 0.75rem;" placeholder="Filter models..." />
+          <button type="button" class="btn-primary-cta" id="btn-open-family-modal">
+            + Register Model
+          </button>
+        </div>
+      </div>
+
+      <div class="model-type-legend" aria-label="Model Type Key">
+        <span class="model-type-pill type-ml"><span class="type-dot"></span>Machine learning</span>
+        <span class="model-type-pill type-hybrid"><span class="type-dot"></span>Hybrid</span>
+        <span class="model-type-pill type-conceptual"><span class="type-dot"></span>Conceptual</span>
+        <span class="model-type-pill type-process"><span class="type-dot"></span>Process-based</span>
+        <span class="model-type-pill type-statistical"><span class="type-dot"></span>Statistical</span>
+      </div>
+
+      <div id="families-grid-container"></div>
+    </section>
+
+    <!-- ===================================================================
+         5. CONTRIBUTE A MODEL
+         =================================================================== -->
+    <section id="view-contribute" role="tabpanel" aria-labelledby="nav-tab-contribute" style="display: none;">
+      <div class="page-head">
+        <div>
+          <p class="editorial-kicker">Community Submissions</p>
+          <h2 class="page-title">Contribute a Model</h2>
+          <p class="page-sub" id="contrib-page-sub">
+            Submit a model by linking a DOI-minted prediction archive and specifying the target benchmark, spatial regime, and model inputs.
+          </p>
+        </div>
+      </div>
+
+      <div class="contrib-layout-grid">
+        <div class="protocol-rules-col">
+          <h3 class="sub-heading" id="contrib-rules-heading">Submission Rules &mdash; CAMELS-US</h3>
+          <ol class="clean-rule-list" id="contrib-rules-list">
+            <li>
+              <strong>Blind Evaluation Window</strong>
+              <span>Select architectures, hyperparameters, and early stopping strictly on <code>1999-10-01</code> to <code>2008-09-30</code>; evaluate blindly on <code>1989-10-01</code> to <code>1999-09-30</code>.</span>
+            </li>
+            <li>
+              <strong>Canonical Spatial Folds</strong>
+              <span>Use the canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> basin splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target-basin leakage.</span>
+            </li>
+            <li>
+              <strong>Forcing Inputs</strong>
+              <span>Declare all meteorological and lagged streamflow inputs used; the submission system automatically places the model into the matching forcing category (Single CAMELS, Multi-CAMELS, Lagged Streamflow, or Freeform).</span>
+            </li>
+            <li>
+              <strong>DOI-Minted Archive</strong>
+              <span>Link a DOI-minted repository (Zenodo or HydroShare) containing daily discharge predictions; the backend resolves, inspects, and scores the archive automatically.</span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="workbench-card">
+          <h3 class="sub-heading" style="margin-top: 0;">Submit Entry via DOI Archive</h3>
+
+          <form id="form-score-submit">
+            <input type="hidden" id="select-sample-archive-key" value="" />
+
+            <div class="form-grid" style="margin-bottom: 1rem;">
+              <div class="form-field full-width">
+                <label for="sub-mip-benchmark">Benchmark (MIP) *</label>
+                <select id="sub-mip-benchmark" required>
+                  <option value="camels_us" selected>CAMELS-US Daily Deterministic (531 basins)</option>
+                  <option value="caravan">Caravan Global Daily Streamflow</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="sub-spatial-regime">Spatial Regime *</label>
+                <select id="sub-spatial-regime" required>
+                  <option value="gauged">Gauged Simulation</option>
+                  <option value="pub">12-Fold PUB (Ungauged Basins)</option>
+                  <option value="pur">18-Fold HUC-02 PUR (Ungauged Regions)</option>
+                </select>
+                <input type="hidden" id="sub-leaderboard-id" value="gauged__single_camels" />
+              </div>
+
+              <div class="form-field">
+                <label for="sub-forcing">Forcing Inputs *</label>
+                <select id="sub-forcing" required>
+                  <optgroup label="Single CAMELS Forcing">
+                    <option value="Daymet" selected>Daymet</option>
+                    <option value="Maurer">Maurer</option>
+                    <option value="NLDAS">NLDAS</option>
+                  </optgroup>
+                  <optgroup label="Multiple CAMELS Forcings">
+                    <option value="Daymet + Maurer">Daymet + Maurer</option>
+                    <option value="Daymet + NLDAS">Daymet + NLDAS</option>
+                    <option value="Maurer + NLDAS">Maurer + NLDAS</option>
+                    <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
+                  </optgroup>
+                  <optgroup label="With Lagged Streamflow (Gauged Only)">
+                    <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
+                    <option value="Maurer + Lagged Streamflow">Maurer + Lagged Streamflow</option>
+                    <option value="NLDAS + Lagged Streamflow">NLDAS + Lagged Streamflow</option>
+                    <option value="Daymet + Maurer + Lagged Streamflow">Daymet + Maurer + Lagged Streamflow</option>
+                    <option value="Daymet + NLDAS + Lagged Streamflow">Daymet + NLDAS + Lagged Streamflow</option>
+                    <option value="Maurer + NLDAS + Lagged Streamflow">Maurer + NLDAS + Lagged Streamflow</option>
+                    <option value="Daymet + Maurer + NLDAS + Lagged Streamflow">Daymet + Maurer + NLDAS + Lagged Streamflow</option>
+                  </optgroup>
+                  <optgroup label="Freeform (Non-CAMELS / External)">
+                    <option value="Freeform (None of the above)">Freeform (None of the above)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="form-field full-width">
+                <label for="sub-zenodo-doi">Data Archive DOI / URL *</label>
+                <input type="text" id="sub-zenodo-doi" placeholder="10.5281/zenodo.XXXXXXX or https://www.hydroshare.org/resource/..." required />
+              </div>
+
+              <div class="form-field">
+                <label for="sub-model-name">Model Name *</label>
+                <input type="text" id="sub-model-name" placeholder="e.g., ModelName (Ensemble)" required />
+              </div>
+
+              <div class="form-field">
+                <label for="sub-paradigm">Model Type *</label>
+                <select id="sub-paradigm" required>
+                  <option value="Machine learning">Machine learning</option>
+                  <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
+                  <option value="Conceptual">Conceptual</option>
+                  <option value="Process-based">Process-based</option>
+                  <option value="Statistical">Statistical</option>
+                </select>
+              </div>
+
+              <div class="form-field">
+                <label for="sub-github-url">Codebase URL</label>
+                <input type="text" id="sub-github-url" placeholder="https://github.com/owner/repo (optional)" />
+              </div>
+
+              <div class="form-field">
+                <label for="sub-citation">Citation</label>
+                <input type="text" id="sub-citation" placeholder="Author et al. (2026)" />
+              </div>
+
+              <div class="form-field full-width">
+                <label for="sub-family-id">Model Family</label>
+                <select id="sub-family-id">
+                  <option value="">+ Register as New Model Family</option>
+                </select>
+              </div>
+
+              <div class="form-field full-width" id="sub-new-family-wrap">
+                <label for="sub-new-family-name">New Model Family Name</label>
+                <input type="text" id="sub-new-family-name" placeholder="e.g., ERA, HydroDiffusion, or leave blank to derive from Model Name" />
+              </div>
+
+              <input type="hidden" id="sub-hydroshare-url" value="" />
+              <input type="hidden" id="sub-paper-url" value="" />
+              <input type="hidden" id="sub-category" value="Contribution" />
+            </div>
+
+            <div id="live-repo-badge-preview" style="display: none;"></div>
+
+            <div class="checklist-box" id="contrib-checklist-box">
+              <div class="checklist-header">Please check that you have met all contribution requirements</div>
+              <label class="checklist-label">
+                <input type="checkbox" id="chk-rule-1" checked required />
+                <span id="chk-rule-1-text">Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)</span>
+              </label>
+              <label class="checklist-label">
+                <input type="checkbox" id="chk-rule-2" checked required />
+                <span id="chk-rule-2-text">Canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target leakage</span>
+              </label>
+              <label class="checklist-label">
+                <input type="checkbox" id="chk-rule-3" checked required />
+                <span id="chk-rule-3-text">Selected forcing inputs include all meteorological and lagged streamflow inputs used</span>
+              </label>
+              <label class="checklist-label">
+                <input type="checkbox" id="chk-rule-4" checked required />
+                <span id="chk-rule-4-text">Deterministic daily predictions in mm/day across the 531 CAMELS-US basins</span>
+              </label>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+              <button type="button" class="btn-secondary" id="btn-run-live-score">
+                Verify &amp; Score
+              </button>
+              <button type="submit" class="btn-primary-cta" id="btn-submit-to-leaderboard">
+                Submit Entry
+              </button>
+              <button type="button" class="btn-secondary" id="btn-export-pr-manifest">
+                Export JSON
+              </button>
+            </div>
+            <div id="score-status-msg" style="font-size: 0.82rem; margin-top: 0.5rem;"></div>
+
+            <div class="score-preview-card" id="score-preview-card">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                <strong style="font-size: 0.86rem;" id="preview-headline">531-Basin Score</strong>
+                <span class="lb-table-pill" id="preview-rank-badge">Rank #1</span>
+              </div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary);" id="preview-subline"></div>
+              <div class="score-metrics-strip" style="grid-template-columns: repeat(5, 1fr);">
+                <div class="score-metric-box"><span class="m-label">Med NSE</span><span class="m-val" id="prev-ens-nse">&mdash;</span></div>
+                <div class="score-metric-box"><span class="m-label">Mean NSE</span><span class="m-val" id="prev-mean-nse">&mdash;</span></div>
+                <div class="score-metric-box"><span class="m-label">Med KGE</span><span class="m-val" id="prev-med-kge">&mdash;</span></div>
+                <div class="score-metric-box"><span class="m-label">|FHV|</span><span class="m-val" id="prev-med-fhv">&mdash;</span></div>
+                <div class="score-metric-box"><span class="m-label">NSE &le; 0</span><span class="m-val" id="prev-nse-le0">&mdash;</span></div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         6. PUBLICATIONS
+         =================================================================== -->
+    <section id="view-publications" role="tabpanel" aria-labelledby="nav-tab-publications" style="display: none;">
+      <div class="page-head">
+        <div>
+          <p class="editorial-kicker">Manuscripts</p>
+          <h2 class="page-title">Publications</h2>
+        </div>
+      </div>
+
+      <article class="publication-row">
+        <div class="publication-meta">
+          <span class="resource-status">In Preparation</span>
+          <span>CAMELS-US Benchmark</span>
+        </div>
+        <h3 class="publication-title">A CAMELS-US Model Intercomparison Project</h3>
+        <p class="publication-authors">Nearing, G., et al. (<em>in preparation</em>)</p>
+        <div class="publication-links">
+          <a href="https://docs.google.com/document/d/1cTTWBhMs8oPc9zjiJZnDYJkArbSot4K0UHUZ465c648/edit" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-code">Manuscript Draft &#8599;</a>
+          <a href="https://github.com/grey-nearing/camels-us-mip" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-code">GitHub &#8599;</a>
+          <a href="https://console.cloud.google.com/storage/browser/camels-us-mip" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-archive">gs://camels-us-mip &#8599;</a>
+        </div>
+      </article>
+    </section>
+
+    <!-- ===================================================================
+         7. COMMUNITY DISCUSSION
+         =================================================================== -->
+    <section id="view-comments" role="tabpanel" aria-labelledby="nav-tab-comments" style="display: none;">
+      <div class="page-head">
+        <div>
+          <p class="editorial-kicker">Forum</p>
+          <h2 class="page-title">Community Discussion</h2>
+        </div>
+      </div>
+
+      <div class="comments-layout-grid">
+        <div>
+          <div id="comments-feed-container" aria-live="polite"></div>
+        </div>
+
+        <div class="workbench-card">
+          <h3 class="sub-heading" style="margin-top: 0;">New Comment</h3>
+          <form id="form-community-comment">
+            <div style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+              <input type="text" id="cmt-website-honeypot" name="website_honeypot" tabindex="-1" autocomplete="off" />
+            </div>
+
+            <div class="form-grid" style="margin-bottom: 0.9rem;">
+              <div class="form-field">
+                <label for="cmt-author-name">Name *</label>
+                <input type="text" id="cmt-author-name" placeholder="Full name" required />
+              </div>
+
+              <div class="form-field">
+                <label for="cmt-affiliation">Affiliation</label>
+                <input type="text" id="cmt-affiliation" placeholder="Institution" />
+              </div>
+
+              <div class="form-field full-width">
+                <label for="cmt-orcid-github">ORCID or GitHub</label>
+                <input type="text" id="cmt-orcid-github" placeholder="0000-0002-... or @username" />
+              </div>
+
+              <div class="form-field full-width">
+                <label for="cmt-title">Title *</label>
+                <input type="text" id="cmt-title" placeholder="Summary" required />
+              </div>
+
+              <div class="form-field full-width">
+                <label for="cmt-body">Comment *</label>
+                <textarea id="cmt-body" rows="4" placeholder="Share ideas, model contributions, or suggestions for new MIPs..." required></textarea>
+              </div>
+            </div>
+
+            <input type="checkbox" id="cmt-coc-attest" checked required style="display: none;" />
+
+            <button type="submit" class="btn-primary-cta" id="btn-submit-comment">
+              Post Comment
+            </button>
+            <div id="comment-status-msg" style="font-size: 0.82rem; margin-top: 0.5rem;"></div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div>
+      <strong>HydrologyMIP</strong> &middot; <span style="font-family: var(--font-mono); font-size: 0.75rem;">hydrologymip.org</span>
+    </div>
+    <div class="footer-links-inline">
+      <a href="https://github.com/grey-nearing/camels-us-mip" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <span>&middot;</span>
+      <a href="https://console.cloud.google.com/storage/browser/camels-us-mip" target="_blank" rel="noopener noreferrer">GCS Bucket</a>
+      <span>&middot;</span>
+      <a href="https://docs.google.com/document/d/1cTTWBhMs8oPc9zjiJZnDYJkArbSot4K0UHUZ465c648/edit" target="_blank" rel="noopener noreferrer">Manuscript</a>
+    </div>
+  </footer>
+
+  <!-- Modal: Edit Model Links -->
+  <div class="modal-backdrop" id="modal-family-editor" role="dialog" aria-modal="true" aria-labelledby="modal-family-title">
+    <div class="modal-dialog" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 id="modal-family-title">Model Repository Links</h2>
+        <button type="button" class="modal-close-btn" id="btn-close-family-modal" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-family-editor">
+          <input type="hidden" id="fam-edit-id" value="" />
+          <div class="form-grid">
+            <div class="form-field full-width">
+              <label for="fam-edit-name">Model Name *</label>
+              <input type="text" id="fam-edit-name" required />
+            </div>
+            <div class="form-field">
+              <label for="fam-edit-zenodo">Zenodo DOI / URL</label>
+              <input type="text" id="fam-edit-zenodo" placeholder="10.5281/zenodo.XXXXXXX" />
+            </div>
+            <div class="form-field">
+              <label for="fam-edit-hydroshare">Alternative Archive URL</label>
+              <input type="text" id="fam-edit-hydroshare" placeholder="https://..." />
+            </div>
+            <div class="form-field full-width">
+              <label for="fam-edit-github">GitHub URL</label>
+              <input type="text" id="fam-edit-github" placeholder="https://github.com/owner/repo" />
+            </div>
+            <div class="form-field">
+              <label for="fam-edit-paradigm">Model Type *</label>
+              <select id="fam-edit-paradigm" required>
+                <option value="Machine learning">Machine learning</option>
+                <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
+                <option value="Conceptual">Conceptual</option>
+                <option value="Process-based">Process-based</option>
+                <option value="Statistical">Statistical</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="fam-edit-category">Source Category</label>
+              <select id="fam-edit-category">
+                <option value="Literature">Literature</option>
+                <option value="MIP Re-run">MIP Re-run</option>
+                <option value="Archive">Archive</option>
+                <option value="Contribution">Contribution</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label for="fam-edit-citation">Citation</label>
+              <input type="text" id="fam-edit-citation" />
+            </div>
+            <div class="form-field">
+              <label for="fam-edit-paper-url">Paper URL</label>
+              <input type="text" id="fam-edit-paper-url" />
+            </div>
+            <div class="form-field full-width">
+              <label for="fam-edit-desc">Notes</label>
+              <textarea id="fam-edit-desc" rows="2"></textarea>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; gap: 0.6rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-top: 1rem;">
+            <button type="button" class="btn-secondary" id="btn-cancel-family-modal">Cancel</button>
+            <button type="submit" class="btn-primary-cta" id="btn-save-family">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Hydrograph Comparison Tray (appears on Leaderboards when >= 1 model is selected) -->
+  <div id="hydrograph-compare-tray" class="hydro-compare-tray" hidden>
+    <div class="hydro-compare-tray-inner">
+      <div class="hydro-compare-tray-left">
+        <span class="hydro-compare-tray-label">Hydrograph Comparison (<span id="tray-compare-count">0</span>)</span>
+        <div id="tray-compare-chips" class="hydro-compare-tray-chips"></div>
+      </div>
+      <div class="hydro-compare-tray-actions">
+        <button type="button" class="btn-secondary" id="btn-tray-clear-compare" style="padding: 0.34rem 0.65rem; font-size: 0.74rem;">
+          Clear
+        </button>
+        <button type="button" class="btn-primary-cta" id="btn-tray-open-hydrographs" style="padding: 0.38rem 0.85rem; font-size: 0.78rem;">
+          Compare Hydrographs &rarr;
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js?v=20261025_navcursor"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "model_key": "era_pur_physics_guided",
+  "model_name": "ERA-Physics-Guided-PUR",
+  "status": "COMPLETED_NO_PUBLISHED_REFERENCE",
+  "winning_node_id": 206,
+  "era_validation_period": [
+    "1999-10-01",
+    "2003-09-30"
+  ],
+  "newman_test_period": [
+    "1989-10-01",
+    "1999-09-30"
+  ],
+  "num_seeds": 10,
+  "seeds": [
+    100,
+    101,
+    102,
+    103,
+    104,
+    105,
+    106,
+    107,
+    108,
+    109
+  ],
+  "ensemble_median_nse": null,
+  "single_model_median_nse": null,
+  "single_model_median_nse_std": null,
+  "ensemble_mean_nse": null,
+  "ensemble_median_kge": null,
+  "ensemble_median_fhv_abs": null,
+  "num_basins_nse_le_0": null
+}

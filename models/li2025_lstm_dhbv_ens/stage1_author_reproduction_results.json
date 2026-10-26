@@ -1,0 +1,130 @@
+{
+  "model_dir": "li2025_lstm_dhbv_ens",
+  "paper": "Li, Song, Pan, Lawson, & Shen (2025) HESS 29, 6829-6861 - (LSTM + dHBV 1.1p) Multi-Model Ensemble",
+  "paper_url": "https://doi.org/10.5194/hess-29-6829-2025",
+  "zenodo_doi": "10.5281/zenodo.16895228",
+  "github_url": "https://github.com/mhpi/generic_deltamodel",
+  "provenance": "author_archive_and_from_scratch_split3_verification",
+  "protocol": {
+    "spatial_regime": "gauged",
+    "num_basins": 531,
+    "train_period": "1980-10-01/1995-09-30",
+    "eval_period": "1995-10-01/2008-09-30",
+    "forcings": [
+      "daymet",
+      "maurer",
+      "nldas"
+    ],
+    "ensemble_formulation": "(LSTM + dHBV)_seed^123: equal-weight average across 3 forcings x 2 model structures (LSTM, dHBV 1.1p) x 10 random seeds (60 members total)",
+    "evaluation_mode": "ensemble"
+  },
+  "verification_source": "Zenodo 10.5281/zenodo.16895228 (all_simulations 6x10x531x4749) + StandaloneDHBV Split-3 re-run",
+  "published_median_nse": 0.823,
+  "reproduced_median_nse": 0.8225,
+  "reproduced_post_warmup_median_nse": 0.8286,
+  "reproduced_rerun_hybrid_median_nse": 0.8195,
+  "reproduced_single_member_mean_median_nse": 0.8176,
+  "reproduced_single_member_std_median_nse": 0.004,
+  "reproduced_ensemble_median_nse": 0.8225,
+  "reproduced_mean_nse": 0.7751,
+  "reproduced_median_kge": 0.7968,
+  "reproduced_mean_kge": 0.7546,
+  "reproduced_median_r": 0.9164,
+  "reproduced_median_alpha_nse": 0.8855,
+  "reproduced_median_beta_nse": 0.0196,
+  "reproduced_median_fhv": -10.68,
+  "reproduced_median_abs_fhv": 12.25,
+  "reproduced_median_fms": -9.06,
+  "reproduced_median_flv": 27.1,
+  "reproduced_median_peak_timing": 0.343,
+  "n_nse_le_0": 3,
+  "delta_median_nse": -0.0005,
+  "delta_rerun_median_nse": -0.0035,
+  "tolerance": 0.03,
+  "num_evaluated_basins": 531,
+  "pred_nan_when_obs_valid": 0,
+  "status": "PASS",
+  "additional_verifications": {
+    "split3_single_seed_3forcing_hybrid_(LSTM+dHBV)^123": {
+      "train_period": "1980-10-01/1995-09-30",
+      "eval_period": "1995-10-01/2008-09-30",
+      "forcings": [
+        "daymet",
+        "maurer",
+        "nldas"
+      ],
+      "num_evaluated_basins": 531,
+      "published_median_nse": 0.818,
+      "reproduced_member0_median_nse": 0.8184,
+      "reproduced_10seed_mean_median_nse": 0.8176,
+      "reproduced_10seed_std_median_nse": 0.004,
+      "reproduced_rerun_hybrid_median_nse": 0.8165,
+      "delta_median_nse": -0.0004,
+      "status": "PASS"
+    },
+    "split3_single_seed_daymet_hybrid_(LSTM+dHBV)^1_Daymet": {
+      "train_period": "1980-10-01/1995-09-30",
+      "eval_period": "1995-10-01/2008-09-30",
+      "forcings": [
+        "daymet"
+      ],
+      "num_evaluated_basins": 531,
+      "published_median_nse": 0.79,
+      "reproduced_member0_median_nse": 0.7895,
+      "reproduced_post_warmup_median_nse": 0.7915,
+      "reproduced_10seed_mean_median_nse": 0.7871,
+      "reproduced_10seed_std_median_nse": 0.0013,
+      "reproduced_rerun_hybrid_median_nse": 0.7872,
+      "delta_member0_median_nse": -0.0005,
+      "delta_10seed_mean_median_nse": -0.0029,
+      "status": "PASS"
+    },
+    "split3_constituent_models": {
+      "LSTM_seed^123_published_median_nse": 0.818,
+      "LSTM_seed^123_reproduced_median_nse": 0.8141,
+      "LSTM_seed^123_post_warmup_median_nse": 0.8226,
+      "dHBV_seed^123_published_median_nse": 0.798,
+      "dHBV_seed^123_reproduced_archive_median_nse": 0.7945,
+      "dHBV_seed^123_post_warmup_median_nse": 0.8005,
+      "dHBV_seed^123_reproduced_rerun_median_nse": 0.7913,
+      "status": "PASS"
+    },
+    "split1_stage2_multi_camels_verification": {
+      "train_period": "1999-10-01/2008-09-30",
+      "eval_period": "1989-10-01/1999-09-30",
+      "forcings": [
+        "daymet",
+        "maurer",
+        "nldas"
+      ],
+      "num_evaluated_basins": 531,
+      "t4_06_2member_equal_weight_ensemble": {
+        "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_06.zarr",
+        "num_members": 2,
+        "member_0": "t4_05.zarr (Kratzert et al. 2021 10-seed 3-forcing LSTM ensemble, Med NSE = 0.8210)",
+        "member_1": "t4_24.zarr (Song et al. 2024 5-seed 3-forcing dHBV 1.1p ensemble, Med NSE = 0.7992)",
+        "median_nse": 0.82,
+        "mean_nse": 0.7893,
+        "median_kge": 0.7978,
+        "mean_kge": 0.754,
+        "median_abs_fhv": 14.36,
+        "n_nse_le_0": 1
+      },
+      "t4_03_20member_seed_ensemble": {
+        "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_03.zarr",
+        "num_members": 20,
+        "member_0_to_9": "t4_05.zarr (10 Kratzert et al. 2021 3-forcing LSTM members)",
+        "member_10_to_19": "t4_23.zarr (10 Song et al. 2024 3-forcing dHBV 1.1p members)",
+        "median_nse": 0.8195,
+        "mean_nse": 0.7856,
+        "median_kge": 0.801,
+        "mean_kge": 0.7556,
+        "median_abs_fhv": 14.22,
+        "n_nse_le_0": 1
+      },
+      "status": "PASS"
+    }
+  },
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/li2025_lstm_dhbv_ens.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/li2025_lstm_dhbv_ens_results.json"
+}

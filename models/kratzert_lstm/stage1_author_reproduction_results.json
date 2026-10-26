@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "model_key": "kratzert_lstm",
+  "model_name": "Kratzert et al. (2019, 2021) CudaLSTM",
+  "provenance": "Trained in-process via models.kratzert_lstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; stored in gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr.",
+  "protocol": {
+    "basins_source": "splits/basins_531.json",
+    "n_basins": 531,
+    "train_period": [
+      "1999-10-01",
+      "2008-09-30"
+    ],
+    "eval_period": [
+      "1989-10-01",
+      "1999-09-30"
+    ],
+    "forcings": [
+      "daymet"
+    ],
+    "seeds": [
+      101,
+      102,
+      103
+    ],
+    "runner_kwargs": {},
+    "data_dir": "data"
+  },
+  "published": {
+    "single_median_nse": 0.744,
+    "ensemble_median_nse": 0.772,
+    "source": "Kratzert et al. (2021), HESS 25, 2685-2706, Table 1 & Table A2; Zenodo 10.5281/zenodo.4670268 and leaderboards/gauged__single_camels.json entry t3_02 (10-model ensemble 0.772, single model 0.744)"
+  },
+  "reference_used": "single",
+  "published_median_nse": 0.744,
+  "tolerance": 0.045,
+  "abs_diff_median_nse": 0.04039624659239162,
+  "ours_median_nse": 0.7109537083121433,
+  "ours_mean_nse": 0.6766801831090264,
+  "ours_median_kge": 0.6930502579204457,
+  "ours_nse_le_zero_count": 1,
+  "ours_n_scored_basins": 531,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.7013991377751908,
+    0.7058350222668104,
+    0.7035771001808239
+  ],
+  "single_seed_median_nse_mean": 0.7036037534076084,
+  "single_seed_median_nse_std": 0.001811035948276468,
+  "ours_30epoch_3seed_ensemble_median_nse": 0.7465042383792387,
+  "ours_30epoch_3seed_single_median_nse_mean": 0.7349658757946002,
+  "ours_30epoch_3seed_single_median_nse_std": 0.0013211638822780449,
+  "hydrograph_path": "models/kratzert_lstm/stage1_author_reproduction_hydrograph.npz",
+  "train_and_predict_seconds": 276.45316219329834,
+  "generated_at_utc": "2026-10-21T17:30:50Z",
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm_results.json"
+}

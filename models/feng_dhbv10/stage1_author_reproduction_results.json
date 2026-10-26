@@ -1,0 +1,143 @@
+{
+  "model_dir": "feng_dhbv10",
+  "paper": "Feng et al. (2022) WRR 58(10), e2022WR032404 - Differentiable HBV 1.0 (dHBV 1.0)",
+  "paper_url": "https://doi.org/10.1029/2022WR032404",
+  "github_url": "https://github.com/mhpi/hydroDL",
+  "zenodo_doi": "10.5281/zenodo.7091334",
+  "provenance": "from_scratch_train_and_eval",
+  "protocol": {
+    "spatial_regime": "gauged",
+    "split_name": "Split-3 (Feng et al., 2022 Author Protocol)",
+    "num_basins": 531,
+    "train_period": "1980-10-01/1995-09-30",
+    "eval_period": "1995-10-01/2010-09-30",
+    "eval_period_post_warmup": "1996-10-01/2010-09-30",
+    "forcings": [
+      "daymet"
+    ],
+    "epochs": 50,
+    "seeds": [
+      111111,
+      111112,
+      111113
+    ],
+    "evaluation_mode": "single_member_mean"
+  },
+  "verification_source": "gs://camels-us-mip/stage1_author_reproductions/feng_dhbv10.zarr",
+  "published_median_nse": 0.733,
+  "published_static_median_nse": 0.726,
+  "published_ensemble_median_nse": 0.74,
+  "reproduced_median_nse": 0.7339,
+  "reproduced_median_nse_std": 0.001,
+  "reproduced_per_seed_median_nse": [
+    0.7331,
+    0.7332,
+    0.7353
+  ],
+  "reproduced_ensemble_median_nse": 0.7412,
+  "reproduced_mean_nse": 0.6598,
+  "reproduced_ensemble_mean_nse": 0.6713,
+  "reproduced_median_kge": 0.7269,
+  "reproduced_ensemble_median_kge": 0.7294,
+  "reproduced_median_abs_fhv": 13.29,
+  "reproduced_ensemble_median_abs_fhv": 13.35,
+  "delta_median_nse": 0.0009,
+  "delta_ensemble_median_nse": 0.0012,
+  "tolerance": 0.03,
+  "num_evaluated_basins": 531,
+  "pred_nan_when_obs_valid": 0,
+  "status": "PASS",
+  "additional_verifications": {
+    "split3_daymet_671_basins_full_15wy": {
+      "train_period": "1980-10-01/1995-09-30",
+      "eval_period": "1995-10-01/2010-09-30",
+      "forcings": [
+        "daymet"
+      ],
+      "num_evaluated_basins": 671,
+      "published_single_median_nse": 0.733,
+      "published_ensemble_median_nse": 0.74,
+      "reproduced_single_member_mean_median_nse": 0.728,
+      "reproduced_single_member_std_median_nse": 0.0008,
+      "reproduced_per_seed_median_nse": [
+        0.7273,
+        0.7277,
+        0.7291
+      ],
+      "reproduced_ensemble_median_nse": 0.7376,
+      "reproduced_single_mean_nse": 0.6314,
+      "reproduced_ensemble_mean_nse": 0.6437,
+      "reproduced_single_median_kge": 0.7193,
+      "reproduced_ensemble_median_kge": 0.7223,
+      "delta_single_median_nse": -0.005,
+      "delta_ensemble_median_nse": -0.0024,
+      "status": "PASS"
+    },
+    "split3_daymet_531_basins_post_warmup_14wy": {
+      "train_period": "1980-10-01/1995-09-30",
+      "eval_period": "1996-10-01/2010-09-30",
+      "forcings": [
+        "daymet"
+      ],
+      "num_evaluated_basins": 531,
+      "published_single_median_nse": 0.733,
+      "published_ensemble_median_nse": 0.74,
+      "reproduced_single_member_mean_median_nse": 0.7389,
+      "reproduced_single_member_std_median_nse": 0.0015,
+      "reproduced_per_seed_median_nse": [
+        0.7375,
+        0.7381,
+        0.741
+      ],
+      "reproduced_ensemble_median_nse": 0.7436,
+      "delta_single_median_nse": 0.0059,
+      "delta_ensemble_median_nse": 0.0036,
+      "status": "PASS"
+    },
+    "split3_daymet_531_basins_full_15wy": {
+      "train_period": "1980-10-01/1995-09-30",
+      "eval_period": "1995-10-01/2010-09-30",
+      "forcings": [
+        "daymet"
+      ],
+      "num_evaluated_basins": 531,
+      "published_single_median_nse": 0.733,
+      "published_ensemble_median_nse": 0.74,
+      "reproduced_single_member_mean_median_nse": 0.7339,
+      "reproduced_single_member_std_median_nse": 0.001,
+      "reproduced_per_seed_median_nse": [
+        0.7331,
+        0.7332,
+        0.7353
+      ],
+      "reproduced_ensemble_median_nse": 0.7412,
+      "delta_single_median_nse": 0.0009,
+      "delta_ensemble_median_nse": 0.0012,
+      "status": "PASS"
+    },
+    "split1_newman_mip_benchmark_531_basins": {
+      "train_period": "1999-10-01/2008-09-30",
+      "eval_period": "1989-10-01/1999-09-30",
+      "forcings": [
+        "daymet"
+      ],
+      "num_evaluated_basins": 531,
+      "published_mhpi_checkpoint_single_median_nse": 0.7347,
+      "reproduced_5seed_ensemble_median_nse": 0.7416,
+      "reproduced_5seed_single_member_mean_median_nse": 0.7327,
+      "reproduced_5seed_single_member_std_median_nse": 0.0025,
+      "reproduced_5seed_per_seed_median_nse": [
+        0.7365,
+        0.7314,
+        0.7294,
+        0.7332,
+        0.7331
+      ],
+      "reproduced_stage1_standalone_ensemble_median_nse": 0.7402,
+      "delta_single_median_nse": -0.002,
+      "status": "PASS"
+    }
+  },
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/feng_dhbv10.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/feng_dhbv10_results.json"
+}

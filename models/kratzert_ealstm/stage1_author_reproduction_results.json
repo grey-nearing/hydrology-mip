@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "model_key": "kratzert_ealstm",
+  "model_name": "Kratzert et al. (2019) EA-LSTM",
+  "provenance": "Trained in-process via models.kratzert_ealstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
+  "protocol": {
+    "basins_source": "splits/basins_531.json",
+    "n_basins": 531,
+    "train_period": [
+      "1999-10-01",
+      "2008-09-30"
+    ],
+    "eval_period": [
+      "1989-10-01",
+      "1999-09-30"
+    ],
+    "forcings": [
+      "maurer"
+    ],
+    "seeds": [
+      201,
+      202,
+      203
+    ],
+    "runner_kwargs": {},
+    "data_dir": "data"
+  },
+  "published": {
+    "single_median_nse": 0.712,
+    "ensemble_median_nse": 0.741,
+    "source": "Kratzert et al. (2019), HESS 23, 5089-5110, Table 2; leaderboards/gauged__single_camels.json entries t3_23 (ensemble) and t3_38 (single)"
+  },
+  "reference_used": "ensemble",
+  "published_median_nse": 0.741,
+  "tolerance": 0.04,
+  "abs_diff_median_nse": 0.038401787724889336,
+  "ours_median_nse": 0.7025982122751107,
+  "ours_mean_nse": 0.6702305048590588,
+  "ours_median_kge": 0.6817741366021172,
+  "ours_nse_le_zero_count": 1,
+  "ours_n_scored_basins": 531,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.6939695901906725,
+    0.6958385731918133,
+    0.6911518082987097
+  ],
+  "single_seed_median_nse_mean": 0.6936533238937318,
+  "single_seed_median_nse_std": 0.001926388601977376,
+  "hydrograph_path": "models/kratzert_ealstm/stage1_author_reproduction_hydrograph.npz",
+  "train_and_predict_seconds": 500.78513836860657,
+  "generated_at_utc": "2026-10-20T14:01:02Z",
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/kratzert_ealstm.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/kratzert_ealstm_results.json"
+}

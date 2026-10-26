@@ -1,0 +1,105 @@
+{
+  "model_dir": "song_dhbv11p",
+  "paper": "Song et al. (2024) HESS 28, 3051-3077 - dHBV 1.1p / dMG (Dynamic Parameters)",
+  "paper_url": "https://doi.org/10.5194/hess-28-3051-2024",
+  "github_url": "https://github.com/mhpi/generic_deltamodel",
+  "provenance": "from_scratch_train_and_eval",
+  "protocol": {
+    "spatial_regime": "gauged",
+    "split_name": "Split-3 (Song et al., 2024 Author Protocol)",
+    "num_basins": 531,
+    "train_period": "1980-10-01/1995-09-30",
+    "eval_period": "1995-10-01/2010-09-30",
+    "forcings": [
+      "daymet"
+    ],
+    "epochs": 50,
+    "seeds": [
+      111111,
+      111112,
+      111113
+    ],
+    "evaluation_mode": "single_member_mean"
+  },
+  "verification_source": "gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p.zarr",
+  "published_median_nse": 0.75,
+  "published_dhbv10_median_nse": 0.73,
+  "reproduced_median_nse": 0.7418,
+  "reproduced_median_nse_std": 0.0009,
+  "reproduced_per_seed_median_nse": [
+    0.7419,
+    0.7407,
+    0.743
+  ],
+  "reproduced_ensemble_median_nse": 0.7475,
+  "reproduced_mean_nse": 0.6727,
+  "reproduced_ensemble_mean_nse": 0.6805,
+  "reproduced_median_kge": 0.7616,
+  "reproduced_ensemble_median_kge": 0.7647,
+  "delta_median_nse": -0.0082,
+  "delta_ensemble_median_nse": -0.0025,
+  "delta_vs_dhbv10_median_nse": 0.0118,
+  "tolerance": 0.03,
+  "num_evaluated_basins": 531,
+  "pred_nan_when_obs_valid": 0,
+  "status": "PASS",
+  "additional_verifications": {
+    "split3_daymet_671_basins_15wy": {
+      "train_period": "1980-10-01/1995-09-30",
+      "eval_period": "1995-10-01/2010-09-30",
+      "forcings": [
+        "daymet"
+      ],
+      "num_evaluated_basins": 671,
+      "published_median_nse": 0.75,
+      "reproduced_single_member_mean_median_nse": 0.7371,
+      "reproduced_single_member_std_median_nse": 0.0021,
+      "reproduced_per_seed_median_nse": [
+        0.7372,
+        0.7345,
+        0.7397
+      ],
+      "reproduced_ensemble_median_nse": 0.743,
+      "delta_median_nse": -0.0129,
+      "status": "PASS"
+    },
+    "split3_maurer_531_basins_13wy": {
+      "train_period": "1980-10-01/1995-09-30",
+      "eval_period": "1995-10-01/2008-09-30",
+      "forcings": [
+        "maurer"
+      ],
+      "num_evaluated_basins": 531,
+      "published_median_nse": 0.75,
+      "reproduced_single_member_mean_median_nse": 0.7333,
+      "reproduced_single_member_std_median_nse": 0.0024,
+      "reproduced_per_seed_median_nse": [
+        0.7359,
+        0.7301,
+        0.7339
+      ],
+      "reproduced_ensemble_median_nse": 0.7389,
+      "delta_median_nse": -0.0167,
+      "status": "PASS"
+    },
+    "split1_mhpi_checkpoint_verification": {
+      "train_period": "1999-10-01/2008-09-30",
+      "eval_period": "1989-10-01/1999-09-30",
+      "forcings": [
+        "daymet"
+      ],
+      "num_evaluated_basins": 531,
+      "published_mhpi_checkpoint_ensemble_median_nse": 0.7574,
+      "published_mhpi_checkpoint_single_median_nse": 0.7548,
+      "reproduced_5seed_ensemble_median_nse": 0.7589,
+      "reproduced_5seed_single_member_mean_median_nse": 0.7537,
+      "reproduced_5seed_single_member_std_median_nse": 0.0011,
+      "reproduced_stage1_standalone_median_nse": 0.7606,
+      "delta_ensemble_median_nse": 0.0015,
+      "delta_single_median_nse": -0.0011,
+      "status": "PASS"
+    }
+  },
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p_results.json"
+}

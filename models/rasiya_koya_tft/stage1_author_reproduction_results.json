@@ -1,0 +1,52 @@
+{
+  "status": "PASS",
+  "model_key": "rasiya_koya_tft",
+  "model_name": "Rasiya Koya et al. (2023) Temporal Fusion Transformer",
+  "provenance": "Trained in-process via models.rasiya_koya_tft.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
+  "protocol": {
+    "basins_source": "splits/basins_531.json",
+    "n_basins": 531,
+    "train_period": [
+      "1999-10-01",
+      "2008-09-30"
+    ],
+    "eval_period": [
+      "1989-10-01",
+      "1999-09-30"
+    ],
+    "forcings": [
+      "maurer"
+    ],
+    "seeds": [
+      123
+    ],
+    "runner_kwargs": {},
+    "data_dir": "data"
+  },
+  "published": {
+    "single_median_nse": 0.725,
+    "ensemble_median_nse": null,
+    "source": "leaderboards/gauged__single_camels.json entry t3_21 (NeuralHydrology TFT, Maurer, single model); architecture after Rasiya Koya & Roy (2024), Journal of Hydrology"
+  },
+  "reference_used": "single",
+  "published_median_nse": 0.725,
+  "tolerance": 0.03,
+  "abs_diff_median_nse": 0.009499999999999953,
+  "ours_median_nse": 0.7155,
+  "ours_mean_nse": 0.6759,
+  "ours_median_kge": 0.7017,
+  "ours_nse_le_zero_count": 2,
+  "ours_n_scored_basins": 531,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.7155
+  ],
+  "single_seed_median_nse_mean": 0.7155,
+  "single_seed_median_nse_std": 0.0,
+  "hydrograph_path": "models/rasiya_koya_tft/stage1_author_reproduction_hydrograph.npz",
+  "train_and_predict_seconds": 964.9978959560394,
+  "generated_at_utc": "2026-10-25T21:05:00Z",
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/rasiya_koya_tft.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/rasiya_koya_tft_results.json"
+}

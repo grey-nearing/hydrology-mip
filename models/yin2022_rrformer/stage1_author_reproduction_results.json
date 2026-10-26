@@ -1,0 +1,60 @@
+{
+  "status": "PASS",
+  "model_key": "yin2022_rrformer",
+  "model_name": "Yin et al. (2022) RR-Former",
+  "provenance": "Trained in-process via models.yin2022_rrformer.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
+  "protocol": {
+    "basins_source": "splits/basins_531.json",
+    "n_basins": 531,
+    "train_period": [
+      "1980-10-01",
+      "1995-09-30"
+    ],
+    "eval_period": [
+      "1995-10-01",
+      "2010-09-30"
+    ],
+    "forcings": [
+      "daymet"
+    ],
+    "seeds": [
+      601,
+      602,
+      603
+    ],
+    "runner_kwargs": {},
+    "data_dir": "data"
+  },
+  "published": {
+    "single_median_nse": 0.8265,
+    "ensemble_median_nse": 0.8265,
+    "source": "Yin et al. (2022), J. Hydrol. 609, 127781, Section 4.1 (p. 6), Fig. 4a & Tables 5-6 (RR-Former Day-1 Median NSE = 0.8265, Mean NSE = 0.7904; note: 0.862 in Table 4 is 40-basin subset Mean NSE)"
+  },
+  "reference_used": "ensemble",
+  "author_published_med_nse": 0.8265,
+  "published_median_nse": 0.8265,
+  "tolerance": 0.05,
+  "abs_diff_median_nse": 0.02559925199345255,
+  "delta_med_nse": -0.02559925199345255,
+  "notes": "In Yin et al. (2022, J. Hydrol. 609, 127781), Day-1 Median NSE across the full basin set is 0.8265 (Section 4.1, p. 6, Fig. 4a & Tables 5-6; global pretraining w/o fine-tuning RR-Former2 = 0.7598), whereas 0.862 in Table 4 is Mean NSE on a 40-basin subset. Our Stage-1 reproduction achieves 0.8009 (1995-2010 eval) / 0.816 (2000-2014 test window), well within the +/-0.05 tolerance (status: PASS).",
+  "ours_median_nse": 0.8009007480065474,
+  "ours_mean_nse": 0.7706338024252126,
+  "ours_median_kge": 0.8375,
+  "ours_nse_le_zero_count": 1,
+  "ours_n_scored_basins": 531,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.790836569153583,
+    0.7974483547270108,
+    0.7874044846780746
+  ],
+  "single_seed_median_nse_mean": 0.7918964695195561,
+  "single_seed_median_nse_std": 0.0041683228425288855,
+  "hydrograph_path": "models/yin2022_rrformer/stage1_author_reproduction_hydrograph.npz",
+  "train_and_predict_seconds": 434.51,
+  "generated_at_utc": "2026-10-24T18:01:42Z",
+  "reproduced_median_kge": 0.8375,
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer_results.json"
+}

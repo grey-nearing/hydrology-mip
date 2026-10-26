@@ -1,0 +1,53 @@
+{
+  "status": "COMPLETED_NO_PUBLISHED_REFERENCE",
+  "model_key": "era_pub_minimal_guidance",
+  "model_name": "ERA PUB Minimal Guidance (Node 82 Enhanced EALSTM)",
+  "provenance": "Trained via models.era_pub_minimal_guidance.runner.run_fold across 12 randomized PUB folds on the Newman protocol; scored with metrics.metrics.calculate_all_metrics; category iv ERA model.",
+  "protocol": {
+    "basins_source": "splits/pub_12fold_random_splits.json",
+    "n_basins": 531,
+    "train_period": [
+      "1999-10-01",
+      "2008-09-30"
+    ],
+    "eval_period": [
+      "1989-10-01",
+      "1999-09-30"
+    ],
+    "forcings": [
+      "daymet",
+      "maurer",
+      "nldas"
+    ],
+    "seeds": [
+      42,
+      43
+    ],
+    "runner_kwargs": {},
+    "data_dir": "data"
+  },
+  "published": {
+    "single_median_nse": null,
+    "ensemble_median_nse": null,
+    "source": "none (category iv ERA model contributed by this study)"
+  },
+  "reference_used": null,
+  "published_median_nse": null,
+  "tolerance": 0.05,
+  "abs_diff_median_nse": null,
+  "ours_median_nse": 0.714683114830049,
+  "ours_mean_nse": 0.6470635503078813,
+  "ours_median_kge": 0.6430163461378224,
+  "ours_nse_le_zero_count": 5,
+  "ours_n_scored_basins": 531,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.7179585149274652,
+    0.7152639717638141
+  ],
+  "single_seed_median_nse_mean": 0.7166112433456396,
+  "single_seed_median_nse_std": 0.001347271581825571,
+  "hydrograph_path": "models/era_pub_minimal_guidance/stage1_author_reproduction_hydrograph.npz",
+  "generated_at_utc": "2026-10-22T17:24:51Z"
+}

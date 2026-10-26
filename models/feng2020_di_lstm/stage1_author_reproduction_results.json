@@ -1,0 +1,63 @@
+{
+  "status": "PASS",
+  "model_key": "feng2020_di_lstm",
+  "model_name": "Feng et al. (2020) DI(1) Lagged-Discharge LSTM",
+  "provenance": "Trained in-process via models.feng2020_di_lstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
+  "protocol": {
+    "basins_source": "splits/basins_671.json",
+    "n_basins": 671,
+    "train_period": [
+      "1985-10-01",
+      "1995-09-30"
+    ],
+    "eval_period": [
+      "1995-10-01",
+      "2005-09-30"
+    ],
+    "forcings": [
+      "nldas"
+    ],
+    "seeds": [
+      101,
+      102,
+      103,
+      104,
+      105,
+      106
+    ],
+    "runner_kwargs": {},
+    "data_dir": "data"
+  },
+  "published": {
+    "single_median_nse": 0.851,
+    "ensemble_median_nse": 0.859,
+    "source": "Feng, Fang & Shen (2020), WRR, Table 3 (DI(1), 671 basins, NLDAS, 1995-2005 eval)"
+  },
+  "reference_used": "ensemble",
+  "published_median_nse": 0.859,
+  "tolerance": 0.04,
+  "abs_diff_median_nse": 0.03876857724827065,
+  "ours_median_nse": 0.8202314227517293,
+  "ours_mean_nse": 0.7955341343197185,
+  "ours_median_kge": 0.8338,
+  "ours_nse_le_zero_count": 4,
+  "ours_n_scored_basins": 671,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.8143007207702406,
+    0.813685306109012,
+    0.8148926053585666,
+    0.8091185503377126,
+    0.8127762983980577,
+    0.8150558245092387
+  ],
+  "single_seed_median_nse_mean": 0.8133048842471379,
+  "single_seed_median_nse_std": 0.002021874373937498,
+  "hydrograph_path": "models/feng2020_di_lstm/stage1_author_reproduction_hydrograph.npz",
+  "train_and_predict_seconds": 295.5777220726013,
+  "generated_at_utc": "2026-10-24T16:13:01Z",
+  "reproduced_median_kge": 0.8338,
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm_results.json"
+}

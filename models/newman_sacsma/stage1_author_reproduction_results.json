@@ -1,0 +1,44 @@
+{
+  "family_id": "nearing_sacsma",
+  "model_dir": "models/newman_sacsma",
+  "citation": "Nearing et al. (2020)",
+  "paper": "Nearing et al. (2020) EarthArXiv - Post-Processing a Conceptual Rainfall-Runoff Model with an LSTM (SAC-SMA + Snow-17 DDS)",
+  "paper_url": "https://doi.org/10.31223/osf.io/53te4",
+  "github_url": "https://github.com/Upstream-Tech/SACSMA-SNOW17",
+  "archive_reference": {
+    "family_id": "newman_sacsma",
+    "citation": "Newman et al. (2017)",
+    "paper_url": "https://doi.org/10.1175/JHM-D-16-0284.1",
+    "github_url": "https://github.com/NCAR/camels",
+    "zenodo_doi": "10.5065/D6MW2F4D",
+    "published_maurer_447_median_nse": 0.603,
+    "archive_t3_48_530_median_nse": 0.6071
+  },
+  "provenance": "from_scratch_train_and_eval",
+  "protocol": {
+    "spatial_regime": "gauged",
+    "num_basins": 531,
+    "train_period": "1999-10-01/2008-09-30",
+    "eval_period": "1989-10-01/1999-09-30",
+    "forcings": [
+      "daymet"
+    ],
+    "n_iter": 400,
+    "seeds": [
+      123
+    ]
+  },
+  "verification_source": "from_scratch_train_and_eval",
+  "published_median_nse": 0.67,
+  "reproduced_median_nse": 0.6609,
+  "reproduced_mean_nse": 0.6131,
+  "reproduced_median_kge": 0.6769,
+  "reproduced_median_abs_fhv": 20.5247,
+  "delta_median_nse": -0.0091,
+  "tolerance": 0.03,
+  "num_evaluated_basins": 531,
+  "pred_nan_when_obs_valid": 0,
+  "status": "PASS",
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/newman_sacsma.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/newman_sacsma_results.json"
+}

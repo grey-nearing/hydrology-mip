@@ -1,0 +1,8 @@
+{
+  "status": "NOT_REPRODUCIBLE_FROM_BUCKET",
+  "generated_by": "leaderboards.update_leaderboard --recalculate-all-self-run (expected producer)",
+  "note": "The previous content of this file (71 self-run entries dated 2026-10-20T06:38Z) reported hydrograph_uri values under gs://camels-us-mip/hydrographs/<leaderboard_id>/<entry_id>.zarr for category (ii)/(iv) models. An audit on 2026-10-20 (recursive listing of gs://camels-us-mip/hydrographs/, 2,130 objects, manifest_index.json total_hydrograph_stores=101) found NONE of those 71 stores in the bucket (no pub__multi_camels/, pur__single_camels/, or pur__multi_camels/ prefix exists), so that report could not have been produced from the bucket as it exists and was removed. Regenerate this file by uploading the self-run Zarr stores (with qsim_members for multi-seed runs) and running `python -m leaderboards.update_leaderboard --recalculate-all-self-run --bucket-uri gs://camels-us-mip`. Until then the category (ii)/(iv) leaderboard rows are unverified.",
+  "bucket_uri": "gs://camels-us-mip",
+  "total_recalculated": 0,
+  "reports": []
+}

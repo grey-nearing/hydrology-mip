@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "model_key": "hoedt_mclstm",
+  "model_name": "Hoedt et al. (2021) MC-LSTM",
+  "provenance": "Trained in-process via models.hoedt_mclstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
+  "protocol": {
+    "basins_source": "splits/basins_531.json",
+    "n_basins": 531,
+    "train_period": [
+      "1999-10-01",
+      "2008-09-30"
+    ],
+    "eval_period": [
+      "1989-10-01",
+      "1999-09-30"
+    ],
+    "forcings": [
+      "maurer"
+    ],
+    "seeds": [
+      301,
+      302,
+      303
+    ],
+    "runner_kwargs": {},
+    "data_dir": "data"
+  },
+  "published": {
+    "single_median_nse": 0.726,
+    "ensemble_median_nse": 0.744,
+    "source": "Hoedt et al. (2021), ICML (PMLR 139:4275-4286), Table 2/3 & Appendix B (0.744 ensemble on 447/498 basins / 0.742 on 531 basins; 0.726 +/- 0.004 single model on Maurer)"
+  },
+  "reference_used": "ensemble",
+  "published_median_nse": 0.744,
+  "tolerance": 0.02,
+  "abs_diff_median_nse": 0.001005744321969492,
+  "ours_median_nse": 0.7429942556780305,
+  "ours_mean_nse": 0.706040668254286,
+  "ours_median_kge": 0.7635481044165382,
+  "ours_nse_le_zero_count": 2,
+  "ours_n_scored_basins": 531,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.7119148721280355,
+    0.7165020955597237,
+    0.7195958254626915
+  ],
+  "single_seed_median_nse_mean": 0.7160042643834835,
+  "single_seed_median_nse_std": 0.003155433191847388,
+  "hydrograph_path": "models/hoedt_mclstm/stage1_author_reproduction_hydrograph.npz",
+  "train_and_predict_seconds": 855.6610510349274,
+  "generated_at_utc": "2026-10-20T16:07:00Z",
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/hoedt_mclstm.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/hoedt_mclstm_results.json"
+}

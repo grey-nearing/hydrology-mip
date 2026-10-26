@@ -1,0 +1,48 @@
+{
+  "model_dir": "hy2dl_hbv",
+  "paper": "Acu\u00f1a Espinoza et al. (2024) HESS - Dynamic-Parameter LSTM + 15-HBV (Hy2DL)",
+  "paper_url": "https://doi.org/10.5194/hess-28-2705-2024",
+  "github_url": "https://github.com/KIT-HYD/Hy2DL",
+  "zenodo_doi": "",
+  "provenance": "from_scratch_train_and_eval",
+  "author_benchmark_context": "Acu\u00f1a Espinoza et al. (2024) evaluated their hybrid models exclusively on CAMELS-GB in the published manuscript (Med NSE = 0.87 on the 60-basin GB subset and 0.84 across 669 GB basins), while releasing the CAMELS-US LSTM+HBV configuration in KIT-HYD/Hy2DL (HybridModel_US.ipynb / hybrid_camels_us.yml); our 3-seed Newman Split-1 reproduction achieves 0.750 (ensemble) and 0.730 \u00b1 0.001 (single model), status: N/A (Evaluated on CAMELS-GB in Paper).",
+  "protocol": {
+    "spatial_regime": "gauged",
+    "num_basins": 531,
+    "train_period": "1999-10-01/2008-09-30",
+    "eval_period": "1989-10-01/1999-09-30",
+    "forcings": [
+      "daymet"
+    ],
+    "epochs": 20,
+    "n_batches_per_epoch": 450,
+    "seeds": [
+      101,
+      102,
+      103
+    ]
+  },
+  "verification_source": "from_scratch_train_and_eval",
+  "author_camels_gb_median_nse": 0.87,
+  "published_median_nse": null,
+  "feng2022_split3_reference_median_nse": 0.733,
+  "reproduced_median_nse": 0.75,
+  "reproduced_single_median_nse": 0.73,
+  "reproduced_single_median_nse_std": 0.001,
+  "reproduced_single_median_nse_display": "0.730 \u00b1 0.001",
+  "reproduced_single_seed_medians": [
+    0.7398,
+    0.7312,
+    0.7319
+  ],
+  "reproduced_mean_nse": 0.6723,
+  "reproduced_median_kge": 0.7514,
+  "reproduced_median_abs_fhv": 14.17,
+  "delta_median_nse": null,
+  "tolerance": null,
+  "num_evaluated_basins": 531,
+  "pred_nan_when_obs_valid": 0,
+  "status": "COMPLETED_NO_PUBLISHED_REFERENCE",
+  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/hy2dl_hbv.zarr",
+  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/hy2dl_hbv_results.json"
+}
