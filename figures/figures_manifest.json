@@ -1,12 +1,12 @@
 {
   "source_leaderboards_dir": "leaderboards",
   "output_figures_dir": "figures",
-  "total_leaderboard_entries": 118,
+  "total_leaderboard_entries": 126,
   "mip_study_year": 2026,
   "panel_entry_counts": {
-    "gauged": 77,
-    "pub": 20,
-    "pur": 21
+    "gauged": 81,
+    "pub": 22,
+    "pur": 23
   },
   "excluded_rows": {
     "gauged": [],
@@ -134,6 +134,17 @@
         "entry_id": "t4_05",
         "category": "Archive",
         "provenance": "literature"
+      },
+      {
+        "year": 2026,
+        "nse": 0.827,
+        "model_category": "Machine learning",
+        "input_regime": "Multiple CAMELS Forcings",
+        "model_name": "ERA-Multi-Paradigm-Gauged (10-model ensemble)",
+        "leaderboard_id": "gauged__multi_camels",
+        "entry_id": "era_gauged_multi_paradigm",
+        "category": "Contribution",
+        "provenance": "mip_rerun"
       },
       {
         "year": 2020,
@@ -280,6 +291,17 @@
         "leaderboard_id": "pur__multi_camels",
         "entry_id": "k21_lstm_pur_3f",
         "category": "MIP Re-run",
+        "provenance": "mip_rerun"
+      },
+      {
+        "year": 2026,
+        "nse": 0.696,
+        "model_category": "Machine learning",
+        "input_regime": "Multiple CAMELS Forcings",
+        "model_name": "ERA-Unguided-PUR (10-model ensemble)",
+        "leaderboard_id": "pur__multi_camels",
+        "entry_id": "era_pur_minimal_guidance",
+        "category": "Contribution",
         "provenance": "mip_rerun"
       },
       {

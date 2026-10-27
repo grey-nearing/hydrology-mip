@@ -1,53 +1,65 @@
 {
   "status": "COMPLETED_NO_PUBLISHED_REFERENCE",
   "model_key": "era_pur_minimal_guidance",
-  "model_name": "ERA PUR Minimal Guidance (Node 135 DualFiLMLSTM)",
-  "provenance": "Trained via models.era_pur_minimal_guidance.runner.run_fold across 18 HUC-02 regional folds on the Newman protocol; scored with metrics.metrics.calculate_all_metrics; category iv ERA model.",
-  "protocol": {
-    "basins_source": "splits/pur_18fold_huc02_splits.json",
-    "n_basins": 531,
-    "train_period": [
-      "1999-10-01",
-      "2008-09-30"
-    ],
-    "eval_period": [
-      "1989-10-01",
-      "1999-09-30"
-    ],
-    "forcings": [
-      "daymet",
-      "maurer",
-      "nldas"
-    ],
-    "seeds": [
-      42,
-      43
-    ],
-    "runner_kwargs": {},
-    "data_dir": "data"
-  },
-  "published": {
-    "single_median_nse": null,
-    "ensemble_median_nse": null,
-    "source": "none (category iv ERA model contributed by this study)"
-  },
-  "reference_used": null,
-  "published_median_nse": null,
-  "tolerance": 0.05,
-  "abs_diff_median_nse": null,
-  "ours_median_nse": 0.6954073333069395,
-  "ours_mean_nse": 0.46233316878768893,
-  "ours_median_kge": 0.6357073205011439,
-  "ours_nse_le_zero_count": 37,
+  "model_name": "ERA-Unguided-PUR (10-model ensemble)",
+  "single_model_name": "ERA-Unguided-PUR",
+  "family_id": "era_lstm_seeded",
+  "family_name": "Empirical Research Assistant -- LSTM Seeded",
+  "citation": "Nearing (2026)",
+  "zenodo_doi": "10.5281/zenodo.23639429",
+  "zenodo_url": "https://doi.org/10.5281/zenodo.23639429",
+  "starting_notebook": "era_experiments/era_pur_minimal_guidance.ipynb",
+  "winner_notebook": "era_experiments/era_pur_minimal_guidance_winner.ipynb",
+  "xid": "302137603",
+  "winning_node_id": 135,
+  "era_validation_period": [
+    "1999-10-01",
+    "2003-09-30"
+  ],
+  "era_validation_median_nse": 0.698054,
+  "newman_train_period": [
+    "1999-10-01",
+    "2008-09-30"
+  ],
+  "newman_test_period": [
+    "1989-10-01",
+    "1999-09-30"
+  ],
+  "spatial_regime": "pur_18huc02",
+  "leaderboard_id": "pur__multi_camels",
+  "forcings": [
+    "daymet",
+    "maurer",
+    "nldas"
+  ],
+  "num_seeds": 10,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "ensemble_median_nse": 0.6956,
+  "single_model_median_nse": 0.6861,
+  "single_model_median_nse_std": 0.004,
+  "ensemble_mean_nse": 0.4937,
+  "ensemble_median_kge": 0.6424,
+  "ensemble_median_fhv_abs": 24.95,
+  "num_basins_nse_le_0": 35,
+  "ours_median_nse": 0.6956,
+  "ours_mean_nse": 0.4937,
+  "ours_median_kge": 0.6424,
+  "ours_nse_le_zero_count": 35,
   "ours_n_scored_basins": 531,
   "unscored_basins": [],
   "pred_nan_when_obs_valid": 0,
-  "single_seed_median_nse_per_member": [
-    0.6854315667026993,
-    0.685107928497897
-  ],
-  "single_seed_median_nse_mean": 0.6852697476002982,
-  "single_seed_median_nse_std": 0.0001618191024011506,
-  "hydrograph_path": "models/era_pur_minimal_guidance/stage1_author_reproduction_hydrograph.npz",
-  "generated_at_utc": "2026-10-21T18:09:58Z"
+  "single_seed_median_nse_mean": 0.6861,
+  "single_seed_median_nse_std": 0.004,
+  "generated_at_utc": "2026-10-26T13:34:44Z"
 }

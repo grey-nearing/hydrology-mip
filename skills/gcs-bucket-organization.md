@@ -59,14 +59,12 @@ gs://camels-us-mip/
 │   └── newman_eval_targets.zarr/                        # Standardized observed streamflow Zarr store (531 basins x 3652 eval days)
 │
 ├── stage1_author_reproductions/                         # Stage-1 Author-Protocol Confirmation Hydrographs & Metrics
-│   ├── manifest_index.json                              # Index of all 31 Stage-1 Zarr stores & reproduction metrics
+│   ├── manifest_index.json                              # Index of all 11 Stage-1 Zarr stores (12 confirmation runs in Table A1)
 │   ├── <model_name>.zarr/                               # Consolidated Zarr v2 store (qsim, qsim_members, qobs, basin, date, huc_02, member)
-│   ├── <model_name>_results.json                        # Full Stage-1 author reproduction report & per-basin metrics
-│   └── ml_and_conceptual_baselines/                     # All 17 baseline architectures (ridge, lightgbm, catboost, gr4j, etc.)
-│       ├── <kind>.zarr/
-│       └── <kind>_results.json
+│   └── <model_name>_results.json                        # Full Stage-1 author reproduction report & per-basin metrics
 │
-└── hydrographs/                                         # Stage-2 Standardized Model Hydrograph Zarr Stores (531 basins x 3652 eval days)
+└── hydrographs/                                         # Stage-2 Standardized Model Hydrograph Zarr Stores (61 stores; 531 basins x 3652 eval days)
+    ├── manifest_index.json                              # Index of all 61 Stage-2 Zarr stores backing the 104 Zarr-backed rows across Tables 3–14
     ├── gauged__single_camels/                           # Table 3:  Gauged Simulation — Single CAMELS Forcing
     │   └── <model_id>.zarr/
     ├── gauged__multi_camels/                            # Table 4:  Gauged Simulation — Multiple CAMELS Forcings

@@ -130,3 +130,27 @@ Whenever executing a major registry or leaderboard rebuild:
      2. Live cloud evaluations of `gs://camels-us-mip/hydrographs/<leaderboard_id>/<entry_id>.zarr` via `metrics/evaluator.py`, and
      3. Active `Contribution` entries (e.g., ongoing ERA and TFT entries).
    - After writing the clean JSON files, always regenerate all paper figures (`generate_all_paper_figures()`) and run the automated compliance verification suite.
+
+---
+
+## 8. Mandatory 6-Point Forensic Model Audit & Manuscript Reconciliation Checklist
+
+Whenever auditing models, verifying `MIP Re-run` entries, or reconciling the manuscript against the leaderboards, auditors **must** execute all six forensic checks below:
+
+1. **Audit the Live GCS `.zarr` Provenance & Worker Scripts (Not Just `models/<name>/model.py`):**
+   - Never assume that `RUNNER_DEFAULTS` in `models/<name>/runner.py` or `stage1_author_reproduction_results.json` produced a Stage-2 `.zarr` store on `gs://camels-us-mip/hydrographs/<leaderboard_id>/<entry_id>.zarr`.
+   - Inspect every Zarr store's GCS modification timestamp (`gcloud storage ls -l gs://.../.zattrs`) and `.zattrs` metadata, trace it to the exact script and log that generated it (including any ad-hoc `/tmp/*.py` GPU worker scripts), and verify the wall-clock runtime per fold-seed to ensure no `kwargs` overrides (`epochs`, `n_batches_per_epoch`, `targ_len`, `eval_stride`, or surrogate readouts) were used.
+2. **Verify Total Gradient Updates & Window Stride (Not Just `epochs`):**
+   - Explicitly compute and compare **total gradient steps per seed** ($\text{epochs} \times \text{batches\_per\_epoch}$) and **window stride** (both training and evaluation) between the original authors' upstream code and our run.
+3. **Line-by-Line Comparison Against the Original Authors' Upstream GitHub Code (Not Just Paper Prose):**
+   - Compare every `MIP Re-run (Our Code)` implementation directly against the original authors' upstream GitHub repository across: (1) input/target transforms, (2) static attribute list, (3) architecture layers, readout head & dropout type, (4) loss function formula, (5) optimizer, LR schedule, batch size & gradient clipping, (6) sequence length, lagged inputs & spin-up days, and (7) number of seeds & fine-tuning stages. Document any remaining difference in Appendix A and the row's `notes`.
+4. **Mandatory Cross-Table Monotonicity & Physical Sanity Checks:**
+   - Across all 12 leaderboards, verify for every model family:
+     1. `Ensemble Med NSE >= Single-Seed Mean Med NSE`
+     2. `Gauged Med NSE > PUB Med NSE > PUR Med NSE` (same model & forcing)
+     3. `3-Forcing Med NSE >= 1-Forcing Med NSE` (same model & spatial split)
+     4. `Lagged-Streamflow Med NSE > Unlagged Med NSE` (same backbone & forcing)
+5. **Strict "If They Didn't Run It, We Don't Run It" & Literature/Archive Priority Gate:**
+   - Confirm that the cited paper actually defined and ran every included spatial/forcing configuration (unless `gsnearing` was an author/co-author on the paper and explicitly authorized expanding it), and do not keep redundant or adapted `MIP Re-run` entries where an authentic `Archive` or `Literature` entry already covers the authors' work.
+6. **End-to-End Bijection & Zero-Orphan Reconciliation (`GCS <-> JSONs <-> Appendix <-> Manuscript`):**
+   - Verify a strict 1-to-1 match across active rows in `leaderboards/*__*.json` & `tables_3_to_14.json`, Zarr stores in `gs://camels-us-mip/hydrographs/` (zero orphans, zero missing stores), model families in `table_2_registry.json` (`n_entries`, `leaderboards_covered`, `best_nse`), `contributions_index.json`, `audit_reports/round2_specs/*.json`, `appendix_stage1_confirmation_runs.{json,md}`, and the manuscript text, Table 2, Tables 3–14, and Appendix A/B.

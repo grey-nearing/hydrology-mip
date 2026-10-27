@@ -337,3 +337,5 @@ Before opening a Pull Request or committing a new community model contribution, 
 - [ ] **4. Linter & Full-Dimension Unit Tests**:
   - `ruff check .` passes with zero warnings or errors.
   - `pytest` passes across the entire test suite (testing at native `(531, 3652)` dimensions per [`skills/testing.md`](testing.md)).
+- [ ] **5. 6-Point Forensic Model Audit & Manuscript Reconciliation (for `MIP Re-run` & Leaderboard Audits)**:
+  - Verify live GCS `.zarr` provenance & worker scripts, total gradient updates ($\text{epochs} \times \text{batches\_per\_epoch}$) & window stride, line-by-line fidelity against the original authors' upstream GitHub repository, cross-table monotonicity invariants (`Ensemble >= Single`, `Gauged > PUB > PUR`, `3F >= 1F`, `Lagged > Unlagged`), the *"If They Didn't Run It, We Don't Run It"* rule, and 1-to-1 bijection across `gs://camels-us-mip/hydrographs/`, `leaderboards/*.json`, `table_2_registry.json`, `appendix_stage1_confirmation_runs.{json,md}`, and the manuscript (see Section 8 of [`skills/model-compliance-and-leaderboard-norms.md`](./model-compliance-and-leaderboard-norms.md)).

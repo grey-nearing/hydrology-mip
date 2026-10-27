@@ -4,7 +4,7 @@
     {
       "family_id": "fuse_suite",
       "name": "FUSE (900, 902, 904)",
-      "category": "Process-Based",
+      "category": "Conceptual",
       "provenance_category": "Archive*",
       "paradigm": "Framework for Understanding Structural Errors (Modular Conceptual Hydrology)",
       "citation": "Addor et al. (2017)",
@@ -22,12 +22,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.654,
-      "year": 2017
+      "year": 2017,
+      "model_category": "Conceptual"
     },
     {
       "family_id": "mizukami_vic_mpr",
       "name": "VIC 4.1.2 (CONUS MPR)",
-      "category": "Process-Based",
+      "category": "Process-based",
       "provenance_category": "Archive",
       "paradigm": "Distributed Land-Surface Hydrology Model (CONUS Multiscale Parameter Regionalization)",
       "citation": "Mizukami et al. (2017)",
@@ -45,12 +46,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.307,
-      "year": 2017
+      "year": 2017,
+      "model_category": "Process-based"
     },
     {
       "family_id": "newman_sacsma",
       "name": "SAC-SMA + Snow-17 (Basin-Calibrated)",
-      "category": "Process-Based",
+      "category": "Conceptual",
       "provenance_category": "Archive*",
       "paradigm": "Lumped Conceptual Soil Moisture Accounting + Snow-17 Model (Basin SCE-UA Calibration)",
       "citation": "Newman et al. (2017)",
@@ -68,12 +70,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.607,
-      "year": 2017
+      "year": 2017,
+      "model_category": "Conceptual"
     },
     {
       "family_id": "newman_vic",
       "name": "VIC 4.1.2 (Basin-Calibrated)",
-      "category": "Process-Based",
+      "category": "Process-based",
       "provenance_category": "Archive*",
       "paradigm": "Distributed Land-Surface Hydrology Model (Basin SCE-UA Calibration)",
       "citation": "Newman et al. (2017)",
@@ -91,12 +94,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.554,
-      "year": 2017
+      "year": 2017,
+      "model_category": "Process-based"
     },
     {
       "family_id": "seibert_hbv",
       "name": "HBV-light (HBV-upper & HBV-lower)",
-      "category": "Process-Based",
+      "category": "Conceptual",
       "provenance_category": "Archive",
       "paradigm": "Conceptual Lumped Rainfall-Runoff Model (100-Member Calibrated Ensemble & 1000-Member Uncalibrated Random Ensemble)",
       "citation": "Seibert et al. (2018)",
@@ -115,12 +119,13 @@
         "pub__single_camels"
       ],
       "best_nse": 0.678,
-      "year": 2018
+      "year": 2018,
+      "model_category": "Conceptual"
     },
     {
       "family_id": "kratzert2019a_pub_lstm",
       "name": "LSTM (12-Fold PUB)*",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Literature*",
       "paradigm": "Regional Long Short-Term Memory Network (12-Fold PUB)",
       "citation": "Kratzert et al. (2019a)",
@@ -138,12 +143,13 @@
         "pub__single_camels"
       ],
       "best_nse": 0.691,
-      "year": 2019
+      "year": 2019,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "kratzert2019b_lstm",
       "name": "LSTM (Maurer 270d, 8-Seed Archive)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Archive",
       "paradigm": "Regional Long Short-Term Memory Network (270-day lookback)",
       "citation": "Kratzert et al. (2019b)",
@@ -161,12 +167,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.759,
-      "year": 2019
+      "year": 2019,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "kratzert_ealstm",
       "name": "Entity-Aware LSTM (EA-LSTM)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Archive",
       "paradigm": "Entity-Aware LSTM (Static-Attribute Input Gate)",
       "citation": "Kratzert et al. (2019b)",
@@ -184,12 +191,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.741,
-      "year": 2019
+      "year": 2019,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "kratzert_lstm_nostatic",
       "name": "LSTM without Static Attributes",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Archive",
       "paradigm": "Regional LSTM without Catchment Attributes",
       "citation": "Kratzert et al. (2019b)",
@@ -207,12 +215,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.642,
-      "year": 2019
+      "year": 2019,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "mizukami_mhm",
       "name": "mHM (Basin-Calibrated)",
-      "category": "Process-Based",
+      "category": "Process-based",
       "provenance_category": "Archive*",
       "paradigm": "Mesoscale Hydrologic Model (Basin Calibration)",
       "citation": "Mizukami et al. (2019)",
@@ -230,12 +239,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.665,
-      "year": 2019
+      "year": 2019,
+      "model_category": "Process-based"
     },
     {
       "family_id": "rakovec_mhm_mpr",
       "name": "mHM (CONUS MPR)",
-      "category": "Process-Based",
+      "category": "Process-based",
       "provenance_category": "Archive*",
       "paradigm": "Mesoscale Hydrologic Model (CONUS Multiscale Parameter Regionalization)",
       "citation": "Rakovec et al. (2019)",
@@ -253,12 +263,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.528,
-      "year": 2019
+      "year": 2019,
+      "model_category": "Process-based"
     },
     {
       "family_id": "feng2020_di_lstm",
       "name": "Data-Integration LSTM (DI(1)-LSTM \u2014 MIP Re-run)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Data-Integration LSTM with 1-Day Lagged Streamflow Q(t-1)",
       "citation": "Feng et al. (2020)",
@@ -278,12 +289,13 @@
         "pur__lagged_streamflow"
       ],
       "best_nse": 0.801,
-      "year": 2020
+      "year": 2020,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "feng2020_di_lstm_lit",
       "name": "Data-Integration LSTM (DI(1)-LSTM \u2014 Literature)*",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Literature*",
       "paradigm": "Data-Integration LSTM with 1-Day Lagged Streamflow Q(t-1)",
       "citation": "Feng et al. (2020)",
@@ -301,12 +313,13 @@
         "gauged__lagged_streamflow"
       ],
       "best_nse": 0.84,
-      "year": 2020
+      "year": 2020,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "nearing_sacsma",
       "name": "SAC-SMA + Snow-17 (DDS & Donor Transfer)",
-      "category": "Process-Based",
+      "category": "Conceptual",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Conceptual Soil Moisture Accounting + Snow-17 Model (DDS & 29-D Donor Transfer)",
       "citation": "Nearing et al. (2020)",
@@ -329,12 +342,13 @@
         "pur__multi_camels"
       ],
       "best_nse": 0.695,
-      "year": 2020
+      "year": 2020,
+      "model_category": "Conceptual"
     },
     {
       "family_id": "gauch_xgboost_lit",
       "name": "Gradient-Boosted Decision Trees (XGBoost \u2014 Literature)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Literature",
       "paradigm": "Gradient-Boosted Decision Trees on Lagged Forcings (XGBoost)",
       "citation": "Gauch et al. (2021b)",
@@ -352,12 +366,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.659,
-      "year": 2021
+      "year": 2021,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "hoedt_mclstm",
       "name": "Mass-Conserving LSTM (MC-LSTM \u2014 MIP Re-run)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "citation": "Hoedt et al. (2021)",
@@ -376,12 +391,13 @@
         "gauged__multi_camels"
       ],
       "best_nse": 0.777,
-      "year": 2021
+      "year": 2021,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "hoedt_mclstm_lit",
       "name": "Mass-Conserving LSTM (MC-LSTM \u2014 Literature)*",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Literature*",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "citation": "Hoedt et al. (2021)",
@@ -399,12 +415,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.744,
-      "year": 2021
+      "year": 2021,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "kratzert2021_lstm_archive",
       "name": "LSTM (Single- & Multi-Forcing 365d Archive)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Archive",
       "paradigm": "Regional Single- & Multi-Forcing Long Short-Term Memory Network",
       "citation": "Kratzert et al. (2021)",
@@ -423,12 +440,13 @@
         "gauged__multi_camels"
       ],
       "best_nse": 0.821,
-      "year": 2021
+      "year": 2021,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "kratzert_lstm",
       "name": "LSTM (PUB & PUR MIP Re-run)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Regional Single- & Multi-Forcing Long Short-Term Memory Network",
       "citation": "Kratzert et al. (2021)",
@@ -448,12 +466,13 @@
         "pur__multi_camels"
       ],
       "best_nse": 0.742,
-      "year": 2021
+      "year": 2021,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "tsai2021_dpl_vic",
       "name": "dPL + VIC (g_A, Maurer)*",
-      "category": "Differentiable / Hybrid",
+      "category": "Hybrid (ML + Physics)",
       "provenance_category": "Literature*",
       "paradigm": "Differentiable Parameter Learning with Neural Surrogate VIC",
       "citation": "Tsai et al. (2021)",
@@ -471,12 +490,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.439,
-      "year": 2021
+      "year": 2021,
+      "model_category": "Hybrid (ML + Physics)"
     },
     {
       "family_id": "feng_dhbv10",
       "name": "\u03b4HBV 1.0",
-      "category": "Differentiable / Hybrid",
+      "category": "Hybrid (ML + Physics)",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Dynamic-Parameter LSTM + 16-Bucket Differentiable HBV",
       "citation": "Feng et al. (2022)",
@@ -496,12 +516,13 @@
         "pur__single_camels"
       ],
       "best_nse": 0.742,
-      "year": 2022
+      "year": 2022,
+      "model_category": "Hybrid (ML + Physics)"
     },
     {
       "family_id": "nearing2022_ar_da_lstm",
       "name": "Autoregressive & Data-Assimilation LSTM (AR-LSTM, DA-LSTM)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Literature",
       "paradigm": "Autoregressive & Variational Data-Assimilation LSTM",
       "citation": "Nearing et al. (2022)",
@@ -520,12 +541,13 @@
         "pub__lagged_streamflow"
       ],
       "best_nse": 0.879,
-      "year": 2022
+      "year": 2022,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "yin2022_rrformer",
       "name": "Rainfall-Runoff Transformer (RR-Former)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Encoder-Decoder Transformer with Lagged Streamflow (RR-Former)",
       "citation": "Yin et al. (2022)",
@@ -543,12 +565,13 @@
         "gauged__lagged_streamflow"
       ],
       "best_nse": 0.847,
-      "year": 2022
+      "year": 2022,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "frame2023_mclstm_archive",
       "name": "Mass-Conserving LSTM (MC-LSTM \u2014 Frame 2023 Archive)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Archive",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "citation": "Frame et al. (2023)",
@@ -566,37 +589,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.758,
-      "year": 2023
-    },
-    {
-      "family_id": "hy2dl_hbv",
-      "name": "Dynamic-Parameter LSTM + 15-HBV (Hy2DL)",
-      "category": "Differentiable / Hybrid",
-      "provenance_category": "MIP Re-run (Our Code)",
-      "paradigm": "Dynamic-Parameter LSTM + 16-Bucket Differentiable HBV + Gamma UH",
-      "citation": "Acu\u00f1a Espinoza et al. (2024)",
-      "paper_url": "https://doi.org/10.5194/hess-28-2705-2024",
-      "github_url": "https://github.com/KIT-HYD/Hy2DL",
-      "code_dir": "models/hy2dl_hbv",
-      "zenodo_doi": "",
-      "zenodo_url": "",
-      "hydroshare_url": "",
-      "description": "Serial hybrid conceptual\u2013deep learning model (Hy2DL) in which a regional 256-unit LSTM predicts daily time-varying soil-moisture exponents (BETA, BETAET) and 11 static bucket parameters across 16 parallel differentiable HBV snow\u2013soil\u2013response components routed through a 15-day Gamma unit hydrograph.",
-      "asterisk": false,
-      "asterisk_reason": null,
-      "n_entries": 6,
-      "leaderboards_covered": [
-        "gauged__single_camels",
-        "pub__single_camels",
-        "pur__single_camels"
-      ],
-      "best_nse": 0.75,
-      "year": 2024
+      "year": 2023,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "rasiya_koya_tft",
       "name": "Temporal Fusion Transformer (TFT)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Attention-Recurrent Hybrid (Temporal Fusion Transformer)",
       "citation": "Rasiya Koya & Roy (2024)",
@@ -614,12 +613,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.716,
-      "year": 2024
+      "year": 2024,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "song_dhbv11p",
       "name": "\u03b4HBV 1.1p / \u03b4MG",
-      "category": "Differentiable / Hybrid",
+      "category": "Hybrid (ML + Physics)",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "LSTM + 16-Bucket Differentiable HBV (Dynamic Parameters)",
       "citation": "Song et al. (2024)",
@@ -639,12 +639,13 @@
         "pur__single_camels"
       ],
       "best_nse": 0.759,
-      "year": 2024
+      "year": 2024,
+      "model_category": "Hybrid (ML + Physics)"
     },
     {
       "family_id": "jamaat2025_dhbv_da",
       "name": "\u03b4HBV 1.1p Variational Data Assimilation (\u03b4HBV-DA-PS, -S, -P)*",
-      "category": "Differentiable / Hybrid",
+      "category": "Hybrid (ML + Physics)",
       "provenance_category": "Literature*",
       "paradigm": "Differentiable HBV (\u03b4HBV 1.1p) with 5-Day Variational State & Precipitation Data Assimilation",
       "citation": "Jamaat et al. (2025)",
@@ -662,12 +663,13 @@
         "gauged__lagged_streamflow"
       ],
       "best_nse": 0.82,
-      "year": 2025
+      "year": 2025,
+      "model_category": "Hybrid (ML + Physics)"
     },
     {
       "family_id": "li2025_lstm_dhbv_ens",
       "name": "(LSTM + dHBV 1.1p) Multi-Model Ensemble",
-      "category": "Differentiable / Hybrid",
+      "category": "Hybrid (ML + Physics)",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Multi-Structure Hybrid Ensemble (Regional LSTM + Differentiable HBV 1.1p)",
       "citation": "Li et al. (2025)",
@@ -685,12 +687,13 @@
         "gauged__multi_camels"
       ],
       "best_nse": 0.82,
-      "year": 2025
+      "year": 2025,
+      "model_category": "Hybrid (ML + Physics)"
     },
     {
       "family_id": "liu2025_tslib_suite",
       "name": "TSLib Deep Learning Suite (10 Models: Crossformer, PatchTST, Informer, etc.)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Literature",
       "paradigm": "General Time-Series Deep Learning Suite (Transformers, MLPs, Temporal 2D-Variation, CNNs)",
       "citation": "Liu et al. (2025)",
@@ -708,12 +711,13 @@
         "gauged__multi_camels"
       ],
       "best_nse": 0.72,
-      "year": 2025
+      "year": 2025,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "wang_s4dft",
       "name": "Frequency-Tuned Diagonal State Space Model (S4D-FT & S4D)",
-      "category": "Deep Learning / ML",
+      "category": "Machine learning",
       "provenance_category": "Literature",
       "paradigm": "Diagonal & Frequency-Tuned Diagonal Structured State Space Model (S4D / S4D-FT)",
       "citation": "Wang, Zhang, et al. (2025a)",
@@ -731,12 +735,13 @@
         "gauged__single_camels"
       ],
       "best_nse": 0.74,
-      "year": 2025
+      "year": 2025,
+      "model_category": "Machine learning"
     },
     {
       "family_id": "poudel_mlp_hbv",
       "name": "Static-Parameter MLP + 16-HBV (diff-hydro)",
-      "category": "Differentiable / Hybrid",
+      "category": "Hybrid (ML + Physics)",
       "provenance_category": "MIP Re-run (Our Code)",
       "paradigm": "Static MLP + 16-Zone Differentiable HBV",
       "citation": "Poudel & Steinschneider (2026)",
@@ -756,7 +761,35 @@
         "pur__single_camels"
       ],
       "best_nse": 0.735,
+      "year": 2026,
+      "model_category": "Hybrid (ML + Physics)"
+    },
+    {
+      "family_id": "era_lstm_seeded",
+      "name": "Empirical Research Assistant -- LSTM Seeded",
+      "category": "Machine learning",
+      "model_category": "Machine learning",
+      "provenance_category": "Contribution",
+      "paradigm": "Machine learning",
+      "citation": "Nearing (2026)",
+      "paper_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/era_experiments",
+      "github_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models",
+      "code_dir": "models/era_*",
+      "zenodo_doi": "10.5281/zenodo.23641695",
+      "zenodo_url": "https://doi.org/10.5281/zenodo.23641695",
+      "hydroshare_url": "",
+      "description": "Autonomous hydrological architectures discovered by the Empirical Research Assistant (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026).",
+      "asterisk": false,
+      "asterisk_reason": null,
+      "n_entries": 14,
+      "leaderboards_covered": [
+        "gauged__multi_camels",
+        "pub__multi_camels",
+        "pur__multi_camels"
+      ],
+      "best_nse": 0.827,
       "year": 2026
     }
-  ]
+  ],
+  "num_families": 32
 }

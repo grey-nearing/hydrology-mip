@@ -695,7 +695,6 @@
     das2023_tide: 2023,
     rasiya_koya_tft: 2023,
     nh_tft_rerun: 2023,
-    hy2dl_hbv: 2024,
     song_dhbv11p: 2024,
     wang_s4dft: 2025,
     wang2025_s4d: 2025,
@@ -736,7 +735,7 @@
     const paradigm = String(row.paradigm || "").toLowerCase();
     const name = String(row.model_name || "").toLowerCase();
     if (
-      ["dhbv", "\u03b4hbv", "mlp_hbv", "mlp-hbv", "16hbv", "dpl", "hy2dl"].some(
+      ["dhbv", "\u03b4hbv", "mlp_hbv", "mlp-hbv", "16hbv", "dpl"].some(
         (t) => fid.includes(t) || name.includes(t)
       )
     ) {

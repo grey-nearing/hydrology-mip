@@ -1,16 +1,16 @@
 # CAMELS-US MIP Leaderboard JSON Files & Automated Submission Updater (`leaderboards/`)
 
 ## 1. Overview & Purpose
-The `leaderboards/` package stores the JSON data files for all 12 CAMELS-US Model Intercomparison Project (MIP) leaderboards (`Tables 3–14`), the 34-model family registry (`Table 2`), the Stage-1 confirmation runs on the original authors' splits (`appendix_stage1_confirmation_runs.{json,csv,md}`), and the automated scripts (`leaderboards/update_leaderboard.py`) that score new community Zarr submissions on `gs://camels-us-mip/` and update the leaderboard JSON files.
+The `leaderboards/` package stores the JSON data files for all 12 CAMELS-US Model Intercomparison Project (MIP) leaderboards (`Tables 3–14`, 126 active entries across 9 populated leaderboards and 3 open Freeform tracks), the 32-model family registry (`Table 2`), the Stage-1 confirmation runs on the original authors' splits (`appendix_stage1_confirmation_runs.{json,csv,md}`), and the automated scripts (`leaderboards/update_leaderboard.py`) that score new community Zarr submissions on `gs://camels-us-mip/` and update the leaderboard JSON files.
 
 The `frontend/` web application reads directly from these leaderboard JSON files and calls `leaderboards.update_leaderboard` whenever a community submission is accepted.
 
 | File / Script | Role |
 | :--- | :--- |
-| `gauged__single_camels.json` .. `pur__freeform.json` (12 files) | Standalone JSON file for each of the $3 \times 4 = 12$ leaderboards (`Tables 3–14`). |
+| `gauged__single_camels.json` .. `pur__freeform.json` (12 files) | Standalone JSON file for each of the $3 \times 4 = 12$ leaderboards (`Tables 3–14`, 126 total rows). |
 | `tables_3_to_14.json` | Combined 12-leaderboard bundle automatically synchronized from the 12 individual `<leaderboard_id>.json` files. |
-| `table_2_registry.json` | Registry of all 34 hydrological model families (`Table 2`). |
-| `contributions_index.json` | Index of the 71 model runs contributed by this study (`gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr`). |
+| `table_2_registry.json` | Registry of all 32 hydrological model families (`Table 2`). |
+| `contributions_index.json` | Index of the 65 model entries (72 leaderboard rows: 58 `MIP Re-run` rows + 14 `ERA Contribution` rows) contributed by this study (`gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr`). |
 | `appendix_stage1_confirmation_runs.{md,csv,json}` | Side-by-side comparison of original authors' published metrics vs. our Stage-1 confirmation runs on the authors' exact splits and time periods. |
 | `update_leaderboard.py` (`mip-update-leaderboard`) | Script and Python API triggered upon each community submission to score the Zarr hydrograph on `gs://camels-us-mip/`, update `<leaderboard_id>.json` and `tables_3_to_14.json`, and regenerate all manuscript figures in `figures/`. |
 | `generate_figures.py` (`mip-generate-figures`) | Generates all manuscript figures (`figures/figure_1_water_year_coverage.{png,pdf}`, `figures/figure_2_leaderboard_progress_all_regimes.{png,pdf}`, and single-panel variants `figure_2{a,b,c}_*.png`) directly from the live leaderboard JSON files. |

@@ -810,7 +810,8 @@
       "notes": "3-seed ensemble (seeds 101, 102, 103) of our clean-room DI(1)-LSTM implementation (models/feng2020_di_lstm; hidden_size=256, seq_len=365, batch_size=256, dropout=0.4, 30 full epochs) evaluated under 18-fold leave-one-HUC-02-region-out (PUR) across all 531 CAMELS-US basins over 1989-10-01 to 1999-09-30 with NLDAS forcing + 1-day lagged observed streamflow Q(t-1) (Ensemble Med NSE = 0.747, Mean NSE = 0.692, Med KGE = 0.748).",
       "model_category": "Machine learning",
       "publication_year": 2020,
-      "rank": 1
+      "rank": 1,
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr"
     },
     {
       "entry_id": "feng2020_di_lstm_pur_nldas_single",
@@ -1624,7 +1625,8 @@
       "notes": "Single-model evaluation scored across all 3 individual seed members (seeds 101, 102, 103; evaluation_mode='single_member_mean') of our clean-room DI(1)-LSTM implementation under 18-fold leave-one-HUC-02-region-out (PUR) across all 531 CAMELS-US basins over 1989-10-01 to 1999-09-30 with NLDAS forcing + 1-day lagged observed streamflow Q(t-1) (Single-Seed Med NSE = 0.732 \u00b1 0.001).",
       "model_category": "Machine learning",
       "publication_year": 2020,
-      "rank": 2
+      "rank": 2,
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr"
     }
   ],
   "protocol": {

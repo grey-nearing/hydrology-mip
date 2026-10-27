@@ -72,7 +72,6 @@ SERIES1_FAMILY_PUBLICATION_YEARS: dict[str, int] = {
     "das2023_tide": 2023,
     "rasiya_koya_tft": 2023,
     "nh_tft_rerun": 2023,
-    "hy2dl_hbv": 2024,
     "song_dhbv11p": 2024,
     "wang_s4dft": 2025,
     "wang2025_s4d": 2025,
@@ -201,7 +200,7 @@ def classify_model_category(row: dict[str, Any]) -> str:
 
     if any(
         token in fid or token in name
-        for token in ("dhbv", "δhbv", "mlp_hbv", "mlp-hbv", "16hbv", "dpl", "hy2dl")
+        for token in ("dhbv", "δhbv", "mlp_hbv", "mlp-hbv", "16hbv", "dpl")
     ):
         return "Hybrid (ML + Physics)"
 

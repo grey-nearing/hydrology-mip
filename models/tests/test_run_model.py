@@ -58,7 +58,6 @@ EXPECTED_16_MODEL_DIRS: tuple[str, ...] = (
     "hoedt_mclstm",
     "rasiya_koya_tft",
     "poudel_mlp_hbv",
-    "hy2dl_hbv",
     "feng_dhbv10",
     "song_dhbv11p",
     "li2025_lstm_dhbv_ens",

@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-10-25T20:51:32Z",
-  "n_rows": 12,
+  "n_rows": 11,
   "rows": [
     {
       "family_id": "feng2020_di_lstm",
@@ -64,27 +64,6 @@
       "notes": "Hoedt et al. (2021, ICML Table 2/3 & Appendix Table B.7) report 5-seed Maurer Ensemble Med NSE = 0.742 on 531 basins (0.744 on 447/498-basin subsets) and Single-Model Med NSE = 0.726 +/- 0.004. Our 3-seed Maurer Stage-1 reproduction achieves Ensemble Med NSE = 0.7430 (+0.001 vs 531-basin published, -0.001 vs 498-basin subset) and Single-Seed Med NSE = 0.7160 +/- 0.0032 (status: PASS).",
       "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/hoedt_mclstm.zarr",
       "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/hoedt_mclstm.zarr"
-    },
-    {
-      "family_id": "hy2dl_hbv",
-      "model_dir": "models/hy2dl_hbv",
-      "model_name": "Dynamic-Parameter LSTM + 15-HBV (Hy2DL)",
-      "citation": "Acu\u00f1a Espinoza et al. (2024)",
-      "paper_url": "https://doi.org/10.5194/hess-28-2705-2024",
-      "author_split_protocol": "Acu\u00f1a Espinoza et al. (2024) evaluated on CAMELS-GB (1980\u20131997 train / 1998\u20132008 test, Med NSE = 0.87 on GB), while citing Feng et al. (2022)'s 0.733 CAMELS-US Split-3 benchmark in Section 3.4; reproduced on 531 CAMELS-US basins (1999-10-01 to 2008-09-30 train / 1989-10-01 to 1999-09-30 eval, matching Hy2DL hybrid_camels_us.yml)",
-      "forcing": "Daymet",
-      "num_basins": 531,
-      "num_seeds": 3,
-      "author_published_med_nse": null,
-      "author_published_single_med_nse": null,
-      "stage1_reproduced_med_nse": 0.75,
-      "stage1_reproduced_single_med_nse": 0.73,
-      "delta_med_nse": null,
-      "status": "N/A (Evaluated on CAMELS-GB in Paper)",
-      "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/hy2dl_hbv.zarr",
-      "notes": "Acu\u00f1a Espinoza et al. (2024) evaluated Hy2DL only on CAMELS-GB (1980\u20131997 train / 1998\u20132008 test, Med NSE = 0.87 on GB; Section 3.4 cites Feng et al., 2022's 0.733 CAMELS-US Split-3 benchmark for qualitative comparison). Our 3-seed Newman Split-1 CAMELS-US run (matching the authors' hybrid_camels_us.yml configuration) achieves 0.750 (ensemble) and 0.730 \u00b1 0.001 (single model).",
-      "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/hy2dl_hbv.zarr",
-      "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/hy2dl_hbv.zarr"
     },
     {
       "family_id": "kratzert_lstm",

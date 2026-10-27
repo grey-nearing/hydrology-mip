@@ -1,15 +1,36 @@
 {
-  "model_key": "era_pur_physics_guided",
-  "model_name": "ERA-Physics-Guided-PUR",
   "status": "COMPLETED_NO_PUBLISHED_REFERENCE",
+  "model_key": "era_pur_physics_guided",
+  "model_name": "ERA-Physics-Guided-PUR (10-model ensemble)",
+  "single_model_name": "ERA-Physics-Guided-PUR",
+  "family_id": "era_lstm_seeded",
+  "family_name": "Empirical Research Assistant -- LSTM Seeded",
+  "citation": "Nearing (2026)",
+  "zenodo_doi": "10.5281/zenodo.23639461",
+  "zenodo_url": "https://doi.org/10.5281/zenodo.23639461",
+  "starting_notebook": "era_experiments/era_pur_physics_informed.ipynb",
+  "winner_notebook": "era_experiments/era_pur_physics_informed_winner.ipynb",
+  "xid": "302618513",
   "winning_node_id": 206,
   "era_validation_period": [
     "1999-10-01",
     "2003-09-30"
   ],
+  "era_validation_median_nse": 0.678147,
+  "newman_train_period": [
+    "1999-10-01",
+    "2008-09-30"
+  ],
   "newman_test_period": [
     "1989-10-01",
     "1999-09-30"
+  ],
+  "spatial_regime": "pur_18huc02",
+  "leaderboard_id": "pur__multi_camels",
+  "forcings": [
+    "daymet",
+    "maurer",
+    "nldas"
   ],
   "num_seeds": 10,
   "seeds": [
@@ -24,11 +45,21 @@
     108,
     109
   ],
-  "ensemble_median_nse": null,
-  "single_model_median_nse": null,
-  "single_model_median_nse_std": null,
-  "ensemble_mean_nse": null,
-  "ensemble_median_kge": null,
-  "ensemble_median_fhv_abs": null,
-  "num_basins_nse_le_0": null
+  "ensemble_median_nse": 0.6837,
+  "single_model_median_nse": 0.6534,
+  "single_model_median_nse_std": 0.0067,
+  "ensemble_mean_nse": 0.5241,
+  "ensemble_median_kge": 0.6571,
+  "ensemble_median_fhv_abs": 23.4,
+  "num_basins_nse_le_0": 28,
+  "ours_median_nse": 0.6837,
+  "ours_mean_nse": 0.5241,
+  "ours_median_kge": 0.6571,
+  "ours_nse_le_zero_count": 28,
+  "ours_n_scored_basins": 531,
+  "unscored_basins": [],
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_mean": 0.6534,
+  "single_seed_median_nse_std": 0.0067,
+  "generated_at_utc": "2026-10-26T13:34:44Z"
 }

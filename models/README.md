@@ -1,6 +1,6 @@
 # Models and Central Runner
 
-The `models/` directory contains 15 rainfall-runoff model implementations, a central deployment runner
+The `models/` directory contains 19 rainfall-runoff model implementations (12 `MIP Re-run` implementations and 7 `ERA Contribution` implementations), a central deployment runner
 (`run_model.py`), the shared CAMELS-US data loader (`camels_data.py`), and the consolidated Zarr
 hydrograph writer (`zarr_writer.py`).
 
@@ -47,21 +47,24 @@ Each model family lives in its own subdirectory `models/<model_name>/`:
 
 | Directory | Model Family | Category |
 | :--- | :--- | :--- |
-| `kratzert_lstm/` | Kratzert et al. (2019, 2021) CudaLSTM | MIP Re-run |
-| `kratzert_ealstm/` | Kratzert et al. (2019) Entity-Aware LSTM (EA-LSTM) | MIP Re-run |
+| `kratzert_lstm/` | Kratzert et al. (2019, 2021) CudaLSTM (PUB & PUR MIP Re-run) | MIP Re-run |
+| `kratzert_ealstm/` | Kratzert et al. (2019b) Entity-Aware LSTM (EA-LSTM, Stage-1 Confirmation) | MIP Re-run |
+| `feng2020_di_lstm/` | Feng et al. (2020) Data-Integration LSTM (`DI(1)-LSTM`) | MIP Re-run |
+| `newman_sacsma/` | Nearing et al. (2020) Snow-17 + SAC-SMA (DDS & Donor Transfer) | MIP Re-run |
 | `hoedt_mclstm/` | Hoedt et al. (2021) Mass-Conserving LSTM (MC-LSTM) | MIP Re-run |
-| `rasiya_koya_tft/` | Rasiya Koya et al. (2023) Temporal Fusion Transformer (TFT) | MIP Re-run |
-| `gauch_xgboost/` | Gauch et al. (2021) Gradient-Boosted Decision Trees (XGBoost) | MIP Re-run |
-| `das_tide/` | Das et al. (2023) Time-series Dense Encoder (TiDE) | MIP Re-run |
-| `wang_s4dft/` | Wang et al. (2025) Diagonal State Space Model (S4D-FT) | MIP Re-run |
-| `poudel_mlp_hbv/` | Poudel et al. (2025) MLP-parameterized 16-zone HBV | MIP Re-run |
-| `hy2dl_hbv/` | Acuna Espinoza et al. (2024) Hy2DL LSTM-HBV | MIP Re-run |
-| `hydrodiffusion/` | Wang et al. (2025) HydroDiffusion SSM-Backbone Diffusion Model | MIP Re-run |
-| `feng_dhbv10/` | Feng et al. (2022) Differentiable HBV 1.0 (Static Parameters) | MIP Re-run |
-| `song_dhbv11p/` | Song et al. (2024) Differentiable HBV 1.1p (Dynamic Parameters) | MIP Re-run |
-| `newman_sacsma/` | Newman et al. (2015, 2017) Snow-17 + SAC-SMA | MIP Re-run |
-| `era_gauged_minimal_guidance/` | ERA Gauged Minimal Guidance (Node 73 EntityAwareLSTM) | Contribution |
-| `era_pur_minimal_guidance/` | ERA PUR Minimal Guidance (Node 135 DualFiLMLSTM) | Contribution |
+| `feng_dhbv10/` | Feng et al. (2022, 2023) Differentiable HBV 1.0 (`δHBV 1.0`) | MIP Re-run |
+| `yin2022_rrformer/` | Yin et al. (2022) Rainfall-Runoff Transformer (`RR-Former`) | MIP Re-run |
+| `rasiya_koya_tft/` | Rasiya Koya & Roy (2024) Temporal Fusion Transformer (`TFT`) | MIP Re-run |
+| `song_dhbv11p/` | Song et al. (2024) Differentiable HBV 1.1p (`δHBV 1.1p / δMG`) | MIP Re-run |
+| `li2025_lstm_dhbv_ens/` | Li et al. (2025) `LSTM + δHBV 1.1p` Multi-Model Ensemble | MIP Re-run |
+| `poudel_mlp_hbv/` | Poudel & Steinschneider (2026) Static-Parameter MLP + 16-HBV (`diff-hydro`) | MIP Re-run |
+| `era_gauged_multi_paradigm/` | ERA-Multi-Paradigm-Gauged (Node 248 `MultiScaleRoutingLSTM`) | Contribution |
+| `era_gauged_physics_guided/` | ERA-Physics-Guided-Gauged (Node 228 `PhysicsGuidedHydroModel`) | Contribution |
+| `era_gauged_minimal_guidance/` | ERA-Unguided-Gauged (Node 73 `EntityAwareLSTM`) | Contribution |
+| `era_pub_physics_guided/` | ERA-Physics-Guided-PUB (Node 184 `HydroBottleneckLSTM`) | Contribution |
+| `era_pub_minimal_guidance/` | ERA-Unguided-PUB (Node 178 `CrossForcingInteractionLSTM`) | Contribution |
+| `era_pur_minimal_guidance/` | ERA-Unguided-PUR (Node 135 `DualFiLMLSTM`) | Contribution |
+| `era_pur_physics_guided/` | ERA-Physics-Guided-PUR (Node 134 `PhysicsGuidedHydroLSTM`) | Contribution |
 
 ## Adding a New Model
 

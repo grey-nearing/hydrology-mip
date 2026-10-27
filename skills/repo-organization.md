@@ -65,7 +65,6 @@ camels-us-mip/
 │   ├── das_tide/                  # TiDE code & fold runner
 │   ├── wang_s4dft/                # S4D & S4D-FT code & fold runner
 │   ├── poudel_mlp_hbv/            # Poudel & Steinschneider (2026) MLP + 16HBV code & fold runner
-│   ├── hy2dl_hbv/                 # Hy2DL conceptual-neural hybrid code & fold runner
 │   ├── hydrodiffusion/            # HydroDiffusion code & fold runner
 │   ├── feng_dhbv10/               # dHBV 1.0 (hydroDL) code & fold runner
 │   ├── song_dhbv11p/              # dHBV 1.1p (hydroDL) code & fold runner

@@ -132,15 +132,6 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         code_url="https://github.com/snpoudel/diff-hydro",
         default_seeds=(101, 102, 103),
     ),
-    "hy2dl_hbv": ModelRegistryEntry(
-        key="hy2dl_hbv",
-        model_name="Hy2DL LSTM-HBV",
-        model_family="Hybrid Conceptual-DL",
-        provenance_category="MIP Re-run",
-        runner_module="models.hy2dl_hbv.runner",
-        code_url="https://github.com/KIT-HYD/Hy2DL",
-        default_seeds=(101, 102, 103),
-    ),
     "feng_dhbv10": ModelRegistryEntry(
         key="feng_dhbv10",
         model_name="δHBV 1.0 (Static Parameters)",
