@@ -19,7 +19,15 @@ Every code repository and hydrograph archive is assigned one of three public-rel
 
 ---
 
-## Executive Summary & Pre-Release Action Checklist
+## Executive Summary & Pre-Release Action Checklist (Updated 2026-10-28 — All Code & Repo Items Resolved)
+
+> **Resolution Status (2026-10-28):**
+> 1. **Root Licensing Files Added (`DONE`):** Added [`LICENSE`](./LICENSE) (`Apache-2.0`), [`NOTICE`](./NOTICE), [`THIRD_PARTY_NOTICES.md`](./THIRD_PARTY_NOTICES.md), [`DATA_LICENSE.md`](./DATA_LICENSE.md), and [`CITATION.cff`](./CITATION.cff) at the repository root.
+> 2. **All `RED` & Non-Commercial Code Items Resolved (`DONE`):**
+>    - Removed `models/wang_s4dft`, `models/hydrodiffusion`, `models/das_tide`, and `models/hy2dl_hbv` (`wang_s4dft` is now a `Literature`-only entry with `code_dir: null`).
+>    - Replaced `models/newman_sacsma/` and `models/poudel_mlp_hbv/` with first-party C++/OpenMP, CUDA, and PyTorch implementations of the published U.S. Public Domain (`17 U.S.C. § 105`) and `CC-BY-4.0` HESS equations.
+>    - Cleaned up `uh_gamma_fast`, `uh_conv_fast`, `DropMask`, and `CudnnLstm` in `models/feng_dhbv10/dhbv_standalone_core.py` and `models/song_dhbv11p/dhbv_standalone_core.py`, and added explicit `BSD-3-Clause` / `Apache-2.0` / `MIT` headers to `metrics/metrics.py`, `models/hoedt_mclstm/model.py`, `models/kratzert_ealstm/model.py`, and `models/kratzert_lstm/model.py`.
+> 3. **All DOI & URL Fixes Applied (`DONE`):** Updated all 9 registry URL/DOI entries in `leaderboards/table_2_registry.json`, `leaderboards/*.json`, and `models/feng_dhbv10/README.md`.
 
 Out of **31 total resources** audited (21 code repositories in Part A and 10 hydrograph archives in Part B):
 

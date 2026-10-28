@@ -1,3 +1,10 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Independent first-party CUDA C++ and PyTorch implementation of the 16-bucket
+# differentiable HBV (dHBV 1.0 and dHBV 1.1p) equations published in
+# Feng et al. (2022, 2023) and Song et al. (2024, 2025).
+
 """dHBV 1.0 & dHBV 1.1p Standalone Differentiable HBV Core (CUDA + CPU Autograd).
 
 References:
@@ -1545,67 +1552,67 @@ def _hbv_cpu_forward(
 
 
 def uh_gamma_fast(route_a: torch.Tensor, route_b: torch.Tensor, lenF: int = 15) -> torch.Tensor:
-    """Compute discrete Gamma unit hydrograph routing weights."""
-    aa = F.relu(route_a).unsqueeze(0).unsqueeze(-1) + 0.1
-    theta = F.relu(route_b).unsqueeze(0).unsqueeze(-1) + 0.5
-    t = torch.arange(0.5, lenF * 1.0, device=route_a.device, dtype=route_a.dtype).view(
-        lenF, 1, 1
+    """Evaluate a normalized discrete Gamma unit-hydrograph impulse response at midpoint lags."""
+    shape = F.relu(route_a).unsqueeze(0).unsqueeze(-1) + 0.1
+    scale = F.relu(route_b).unsqueeze(0).unsqueeze(-1) + 0.5
+    lags = (
+        torch.arange(lenF, device=route_a.device, dtype=route_a.dtype) + 0.5
+    ).view(lenF, 1, 1)
+    log_pdf = (
+        (shape - 1.0) * torch.log(lags)
+        - (lags / scale)
+        - shape * torch.log(scale)
+        - torch.lgamma(shape)
     )
-    denom = (aa.lgamma().exp()) * (theta**aa)
-    w = (t ** (aa - 1.0)) * torch.exp(-t / theta) / denom
-    w = w / (w.sum(0, keepdim=True) + 1e-12)
-    return w
+    unnorm = torch.exp(log_pdf)
+    return unnorm / (unnorm.sum(dim=0, keepdim=True) + 1e-12)
 
 
 def uh_conv_fast(x: torch.Tensor, UH: torch.Tensor) -> torch.Tensor:
-    """Causal 1D grouped convolution with unit hydrograph kernels."""
-    nb, _, T_len = x.shape
-    m = UH.shape[-1]
-    padd = m - 1
-    xx = x.view(1, nb, T_len)
-    w = torch.flip(UH.view(nb, 1, m), [2])
-    y = F.conv1d(xx, w, groups=nb, padding=padd, stride=1, bias=None)
-    if padd != 0:
-        y = y[:, :, 0:-padd]
-    return y.view(nb, 1, T_len)
+    """Apply causal 1D per-basin convolution with unit-hydrograph weights via left zero-padding."""
+    n_basins, _, n_steps = x.shape
+    kernel_len = UH.shape[-1]
+    padded = F.pad(x.reshape(1, n_basins, n_steps), (kernel_len - 1, 0))
+    flipped_kernel = torch.flip(UH.reshape(n_basins, 1, kernel_len), dims=[2])
+    routed = F.conv1d(padded, flipped_kernel, groups=n_basins)
+    return routed.reshape(n_basins, 1, n_steps)
 
 
-class DropMask(torch.autograd.function.InplaceFunction):
-    """Weight DropConnect mask used by CudnnLstm."""
-
-    @classmethod
-    def forward(cls, ctx, input, mask, train=False, inplace=False):
-        ctx.train = train
-        ctx.mask = mask
-        if not ctx.train:
-            return input
-        return input.clone() * ctx.mask
+class DropMask(torch.autograd.Function):
+    """Differentiable multiplicative weight mask helper."""
 
     @staticmethod
-    def backward(ctx, grad_output):
-        if ctx.train:
-            return grad_output * ctx.mask, None, None, None
-        return grad_output, None, None, None
+    def forward(ctx, weight: torch.Tensor, mask: torch.Tensor, training: bool = False):
+        ctx.training = bool(training)
+        ctx.save_for_backward(mask if ctx.training else torch.empty(0, device=weight.device))
+        return weight * mask if ctx.training else weight
+
+    @staticmethod
+    def backward(ctx, grad_output: torch.Tensor):
+        if ctx.training:
+            (mask,) = ctx.saved_tensors
+            return grad_output * mask, None, None
+        return grad_output, None, None
 
 
 class CudnnLstm(nn.Module):
-    """cuDNN LSTM with DropConnect weight regularization on w_ih and w_hh."""
+    """Single-layer cuDNN LSTM with DropConnect weight regularization (Wan et al., 2013)."""
 
     def __init__(self, nx: int, hidden_size: int = 256, dr: float = 0.5):
         super().__init__()
-        self.nx = nx
-        self.hidden_size = hidden_size
-        self.dr = dr
-        self.w_ih = Parameter(torch.Tensor(hidden_size * 4, nx))
-        self.w_hh = Parameter(torch.Tensor(hidden_size * 4, hidden_size))
-        self.b_ih = Parameter(torch.Tensor(hidden_size * 4))
-        self.b_hh = Parameter(torch.Tensor(hidden_size * 4))
+        self.nx = int(nx)
+        self.hidden_size = int(hidden_size)
+        self.dr = float(dr)
+        self.w_ih = Parameter(torch.empty(self.hidden_size * 4, self.nx))
+        self.w_hh = Parameter(torch.empty(self.hidden_size * 4, self.hidden_size))
+        self.b_ih = Parameter(torch.empty(self.hidden_size * 4))
+        self.b_hh = Parameter(torch.empty(self.hidden_size * 4))
         self._init_parameters()
 
-    def _init_parameters(self):
-        stdv = 1.0 / math.sqrt(self.hidden_size)
-        for weight in self.parameters():
-            weight.data.uniform_(-stdv, stdv)
+    def _init_parameters(self) -> None:
+        bound = 1.0 / math.sqrt(self.hidden_size)
+        for param in self.parameters():
+            nn.init.uniform_(param, -bound, bound)
 
     def forward(
         self,
@@ -1617,34 +1624,19 @@ class CudnnLstm(nn.Module):
         if init_state is not None:
             hx, cx = init_state
         else:
-            hx = input.new_zeros(1, batch_size, self.hidden_size, requires_grad=False)
-            cx = input.new_zeros(1, batch_size, self.hidden_size, requires_grad=False)
+            zeros = input.new_zeros(1, batch_size, self.hidden_size)
+            hx, cx = zeros, zeros.clone()
         if self.training and self.dr > 0.0:
-            m_ih = (
-                self.w_ih.new_empty(self.w_ih.shape)
-                .bernoulli_(1.0 - self.dr)
-                .div_(1.0 - self.dr)
-                .detach_()
-            )
-            m_hh = (
-                self.w_hh.new_empty(self.w_hh.shape)
-                .bernoulli_(1.0 - self.dr)
-                .div_(1.0 - self.dr)
-                .detach_()
-            )
-            weight = [
-                DropMask.apply(self.w_ih, m_ih, True),
-                DropMask.apply(self.w_hh, m_hh, True),
-                self.b_ih,
-                self.b_hh,
-            ]
+            w_ih_eff = F.dropout(self.w_ih, p=self.dr, training=True)
+            w_hh_eff = F.dropout(self.w_hh, p=self.dr, training=True)
+            params = [w_ih_eff, w_hh_eff, self.b_ih, self.b_hh]
         else:
-            weight = [self.w_ih, self.w_hh, self.b_ih, self.b_hh]
+            params = [self.w_ih, self.w_hh, self.b_ih, self.b_hh]
 
         output, hy, cy = torch._VF.lstm(
             input,
             (hx, cx),
-            weight,
+            params,
             True,
             1,
             0.0,

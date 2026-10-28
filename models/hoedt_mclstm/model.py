@@ -1,3 +1,14 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# SPDX-License-Identifier: Apache-2.0 AND BSD-3-Clause AND MIT
+#
+# Portions of this file (the gate modules and MC-LSTM cell structure) are
+# derived from neuralhydrology/modelzoo/mclstm.py
+# (https://github.com/neuralhydrology/neuralhydrology), Copyright (c) 2021,
+# NeuralHydrology (BSD 3-Clause License), and follow the MC-LSTM reference
+# implementation (https://github.com/ml-jku/mc-lstm), Copyright (c) 2021
+# Institute for Machine Learning, Johannes Kepler University Linz (MIT License).
+# See THIRD_PARTY_NOTICES.md for the full license texts.
+
 """Hoedt et al. (2021) Mass-Conserving LSTM (MC-LSTM) architecture and trainer."""
 
 from __future__ import annotations

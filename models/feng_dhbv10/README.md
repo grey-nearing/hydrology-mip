@@ -8,7 +8,7 @@
 - **Canonical Citation**: Feng et al. (2022) — Feng, D., Liu, J., Lawson, K., & Shen, C. (2022). Differentiable, learnable, regionalized process-based models with multiphysical outputs can approach state-of-the-art hydrologic prediction accuracy. *Water Resources Research*, 58(10), e2022WR032404.
 - **Paper URL**: https://doi.org/10.1029/2022WR032404
 - **Upstream GitHub Repository**: https://github.com/mhpi/hydroDL (and successor https://github.com/mhpi/generic_deltamodel)
-- **Archive DOI**: `10.5281/zenodo.7091334` (Feng et al., 2022 source code archive; see also `10.5281/zenodo.7091372` for simulation outputs)
+- **Archive DOI**: `10.5281/zenodo.7091334` (Feng et al., 2022 source code archive; see also `10.5281/zenodo.7943626` for Feng et al., 2023 simulation outputs)
 - **MIP Implementation Directory**: `models/feng_dhbv10/`
 
 ---

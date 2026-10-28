@@ -7,6 +7,12 @@ name = "camels-us-mip"
 version = "1.0.0"
 description = "CAMELS-US Model Intercomparison Project (MIP) Leaderboards, Cloud Zarr Metrics Pipeline, Centralized Model Runner, ERA Experiments, and Web Platform"
 readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Grey Nearing" },
+    { name = "Daniel Klotz" },
+    { name = "HydrologyMIP Contributors" },
+]
 requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.110.0",

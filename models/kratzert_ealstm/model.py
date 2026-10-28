@@ -1,3 +1,12 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# SPDX-License-Identifier: Apache-2.0 AND BSD-3-Clause
+#
+# The EA-LSTM gate parameterization and initialization in this file follow
+# papercode/ealstm.py from https://github.com/kratzert/ealstm_regional_modeling,
+# Copyright 2019 Frederik Kratzert (Apache License 2.0), and
+# neuralhydrology/modelzoo/ealstm.py, Copyright (c) 2021, NeuralHydrology
+# (BSD 3-Clause License). See THIRD_PARTY_NOTICES.md.
+
 """Kratzert et al. (2019) Entity-Aware LSTM (EA-LSTM) architecture."""
 
 from __future__ import annotations

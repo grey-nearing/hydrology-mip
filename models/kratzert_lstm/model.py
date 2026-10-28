@@ -1,3 +1,11 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# SPDX-License-Identifier: Apache-2.0 AND BSD-3-Clause
+#
+# The basin-averaged NSE* loss and step learning-rate schedule follow
+# neuralhydrology/training/loss.py (Copyright (c) 2021, NeuralHydrology,
+# BSD 3-Clause License) and https://github.com/kratzert/multiple_forcing
+# (Copyright 2021 Frederik Kratzert, Apache License 2.0). See THIRD_PARTY_NOTICES.md.
+
 """Kratzert et al. (2019, 2021) CudaLSTM architecture and the shared NeuralHydrology-style trainer.
 
 `KratzertLSTMTrainer` is reused by the EA-LSTM, sMTS-LSTM, and TFT runners.  It implements the

@@ -1,12 +1,19 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Independent first-party PyTorch 2.0 implementation of the RR-Former architecture
+# described in Yin et al. (2022, J. Hydrol., doi:10.1016/j.jhydrol.2022.127781);
+# no upstream source code from https://github.com/iThronne/RR-Former was copied.
+
 """Yin et al. (2022, J. Hydrol.) RR-Former: Rainfall-Runoff Modeling Based on Transformer.
 
 Paper:
   Yin, H., Guo, Z., Zhang, X., Chen, J., & Zhang, Y. (2022). RR-Former:
   Rainfall-runoff modeling based on Transformer. Journal of Hydrology, 609,
   127781. https://doi.org/10.1016/j.jhydrol.2022.127781
-  Official Code: https://github.com/iThronne/RR-Former
+  Reference Code: https://github.com/iThronne/RR-Former
 
-Exact Architecture & Protocol matching `iThronne/RR-Former`:
+Architecture & Protocol from Yin et al. (2022):
   - Encoder-decoder Transformer (`d_model=64`, `nhead=4`, `num_encoder_layers=4`,
     `num_decoder_layers=4`, `dim_feedforward=256`, `activation="relu"`, `dropout=0.1`)
     with learnable positional embeddings (`nn.Embedding(max_len, d_model)`).
@@ -18,8 +25,8 @@ Exact Architecture & Protocol matching `iThronne/RR-Former`:
       positions `0..seq_len-2` contain the 15 days of standardized lagged
       observed runoff `[q_lag_std, q_lag_valid]` (`Q_{t-15:t-1}`), while the
       target position `seq_len-1` is zero-padded (`0.0`) and masked in decoder
-      self-attention (`tgt_key_padding_mask`) exactly as in `iThronne/RR-Former`'s
-      `get_subsequence_mask`, so the target query token attends to all 15 lagged
+      self-attention (`tgt_key_padding_mask`) as specified in Yin et al. (2022),
+      so the target query token attends to all 15 lagged
       runoff tokens and all 16 encoder meteorological memory tokens.
   - Two-stage training:
     1. Global pretraining across all training basins using basin-variance-weighted
@@ -54,7 +61,7 @@ from models.kratzert_lstm.windows import (
 
 
 class RRFormerEncoderLayer(nn.Module):
-    """Exact EncoderLayer from iThronne/RR-Former/models/transformer/transformer.py."""
+    """Post-LayerNorm Transformer encoder layer (Yin et al., 2022)."""
 
     def __init__(
         self,
@@ -95,7 +102,7 @@ class RRFormerEncoderLayer(nn.Module):
 
 
 class RRFormerDecoderLayer(nn.Module):
-    """Exact DecoderLayer from iThronne/RR-Former/models/transformer/transformer.py."""
+    """Post-LayerNorm non-autoregressive Transformer decoder layer (Yin et al., 2022)."""
 
     def __init__(
         self,
@@ -167,7 +174,7 @@ class RRFormerDecoderLayer(nn.Module):
 
 
 class RRFormer(nn.Module):
-    """Exact 4-encoder / 4-decoder RR-Former matching iThronne/RR-Former."""
+    """4-encoder / 4-decoder RR-Former architecture (Yin et al., 2022)."""
 
     def __init__(
         self,

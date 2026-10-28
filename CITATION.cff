@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "If you use this software or the CAMELS-US MIP benchmark datasets and leaderboards, please cite the CAMELS-US MIP paper and archive."
+title: "CAMELS-US Model Intercomparison Project (camels-us-mip)"
+type: software
+authors:
+  - family-names: Nearing
+    given-names: Grey
+    affiliation: Google Research
+  - family-names: Klotz
+    given-names: Daniel
+    affiliation: Google Research
+license: Apache-2.0
+repository-code: "https://github.com/grey-nearing/camels-us-mip"
+url: "https://hydrologymip.org"
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23641695
+    description: "Zenodo archive (First-party data: CC-BY-4.0; Code: Apache-2.0)"
+preferred-citation:
+  type: article
+  title: "A CAMELS-US Model Intercomparison Project"
+  authors:
+    - family-names: Nearing
+      given-names: Grey
+      affiliation: Google Research
+    - family-names: Klotz
+      given-names: Daniel
+      affiliation: Google Research
+  journal: "Hydrology and Earth System Sciences"
+  year: 2026

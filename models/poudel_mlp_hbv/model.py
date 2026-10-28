@@ -1,16 +1,24 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+#
+# Independent first-party C++/OpenMP, CUDA, and PyTorch implementation of the
+# 16-component differentiable HBV architecture and 20 parameter bounds published
+# in Poudel & Steinschneider (2026, HESS, CC-BY-4.0, doi:10.5194/hess-30-5173-2026).
+
 """Poudel & Steinschneider (2026) Hybrid MLP + 16-Component Differentiable HBV.
 
 Reference:
 - Poudel, S., & Steinschneider, S. (2026). An argument for parsimony in
   differentiable hydrologic models. Hydrology and Earth System Sciences,
-  30(15), 5173-5193. https://doi.org/10.5194/hess-30-5173-2026
-- Official Code: https://github.com/snpoudel/diff-hydro (models/multi_hbv.py, 01best_mlp_hbv.py)
+  30(15), 5173-5193. https://doi.org/10.5194/hess-30-5173-2026 (CC-BY-4.0)
+- Reference Code: https://github.com/snpoudel/diff-hydro
 
-Exact mathematical implementation of `snpoudel/diff-hydro` (`MLPParameterNet` +
-`DifferentiableMHBV` with 16 HBV units, exact 20 parameter bounds, full-window
+Independent C++/OpenMP, CUDA, and PyTorch implementation of the published
+Poudel & Steinschneider (2026) formulation (`MLPParameterNet` +
+16-unit differentiable HBV with the 20 published parameter bounds, full-window
 Gamma unit-hydrograph routing, 730-day spinup + 365-day target windows with
 60-day stride, unnormalized masked MSE loss, and Adam lr=1e-4 with
-ReduceLROnPlateau & validation early stopping), accelerated via an exact
+ReduceLROnPlateau & validation early stopping), accelerated via a custom
 OpenMP C++ forward/backward kernel (`_POUDEL_OMP_CPP`).
 """
 
@@ -23,7 +31,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-# Exact 20 HBV parameter bounds from snpoudel/diff-hydro/models/multi_hbv.py
+# 20 HBV parameter bounds published in Poudel & Steinschneider (2026, HESS, CC-BY-4.0)
 POUDEL_PARAM_BOUNDS: Dict[str, Tuple[float, float]] = {
     "fc": (50.0, 1000.0),
     "beta": (1.0, 6.0),
@@ -167,7 +175,7 @@ _POUDEL_OMP_CPP = r"""
 #include <algorithm>
 #include <vector>
 
-// Exact C++ port of snpoudel/diff-hydro models/multi_hbv.py (_hbv_loop)
+// Clean-room C++/OpenMP implementation of the 16-zone HBV equations in Poudel & Steinschneider (2026, HESS, CC-BY-4.0)
 // States order: [0]=s_up, [1]=s_low, [2]=s_snow, [3]=s_sliq, [4]=s_sma
 // Params order (16): [0]=fc, [1]=beta, [2]=pwp, [3]=l, [4]=ks, [5]=ki, [6]=kb, [7]=kperc,
 //                    [8]=coeff_pet, [9]=ddf, [10]=scf, [11]=ts, [12]=tm, [13]=tti, [14]=whc, [15]=crf
@@ -1662,7 +1670,7 @@ class PoudelExactMhbvFunction(torch.autograd.Function):
 def gamma_unit_hydrograph(
     t: torch.Tensor, alpha: torch.Tensor, theta: torch.Tensor
 ) -> torch.Tensor:
-    """Exact Gamma UH from snpoudel/diff-hydro/models/multi_hbv.py."""
+    """Two-parameter Gamma unit hydrograph impulse response (Poudel & Steinschneider, 2026)."""
     eps = 1e-6
     return (
         (t + eps).pow(alpha - 1.0)

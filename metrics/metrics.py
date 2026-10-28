@@ -1,4 +1,4 @@
-# Copyright 2025 Google LLC
+# Copyright 2025-2026 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -11,6 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0 AND BSD-3-Clause
+#
+# Portions of this file are derived from neuralhydrology/evaluation/metrics.py
+# (https://github.com/neuralhydrology/neuralhydrology), Copyright (c) 2021,
+# NeuralHydrology, and are used under the BSD 3-Clause License. See
+# THIRD_PARTY_NOTICES.md for the full license text.
 
 """Evaluation metrics for observed and simulated discharge time series.
 
