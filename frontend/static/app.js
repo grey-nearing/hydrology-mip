@@ -478,8 +478,6 @@
     if (row.gauch_fms === undefined) row.gauch_fms = gmed("FMS");
     if (row.gauch_flv === undefined) row.gauch_flv = gmed("FLV");
     if (row.gauch_peak_timing === undefined) row.gauch_peak_timing = gmed("Peak-Timing");
-    if (row.gauch_missed_peaks === undefined) row.gauch_missed_peaks = gmed("Missed-Peaks");
-    if (row.gauch_peak_mape === undefined) row.gauch_peak_mape = gmed("Peak-MAPE");
     return row;
   }
 
@@ -642,28 +640,6 @@
       rawFmt: (v, star) => Number(v).toFixed(2) + " d" + (star ? "*" : ""),
       tickFmt: (v) => Number(v).toFixed(2) + "d",
       fmt: (v, star) => fmtNum(v, 2, star),
-    },
-    {
-      col: "gauch_missed_peaks",
-      label: "Missed-Peaks",
-      title: "Median fraction of missed peaks (0 to 1, ideal = 0)",
-      defaultAsc: true,
-      direction: "lower",
-      optimalityText: "Lower is better \u2193",
-      rawFmt: (v, star) => Number(v).toFixed(3) + (star ? "*" : ""),
-      tickFmt: (v) => Number(v).toFixed(2),
-      fmt: (v, star) => fmtNum(v, 3, star),
-    },
-    {
-      col: "gauch_peak_mape",
-      label: "Peak-MAPE (%)",
-      title: "Median mean absolute percentage peak error (%, ideal = 0%)",
-      defaultAsc: true,
-      direction: "lower",
-      optimalityText: "Lower is better \u2193",
-      rawFmt: (v, star) => Number(v).toFixed(1) + "%" + (star ? "*" : ""),
-      tickFmt: (v) => Number(v).toFixed(0) + "%",
-      fmt: (v, star) => Number(v).toFixed(1) + "%" + (star ? "*" : ""),
     },
     {
       col: "nse_le_0",
@@ -1028,9 +1004,7 @@
       (mc.col === "nse_le_0" ||
         mc.col === "gauch_mse" ||
         mc.col === "gauch_rmse" ||
-        mc.col === "gauch_peak_timing" ||
-        mc.col === "gauch_missed_peaks" ||
-        mc.col === "gauch_peak_mape") &&
+        mc.col === "gauch_peak_timing") &&
       rawMin >= 0 &&
       yMin < 0
     ) {
@@ -1374,7 +1348,7 @@
 
   const METRIC_PRESETS = {
     all: {
-      label: "All 14 Metrics",
+      label: "All 12 Metrics",
       cols: GAUCH_METRIC_COLUMNS.map((c) => c.col),
     },
     core: {
@@ -1404,8 +1378,6 @@
         "gauch_fms",
         "gauch_flv",
         "gauch_peak_timing",
-        "gauch_missed_peaks",
-        "gauch_peak_mape",
       ],
     },
   };
@@ -1466,12 +1438,6 @@
     }
     if (col === "gauch_peak_timing") {
       return Math.max(5, Math.min(100, ((1.0 - n) / 0.8) * 100));
-    }
-    if (col === "gauch_missed_peaks") {
-      return Math.max(5, Math.min(100, ((0.8 - n) / 0.6) * 100));
-    }
-    if (col === "gauch_peak_mape") {
-      return Math.max(5, Math.min(100, ((80 - n) / 60) * 100));
     }
     if (col === "nse_le_0") {
       const ratio = Math.max(0, 1 - Math.min(n, 130) / 130);

@@ -5,9 +5,9 @@
   "spatial_regime": "pub",
   "forcing_regime": "freeform",
   "title": "12-Fold Random PUB: Freeform Forcings",
-  "short_title": "Table 10: 12-Fold PUB \u2022 Freeform Forcings",
+  "short_title": "Table 10: 12-Fold PUB • Freeform Forcings",
   "tab_label": "Freeform Forcings (Table 10)",
-  "subtitle": "Regionalized ungauged models evaluated over 1989\u20131999 driven by non-CAMELS meteorological forcings.",
+  "subtitle": "Regionalized ungauged models evaluated over 1989–1999 driven by non-CAMELS meteorological forcings.",
   "n_entries": 0,
   "top_model": null,
   "top_nse": null,
@@ -15,32 +15,32 @@
   "protocol": {
     "benchmark_name": "CAMELS-531 Unified Model Intercomparison Project (Newman Period)",
     "n_basins": 531,
-    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000\u20132008; 3,288 daily steps)",
-    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990\u20131999; 3652 daily steps)",
+    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000–2008; 3,288 daily steps)",
+    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990–1999; 3652 daily steps)",
     "spatial_regimes": [
       {
         "id": "gauged",
         "section": "4.1",
         "title": "Gauged Simulation",
-        "short_title": "Gauged (\u00a74.1)",
-        "tables_range": "Tables 3\u20136",
-        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000\u20132008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990\u20131999 (1989-10-01 to 1999-09-30)."
+        "short_title": "Gauged (§4.1)",
+        "tables_range": "Tables 3–6",
+        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000–2008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990–1999 (1989-10-01 to 1999-09-30)."
       },
       {
         "id": "pub",
         "section": "4.2",
         "title": "Prediction in Ungauged Basins (12-Fold Random PUB)",
-        "short_title": "12-Fold PUB (\u00a74.2)",
-        "tables_range": "Tables 7\u201310",
-        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44\u201345 basins/fold), trained on 11 folds during water years 2000\u20132008 and evaluated on the held-out fold during water years 1990\u20131999."
+        "short_title": "12-Fold PUB (§4.2)",
+        "tables_range": "Tables 7–10",
+        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44–45 basins/fold), trained on 11 folds during water years 2000–2008 and evaluated on the held-out fold during water years 1990–1999."
       },
       {
         "id": "pur",
         "section": "4.3",
         "title": "Prediction in Ungauged Regions (18-Fold HUC-02 PUR)",
-        "short_title": "18-Fold PUR (\u00a74.3)",
-        "tables_range": "Tables 11\u201314",
-        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000\u20132008 and evaluated on the held-out HUC-02 region during water years 1990\u20131999."
+        "short_title": "18-Fold PUR (§4.3)",
+        "tables_range": "Tables 11–14",
+        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000–2008 and evaluated on the held-out HUC-02 region during water years 1990–1999."
       }
     ],
     "forcing_regimes": [

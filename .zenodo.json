@@ -1,0 +1,25 @@
+{
+  "title": "CAMELS-US Model Intercomparison Project (camels-us-mip)",
+  "upload_type": "software",
+  "license": "Apache-2.0",
+  "description": "Codebase, standardized evaluation metrics, basin split definitions, and leaderboard registry for the CAMELS-US Model Intercomparison Project (MIP). First-party code is licensed under Apache-2.0; first-party benchmark datasets, hydrograph Zarr archives, splits, and leaderboard tables are licensed under CC-BY-4.0.",
+  "creators": [
+    {
+      "name": "Nearing, Grey",
+      "affiliation": "Google Research"
+    },
+    {
+      "name": "Klotz, Daniel",
+      "affiliation": "Google Research"
+    }
+  ],
+  "keywords": [
+    "hydrology",
+    "rainfall-runoff modeling",
+    "CAMELS",
+    "streamflow prediction",
+    "model intercomparison",
+    "machine learning",
+    "benchmarking"
+  ]
+}

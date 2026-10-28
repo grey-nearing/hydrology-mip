@@ -41,7 +41,7 @@ Every model family in [`leaderboards/table_2_registry.json`](../leaderboards/tab
    - Every entry in `leaderboards/table_2_registry.json` and every row in `leaderboards/*__*.json` must declare **strictly one** provenance category—never a compound string like `"Archive & MIP Re-run"` or `"Literature & MIP Re-run"`:
      - **`Archive`**: Publicly archived daily hydrographs (`(531, 3652)` over `1989-10-01` to `1999-09-30` on all 531 canonical basins) produced by the cited authors and scored directly by `metrics/evaluator.py`.
      - **`Archive*`**: Publicly archived daily hydrographs produced by the cited authors that cover fewer than 531 basins (e.g., 447, 489, 524, or 530 basins) or a non-standard time window (`asterisk: true`).
-     - **`Literature`**: Published paper metrics reported directly on the canonical 531-basin Newman split (`1989-10-01` to `1999-09-30`) without a public daily hydrograph archive (only `NSE` is populated; the remaining 13 Gauch et al. 2023 metrics are `None` / `"---"`).
+     - **`Literature`**: Published paper metrics reported directly on the canonical 531-basin Newman split (`1989-10-01` to `1999-09-30`) without a public daily hydrograph archive (only `NSE` is populated; the remaining 11 Gauch et al. 2023 metrics are `None` / `"---"`).
      - **`Literature*`**: Published paper metrics reported on the 531 Newman basins over a slightly modified evaluation window (e.g., the 9-water-year `WY1991–1999` window in `Feng et al., 2020` and `Jamaat et al., 2025`, `asterisk: true`).
      - **`MIP Re-run (Our Code)`**: Clean-room re-implementation (or daily/CAMELS domain adaptation) written in `models/<model_name>/`, verified via Stage-1 author-protocol reproduction, and executed on the standardized MIP protocol via `models/run_model.py`.
      - **`MIP Re-run (Author Code)`**: Direct execution of the original authors' unmodified open-source repository on the standardized MIP protocol.
@@ -54,7 +54,7 @@ Every model family in [`leaderboards/table_2_registry.json`](../leaderboards/tab
 1. **Never Replace a Valid Newman-Split Literature or Archive Entry with a MIP Re-run:**
    - If a model was published on the Newman splits by a previous author in a given configuration (`gauged`, `pub`, or `pur` with a specific forcing), **we report the original `Literature` or `Archive` values** for that configuration and do **not** replace them with a MIP re-run. For `Literature` entries, we accept missing secondary statistics (`"---"` for non-NSE metrics) in order to preserve 100% fidelity to the original authors' published numbers.
 2. **Separate Model Entry for Additional or Competing MIP Re-runs:**
-   - When we include a verified clean-room `MIP Re-run (Our Code)` alongside a `Literature` entry on the same leaderboard to provide all 14 Gauch et al. (2023) hydrograph metrics, or when we run authorized expansions of a model, those runs **must live in a separate model entry** (`<family_id>_rerun`) with the same model name and canonical citation, marked `MIP Re-run (Our Code)`.
+   - When we include a verified clean-room `MIP Re-run (Our Code)` alongside a `Literature` entry on the same leaderboard to provide all 12 Gauch et al. (2023) hydrograph metrics, or when we run authorized expansions of a model, those runs **must live in a separate model entry** (`<family_id>_rerun`) with the same model name and canonical citation, marked `MIP Re-run (Our Code)`.
    - The `Literature`/`Archive` entry and the `MIP Re-run (Our Code)` entry are treated as separate, competing entries on the leaderboard and in Table 2.
 3. **No Unauthored Configurations for External `MIP Re-run` Models ("If They Didn't Run It, We Don't Run It"):**
    - For `MIP Re-run` models from external authors, **only evaluate and include configurations (single-forcing vs. multi-forcing, Gauged vs. PUB/PUR) that the original authors actually defined and ran in their paper**.
@@ -71,11 +71,11 @@ Every model family in [`leaderboards/table_2_registry.json`](../leaderboards/tab
      1. **Ensemble Row (`is_ensemble: true`)**:
         - `entry_id`: `"<base_entry_id>"`
         - `model_name`: `"<Base Model Name> (<N>-model ensemble)"` (where `<N>` strictly equals `num_members`)
-        - Scored and ranked on the ensemble-mean daily hydrograph `qsim = np.mean(qsim_members, axis=0)` across all 14 Gauch et al. (2023) metrics.
+        - Scored and ranked on the ensemble-mean daily hydrograph `qsim = np.mean(qsim_members, axis=0)` across all 12 Gauch et al. (2023) metrics.
      2. **Single-Model Row (`is_ensemble: false`)**:
         - `entry_id`: `"<base_entry_id>_single"`
         - `model_name`: `"<Base Model Name>"` (with **no** `(N-model ensemble)` suffix)
-        - Scored and ranked using the **mean ($\pm$ std) across all $N$ individual seed members** (`qsim_members[0 .. N-1]`) for **all 14 Gauch et al. (2023) metrics** and `nse_le_0`.
+        - Scored and ranked using the **mean ($\pm$ std) across all $N$ individual seed members** (`qsim_members[0 .. N-1]`) for **all 12 Gauch et al. (2023) metrics** and `nse_le_0`.
 2. **Strict Prohibition on `seed 0` (`member[0]`) Single-Model Scoring:**
    - **Never** score or rank a Single-Model row from an $N$-seed Zarr store using `member[0]` (`seed 0`) alone. Scoring `seed 0` alone introduces random-seed luck noise and can cause a single seed to artificially outrank its own ensemble mean (e.g., `0.824 > 0.820`). Every Single-Model row backed by `qsim_members` ($N \ge 2$) must aggregate per-member metrics across all $N$ members (`evaluation_mode="single_member_mean"` in `metrics/evaluator.py`).
 3. **Ensemble Display Suffix Hygiene:**

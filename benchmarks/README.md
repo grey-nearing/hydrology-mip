@@ -1,6 +1,6 @@
 # Benchmark Verification Suite (`benchmarks/`)
 
-The `benchmarks/` package scores and checks all model streamflow predictions (`mm/day`) across the 12 CAMELS-US Model Intercomparison Project (MIP) leaderboards in `gs://camels-us-mip/`. It verifies that every model store has shape `(531, 3652)` over `1989-10-01` to `1999-09-30` (`3,652` days), has zero missing basins and zero missing predictions on days with valid USGS flow observations (`pred_nan_when_obs_valid == 0`), and reports all 5 headline metrics, all 14 Gauch et al. (2023) metric distributions, lower-tail skill percentiles, peak-flow error percentiles, and 18-region summaries.
+The `benchmarks/` package scores and checks all model streamflow predictions (`mm/day`) across the 12 CAMELS-US Model Intercomparison Project (MIP) leaderboards in `gs://camels-us-mip/`. It verifies that every model store has shape `(531, 3652)` over `1989-10-01` to `1999-09-30` (`3,652` days), has zero missing basins and zero missing predictions on days with valid USGS flow observations (`pred_nan_when_obs_valid == 0`), and reports all 5 headline metrics, all 12 Gauch et al. (2023) metric distributions, lower-tail skill percentiles, peak-flow error percentiles, and 18-region summaries.
 
 ## 1. Overview & Summary Table
 

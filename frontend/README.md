@@ -9,11 +9,11 @@
 | Component | Entry Point / Route | Input | Output |
 | :--- | :--- | :--- | :--- |
 | **Web Server** | `uvicorn frontend.backend.app:app` | `leaderboards/*.json`, `splits/splits_and_regimes.json` | Web UI at `http://localhost:8080/` and JSON API at `/api/*` |
-| **Health Check** | `GET /api/health` | None | Server status, leaderboard count (`12`), and model count (`34`) |
+| **Health Check** | `GET /api/health` | None | Server status, leaderboard count (`12`), and model count (`32`) |
 | **Protocol Metadata** | `GET /api/protocol` | None | 531 USGS 8-digit basin IDs, date windows, 12-fold PUB splits, and 18-fold HUC-02 PUR splits |
 | **All Leaderboards** | `GET /api/leaderboards` | Optional query filters (`spatial_regime`, `forcing_regime`, `category`, `search`) | All 12 leaderboard tables and the registry model families |
 | **Single Leaderboard** | `GET /api/leaderboards/{leaderboard_id}` | `leaderboard_id` (e.g., `gauged__single_camels`) | Ranked rows for one leaderboard table |
-| **Model Registry** | `GET /api/registry` | None | Table 2 model families (`34` models) and contributed runs |
+| **Model Registry** | `GET /api/registry` | None | Table 2 model families (`32` models) and contributed runs |
 | **Score Hydrographs** | `POST /api/score` | Multipart file (`.zarr` zip, `.npz`, or `.npy` of shape `(531, 3652)` in `mm/day`) | 5 headline metrics, lower-tail percentiles, and 18-region HUC-02 breakdown |
 | **Submit Model** | `POST /api/submit` | Multipart file (`(531, 3652)` in `mm/day`) + model metadata and URLs | Verified score and new row added to the selected leaderboard |
 

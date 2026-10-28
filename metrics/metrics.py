@@ -21,7 +21,7 @@
 
 """Evaluation metrics for observed and simulated discharge time series.
 
-Implements the exact 14 hydrological evaluation metrics from Gauch et al. (2023)
+Implements the 12 canonical hydrological evaluation metrics from Gauch et al. (2023)
 ("In Defense of Metrics: Metrics Sufficiently Encode Typical Human Preferences
 Regarding Hydrological Model Performance", Water Resources Research) and
 NeuralHydrology (Kratzert et al., 2022).
@@ -855,188 +855,6 @@ def mean_peak_timing(
     return float(np.mean(timing_errors)) if len(timing_errors) > 0 else np.nan
 
 
-def missed_peaks(
-    obs: DataArray,
-    sim: DataArray,
-    window: int | None = None,
-    resolution: str = '1D',
-    percentile: float = 80,
-    datetime_coord: str | None = None,
-) -> float:
-    r"""Fraction of missed peaks.
-
-    Uses scipy.find_peaks to find peaks in the observed and simulated time
-    series above a certain percentile. Counts the number of peaks in obs that
-    do not exist in sim within the specified window.
-
-    Args:
-        obs: Observed time series.
-        sim: Simulated time series.
-        window: Size of window to consider on each side of the observed peak
-            for finding the simulated peak. That is, the total window length
-            to find the peak in the simulations is
-            :math:`2 * \text{window} + 1` centered at the observed peak. The
-            default depends on the temporal resolution, e.g. for a resolution
-            of '1D', a window of 1 is used and for a resolution of '1h' the
-            window size is 12. Note that this is a different default window
-            size than is used in the peak-timing metric for '1D'.
-        resolution: Temporal resolution of the time series in pandas format,
-            e.g. '1D' for daily and '1h' for hourly.
-        percentile: Only consider peaks above this flow percentile (0, 100).
-        datetime_coord: Name of datetime coordinate. Tried to infer
-            automatically if not specified.
-
-    Returns:
-        Fraction of missed peaks.
-    """
-    # verify inputs
-    _validate_inputs(obs, sim)
-
-    # Handle pooled MultiIndex arrays (e.g. across lead times) cleanly
-    if (
-        obs.dims
-        and obs.dims[0] in obs.indexes
-        and isinstance(obs.indexes[obs.dims[0]], pd.MultiIndex)
-    ):
-        dim = obs.dims[0]
-        obs_unstacked, sim_unstacked = obs.unstack(dim), sim.unstack(dim)
-        group_dim = obs_unstacked.dims[0]
-        errors = []
-        for i in range(obs_unstacked.sizes[group_dim]):
-            err = missed_peaks(
-                obs_unstacked.isel({group_dim: i}),
-                sim_unstacked.isel({group_dim: i}),
-                window,
-                resolution,
-                percentile,
-                datetime_coord,
-            )
-            if not np.isnan(err):
-                errors.append(err)
-        return float(np.mean(errors)) if errors else np.nan
-
-    # get time series with only valid observations (scipy's find_peaks doesn't
-    # guarantee correctness with NaNs)
-    obs, sim = _mask_valid(obs, sim)
-
-    obs_vals = np.asarray(obs.values)
-    sim_vals = np.asarray(sim.values)
-    if obs_vals.size == 0 or sim_vals.size == 0:
-        return np.nan
-
-    # minimum height of a peak, as defined by percentile, which can be passed
-    min_obs_height = np.percentile(obs_vals, percentile)
-    min_sim_height = np.percentile(sim_vals, percentile)
-
-    # get time indices of peaks in obs and sim.
-    peaks_obs_times, _ = signal.find_peaks(
-        obs_vals, distance=30, height=min_obs_height
-    )
-    peaks_sim_times, _ = signal.find_peaks(
-        sim_vals, distance=30, height=min_sim_height
-    )
-
-    if len(peaks_obs_times) == 0:
-        return 0.0
-
-    # infer name of datetime index
-    if datetime_coord is None:
-        datetime_coord = infer_datetime_coord(obs)
-
-    # infer a reasonable window size
-    if window is None:
-        window = max(int(get_frequency_factor('12h', resolution)), 1)
-
-    dates_ns = np.asarray(obs.coords[datetime_coord].values, dtype='datetime64[ns]')
-    res_td = pd.to_timedelta(resolution).to_numpy().astype('timedelta64[ns]')
-    expected_span = (2 * window) * res_td
-
-    # count missed peaks
-    missed_events = 0
-    valid_peaks = 0
-
-    for idx in peaks_obs_times:
-        # skip peaks at the start and end of the sequence and peaks around
-        # missing observations (NaNs that were removed in obs & sim would
-        # result in windows that span too much time).
-        if (
-            (idx - window < 0)
-            or (idx + window >= len(obs_vals))
-            or ((dates_ns[idx + window] - dates_ns[idx - window]) != expected_span)
-        ):
-            continue
-
-        valid_peaks += 1
-        nearby_peak_sim_index = np.where(
-            np.abs(peaks_sim_times - idx) <= window
-        )[0]
-        if len(nearby_peak_sim_index) == 0:
-            missed_events += 1
-
-    return float(missed_events / valid_peaks) if valid_peaks > 0 else np.nan
-
-
-def mean_absolute_percentage_peak_error(
-    obs: DataArray, sim: DataArray
-) -> float:
-    r"""Calculate the mean absolute percentage error (MAPE) for peaks.
-
-    .. math::
-        \text{MAPE}_\text{peak} = \frac{1}{P}\sum_{p=1}^{P}
-        \left |\frac{Q_{s,p} - Q_{o,p}}{Q_{o,p}} \right | \times 100,
-
-    where :math:`Q_{s,p}` are the simulated peaks (here, `sim`),
-    :math:`Q_{o,p}` the observed peaks (here, `obs`) and `P` is the number of
-    peaks.
-
-    Uses scipy.find_peaks to find peaks in the observed time series. The
-    observed peaks indices are used to subset observed and simulated flows.
-    Finally, the MAPE metric is calculated as the mean absolute percentage
-    error of observed peak flows and corresponding simulated flows.
-
-    Args:
-        obs: Observed time series.
-        sim: Simulated time series.
-
-    Returns:
-        Mean absolute percentage error (MAPE) for peaks.
-    """
-    # verify inputs
-    _validate_inputs(obs, sim)
-
-    # get time series with only valid observations
-    obs, sim = _mask_valid(obs, sim)
-
-    # return np.nan if there are no valid observed or simulated values
-    if obs.size == 0 or sim.size == 0:
-        return np.nan
-
-    obs_vals = np.asarray(obs.values)
-    sim_vals = np.asarray(sim.values)
-
-    # heuristic to get indices of peaks and their corresponding height.
-    peaks, _ = signal.find_peaks(
-        obs_vals, distance=100, prominence=np.std(obs_vals)
-    )
-
-    # check if any peaks exist, otherwise return np.nan
-    if peaks.size == 0:
-        return np.nan
-
-    # subset data to only peak values
-    obs_p = obs_vals[peaks]
-    sim_p = sim_vals[peaks]
-
-    # a relative error is undefined for zero-valued observed peaks; such peaks
-    # cannot occur for prominence-based detection on non-negative discharge,
-    # but guard explicitly so no Inf can leak into aggregate statistics.
-    if np.any(obs_p == 0):
-        return np.nan
-
-    # calculate the mean absolute percentage peak error
-    return float(np.sum(np.abs((sim_p - obs_p) / obs_p)) / peaks.size * 100)
-
-
 # Keep discovery, explicit selection, and the all-metrics path in sync.
 _METRIC_FUNCTIONS: dict[str, Callable[..., float]] = {
     'NSE': nse,
@@ -1051,8 +869,6 @@ _METRIC_FUNCTIONS: dict[str, Callable[..., float]] = {
     'FMS': fdc_fms,
     'FLV': fdc_flv,
     'Peak-Timing': mean_peak_timing,
-    'Missed-Peaks': missed_peaks,
-    'Peak-MAPE': mean_absolute_percentage_peak_error,
 }
 
 
@@ -1126,7 +942,7 @@ def calculate_metrics(
             raise RuntimeError(f'Unknown metric {metric}')
         name = canonical_names[key_lower]
         function = _METRIC_FUNCTIONS[name]
-        if function in (mean_peak_timing, missed_peaks):
+        if function is mean_peak_timing:
             values[name] = function(
                 obs, sim, resolution=resolution, datetime_coord=datetime_coord
             )

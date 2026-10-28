@@ -150,11 +150,11 @@ def _build_synthetic_qobs(basins: np.ndarray) -> np.ndarray:
 
 
 @pytest.mark.unit
-def test_gauch_2023_all_14_metrics_and_utilities() -> None:
-    """Verify all 14 Gauch et al. (2023) metrics and helper functions in `metrics/metrics.py`."""
+def test_gauch_2023_all_12_metrics_and_utilities() -> None:
+    """Verify all 12 Gauch et al. (2023) metrics and helper functions in `metrics/metrics.py`."""
     available = get_available_metrics()
     assert tuple(available) == GAUCH_2023_METRICS
-    assert len(available) == 14
+    assert len(available) == 12
 
     dates = _canonical_dates()
     t = np.linspace(0.0, 20.0 * np.pi, NUM_EVAL_DAYS, dtype=np.float64)
@@ -177,8 +177,6 @@ def test_gauch_2023_all_14_metrics_and_utilities() -> None:
     assert all_m["Pearson-r"] == pytest.approx(1.0, abs=1e-5)
     assert all_m["FHV"] == pytest.approx(10.0, abs=1e-4)
     assert all_m["Peak-Timing"] == pytest.approx(0.0, abs=1e-5)
-    assert all_m["Missed-Peaks"] == pytest.approx(0.0, abs=1e-5)
-    assert all_m["Peak-MAPE"] == pytest.approx(10.0, abs=1e-4)
 
     subset_m = calculate_metrics(obs_da, sim_da, ["nse", "kge"])
     assert set(subset_m.keys()) == {"NSE", "KGE"}
@@ -248,8 +246,6 @@ def test_perfect_predictions_with_530_valid_basins(tmp_path: Path) -> None:
 
     assert set(result["gauch_2023_metrics"].keys()) == set(GAUCH_2023_METRICS)
     assert result["median_peak_timing"] == pytest.approx(0.0, abs=1e-4)
-    assert result["median_missed_peaks"] == pytest.approx(0.0, abs=1e-4)
-    assert result["median_peak_mape"] == pytest.approx(0.0, abs=1e-4)
 
     assert len(result["regional_huc02"]) == 18
     for huc_code, med_val in result["regional_huc02"].items():
@@ -971,7 +967,7 @@ def test_cli_entrypoint_writes_output_json(
 
 @pytest.mark.unit
 def test_single_member_mean_evaluation_mode(tmp_path: Path) -> None:
-    """Verify evaluation_mode='single_member_mean' averages all 14 Gauch metrics across all N members."""
+    """Verify evaluation_mode='single_member_mean' averages all 12 Gauch metrics across all N members."""
     basins, huc_02 = _load_canonical_basins_and_huc02()
     dates = _canonical_dates()
     qobs = _build_synthetic_qobs(basins)

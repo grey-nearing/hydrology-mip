@@ -583,50 +583,50 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **41** | `t3_55` | **dPL + VIC (g_A)*** | `tsai2021_dpl_vic` | Hybrid (ML + Physics) | `Literature*` | Tsai et al. (2021) | Maurer | No (1) | 498 | 1989-10-01 to 1999-09-30 | **0.439** | 0.439 | -0.189 | --- | --- | 61 | `---` / `---` |
 | **42** | `t3_vic_mpr` | **VIC 4.1.2 (CONUS MPR)** | `mizukami_vic_mpr` | Process-based | `Archive` | Mizukami et al. (2017) | Maurer | No (1) | 531 | 1989-10-01 to 1999-09-30 | **0.307** | 0.307 | 0.194 | 0.259 | 0.164 | 47 | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `t3_02` | LSTM (10-model ensemble) | **0.772** | 0.763 | 0.894 | 0.845 | -0.035 | 0.932 | 1.179 | 1.390 | -16.36 | -6.99 | 39.26 | 0.29 | 0.36 | 38.15 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr` |
-| **2** | `t3_06` | LSTM (10-model ensemble) | **0.764** | 0.765 | 0.886 | 0.843 | -0.033 | 0.940 | 1.171 | 1.372 | -15.89 | -8.92 | 43.72 | 0.33 | 0.37 | 38.26 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr` |
-| **3** | `t3_18` | δHBV 1.1p / δMG (5-model ensemble) | **0.759** | 0.757 | 0.884 | 0.855 | -0.016 | 0.970 | 1.196 | 1.431 | -14.06 | -10.01 | 28.87 | 0.32 | 0.35 | 37.90 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr` |
-| **4** | `t3_11` | LSTM (270d, 8-model ensemble) | **0.759** | 0.756 | 0.885 | 0.834 | -0.033 | 0.934 | 1.201 | 1.443 | -16.42 | -8.85 | 55.13 | 0.33 | 0.37 | 39.01 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr` |
-| **5** | `t3_12` | MC-LSTM (Frame 2023 Archive, Daymet) | **0.758** | 0.757 | 0.882 | 0.837 | -0.029 | 0.941 | 1.220 | 1.487 | -16.42 | -9.96 | -14.54 | 0.30 | 0.35 | 38.14 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_12.zarr` |
-| **6** | `t3_19` | δHBV 1.1p / δMG (single model) | **0.754** | 0.756 | 0.881 | 0.853 | -0.017 | 0.967 | 1.214 | 1.472 | -14.24 | -10.12 | 26.22 | 0.32 | 0.36 | 38.26 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr` |
-| **8** | `t3_15` | LSTM (10-model ensemble) | **0.747** | 0.740 | 0.878 | 0.810 | -0.031 | 0.936 | 1.260 | 1.588 | -18.97 | -10.71 | 37.77 | 0.32 | 0.36 | 38.31 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr` |
-| **9** | `t3_08` | LSTM (single model) | **0.744** | 0.759 | 0.878 | 0.858 | -0.035 | 0.931 | 1.250 | 1.562 | -15.15 | -6.01 | -0.26 | 0.33 | 0.38 | 39.87 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr` |
-| **10** | `hoedt_mclstm_lit_maurer` | MC-LSTM (Hoedt 2021 — Literature, 10-model ensemble)* | **0.744** | --- | --- | --- | --- | --- | --- | --- | -14.70 | -10.50 | 27.60 | --- | --- | --- | --- |
-| **11** | `hoedt_mclstm_maurer` | MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer) | **0.743** | 0.763 | 0.874 | 0.844 | -0.029 | 0.943 | 1.246 | 1.553 | -15.33 | -11.56 | -3.34 | 0.35 | 0.37 | 39.27 | `gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr` |
-| **12** | `t3_29` | δHBV 1.0 (5-model ensemble) | **0.742** | 0.733 | 0.876 | 0.824 | -0.007 | 0.985 | 1.223 | 1.495 | -16.19 | -15.27 | 23.40 | 0.33 | 0.36 | 38.31 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr` |
-| **13** | `t3_23` | EA-LSTM (8-model ensemble) | **0.741** | 0.737 | 0.876 | 0.807 | -0.032 | 0.939 | 1.253 | 1.569 | -18.82 | -10.99 | 31.33 | 0.38 | 0.39 | 40.52 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr` |
-| **14** | `t3_21` | S4D-FT (Frequency-Tuned Diagonal SSM, single model) | **0.740** | --- | --- | --- | --- | --- | --- | --- | -13.98 | --- | 24.47 | --- | --- | --- | --- |
-| **15** | `t3_28` | MC-LSTM (Frame 2023 Archive, NLDAS) | **0.736** | 0.737 | 0.872 | 0.814 | -0.021 | 0.955 | 1.296 | 1.680 | -18.57 | -10.40 | -17.75 | 0.31 | 0.36 | 37.89 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_28.zarr` |
-| **16** | `poudel_mlp_hbv_daymet` | Static-Parameter MLP + 16-HBV (3-model ensemble) | **0.735** | 0.738 | 0.875 | 0.842 | -0.010 | 0.983 | 1.245 | 1.549 | -15.96 | -4.79 | -0.32 | 0.32 | 0.37 | 39.74 | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
-| **18** | `t3_33` | δHBV 1.0 (single model) | **0.733** | 0.729 | 0.872 | 0.827 | -0.009 | 0.984 | 1.243 | 1.545 | -16.07 | -15.14 | 22.36 | 0.33 | 0.36 | 39.18 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr` |
-| **19** | `poudel_mlp_hbv_daymet_single` | Static-Parameter MLP + 16-HBV (single model) | **0.733** | 0.739 | 0.871 | 0.841 | -0.010 | 0.982 | 1.251 | 1.565 | -16.12 | -4.51 | -5.33 | 0.33 | 0.37 | 40.36 | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
-| **20** | `t3_20` | LSTM (single model) | **0.732** | 0.760 | 0.869 | 0.853 | -0.032 | 0.935 | 1.267 | 1.606 | -14.48 | -7.49 | 1.67 | 0.37 | 0.39 | 39.87 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr` |
-| **21** | `t3_26` | LSTM (270d, single model) | **0.732** | 0.750 | 0.868 | 0.848 | -0.034 | 0.935 | 1.279 | 1.635 | -15.25 | -8.28 | 25.87 | 0.37 | 0.39 | 40.58 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr` |
-| **22** | `hoedt_mclstm_lit_maurer_single` | MC-LSTM (Hoedt 2021 — Literature, single model)* | **0.726** | --- | --- | --- | --- | --- | --- | --- | -14.70 | -10.50 | 27.60 | --- | --- | --- | --- |
-| **23** | `t3_32` | LSTM (single model) | **0.720** | 0.733 | 0.863 | 0.822 | -0.032 | 0.933 | 1.313 | 1.724 | -17.70 | -9.39 | -1.52 | 0.34 | 0.38 | 40.22 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr` |
-| **24** | `t3_s4d_lit` | S4D (Diagonal State Space Model, single model) | **0.720** | --- | --- | --- | --- | --- | --- | --- | -16.88 | --- | 36.60 | --- | --- | --- | --- |
-| **25** | `tft_gauged_maurer` | Temporal Fusion Transformer (single model) | **0.716** | 0.702 | 0.862 | 0.786 | -0.044 | 0.907 | 1.313 | 1.723 | -19.63 | -8.99 | 26.00 | 0.35 | 0.37 | 40.89 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr` |
-| **26** | `hoedt_mclstm_maurer_single` | MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer, Single Model) | **0.716** | 0.755 | 0.860 | 0.858 | -0.031 | 0.939 | 1.312 | 1.720 | -14.28 | -10.52 | -28.07 | 0.38 | 0.39 | 40.35 | `gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr` |
-| **27** | `t3_30` | EA-LSTM (single model) | **0.712** | 0.725 | 0.858 | 0.821 | -0.033 | 0.939 | 1.323 | 1.751 | -17.39 | -9.79 | 2.12 | 0.41 | 0.40 | 42.00 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr` |
-| **28** | `t3_39` | HBV-light (HBV-upper, 100-member calibrated ensemble) | **0.678** | 0.682 | 0.835 | 0.792 | -0.014 | 0.969 | 1.401 | 1.962 | -18.48 | -24.09 | 17.09 | 0.44 | 0.41 | 45.67 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_39.zarr` |
-| **29** | `t3_41` | mHM (Basin-Calibrated)* | **0.665** | 0.687 | 0.831 | 0.803 | -0.040 | 0.921 | 1.431 | 2.049 | -18.95 | -7.13 | 13.39 | 0.45 | 0.44 | 46.09 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_41.zarr` |
-| **30** | `sacsma_gauged_single_daymet` | SAC-SMA + Snow-17 (DDS, single model) | **0.661** | 0.677 | 0.834 | 0.812 | -0.083 | 0.826 | 1.408 | 1.982 | -19.91 | 16.87 | -132.27 | 0.37 | 0.38 | 43.27 | `gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr` |
-| **31** | `t3_42` | XGBoost (8-model ensemble) | **0.658** | --- | --- | --- | --- | --- | --- | --- | -27.79 | -7.06 | -446.95 | --- | --- | --- | https://zenodo.org/records/3648270 |
-| **32** | `t3_43` | FUSE (902)* | **0.654** | 0.691 | 0.824 | 0.802 | -0.048 | 0.902 | 1.467 | 2.151 | -19.36 | 9.61 | -67.97 | 0.41 | 0.39 | 45.73 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_43.zarr` |
-| **33** | `t3_44` | LSTM without Static Attributes (8-model ensemble) | **0.642** | 0.631 | 0.837 | 0.753 | -0.031 | 0.940 | 1.452 | 2.107 | -22.76 | -18.49 | 16.21 | 0.44 | 0.42 | 48.69 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr` |
-| **34** | `t3_45` | FUSE (900)* | **0.641** | 0.671 | 0.818 | 0.798 | -0.032 | 0.937 | 1.484 | 2.201 | -18.92 | -4.06 | -12.70 | 0.43 | 0.38 | 45.67 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_45.zarr` |
-| **35** | `t3_42_single` | XGBoost (single model) | **0.639** | --- | --- | --- | --- | --- | --- | --- | -27.35 | -4.96 | -474.00 | --- | --- | --- | https://zenodo.org/records/3648270 |
-| **36** | `t3_46` | FUSE (904)* | **0.624** | 0.648 | 0.809 | 0.788 | -0.070 | 0.862 | 1.524 | 2.324 | -21.41 | 16.64 | -70.24 | 0.45 | 0.40 | 47.38 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_46.zarr` |
-| **37** | `t3_48` | SAC-SMA + Snow-17 (Basin-Calibrated, 10-member SCE-UA ensemble)* | **0.607** | 0.636 | 0.794 | 0.774 | -0.068 | 0.865 | 1.547 | 2.393 | -20.74 | -13.56 | 31.94 | 0.56 | 0.44 | 49.70 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_48.zarr` |
-| **38** | `t3_44_single` | LSTM without Static Attributes (single model) | **0.593** | 0.619 | 0.805 | 0.780 | -0.030 | 0.939 | 1.568 | 2.460 | -20.57 | -16.87 | -50.39 | 0.49 | 0.45 | 51.18 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr` |
-| **39** | `t3_52` | VIC 4.1.2 (Basin-Calibrated)* | **0.554** | 0.595 | 0.763 | 0.731 | -0.021 | 0.963 | 1.653 | 2.732 | -27.61 | -5.77 | -66.53 | 0.50 | 0.41 | 51.86 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_52.zarr` |
-| **40** | `t3_mhm_mpr` | mHM (CONUS MPR)* | **0.528** | 0.469 | 0.793 | 0.594 | -0.035 | 0.930 | 1.691 | 2.860 | -39.01 | -29.52 | 36.63 | 0.50 | 0.43 | 59.44 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t7_19.zarr` |
-| **41** | `t3_55` | dPL + VIC (g_A)* | **0.439** | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | https://zenodo.org/records/6383415 |
-| **42** | `t3_vic_mpr` | VIC 4.1.2 (CONUS MPR) | **0.307** | 0.259 | 0.659 | 0.460 | -0.072 | 0.856 | 2.056 | 4.226 | -55.50 | -26.28 | 17.40 | 0.89 | 0.43 | 65.87 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t7_22.zarr` |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `t3_02` | LSTM (10-model ensemble) | **0.772** | 0.763 | 0.894 | 0.845 | -0.035 | 0.932 | 1.179 | 1.390 | -16.36 | -6.99 | 39.26 | 0.29 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr` |
+| **2** | `t3_06` | LSTM (10-model ensemble) | **0.764** | 0.765 | 0.886 | 0.843 | -0.033 | 0.940 | 1.171 | 1.372 | -15.89 | -8.92 | 43.72 | 0.33 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr` |
+| **3** | `t3_18` | δHBV 1.1p / δMG (5-model ensemble) | **0.759** | 0.757 | 0.884 | 0.855 | -0.016 | 0.970 | 1.196 | 1.431 | -14.06 | -10.01 | 28.87 | 0.32 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr` |
+| **4** | `t3_11` | LSTM (270d, 8-model ensemble) | **0.759** | 0.756 | 0.885 | 0.834 | -0.033 | 0.934 | 1.201 | 1.443 | -16.42 | -8.85 | 55.13 | 0.33 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr` |
+| **5** | `t3_12` | MC-LSTM (Frame 2023 Archive, Daymet) | **0.758** | 0.757 | 0.882 | 0.837 | -0.029 | 0.941 | 1.220 | 1.487 | -16.42 | -9.96 | -14.54 | 0.30 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_12.zarr` |
+| **6** | `t3_19` | δHBV 1.1p / δMG (single model) | **0.754** | 0.756 | 0.881 | 0.853 | -0.017 | 0.967 | 1.214 | 1.472 | -14.24 | -10.12 | 26.22 | 0.32 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr` |
+| **8** | `t3_15` | LSTM (10-model ensemble) | **0.747** | 0.740 | 0.878 | 0.810 | -0.031 | 0.936 | 1.260 | 1.588 | -18.97 | -10.71 | 37.77 | 0.32 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr` |
+| **9** | `t3_08` | LSTM (single model) | **0.744** | 0.759 | 0.878 | 0.858 | -0.035 | 0.931 | 1.250 | 1.562 | -15.15 | -6.01 | -0.26 | 0.33 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr` |
+| **10** | `hoedt_mclstm_lit_maurer` | MC-LSTM (Hoedt 2021 — Literature, 10-model ensemble)* | **0.744** | --- | --- | --- | --- | --- | --- | --- | -14.70 | -10.50 | 27.60 | --- | --- |
+| **11** | `hoedt_mclstm_maurer` | MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer) | **0.743** | 0.763 | 0.874 | 0.844 | -0.029 | 0.943 | 1.246 | 1.553 | -15.33 | -11.56 | -3.34 | 0.35 | `gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr` |
+| **12** | `t3_29` | δHBV 1.0 (5-model ensemble) | **0.742** | 0.733 | 0.876 | 0.824 | -0.007 | 0.985 | 1.223 | 1.495 | -16.19 | -15.27 | 23.40 | 0.33 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr` |
+| **13** | `t3_23` | EA-LSTM (8-model ensemble) | **0.741** | 0.737 | 0.876 | 0.807 | -0.032 | 0.939 | 1.253 | 1.569 | -18.82 | -10.99 | 31.33 | 0.38 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr` |
+| **14** | `t3_21` | S4D-FT (Frequency-Tuned Diagonal SSM, single model) | **0.740** | --- | --- | --- | --- | --- | --- | --- | -13.98 | --- | 24.47 | --- | --- |
+| **15** | `t3_28` | MC-LSTM (Frame 2023 Archive, NLDAS) | **0.736** | 0.737 | 0.872 | 0.814 | -0.021 | 0.955 | 1.296 | 1.680 | -18.57 | -10.40 | -17.75 | 0.31 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_28.zarr` |
+| **16** | `poudel_mlp_hbv_daymet` | Static-Parameter MLP + 16-HBV (3-model ensemble) | **0.735** | 0.738 | 0.875 | 0.842 | -0.010 | 0.983 | 1.245 | 1.549 | -15.96 | -4.79 | -0.32 | 0.32 | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
+| **18** | `t3_33` | δHBV 1.0 (single model) | **0.733** | 0.729 | 0.872 | 0.827 | -0.009 | 0.984 | 1.243 | 1.545 | -16.07 | -15.14 | 22.36 | 0.33 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr` |
+| **19** | `poudel_mlp_hbv_daymet_single` | Static-Parameter MLP + 16-HBV (single model) | **0.733** | 0.739 | 0.871 | 0.841 | -0.010 | 0.982 | 1.251 | 1.565 | -16.12 | -4.51 | -5.33 | 0.33 | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
+| **20** | `t3_20` | LSTM (single model) | **0.732** | 0.760 | 0.869 | 0.853 | -0.032 | 0.935 | 1.267 | 1.606 | -14.48 | -7.49 | 1.67 | 0.37 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr` |
+| **21** | `t3_26` | LSTM (270d, single model) | **0.732** | 0.750 | 0.868 | 0.848 | -0.034 | 0.935 | 1.279 | 1.635 | -15.25 | -8.28 | 25.87 | 0.37 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr` |
+| **22** | `hoedt_mclstm_lit_maurer_single` | MC-LSTM (Hoedt 2021 — Literature, single model)* | **0.726** | --- | --- | --- | --- | --- | --- | --- | -14.70 | -10.50 | 27.60 | --- | --- |
+| **23** | `t3_32` | LSTM (single model) | **0.720** | 0.733 | 0.863 | 0.822 | -0.032 | 0.933 | 1.313 | 1.724 | -17.70 | -9.39 | -1.52 | 0.34 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr` |
+| **24** | `t3_s4d_lit` | S4D (Diagonal State Space Model, single model) | **0.720** | --- | --- | --- | --- | --- | --- | --- | -16.88 | --- | 36.60 | --- | --- |
+| **25** | `tft_gauged_maurer` | Temporal Fusion Transformer (single model) | **0.716** | 0.702 | 0.862 | 0.786 | -0.044 | 0.907 | 1.313 | 1.723 | -19.63 | -8.99 | 26.00 | 0.35 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr` |
+| **26** | `hoedt_mclstm_maurer_single` | MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer, Single Model) | **0.716** | 0.755 | 0.860 | 0.858 | -0.031 | 0.939 | 1.312 | 1.720 | -14.28 | -10.52 | -28.07 | 0.38 | `gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr` |
+| **27** | `t3_30` | EA-LSTM (single model) | **0.712** | 0.725 | 0.858 | 0.821 | -0.033 | 0.939 | 1.323 | 1.751 | -17.39 | -9.79 | 2.12 | 0.41 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr` |
+| **28** | `t3_39` | HBV-light (HBV-upper, 100-member calibrated ensemble) | **0.678** | 0.682 | 0.835 | 0.792 | -0.014 | 0.969 | 1.401 | 1.962 | -18.48 | -24.09 | 17.09 | 0.44 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_39.zarr` |
+| **29** | `t3_41` | mHM (Basin-Calibrated)* | **0.665** | 0.687 | 0.831 | 0.803 | -0.040 | 0.921 | 1.431 | 2.049 | -18.95 | -7.13 | 13.39 | 0.45 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_41.zarr` |
+| **30** | `sacsma_gauged_single_daymet` | SAC-SMA + Snow-17 (DDS, single model) | **0.661** | 0.677 | 0.834 | 0.812 | -0.083 | 0.826 | 1.408 | 1.982 | -19.91 | 16.87 | -132.27 | 0.37 | `gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr` |
+| **31** | `t3_42` | XGBoost (8-model ensemble) | **0.658** | --- | --- | --- | --- | --- | --- | --- | -27.79 | -7.06 | -446.95 | --- | https://zenodo.org/records/3648270 |
+| **32** | `t3_43` | FUSE (902)* | **0.654** | 0.691 | 0.824 | 0.802 | -0.048 | 0.902 | 1.467 | 2.151 | -19.36 | 9.61 | -67.97 | 0.41 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_43.zarr` |
+| **33** | `t3_44` | LSTM without Static Attributes (8-model ensemble) | **0.642** | 0.631 | 0.837 | 0.753 | -0.031 | 0.940 | 1.452 | 2.107 | -22.76 | -18.49 | 16.21 | 0.44 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr` |
+| **34** | `t3_45` | FUSE (900)* | **0.641** | 0.671 | 0.818 | 0.798 | -0.032 | 0.937 | 1.484 | 2.201 | -18.92 | -4.06 | -12.70 | 0.43 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_45.zarr` |
+| **35** | `t3_42_single` | XGBoost (single model) | **0.639** | --- | --- | --- | --- | --- | --- | --- | -27.35 | -4.96 | -474.00 | --- | https://zenodo.org/records/3648270 |
+| **36** | `t3_46` | FUSE (904)* | **0.624** | 0.648 | 0.809 | 0.788 | -0.070 | 0.862 | 1.524 | 2.324 | -21.41 | 16.64 | -70.24 | 0.45 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_46.zarr` |
+| **37** | `t3_48` | SAC-SMA + Snow-17 (Basin-Calibrated, 10-member SCE-UA ensemble)* | **0.607** | 0.636 | 0.794 | 0.774 | -0.068 | 0.865 | 1.547 | 2.393 | -20.74 | -13.56 | 31.94 | 0.56 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_48.zarr` |
+| **38** | `t3_44_single` | LSTM without Static Attributes (single model) | **0.593** | 0.619 | 0.805 | 0.780 | -0.030 | 0.939 | 1.568 | 2.460 | -20.57 | -16.87 | -50.39 | 0.49 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr` |
+| **39** | `t3_52` | VIC 4.1.2 (Basin-Calibrated)* | **0.554** | 0.595 | 0.763 | 0.731 | -0.021 | 0.963 | 1.653 | 2.732 | -27.61 | -5.77 | -66.53 | 0.50 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t3_52.zarr` |
+| **40** | `t3_mhm_mpr` | mHM (CONUS MPR)* | **0.528** | 0.469 | 0.793 | 0.594 | -0.035 | 0.930 | 1.691 | 2.860 | -39.01 | -29.52 | 36.63 | 0.50 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t7_19.zarr` |
+| **41** | `t3_55` | dPL + VIC (g_A)* | **0.439** | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | https://zenodo.org/records/6383415 |
+| **42** | `t3_vic_mpr` | VIC 4.1.2 (CONUS MPR) | **0.307** | 0.259 | 0.659 | 0.460 | -0.072 | 0.856 | 2.056 | 4.226 | -55.50 | -26.28 | 17.40 | 0.89 | `gs://camels-us-mip/hydrographs/gauged__single_camels/t7_22.zarr` |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -707,40 +707,40 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **29** | `t4_41` | **DLinear** | `liu2025_tslib_suite` | Machine learning | `Literature` | Liu et al. (2025) | Daymet, Maurer, NLDAS | No (1) | 531 | 1989-10-01 to 1999-09-30 | **0.340** | 0.340 | --- | 0.420 | --- | --- | `---` / `---` |
 | **30** | `t4_42` | **CARDformer** | `liu2025_tslib_suite` | Machine learning | `Literature` | Liu et al. (2025) | Daymet, Maurer, NLDAS | No (1) | 531 | 1989-10-01 to 1999-09-30 | **0.290** | 0.290 | --- | 0.330 | --- | --- | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `era_gauged_multi_paradigm` | ERA-Multi-Paradigm-Gauged (10-model ensemble) | **0.826** | 0.806 | 0.919 | 0.864 | -0.031 | 0.932 | 1.021 | 1.042 | -12.63 | -5.29 | 34.94 | 0.24 | 0.33 | 33.84 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_multi_paradigm.zarr` |
-| **2** | `era_gauged_multi_paradigm_single` | ERA-Multi-Paradigm-Gauged | **0.823** | 0.805 | 0.917 | 0.866 | -0.031 | 0.932 | 1.035 | 1.071 | -12.52 | -4.98 | 22.84 | 0.24 | 0.33 | 34.20 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_multi_paradigm.zarr` |
-| **3** | `t4_05` | LSTM (10-model ensemble) | **0.821** | 0.801 | 0.915 | 0.861 | -0.028 | 0.946 | 1.042 | 1.085 | -13.82 | -8.09 | 41.28 | 0.24 | 0.33 | 33.36 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr` |
-| **4** | `t4_06` | LSTM + dHBV 1.1p (Multi-Model Ensemble) | **0.820** | 0.798 | 0.918 | 0.852 | -0.022 | 0.953 | 1.037 | 1.075 | -14.07 | -8.03 | 44.33 | 0.24 | 0.33 | 33.16 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_06.zarr` |
-| **5** | `era_gauged_physics_guided` | ERA-Physics-Guided-Gauged (10-model ensemble) | **0.820** | 0.821 | 0.914 | 0.883 | -0.026 | 0.949 | 1.046 | 1.094 | -10.77 | -6.82 | 37.89 | 0.24 | 0.34 | 33.57 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_physics_guided.zarr` |
-| **6** | `era_gauged_minimal_guidance` | ERA-Unguided-Gauged (10-model ensemble) | **0.819** | 0.802 | 0.913 | 0.866 | -0.030 | 0.941 | 1.058 | 1.119 | -12.83 | -5.41 | 25.29 | 0.25 | 0.33 | 33.81 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_minimal_guidance.zarr` |
-| **7** | `t4_09` | LSTM (10-model ensemble) | **0.810** | 0.793 | 0.911 | 0.847 | -0.030 | 0.940 | 1.076 | 1.158 | -15.03 | -8.21 | 39.66 | 0.25 | 0.33 | 34.32 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr` |
-| **8** | `era_gauged_minimal_guidance_single` | ERA-Unguided-Gauged | **0.808** | 0.798 | 0.908 | 0.871 | -0.030 | 0.941 | 1.080 | 1.168 | -12.43 | -4.11 | 4.88 | 0.25 | 0.34 | 34.57 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_minimal_guidance.zarr` |
-| **9** | `t4_08` | LSTM (10-model ensemble) | **0.804** | 0.787 | 0.907 | 0.864 | -0.033 | 0.934 | 1.091 | 1.191 | -14.29 | -6.60 | 36.04 | 0.29 | 0.35 | 35.67 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr` |
-| **10** | `era_gauged_physics_guided_single` | ERA-Physics-Guided-Gauged | **0.801** | 0.818 | 0.904 | 0.895 | -0.026 | 0.949 | 1.099 | 1.208 | -9.91 | -5.70 | 24.59 | 0.26 | 0.35 | 35.46 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_physics_guided.zarr` |
-| **11** | `t4_19` | LSTM (10-model ensemble) | **0.799** | 0.777 | 0.906 | 0.835 | -0.033 | 0.934 | 1.081 | 1.167 | -16.17 | -8.94 | 40.24 | 0.25 | 0.34 | 34.66 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr` |
-| **12** | `t4_11` | LSTM (single model) | **0.796** | 0.795 | 0.903 | 0.869 | -0.027 | 0.945 | 1.115 | 1.243 | -12.64 | -6.50 | 2.48 | 0.27 | 0.35 | 35.11 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr` |
-| **13** | `t4_25` | LSTM (single model) | **0.787** | 0.789 | 0.898 | 0.860 | -0.030 | 0.941 | 1.141 | 1.301 | -13.66 | -6.88 | -1.69 | 0.28 | 0.35 | 36.06 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr` |
-| **14** | `hoedt_mclstm_3f_avgp` | MC-LSTM (Hoedt 2021 — 3-Forcing Mean-Precip + 3F Gates Ensemble) | **0.777** | 0.755 | 0.896 | 0.818 | -0.022 | 0.953 | 1.180 | 1.392 | -17.47 | -15.13 | -51.89 | 0.30 | 0.34 | 36.72 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr` |
-| **15** | `t4_31` | LSTM (single model) | **0.774** | 0.773 | 0.893 | 0.844 | -0.032 | 0.934 | 1.162 | 1.349 | -14.98 | -7.62 | -0.55 | 0.28 | 0.36 | 36.76 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr` |
-| **16** | `t4_28` | LSTM (single model) | **0.773** | 0.784 | 0.892 | 0.874 | -0.034 | 0.933 | 1.171 | 1.371 | -12.94 | -5.58 | -4.54 | 0.31 | 0.37 | 37.50 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr` |
-| **17** | `hoedt_mclstm_3f_ens_b` | MC-LSTM (Hoedt 2021 — 3-Forcing Model-Average Ensemble) | **0.771** | 0.744 | 0.892 | 0.804 | -0.028 | 0.943 | 1.165 | 1.357 | -19.09 | -13.43 | -11.76 | 0.29 | 0.34 | 37.18 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_ens_b.zarr` |
-| **18** | `hoedt_mclstm_3f_avgp_single` | MC-LSTM (Hoedt 2021 — 3-Forcing Mean-Precip + 3F Gates, Single Model) | **0.754** | 0.746 | 0.882 | 0.831 | -0.025 | 0.952 | 1.239 | 1.536 | -16.19 | -13.39 | -77.09 | 0.33 | 0.36 | 37.92 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr` |
-| **19** | `t4_34` | Crossformer | **0.720** | 0.730 | --- | --- | --- | --- | --- | --- | -14.35 | --- | -42.39 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **20** | `t4_35` | Non-stationary Transformer | **0.720** | 0.610 | --- | --- | --- | --- | --- | --- | -15.52 | --- | -172.87 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **21** | `t4_37` | Vanilla Transformer | **0.700** | 0.600 | --- | --- | --- | --- | --- | --- | -8.77 | --- | -230.86 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **22** | `sacsma_gauged_multi_3f` | SAC-SMA + Snow-17 (DDS, 3-Forcing Ensemble) | **0.695** | 0.645 | 0.858 | 0.754 | -0.088 | 0.817 | 1.372 | 1.881 | -25.25 | 7.09 | -58.33 | 0.30 | 0.35 | 43.46 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr` |
-| **23** | `sacsma_gauged_multi_3f_single` | SAC-SMA + Snow-17 (DDS, single model) | **0.691** | 0.642 | 0.854 | 0.756 | -0.089 | 0.816 | 1.377 | 1.898 | -25.11 | 7.77 | -89.14 | 0.31 | 0.36 | 43.61 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr` |
-| **24** | `t4_38` | Informer | **0.690** | 0.630 | --- | --- | --- | --- | --- | --- | -14.89 | --- | -169.44 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **25** | `t4_liu25_pyraformer` | Pyraformer | **0.690** | 0.610 | --- | --- | --- | --- | --- | --- | -20.57 | --- | -98.85 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **26** | `t4_liu25_etsformer` | ETSformer | **0.670** | 0.680 | --- | --- | --- | --- | --- | --- | -19.19 | --- | -32.84 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **27** | `t4_liu25_reformer` | Reformer | **0.660** | 0.620 | --- | --- | --- | --- | --- | --- | -13.31 | --- | -226.98 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **28** | `t4_40` | iTransformer | **0.370** | 0.370 | --- | --- | --- | --- | --- | --- | -36.00 | --- | -147.66 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **29** | `t4_41` | DLinear | **0.340** | 0.420 | --- | --- | --- | --- | --- | --- | -38.61 | --- | -300.24 | --- | --- | --- | https://zenodo.org/records/15852144 |
-| **30** | `t4_42` | CARDformer | **0.290** | 0.330 | --- | --- | --- | --- | --- | --- | -55.27 | --- | -183.48 | --- | --- | --- | https://zenodo.org/records/15852144 |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `era_gauged_multi_paradigm` | ERA-Multi-Paradigm-Gauged (10-model ensemble) | **0.826** | 0.806 | 0.919 | 0.864 | -0.031 | 0.932 | 1.021 | 1.042 | -12.63 | -5.29 | 34.94 | 0.24 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_multi_paradigm.zarr` |
+| **2** | `era_gauged_multi_paradigm_single` | ERA-Multi-Paradigm-Gauged | **0.823** | 0.805 | 0.917 | 0.866 | -0.031 | 0.932 | 1.035 | 1.071 | -12.52 | -4.98 | 22.84 | 0.24 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_multi_paradigm.zarr` |
+| **3** | `t4_05` | LSTM (10-model ensemble) | **0.821** | 0.801 | 0.915 | 0.861 | -0.028 | 0.946 | 1.042 | 1.085 | -13.82 | -8.09 | 41.28 | 0.24 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr` |
+| **4** | `t4_06` | LSTM + dHBV 1.1p (Multi-Model Ensemble) | **0.820** | 0.798 | 0.918 | 0.852 | -0.022 | 0.953 | 1.037 | 1.075 | -14.07 | -8.03 | 44.33 | 0.24 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_06.zarr` |
+| **5** | `era_gauged_physics_guided` | ERA-Physics-Guided-Gauged (10-model ensemble) | **0.820** | 0.821 | 0.914 | 0.883 | -0.026 | 0.949 | 1.046 | 1.094 | -10.77 | -6.82 | 37.89 | 0.24 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_physics_guided.zarr` |
+| **6** | `era_gauged_minimal_guidance` | ERA-Unguided-Gauged (10-model ensemble) | **0.819** | 0.802 | 0.913 | 0.866 | -0.030 | 0.941 | 1.058 | 1.119 | -12.83 | -5.41 | 25.29 | 0.25 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_minimal_guidance.zarr` |
+| **7** | `t4_09` | LSTM (10-model ensemble) | **0.810** | 0.793 | 0.911 | 0.847 | -0.030 | 0.940 | 1.076 | 1.158 | -15.03 | -8.21 | 39.66 | 0.25 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr` |
+| **8** | `era_gauged_minimal_guidance_single` | ERA-Unguided-Gauged | **0.808** | 0.798 | 0.908 | 0.871 | -0.030 | 0.941 | 1.080 | 1.168 | -12.43 | -4.11 | 4.88 | 0.25 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_minimal_guidance.zarr` |
+| **9** | `t4_08` | LSTM (10-model ensemble) | **0.804** | 0.787 | 0.907 | 0.864 | -0.033 | 0.934 | 1.091 | 1.191 | -14.29 | -6.60 | 36.04 | 0.29 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr` |
+| **10** | `era_gauged_physics_guided_single` | ERA-Physics-Guided-Gauged | **0.801** | 0.818 | 0.904 | 0.895 | -0.026 | 0.949 | 1.099 | 1.208 | -9.91 | -5.70 | 24.59 | 0.26 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_physics_guided.zarr` |
+| **11** | `t4_19` | LSTM (10-model ensemble) | **0.799** | 0.777 | 0.906 | 0.835 | -0.033 | 0.934 | 1.081 | 1.167 | -16.17 | -8.94 | 40.24 | 0.25 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr` |
+| **12** | `t4_11` | LSTM (single model) | **0.796** | 0.795 | 0.903 | 0.869 | -0.027 | 0.945 | 1.115 | 1.243 | -12.64 | -6.50 | 2.48 | 0.27 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr` |
+| **13** | `t4_25` | LSTM (single model) | **0.787** | 0.789 | 0.898 | 0.860 | -0.030 | 0.941 | 1.141 | 1.301 | -13.66 | -6.88 | -1.69 | 0.28 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr` |
+| **14** | `hoedt_mclstm_3f_avgp` | MC-LSTM (Hoedt 2021 — 3-Forcing Mean-Precip + 3F Gates Ensemble) | **0.777** | 0.755 | 0.896 | 0.818 | -0.022 | 0.953 | 1.180 | 1.392 | -17.47 | -15.13 | -51.89 | 0.30 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr` |
+| **15** | `t4_31` | LSTM (single model) | **0.774** | 0.773 | 0.893 | 0.844 | -0.032 | 0.934 | 1.162 | 1.349 | -14.98 | -7.62 | -0.55 | 0.28 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr` |
+| **16** | `t4_28` | LSTM (single model) | **0.773** | 0.784 | 0.892 | 0.874 | -0.034 | 0.933 | 1.171 | 1.371 | -12.94 | -5.58 | -4.54 | 0.31 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr` |
+| **17** | `hoedt_mclstm_3f_ens_b` | MC-LSTM (Hoedt 2021 — 3-Forcing Model-Average Ensemble) | **0.771** | 0.744 | 0.892 | 0.804 | -0.028 | 0.943 | 1.165 | 1.357 | -19.09 | -13.43 | -11.76 | 0.29 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_ens_b.zarr` |
+| **18** | `hoedt_mclstm_3f_avgp_single` | MC-LSTM (Hoedt 2021 — 3-Forcing Mean-Precip + 3F Gates, Single Model) | **0.754** | 0.746 | 0.882 | 0.831 | -0.025 | 0.952 | 1.239 | 1.536 | -16.19 | -13.39 | -77.09 | 0.33 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr` |
+| **19** | `t4_34` | Crossformer | **0.720** | 0.730 | --- | --- | --- | --- | --- | --- | -14.35 | --- | -42.39 | --- | https://zenodo.org/records/15852144 |
+| **20** | `t4_35` | Non-stationary Transformer | **0.720** | 0.610 | --- | --- | --- | --- | --- | --- | -15.52 | --- | -172.87 | --- | https://zenodo.org/records/15852144 |
+| **21** | `t4_37` | Vanilla Transformer | **0.700** | 0.600 | --- | --- | --- | --- | --- | --- | -8.77 | --- | -230.86 | --- | https://zenodo.org/records/15852144 |
+| **22** | `sacsma_gauged_multi_3f` | SAC-SMA + Snow-17 (DDS, 3-Forcing Ensemble) | **0.695** | 0.645 | 0.858 | 0.754 | -0.088 | 0.817 | 1.372 | 1.881 | -25.25 | 7.09 | -58.33 | 0.30 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr` |
+| **23** | `sacsma_gauged_multi_3f_single` | SAC-SMA + Snow-17 (DDS, single model) | **0.691** | 0.642 | 0.854 | 0.756 | -0.089 | 0.816 | 1.377 | 1.898 | -25.11 | 7.77 | -89.14 | 0.31 | `gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr` |
+| **24** | `t4_38` | Informer | **0.690** | 0.630 | --- | --- | --- | --- | --- | --- | -14.89 | --- | -169.44 | --- | https://zenodo.org/records/15852144 |
+| **25** | `t4_liu25_pyraformer` | Pyraformer | **0.690** | 0.610 | --- | --- | --- | --- | --- | --- | -20.57 | --- | -98.85 | --- | https://zenodo.org/records/15852144 |
+| **26** | `t4_liu25_etsformer` | ETSformer | **0.670** | 0.680 | --- | --- | --- | --- | --- | --- | -19.19 | --- | -32.84 | --- | https://zenodo.org/records/15852144 |
+| **27** | `t4_liu25_reformer` | Reformer | **0.660** | 0.620 | --- | --- | --- | --- | --- | --- | -13.31 | --- | -226.98 | --- | https://zenodo.org/records/15852144 |
+| **28** | `t4_40` | iTransformer | **0.370** | 0.370 | --- | --- | --- | --- | --- | --- | -36.00 | --- | -147.66 | --- | https://zenodo.org/records/15852144 |
+| **29** | `t4_41` | DLinear | **0.340** | 0.420 | --- | --- | --- | --- | --- | --- | -38.61 | --- | -300.24 | --- | https://zenodo.org/records/15852144 |
+| **30** | `t4_42` | CARDformer | **0.290** | 0.330 | --- | --- | --- | --- | --- | --- | -55.27 | --- | -183.48 | --- | https://zenodo.org/records/15852144 |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -787,21 +787,21 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **10** | `feng2020_di_lstm_nldas_single` | **DI(1)-LSTM (NLDAS, single model)** | `feng2020_di_lstm` | Machine learning | `MIP Re-run` | Feng et al. (2020) | NLDAS + Lagged Q (t-1) | No (6) | 531 | 1989-10-01 to 1999-09-30 | **0.795** | 0.795 ± 0.002 | 0.773 | 0.793 | 0.762 | 0 | `---` / `---` |
 | **11** | `t5_08` | **δHBV-DA-P (Precip DA)*** | `jamaat2025_dhbv_da` | Hybrid (ML + Physics) | `Literature*` | Jamaat et al. (2025) | Daymet + Q(t-5:t-1) | No (1) | 531 | 1990-10-01 to 1999-09-30 | **0.740** | 0.740 | --- | 0.800 | --- | --- | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `t5_01` | Autoregression LSTM (no holdout) | **0.879** | 0.896 | 0.939 | 0.942 | -0.007 | --- | --- | --- | --- | --- | --- | 0.39 | 0.25 | --- | https://zenodo.org/records/7063252 |
-| **2** | `t5_02` | Autoregression LSTM (0.5 holdout) | **0.872** | 0.896 | 0.937 | 0.945 | -0.002 | --- | --- | --- | --- | --- | --- | 0.37 | 0.26 | --- | https://zenodo.org/records/7063252 |
-| **3** | `t5_03` | Variational Data Assimilation LSTM | **0.862** | 0.878 | 0.932 | 0.913 | -0.014 | --- | --- | --- | --- | --- | --- | 0.44 | 0.25 | --- | https://zenodo.org/records/7063252 |
-| **4** | `yin2022_rrformer_daymet` | Rainfall-Runoff Transformer (RR-Former) (3-model ensemble) | **0.847** | 0.862 | 0.924 | 0.905 | -0.006 | 0.989 | 0.959 | 0.920 | -9.44 | -0.98 | -4.04 | 0.40 | 0.24 | 30.79 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr` |
-| **5** | `t5_04` | DI(1)-LSTM (Literature)* | **0.840** | 0.855 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **6** | `yin2022_rrformer_daymet_single` | Rainfall-Runoff Transformer (RR-Former) (single model) | **0.833** | 0.859 | 0.917 | 0.916 | -0.006 | 0.990 | 1.014 | 1.029 | -8.59 | -0.77 | -16.99 | 0.42 | 0.25 | 32.35 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr` |
-| **7** | `t5_06` | δHBV-DA-PS (State + Precip DA)* | **0.820** | 0.852 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **8** | `t5_07` | δHBV-DA-S (State DA)* | **0.820** | 0.841 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **9** | `feng2020_di_lstm_nldas` | DI(1)-LSTM (NLDAS, 6-model ensemble) | **0.801** | 0.798 | 0.901 | 0.839 | -0.009 | 0.985 | 1.079 | 1.164 | -14.89 | -2.63 | -4.05 | 0.53 | 0.32 | 36.07 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr` |
-| **10** | `feng2020_di_lstm_nldas_single` | DI(1)-LSTM (NLDAS, single model) | **0.795** | 0.793 | 0.899 | 0.841 | -0.008 | 0.985 | 1.099 | 1.207 | -14.91 | -2.11 | -28.62 | 0.54 | 0.32 | 36.33 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr` |
-| **11** | `t5_08` | δHBV-DA-P (Precip DA)* | **0.740** | 0.800 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `t5_01` | Autoregression LSTM (no holdout) | **0.879** | 0.896 | 0.939 | 0.942 | -0.007 | --- | --- | --- | --- | --- | --- | 0.39 | https://zenodo.org/records/7063252 |
+| **2** | `t5_02` | Autoregression LSTM (0.5 holdout) | **0.872** | 0.896 | 0.937 | 0.945 | -0.002 | --- | --- | --- | --- | --- | --- | 0.37 | https://zenodo.org/records/7063252 |
+| **3** | `t5_03` | Variational Data Assimilation LSTM | **0.862** | 0.878 | 0.932 | 0.913 | -0.014 | --- | --- | --- | --- | --- | --- | 0.44 | https://zenodo.org/records/7063252 |
+| **4** | `yin2022_rrformer_daymet` | Rainfall-Runoff Transformer (RR-Former) (3-model ensemble) | **0.847** | 0.862 | 0.924 | 0.905 | -0.006 | 0.989 | 0.959 | 0.920 | -9.44 | -0.98 | -4.04 | 0.40 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr` |
+| **5** | `t5_04` | DI(1)-LSTM (Literature)* | **0.840** | 0.855 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **6** | `yin2022_rrformer_daymet_single` | Rainfall-Runoff Transformer (RR-Former) (single model) | **0.833** | 0.859 | 0.917 | 0.916 | -0.006 | 0.990 | 1.014 | 1.029 | -8.59 | -0.77 | -16.99 | 0.42 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr` |
+| **7** | `t5_06` | δHBV-DA-PS (State + Precip DA)* | **0.820** | 0.852 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **8** | `t5_07` | δHBV-DA-S (State DA)* | **0.820** | 0.841 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **9** | `feng2020_di_lstm_nldas` | DI(1)-LSTM (NLDAS, 6-model ensemble) | **0.801** | 0.798 | 0.901 | 0.839 | -0.009 | 0.985 | 1.079 | 1.164 | -14.89 | -2.63 | -4.05 | 0.53 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr` |
+| **10** | `feng2020_di_lstm_nldas_single` | DI(1)-LSTM (NLDAS, single model) | **0.795** | 0.793 | 0.899 | 0.841 | -0.008 | 0.985 | 1.099 | 1.207 | -14.91 | -2.11 | -28.62 | 0.54 | `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr` |
+| **11** | `t5_08` | δHBV-DA-P (Precip DA)* | **0.740** | 0.800 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -842,20 +842,20 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **11** | `sacsma_pub_single_daymet` | **SAC-SMA + Snow-17 (Donor Transfer, single model)** | `nearing_sacsma` | Conceptual | `MIP Re-run` | Nearing et al. (2020) | Daymet | No (1) | 531 | 1989-10-01 to 1999-09-30 | **0.564** | 0.564 | 0.392 | 0.575 | 0.496 | 42 | `---` / `---` |
 | **12** | `t7_18_seibert_hbv` | **HBV-light (HBV-lower, 1000-member uncalibrated random ensemble)** | `seibert_hbv` | Conceptual | `Archive` | Seibert et al. (2018) | Maurer | Yes (1) | 531 | 1989-10-01 to 1999-09-30 | **0.420** | --- | 0.262 | 0.398 | 0.301 | 37 | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `t7_07` | LSTM (10-model ensemble)* | **0.691** | 0.689 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_07.zarr` |
-| **2** | `t7_06` | δHBV 1.1p / δMG (5-model ensemble) | **0.690** | 0.689 | 0.862 | 0.837 | -0.021 | 0.958 | 1.345 | 1.810 | -14.91 | -8.98 | 31.42 | 0.35 | 0.37 | 41.58 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr` |
-| **3** | `t7_11` | δHBV 1.1p / δMG (single model) | **0.686** | 0.681 | 0.860 | 0.836 | -0.021 | 0.954 | 1.365 | 1.862 | -14.50 | -8.64 | 25.83 | 0.36 | 0.38 | 42.75 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr` |
-| **4** | `t7_10` | δHBV 1.0 (5-model ensemble) | **0.681** | 0.661 | 0.855 | 0.812 | -0.004 | 0.990 | 1.388 | 1.927 | -16.38 | -16.72 | 25.10 | 0.36 | 0.37 | 42.22 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr` |
-| **5** | `poudel_mlp_hbv_pub_daymet` | Static-Parameter MLP + 16-HBV (3-model ensemble) | **0.678** | 0.665 | 0.860 | 0.797 | -0.019 | 0.957 | 1.384 | 1.916 | -19.93 | -4.58 | -5.14 | 0.36 | 0.39 | 45.32 | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
-| **6** | `t7_14` | δHBV 1.0 (single model) | **0.673** | 0.660 | 0.851 | 0.821 | -0.004 | 0.992 | 1.403 | 1.970 | -16.20 | -16.58 | 21.19 | 0.37 | 0.38 | 43.10 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr` |
-| **8** | `poudel_mlp_hbv_pub_daymet_single` | Static-Parameter MLP + 16-HBV (single model) | **0.669** | 0.660 | 0.856 | 0.799 | -0.020 | 0.959 | 1.394 | 1.943 | -19.72 | -4.28 | -9.60 | 0.37 | 0.39 | 45.24 | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
-| **10** | `t7_18` | LSTM (single model)* | **0.640** | 0.648 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_18.zarr` |
-| **11** | `sacsma_pub_single_daymet` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.564** | 0.575 | 0.803 | 0.811 | -0.081 | 0.822 | 1.625 | 2.639 | -20.78 | 15.91 | -150.93 | 0.40 | 0.39 | 49.55 | `gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr` |
-| **12** | `t7_18_seibert_hbv` | HBV-light (HBV-lower, 1000-member uncalibrated random ensemble) | **0.420** | 0.398 | 0.719 | 0.594 | -0.024 | 0.948 | 1.822 | 3.318 | -40.05 | -13.94 | 23.27 | 1.17 | 0.59 | 67.44 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_23.zarr` |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `t7_07` | LSTM (10-model ensemble)* | **0.691** | 0.689 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_07.zarr` |
+| **2** | `t7_06` | δHBV 1.1p / δMG (5-model ensemble) | **0.690** | 0.689 | 0.862 | 0.837 | -0.021 | 0.958 | 1.345 | 1.810 | -14.91 | -8.98 | 31.42 | 0.35 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr` |
+| **3** | `t7_11` | δHBV 1.1p / δMG (single model) | **0.686** | 0.681 | 0.860 | 0.836 | -0.021 | 0.954 | 1.365 | 1.862 | -14.50 | -8.64 | 25.83 | 0.36 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr` |
+| **4** | `t7_10` | δHBV 1.0 (5-model ensemble) | **0.681** | 0.661 | 0.855 | 0.812 | -0.004 | 0.990 | 1.388 | 1.927 | -16.38 | -16.72 | 25.10 | 0.36 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr` |
+| **5** | `poudel_mlp_hbv_pub_daymet` | Static-Parameter MLP + 16-HBV (3-model ensemble) | **0.678** | 0.665 | 0.860 | 0.797 | -0.019 | 0.957 | 1.384 | 1.916 | -19.93 | -4.58 | -5.14 | 0.36 | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
+| **6** | `t7_14` | δHBV 1.0 (single model) | **0.673** | 0.660 | 0.851 | 0.821 | -0.004 | 0.992 | 1.403 | 1.970 | -16.20 | -16.58 | 21.19 | 0.37 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr` |
+| **8** | `poudel_mlp_hbv_pub_daymet_single` | Static-Parameter MLP + 16-HBV (single model) | **0.669** | 0.660 | 0.856 | 0.799 | -0.020 | 0.959 | 1.394 | 1.943 | -19.72 | -4.28 | -9.60 | 0.37 | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
+| **10** | `t7_18` | LSTM (single model)* | **0.640** | 0.648 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_18.zarr` |
+| **11** | `sacsma_pub_single_daymet` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.564** | 0.575 | 0.803 | 0.811 | -0.081 | 0.822 | 1.625 | 2.639 | -20.78 | 15.91 | -150.93 | 0.40 | `gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr` |
+| **12** | `t7_18_seibert_hbv` | HBV-light (HBV-lower, 1000-member uncalibrated random ensemble) | **0.420** | 0.398 | 0.719 | 0.594 | -0.024 | 0.948 | 1.822 | 3.318 | -40.05 | -13.94 | 23.27 | 1.17 | `gs://camels-us-mip/hydrographs/pub__single_camels/t7_23.zarr` |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -888,18 +888,18 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **7** | `sacsma_pub_multi_3f` | **SAC-SMA + Snow-17 (Donor Transfer, 3-Forcing Ensemble)** | `nearing_sacsma` | Conceptual | `MIP Re-run` | Nearing et al. (2020) | Daymet, Maurer, NLDAS | Yes (3) | 531 | 1989-10-01 to 1999-09-30 | **0.625** | 0.618 ± 0.000 | 0.504 | 0.570 | 0.514 | 26 | `---` / `---` |
 | **8** | `sacsma_pub_multi_3f_single` | **SAC-SMA + Snow-17 (Donor Transfer, single model)** | `nearing_sacsma` | Conceptual | `MIP Re-run` | Nearing et al. (2020) | Daymet, Maurer, NLDAS | No (3) | 531 | 1989-10-01 to 1999-09-30 | **0.618** | 0.618 ± 0.000 | 0.494 | 0.570 | 0.512 | 26 | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `k21_lstm_pub_3f` | LSTM (8-model ensemble) | **0.742** | 0.708 | 0.891 | 0.838 | -0.032 | 0.931 | 1.216 | 1.479 | -14.99 | -9.83 | 41.19 | 0.30 | 0.35 | 38.69 | `gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr` |
-| **2** | `era_pub_physics_guided` | ERA-Physics-Guided-PUB (10-model ensemble) | **0.725** | 0.664 | 0.884 | 0.776 | -0.044 | 0.906 | 1.262 | 1.594 | -21.55 | -11.94 | 41.58 | 0.33 | 0.37 | 42.43 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_physics_guided.zarr` |
-| **3** | `era_pub_minimal_guidance` | ERA-Unguided-PUB (10-model ensemble) | **0.720** | 0.644 | 0.884 | 0.733 | -0.056 | 0.881 | 1.266 | 1.602 | -25.66 | -11.51 | -5.91 | 0.31 | 0.35 | 42.28 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_minimal_guidance.zarr` |
-| **4** | `era_pub_minimal_guidance_single` | ERA-Unguided-PUB | **0.711** | 0.641 | 0.879 | 0.739 | -0.056 | 0.881 | 1.281 | 1.648 | -25.32 | -9.13 | -52.17 | 0.31 | 0.36 | 42.69 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_minimal_guidance.zarr` |
-| **5** | `era_pub_physics_guided_single` | ERA-Physics-Guided-PUB | **0.709** | 0.662 | 0.877 | 0.781 | -0.044 | 0.906 | 1.285 | 1.651 | -21.09 | -10.81 | 33.23 | 0.33 | 0.38 | 42.99 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_physics_guided.zarr` |
-| **6** | `k21_lstm_pub_3f_single` | LSTM (single model) | **0.707** | 0.686 | 0.874 | 0.854 | -0.032 | 0.933 | 1.312 | 1.722 | -13.66 | -7.99 | 9.13 | 0.33 | 0.37 | 41.57 | `gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr` |
-| **7** | `sacsma_pub_multi_3f` | SAC-SMA + Snow-17 (Donor Transfer, 3-Forcing Ensemble) | **0.625** | 0.570 | 0.832 | 0.726 | -0.082 | 0.822 | 1.517 | 2.302 | -27.48 | 6.30 | -59.41 | 0.36 | 0.37 | 46.95 | `gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr` |
-| **8** | `sacsma_pub_multi_3f_single` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.618** | 0.570 | 0.828 | 0.735 | -0.083 | 0.820 | 1.528 | 2.333 | -27.74 | 6.84 | -93.86 | 0.36 | 0.37 | 47.36 | `gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr` |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `k21_lstm_pub_3f` | LSTM (8-model ensemble) | **0.742** | 0.708 | 0.891 | 0.838 | -0.032 | 0.931 | 1.216 | 1.479 | -14.99 | -9.83 | 41.19 | 0.30 | `gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr` |
+| **2** | `era_pub_physics_guided` | ERA-Physics-Guided-PUB (10-model ensemble) | **0.725** | 0.664 | 0.884 | 0.776 | -0.044 | 0.906 | 1.262 | 1.594 | -21.55 | -11.94 | 41.58 | 0.33 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_physics_guided.zarr` |
+| **3** | `era_pub_minimal_guidance` | ERA-Unguided-PUB (10-model ensemble) | **0.720** | 0.644 | 0.884 | 0.733 | -0.056 | 0.881 | 1.266 | 1.602 | -25.66 | -11.51 | -5.91 | 0.31 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_minimal_guidance.zarr` |
+| **4** | `era_pub_minimal_guidance_single` | ERA-Unguided-PUB | **0.711** | 0.641 | 0.879 | 0.739 | -0.056 | 0.881 | 1.281 | 1.648 | -25.32 | -9.13 | -52.17 | 0.31 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_minimal_guidance.zarr` |
+| **5** | `era_pub_physics_guided_single` | ERA-Physics-Guided-PUB | **0.709** | 0.662 | 0.877 | 0.781 | -0.044 | 0.906 | 1.285 | 1.651 | -21.09 | -10.81 | 33.23 | 0.33 | `gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_physics_guided.zarr` |
+| **6** | `k21_lstm_pub_3f_single` | LSTM (single model) | **0.707** | 0.686 | 0.874 | 0.854 | -0.032 | 0.933 | 1.312 | 1.722 | -13.66 | -7.99 | 9.13 | 0.33 | `gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr` |
+| **7** | `sacsma_pub_multi_3f` | SAC-SMA + Snow-17 (Donor Transfer, 3-Forcing Ensemble) | **0.625** | 0.570 | 0.832 | 0.726 | -0.082 | 0.822 | 1.517 | 2.302 | -27.48 | 6.30 | -59.41 | 0.36 | `gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr` |
+| **8** | `sacsma_pub_multi_3f_single` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.618** | 0.570 | 0.828 | 0.735 | -0.083 | 0.820 | 1.528 | 2.333 | -27.74 | 6.84 | -93.86 | 0.36 | `gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr` |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -922,14 +922,14 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **3** | `t9_02` | **Variational Data Assimilation LSTM*** | `nearing2022_ar_da_lstm` | Machine learning | `Literature**` | Nearing et al. (2022) | Daymet, Maurer, NLDAS + Q(t-1) | No (1) | 531 | 1989-10-01 to 1999-09-30 | **0.772** | 0.772 | 0.714 | 0.779 | 0.737 | 6 | `---` / `---` |
 | **4** | `feng2020_di_lstm_pub_nldas_single` | **DI(1)-LSTM (single model)** | `feng2020_di_lstm` | Machine learning | `MIP Re-run` | Feng et al. (2020) | NLDAS + Q(t-1) | No (3) | 531 | 1989-10-01 to 1999-09-30 | **0.767** | 0.767 ± 0.001 | 0.736 | 0.761 | 0.717 | 0 | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `t9_01` | Autoregression LSTM (0.5 holdout)* | **0.807** | 0.824 | 0.908 | 0.912 | -0.011 | --- | --- | --- | --- | --- | --- | 0.37 | 0.33 | --- | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/t9_01.zarr` |
-| **2** | `feng2020_di_lstm_pub_nldas` | DI(1)-LSTM (3-model ensemble) | **0.775** | 0.763 | 0.892 | 0.825 | -0.010 | 0.980 | 1.170 | 1.369 | -16.94 | -2.77 | -10.79 | 0.58 | 0.32 | 38.38 | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr` |
-| **3** | `t9_02` | Variational Data Assimilation LSTM* | **0.772** | 0.779 | 0.892 | 0.869 | -0.028 | --- | --- | --- | --- | --- | --- | 0.46 | 0.34 | --- | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/t9_02.zarr` |
-| **4** | `feng2020_di_lstm_pub_nldas_single` | DI(1)-LSTM (single model) | **0.767** | 0.761 | 0.890 | 0.827 | -0.011 | 0.978 | 1.192 | 1.421 | -16.52 | -2.38 | -29.06 | 0.59 | 0.33 | 38.87 | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr` |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `t9_01` | Autoregression LSTM (0.5 holdout)* | **0.807** | 0.824 | 0.908 | 0.912 | -0.011 | --- | --- | --- | --- | --- | --- | 0.37 | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/t9_01.zarr` |
+| **2** | `feng2020_di_lstm_pub_nldas` | DI(1)-LSTM (3-model ensemble) | **0.775** | 0.763 | 0.892 | 0.825 | -0.010 | 0.980 | 1.170 | 1.369 | -16.94 | -2.77 | -10.79 | 0.58 | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr` |
+| **3** | `t9_02` | Variational Data Assimilation LSTM* | **0.772** | 0.779 | 0.892 | 0.869 | -0.028 | --- | --- | --- | --- | --- | --- | 0.46 | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/t9_02.zarr` |
+| **4** | `feng2020_di_lstm_pub_nldas_single` | DI(1)-LSTM (single model) | **0.767** | 0.761 | 0.890 | 0.827 | -0.011 | 0.978 | 1.192 | 1.421 | -16.52 | -2.38 | -29.06 | 0.59 | `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr` |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -966,23 +966,23 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **13** | `k21_lstm_pur_nldas_single` | **LSTM (single model)** | `kratzert_lstm` | Machine learning | `MIP Re-run` | Kratzert et al. (2021) | NLDAS | No (10) | 531 | 1989-10-01 to 1999-09-30 | **0.598** | 0.598 ± 0.006 | 0.367 | 0.572 | 0.456 | 37 | `---` / `---` |
 | **15** | `sacsma_pur_single_daymet` | **SAC-SMA + Snow-17 (Donor Transfer, single model)** | `nearing_sacsma` | Conceptual | `MIP Re-run` | Nearing et al. (2020) | Daymet | No (1) | 531 | 1989-10-01 to 1999-09-30 | **0.512** | 0.512 | -0.006 | 0.528 | 0.353 | 72 | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `t11_04` | δHBV 1.1p / δMG (5-model ensemble) | **0.650** | 0.640 | 0.849 | 0.850 | -0.026 | 0.943 | 1.447 | 2.095 | -14.82 | -7.92 | 29.15 | 0.38 | 0.38 | 47.72 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr` |
-| **2** | `k21_lstm_pur_daymet` | LSTM (10-model ensemble) | **0.635** | 0.603 | 0.837 | 0.755 | -0.029 | 0.931 | 1.466 | 2.149 | -22.80 | -12.06 | 16.99 | 0.37 | 0.41 | 48.35 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr` |
-| **3** | `t11_06` | δHBV 1.0 (5-model ensemble) | **0.634** | 0.634 | 0.843 | 0.838 | -0.014 | 0.970 | 1.480 | 2.190 | -14.61 | -14.69 | 21.54 | 0.39 | 0.37 | 46.66 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr` |
-| **4** | `t11_04_single` | δHBV 1.1p / δMG (single model) | **0.634** | 0.633 | 0.842 | 0.861 | -0.026 | 0.944 | 1.479 | 2.188 | -13.87 | -6.13 | 21.93 | 0.40 | 0.39 | 47.84 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr` |
-| **6** | `poudel_mlp_hbv_pur_daymet` | Static-Parameter MLP + 16-HBV (3-model ensemble) | **0.624** | 0.610 | 0.832 | 0.809 | -0.021 | 0.952 | 1.472 | 2.167 | -18.98 | -5.34 | -6.45 | 0.41 | 0.40 | 49.13 | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |
-| **7** | `k21_lstm_pur_maurer` | LSTM (10-model ensemble) | **0.622** | 0.590 | 0.831 | 0.730 | -0.034 | 0.927 | 1.489 | 2.218 | -25.61 | -12.81 | 0.00 | 0.43 | 0.42 | 50.08 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr` |
-| **8** | `k21_lstm_pur_daymet_single` | LSTM (single model) | **0.621** | 0.593 | 0.829 | 0.766 | -0.030 | 0.929 | 1.486 | 2.208 | -22.81 | -10.93 | -3.05 | 0.38 | 0.42 | 49.57 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr` |
-| **9** | `t11_10` | δHBV 1.0 (single model) | **0.620** | 0.626 | 0.836 | 0.850 | -0.013 | 0.972 | 1.503 | 2.258 | -13.32 | -13.98 | 18.93 | 0.40 | 0.38 | 47.46 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr` |
-| **10** | `poudel_mlp_hbv_pur_daymet_single` | Static-Parameter MLP + 16-HBV (single model) | **0.618** | 0.608 | 0.830 | 0.818 | -0.021 | 0.952 | 1.489 | 2.216 | -18.66 | -4.98 | -10.58 | 0.42 | 0.40 | 48.96 | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |
-| **11** | `k21_lstm_pur_nldas` | LSTM (10-model ensemble) | **0.612** | 0.582 | 0.829 | 0.721 | -0.023 | 0.948 | 1.521 | 2.314 | -26.57 | -15.89 | 15.21 | 0.39 | 0.42 | 48.89 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr` |
-| **12** | `k21_lstm_pur_maurer_single` | LSTM (single model) | **0.605** | 0.576 | 0.823 | 0.739 | -0.036 | 0.922 | 1.519 | 2.308 | -25.13 | -10.55 | -12.41 | 0.45 | 0.43 | 51.29 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr` |
-| **13** | `k21_lstm_pur_nldas_single` | LSTM (single model) | **0.598** | 0.572 | 0.821 | 0.724 | -0.028 | 0.942 | 1.544 | 2.384 | -26.27 | -14.32 | -2.28 | 0.40 | 0.43 | 50.18 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr` |
-| **15** | `sacsma_pur_single_daymet` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.512** | 0.528 | 0.785 | 0.807 | -0.073 | 0.844 | 1.693 | 2.865 | -19.96 | 16.54 | -175.81 | 0.48 | 0.40 | 53.49 | `gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr` |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `t11_04` | δHBV 1.1p / δMG (5-model ensemble) | **0.650** | 0.640 | 0.849 | 0.850 | -0.026 | 0.943 | 1.447 | 2.095 | -14.82 | -7.92 | 29.15 | 0.38 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr` |
+| **2** | `k21_lstm_pur_daymet` | LSTM (10-model ensemble) | **0.635** | 0.603 | 0.837 | 0.755 | -0.029 | 0.931 | 1.466 | 2.149 | -22.80 | -12.06 | 16.99 | 0.37 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr` |
+| **3** | `t11_06` | δHBV 1.0 (5-model ensemble) | **0.634** | 0.634 | 0.843 | 0.838 | -0.014 | 0.970 | 1.480 | 2.190 | -14.61 | -14.69 | 21.54 | 0.39 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr` |
+| **4** | `t11_04_single` | δHBV 1.1p / δMG (single model) | **0.634** | 0.633 | 0.842 | 0.861 | -0.026 | 0.944 | 1.479 | 2.188 | -13.87 | -6.13 | 21.93 | 0.40 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr` |
+| **6** | `poudel_mlp_hbv_pur_daymet` | Static-Parameter MLP + 16-HBV (3-model ensemble) | **0.624** | 0.610 | 0.832 | 0.809 | -0.021 | 0.952 | 1.472 | 2.167 | -18.98 | -5.34 | -6.45 | 0.41 | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |
+| **7** | `k21_lstm_pur_maurer` | LSTM (10-model ensemble) | **0.622** | 0.590 | 0.831 | 0.730 | -0.034 | 0.927 | 1.489 | 2.218 | -25.61 | -12.81 | 0.00 | 0.43 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr` |
+| **8** | `k21_lstm_pur_daymet_single` | LSTM (single model) | **0.621** | 0.593 | 0.829 | 0.766 | -0.030 | 0.929 | 1.486 | 2.208 | -22.81 | -10.93 | -3.05 | 0.38 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr` |
+| **9** | `t11_10` | δHBV 1.0 (single model) | **0.620** | 0.626 | 0.836 | 0.850 | -0.013 | 0.972 | 1.503 | 2.258 | -13.32 | -13.98 | 18.93 | 0.40 | `gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr` |
+| **10** | `poudel_mlp_hbv_pur_daymet_single` | Static-Parameter MLP + 16-HBV (single model) | **0.618** | 0.608 | 0.830 | 0.818 | -0.021 | 0.952 | 1.489 | 2.216 | -18.66 | -4.98 | -10.58 | 0.42 | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |
+| **11** | `k21_lstm_pur_nldas` | LSTM (10-model ensemble) | **0.612** | 0.582 | 0.829 | 0.721 | -0.023 | 0.948 | 1.521 | 2.314 | -26.57 | -15.89 | 15.21 | 0.39 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr` |
+| **12** | `k21_lstm_pur_maurer_single` | LSTM (single model) | **0.605** | 0.576 | 0.823 | 0.739 | -0.036 | 0.922 | 1.519 | 2.308 | -25.13 | -10.55 | -12.41 | 0.45 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr` |
+| **13** | `k21_lstm_pur_nldas_single` | LSTM (single model) | **0.598** | 0.572 | 0.821 | 0.724 | -0.028 | 0.942 | 1.544 | 2.384 | -26.27 | -14.32 | -2.28 | 0.40 | `gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr` |
+| **15** | `sacsma_pur_single_daymet` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.512** | 0.528 | 0.785 | 0.807 | -0.073 | 0.844 | 1.693 | 2.865 | -19.96 | 16.54 | -175.81 | 0.48 | `gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr` |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -1018,18 +1018,18 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **7** | `sacsma_pur_multi_3f` | **SAC-SMA + Snow-17 (Donor Transfer, 3-Forcing Ensemble)** | `nearing_sacsma` | Conceptual | `MIP Re-run` | Nearing et al. (2020) | Daymet, Maurer, NLDAS | Yes (3) | 531 | 1989-10-01 to 1999-09-30 | **0.569** | 0.560 ± 0.003 | 0.230 | 0.537 | 0.407 | 46 | `---` / `---` |
 | **8** | `sacsma_pur_multi_3f_single` | **SAC-SMA + Snow-17 (Donor Transfer, single model)** | `nearing_sacsma` | Conceptual | `MIP Re-run` | Nearing et al. (2020) | Daymet, Maurer, NLDAS | No (3) | 531 | 1989-10-01 to 1999-09-30 | **0.560** | 0.560 ± 0.003 | 0.214 | 0.534 | 0.404 | 49 | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `era_pur_minimal_guidance` | ERA-Unguided-PUR (10-model ensemble) | **0.696** | 0.642 | 0.875 | 0.810 | -0.054 | 0.883 | 1.315 | 1.730 | -17.83 | -4.19 | 34.55 | 0.35 | 0.38 | 43.06 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_minimal_guidance.zarr` |
-| **2** | `k21_lstm_pur_3f` | LSTM (8-model ensemble) | **0.688** | 0.653 | 0.873 | 0.832 | -0.023 | 0.949 | 1.354 | 1.832 | -14.99 | -14.55 | 41.07 | 0.38 | 0.38 | 43.38 | `gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr` |
-| **3** | `era_pur_minimal_guidance_single` | ERA-Unguided-PUR | **0.681** | 0.636 | 0.870 | 0.815 | -0.054 | 0.883 | 1.349 | 1.835 | -16.95 | -1.87 | 23.93 | 0.37 | 0.38 | 43.77 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_minimal_guidance.zarr` |
-| **4** | `era_pur_physics_guided` | ERA-Physics-Guided-PUR (10-model ensemble) | **0.684** | 0.657 | 0.868 | 0.811 | -0.043 | 0.911 | 1.337 | 1.788 | -17.14 | -12.23 | 34.63 | 0.33 | 0.39 | 45.12 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_physics_guided.zarr` |
-| **5** | `era_pur_physics_guided_single` | ERA-Physics-Guided-PUR | **0.643** | 0.636 | 0.848 | 0.830 | -0.043 | 0.911 | 1.434 | 2.085 | -15.54 | -11.20 | -0.86 | 0.38 | 0.40 | 47.49 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_physics_guided.zarr` |
-| **6** | `k21_lstm_pur_3f_single` | LSTM (single model) | **0.639** | 0.624 | 0.850 | 0.852 | -0.027 | 0.939 | 1.449 | 2.100 | -13.80 | -11.04 | 7.26 | 0.41 | 0.40 | 46.39 | `gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr` |
-| **7** | `sacsma_pur_multi_3f` | SAC-SMA + Snow-17 (Donor Transfer, 3-Forcing Ensemble) | **0.569** | 0.537 | 0.808 | 0.738 | -0.085 | 0.823 | 1.596 | 2.546 | -27.35 | 9.23 | -66.87 | 0.43 | 0.40 | 51.33 | `gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr` |
-| **8** | `sacsma_pur_multi_3f_single` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.560** | 0.534 | 0.803 | 0.741 | -0.082 | 0.828 | 1.602 | 2.566 | -26.70 | 10.25 | -104.41 | 0.44 | 0.40 | 51.46 | `gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr` |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `era_pur_minimal_guidance` | ERA-Unguided-PUR (10-model ensemble) | **0.696** | 0.642 | 0.875 | 0.810 | -0.054 | 0.883 | 1.315 | 1.730 | -17.83 | -4.19 | 34.55 | 0.35 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_minimal_guidance.zarr` |
+| **2** | `k21_lstm_pur_3f` | LSTM (8-model ensemble) | **0.688** | 0.653 | 0.873 | 0.832 | -0.023 | 0.949 | 1.354 | 1.832 | -14.99 | -14.55 | 41.07 | 0.38 | `gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr` |
+| **3** | `era_pur_minimal_guidance_single` | ERA-Unguided-PUR | **0.681** | 0.636 | 0.870 | 0.815 | -0.054 | 0.883 | 1.349 | 1.835 | -16.95 | -1.87 | 23.93 | 0.37 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_minimal_guidance.zarr` |
+| **4** | `era_pur_physics_guided` | ERA-Physics-Guided-PUR (10-model ensemble) | **0.684** | 0.657 | 0.868 | 0.811 | -0.043 | 0.911 | 1.337 | 1.788 | -17.14 | -12.23 | 34.63 | 0.33 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_physics_guided.zarr` |
+| **5** | `era_pur_physics_guided_single` | ERA-Physics-Guided-PUR | **0.643** | 0.636 | 0.848 | 0.830 | -0.043 | 0.911 | 1.434 | 2.085 | -15.54 | -11.20 | -0.86 | 0.38 | `gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_physics_guided.zarr` |
+| **6** | `k21_lstm_pur_3f_single` | LSTM (single model) | **0.639** | 0.624 | 0.850 | 0.852 | -0.027 | 0.939 | 1.449 | 2.100 | -13.80 | -11.04 | 7.26 | 0.41 | `gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr` |
+| **7** | `sacsma_pur_multi_3f` | SAC-SMA + Snow-17 (Donor Transfer, 3-Forcing Ensemble) | **0.569** | 0.537 | 0.808 | 0.738 | -0.085 | 0.823 | 1.596 | 2.546 | -27.35 | 9.23 | -66.87 | 0.43 | `gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr` |
+| **8** | `sacsma_pur_multi_3f_single` | SAC-SMA + Snow-17 (Donor Transfer, single model) | **0.560** | 0.534 | 0.803 | 0.741 | -0.082 | 0.828 | 1.602 | 2.566 | -26.70 | 10.25 | -104.41 | 0.44 | `gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr` |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 
@@ -1050,12 +1050,12 @@ When updating the manuscript prose, Table 2, Tables 3–14, and Appendices A & B
 | **1** | `feng2020_di_lstm_pur_nldas` | **DI(1)-LSTM (3-model ensemble)** | `feng2020_di_lstm` | Machine learning | `MIP Re-run` | Feng et al. (2020) | NLDAS + Q(t-1) | Yes (3) | 531 | 1989-10-01 to 1999-09-30 | **0.747** | 0.737 ± 0.004 | 0.698 | 0.744 | 0.704 | 8 | `---` / `---` |
 | **2** | `feng2020_di_lstm_pur_nldas_single` | **DI(1)-LSTM (single model)** | `feng2020_di_lstm` | Machine learning | `MIP Re-run` | Feng et al. (2020) | NLDAS + Q(t-1) | No (3) | 531 | 1989-10-01 to 1999-09-30 | **0.737** | 0.737 ± 0.004 | 0.685 | 0.738 | 0.693 | 9 | `---` / `---` |
 
-#### Part B: Complete 14 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
+#### Part B: Complete 12 Gauch et al. (2023) Hydrological Metrics (Medians Across Evaluated Basins)
 
-| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Missed-Peaks (%) | Peak-MAPE (%) | Zarr Store / Archive |
-| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
-| **1** | `feng2020_di_lstm_pur_nldas` | DI(1)-LSTM (3-model ensemble) | **0.747** | 0.744 | 0.880 | 0.830 | -0.013 | 0.975 | 1.235 | 1.525 | -15.94 | -2.64 | -12.94 | 0.62 | 0.33 | 41.15 | `gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr` |
-| **2** | `feng2020_di_lstm_pur_nldas_single` | DI(1)-LSTM (single model) | **0.737** | 0.738 | 0.875 | 0.835 | -0.012 | 0.976 | 1.261 | 1.590 | -15.71 | -2.12 | -35.61 | 0.62 | 0.34 | 41.53 | `gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr` |
+| Rank | `entry_id` | Model Display Name | NSE | KGE | Pearson-$r$ | $\alpha$-NSE | $\beta$-NSE | $\beta$-KGE | RMSE (mm/d) | MSE | FHV (%) | FMS (%) | FLV (%) | Peak-Timing (d) | Zarr Store / Archive |
+| :-: | :--- | :--- | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :--- |
+| **1** | `feng2020_di_lstm_pur_nldas` | DI(1)-LSTM (3-model ensemble) | **0.747** | 0.744 | 0.880 | 0.830 | -0.013 | 0.975 | 1.235 | 1.525 | -15.94 | -2.64 | -12.94 | 0.62 | `gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr` |
+| **2** | `feng2020_di_lstm_pur_nldas_single` | DI(1)-LSTM (single model) | **0.737** | 0.738 | 0.875 | 0.835 | -0.012 | 0.976 | 1.261 | 1.590 | -15.71 | -2.12 | -35.61 | 0.62 | `gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr` |
 
 #### Part C: Entry Notes & Asterisk Footnotes
 

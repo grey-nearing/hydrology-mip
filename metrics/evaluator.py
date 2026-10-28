@@ -5,7 +5,7 @@ in `mm/day`) stored in `<bucket_uri>/hydrographs/<leaderboard_id>/<model_id>.zar
 against the ground-truth USGS observations (`qobs`, shape `(531, 3652)` in `mm/day`)
 stored in `<bucket_uri>/observations/newman_eval_targets.zarr`.
 
-Computes all 14 Gauch et al. (2023) ("In Defense of Metrics") hydrological metrics
+Computes all 12 Gauch et al. (2023) ("In Defense of Metrics") hydrological metrics
 via `metrics/metrics.py` and strictly enforces that no missing basins or missing
 predictions on valid observation days are allowed (`pred_nan_when_obs_valid == 0`).
 """
@@ -53,8 +53,6 @@ GAUCH_2023_METRICS: tuple[str, ...] = (
     "FMS",
     "FLV",
     "Peak-Timing",
-    "Missed-Peaks",
-    "Peak-MAPE",
 )
 
 GAUCH_METRIC_TO_SNAKE: dict[str, str] = {
@@ -70,8 +68,6 @@ GAUCH_METRIC_TO_SNAKE: dict[str, str] = {
     "FMS": "fms",
     "FLV": "flv",
     "Peak-Timing": "peak_timing",
-    "Missed-Peaks": "missed_peaks",
-    "Peak-MAPE": "peak_mape",
 }
 
 CANONICAL_LEADERBOARD_IDS: tuple[str, ...] = (
@@ -590,7 +586,7 @@ def calculate_model_leaderboard_metrics(
     allow_partial_archive: bool = False,
     evaluation_mode: str | None = None,
 ) -> dict[str, Any]:
-    """Calculate all 14 Gauch et al. (2023) & CAMELS-US MIP metrics for one model and leaderboard.
+    """Calculate all 12 Gauch et al. (2023) & CAMELS-US MIP metrics for one model and leaderboard.
 
     Reads the standardized model hydrograph Zarr store at
     `<bucket_uri>/hydrographs/<leaderboard_id>/<model_id>.zarr` and scores it against
@@ -619,7 +615,7 @@ def calculate_model_leaderboard_metrics(
         bucket_uri: Root URI of the CAMELS-US MIP bucket (default `"gs://camels-us-mip"`).
 
     Returns:
-        Dictionary containing the 5 headline leaderboard metrics, all 14 Gauch et al.
+        Dictionary containing the 5 headline leaderboard metrics, all 12 Gauch et al.
         (2023) metric distributions (`gauch_2023_metrics`), lower-tail skill percentiles,
         upper-tail peak-flow bias percentiles, `pred_nan_when_obs_valid` (`0`),
         18-region USGS HUC-02 median NSE breakdown (`regional_huc02`), and per-basin
@@ -754,7 +750,7 @@ def calculate_model_leaderboard_metrics(
             f"observations and SST > {MIN_SST_THRESHOLD}."
         )
 
-    # Compute all 14 Gauch et al. (2023) metrics per evaluable basin via metrics/metrics.py
+    # Compute all 12 Gauch et al. (2023) metrics per evaluable basin via metrics/metrics.py
     per_basin_vectors: dict[str, np.ndarray] = {
         m: np.full(NUM_BASINS, np.nan, dtype=np.float64)
         for m in GAUCH_2023_METRICS
@@ -812,7 +808,7 @@ def calculate_model_leaderboard_metrics(
                 ndigits = (
                     2
                     if m_name
-                    in ("FHV", "FMS", "FLV", "Peak-MAPE", "abs_fhv", "abs_fms", "abs_flv")
+                    in ("FHV", "FMS", "FLV", "abs_fhv", "abs_fms", "abs_flv")
                     else 4
                 )
                 m_dist[m_name] = _summarize_metric_vector(
@@ -862,7 +858,7 @@ def calculate_model_leaderboard_metrics(
         )
         gauch_distributions = {}
         for m_name in GAUCH_2023_METRICS:
-            ndigits = 2 if m_name in ("FHV", "FMS", "FLV", "Peak-MAPE") else 4
+            ndigits = 2 if m_name in ("FHV", "FMS", "FLV") else 4
             agg_d: dict[str, float] = {}
             for sk in stat_keys:
                 vals = [
@@ -957,7 +953,7 @@ def calculate_model_leaderboard_metrics(
 
         gauch_distributions = {}
         for m_name in GAUCH_2023_METRICS:
-            ndigits = 2 if m_name in ("FHV", "FMS", "FLV", "Peak-MAPE") else 4
+            ndigits = 2 if m_name in ("FHV", "FMS", "FLV") else 4
             gauch_distributions[m_name] = _summarize_metric_vector(
                 per_basin_vectors[m_name][good_b],
                 ndigits=ndigits,
@@ -1005,8 +1001,6 @@ def calculate_model_leaderboard_metrics(
     fms_d = gauch_distributions["FMS"]
     flv_d = gauch_distributions["FLV"]
     pt_d = gauch_distributions["Peak-Timing"]
-    mp_d = gauch_distributions["Missed-Peaks"]
-    pmape_d = gauch_distributions["Peak-MAPE"]
 
     summary: dict[str, Any] = {
         "num_total_basins": NUM_BASINS,
@@ -1099,12 +1093,6 @@ def calculate_model_leaderboard_metrics(
         "median_peak_timing": pt_d["median"],
         "q25_peak_timing": pt_d["q25"],
         "q75_peak_timing": pt_d["q75"],
-        "median_missed_peaks": mp_d["median"],
-        "q25_missed_peaks": mp_d["q25"],
-        "q75_missed_peaks": mp_d["q75"],
-        "median_peak_mape": pmape_d["median"],
-        "q25_peak_mape": pmape_d["q25"],
-        "q75_peak_mape": pmape_d["q75"],
         # Regional HUC-02 summary statistics
         "median_of_18_huc02_medians": round(float(np.median(huc_vals)), 4),
         "worst_huc02_region": f"{worst_huc[1]:.3f} ({worst_huc[0]})",
@@ -1118,7 +1106,7 @@ def calculate_model_leaderboard_metrics(
         "is_evaluable": [bool(v) for v in good_b],
     }
     for m_name in GAUCH_2023_METRICS:
-        ndigits = 4 if m_name in ("FHV", "FMS", "FLV", "Peak-MAPE") else 6
+        ndigits = 4 if m_name in ("FHV", "FMS", "FLV") else 6
         vec_list = [
             float("nan") if np.isnan(v) else round(float(v), ndigits)
             for v in per_basin_vectors[m_name]

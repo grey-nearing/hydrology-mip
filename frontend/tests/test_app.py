@@ -369,7 +369,7 @@ def test_score_valid_zarr_and_npz_hydrographs(mip_env: dict) -> None:
     assert len(res_zarr["scoring"]["huc_02_breakdown"]) == 18
     assert len(res_zarr["scoring"]["per_basin"]) == 531
 
-    # Verify all 14 Gauch et al. (2023) metrics are present in gauch_2023_medians and per_basin
+    # Verify all 12 Gauch et al. (2023) metrics are present in gauch_2023_medians and per_basin
     expected_gauch_metrics = {
         "NSE",
         "MSE",
@@ -383,8 +383,6 @@ def test_score_valid_zarr_and_npz_hydrographs(mip_env: dict) -> None:
         "FMS",
         "FLV",
         "Peak-Timing",
-        "Missed-Peaks",
-        "Peak-MAPE",
     }
     gauch_medians = res_zarr["scoring"]["gauch_2023_medians"]
     assert set(gauch_medians.keys()) == expected_gauch_metrics
@@ -400,8 +398,6 @@ def test_score_valid_zarr_and_npz_hydrographs(mip_env: dict) -> None:
     assert gauch_medians["FMS"] == pytest.approx(0.0, abs=1e-4)
     assert gauch_medians["FLV"] == pytest.approx(0.0, abs=1e-4)
     assert gauch_medians["Peak-Timing"] == pytest.approx(0.0, abs=1e-4)
-    assert gauch_medians["Missed-Peaks"] == pytest.approx(0.0, abs=1e-4)
-    assert gauch_medians["Peak-MAPE"] == pytest.approx(0.0, abs=1e-4)
     assert expected_gauch_metrics.issubset(set(res_zarr["scoring"]["per_basin"][0].keys()))
 
     # Also verify that NaN in qsim ONLY where qobs is already NaN is permitted (pred_nan_when_obs_valid == 0)

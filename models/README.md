@@ -1,6 +1,6 @@
 # Models and Central Runner
 
-The `models/` directory contains 19 rainfall-runoff model implementations (12 `MIP Re-run` implementations and 7 `ERA Contribution` implementations), a central deployment runner
+The `models/` directory contains 18 rainfall-runoff model implementations (11 `MIP Re-run` implementations and 7 `ERA Contribution` implementations), a central deployment runner
 (`run_model.py`), the shared CAMELS-US data loader (`camels_data.py`), and the consolidated Zarr
 hydrograph writer (`zarr_writer.py`).
 

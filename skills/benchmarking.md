@@ -31,8 +31,8 @@ Every model evaluation and leaderboard table MUST strictly enforce the following
    - Never drop catastrophic failure basins (`NSE <= 0`) when computing `Mean NSE`, `Median NSE`, `Median KGE`, or `Median |FHV|`.
 4. **Zero Imputation or Interpolation:**
    - Missing observations (`qobs` `NaN`s) must remain `NaN`, and model predictions must never be interpolated or filled across missing days.
-5. **Exact Gauch et al. (2023) 14-Metric Suite (`metrics/metrics.py`) + Lower-Tail & Failure-Rate Reporting:**
-   - Every evaluation summary and benchmark report MUST compute all 14 Gauch et al. (2023) metrics (`NSE`, `MSE`, `RMSE`, `KGE`, `Alpha-NSE`, `Pearson-r`, `Beta-KGE`, `Beta-NSE`, `FHV`, `FMS`, `FLV`, `Peak-Timing`, `Missed-Peaks`, `Peak-MAPE`) via `metrics/metrics.py`, alongside lower-tail skill percentiles (`Min`, `P1`, `P5`, `P10`, `P25`, `P50`, `P75`), upper-tail error percentiles (`P50`, `P75`, `P90`, `P95`, `P99`, `Max`), `NSE <= 0` failure counts, and 18-region USGS HUC-02 breakdowns.
+5. **Exact Gauch et al. (2023) 12-Metric Suite (`metrics/metrics.py`) + Lower-Tail & Failure-Rate Reporting:**
+   - Every evaluation summary and benchmark report MUST compute all 12 Gauch et al. (2023) metrics (`NSE`, `MSE`, `RMSE`, `KGE`, `Alpha-NSE`, `Pearson-r`, `Beta-KGE`, `Beta-NSE`, `FHV`, `FMS`, `FLV`, `Peak-Timing`) via `metrics/metrics.py`, alongside lower-tail skill percentiles (`Min`, `P1`, `P5`, `P10`, `P25`, `P50`, `P75`), upper-tail error percentiles (`P50`, `P75`, `P90`, `P95`, `P99`, `Max`), `NSE <= 0` failure counts, and 18-region USGS HUC-02 breakdowns.
 
 ---
 

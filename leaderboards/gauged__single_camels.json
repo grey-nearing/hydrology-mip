@@ -5,9 +5,9 @@
   "spatial_regime": "gauged",
   "forcing_regime": "single_camels",
   "title": "Gauged: Single CAMELS Forcing",
-  "short_title": "Table 3: Gauged \u2022 Single Forcing",
+  "short_title": "Table 3: Gauged • Single Forcing",
   "tab_label": "Single CAMELS Forcing (Table 3)",
-  "subtitle": "531 basins, Newman evaluation decade (1989\u20131999) \u2014 Daymet, Maurer, or NLDAS without lagged streamflow.",
+  "subtitle": "531 basins, Newman evaluation decade (1989–1999) — Daymet, Maurer, or NLDAS without lagged streamflow.",
   "n_entries": 40,
   "top_model": "LSTM (10-model ensemble)",
   "top_nse": 0.772,
@@ -30,7 +30,7 @@
       "ens_med_nse_display": "0.772",
       "single_med_nse": 0.744,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.744 \u00b1 0.003",
+      "single_med_nse_display": "0.744 ± 0.003",
       "single_med_nse_per_member": [
         0.743,
         0.7439,
@@ -751,34 +751,6 @@
           "p95": 1.1088,
           "p99": 1.6175,
           "max": 2.375
-        },
-        "Missed-Peaks": {
-          "median": 0.3559,
-          "mean": 0.3863,
-          "min": 0.1111,
-          "p01": 0.1477,
-          "p05": 0.187,
-          "p10": 0.2321,
-          "q25": 0.283,
-          "q75": 0.4553,
-          "p90": 0.6,
-          "p95": 0.6667,
-          "p99": 0.8288,
-          "max": 0.95
-        },
-        "Peak-MAPE": {
-          "median": 38.15,
-          "mean": 41.2,
-          "min": 12.6,
-          "p01": 17.02,
-          "p05": 19.74,
-          "p10": 23.44,
-          "q25": 30.06,
-          "q75": 48.91,
-          "p90": 60.46,
-          "p95": 70.12,
-          "p99": 90.47,
-          "max": 191.53
         }
       },
       "regional_huc02": {
@@ -813,7 +785,7 @@
       "zenodo_url": "https://zenodo.org/records/4670268",
       "hydroshare_url": "",
       "data_archive_url": "https://doi.org/10.5281/zenodo.4670268",
-      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
+      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
       "notes": "10-seed ensemble mean of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM trained with Daymet single-forcing meteorological inputs and 27 static catchment attributes across all 531 CAMELS-US basins (Zenodo 10.5281/zenodo.4670268; 531-basin Ensemble Med NSE = 0.772, Mean NSE = 0.728, Med KGE = 0.757; 447-basin subset Ensemble Med NSE = 0.783).",
       "model_category": "Machine learning",
       "publication_year": 2021,
@@ -838,7 +810,7 @@
       "ens_med_nse_display": "0.764",
       "single_med_nse": 0.732,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.732 \u00b1 0.004",
+      "single_med_nse_display": "0.732 ± 0.004",
       "single_med_nse_per_member": [
         0.7333,
         0.7342,
@@ -1559,34 +1531,6 @@
           "p95": 1.2053,
           "p99": 1.6667,
           "max": 2.625
-        },
-        "Missed-Peaks": {
-          "median": 0.3692,
-          "mean": 0.3959,
-          "min": 0.119,
-          "p01": 0.1571,
-          "p05": 0.2083,
-          "p10": 0.2353,
-          "q25": 0.2913,
-          "q75": 0.4639,
-          "p90": 0.6,
-          "p95": 0.7003,
-          "p99": 0.8475,
-          "max": 0.95
-        },
-        "Peak-MAPE": {
-          "median": 38.26,
-          "mean": 40.81,
-          "min": 7.33,
-          "p01": 17.4,
-          "p05": 21.93,
-          "p10": 25.65,
-          "q25": 30.24,
-          "q75": 48.41,
-          "p90": 60.72,
-          "p95": 69.86,
-          "p99": 88.87,
-          "max": 133.37
         }
       },
       "regional_huc02": {
@@ -1621,7 +1565,7 @@
       "zenodo_url": "https://zenodo.org/records/4670268",
       "hydroshare_url": "",
       "data_archive_url": "https://doi.org/10.5281/zenodo.4670268",
-      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
+      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
       "notes": "10-seed ensemble mean of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM trained with Maurer single-forcing meteorological inputs and 27 static catchment attributes across all 531 CAMELS-US basins (Zenodo 10.5281/zenodo.4670268; 531-basin Ensemble Med NSE = 0.764, Mean NSE = 0.723, Med KGE = 0.751; 447-basin subset Ensemble Med NSE = 0.768).",
       "model_category": "Machine learning",
       "publication_year": 2021,
@@ -1631,9 +1575,9 @@
     {
       "entry_id": "t3_18",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "\u03b4HBV 1.1p / \u03b4MG (5-model ensemble)",
+      "model_name": "δHBV 1.1p / δMG (5-model ensemble)",
       "family_id": "song_dhbv11p",
-      "family_name": "\u03b4HBV 1.1p / \u03b4MG",
+      "family_name": "δHBV 1.1p / δMG",
       "paradigm": "LSTM + 16-Bucket Differentiable HBV (Dynamic Parameters)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -1646,7 +1590,7 @@
       "ens_med_nse_display": "0.759",
       "single_med_nse": 0.754,
       "single_med_nse_std": 0.001,
-      "single_med_nse_display": "0.754 \u00b1 0.001",
+      "single_med_nse_display": "0.754 ± 0.001",
       "single_med_nse_per_member": [
         0.754,
         0.7547,
@@ -2362,34 +2306,6 @@
           "p95": 1.3798,
           "p99": 1.84,
           "max": 2.125
-        },
-        "Missed-Peaks": {
-          "median": 0.3542,
-          "mean": 0.3918,
-          "min": 0.0889,
-          "p01": 0.1548,
-          "p05": 0.1887,
-          "p10": 0.2157,
-          "q25": 0.2857,
-          "q75": 0.4563,
-          "p90": 0.65,
-          "p95": 0.7399,
-          "p99": 0.8711,
-          "max": 0.913
-        },
-        "Peak-MAPE": {
-          "median": 37.9,
-          "mean": 40.15,
-          "min": 10.79,
-          "p01": 16.41,
-          "p05": 21.17,
-          "p10": 24.64,
-          "q25": 30.42,
-          "q75": 46.41,
-          "p90": 58.08,
-          "p95": 67.25,
-          "p99": 87.18,
-          "max": 148.61
         }
       },
       "regional_huc02": {
@@ -2424,8 +2340,8 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "16-bucket differentiable HBV 1.1p (\u03b4MG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent \u03b2, near-surface recession coefficient K0, and ET shape parameter \u03b3 predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
-      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) \u03b4HBV 1.1p (dynamic \u03b2, K0, \u03b3 + capillary rise C) trained on 531 CAMELS-US basins over WY1999-2008 and evaluated over WY1989-1999 with Daymet forcing; 5-seed ensemble mean (seeds 111, 222, 333, 444, 555; Med NSE = 0.759).",
+      "family_description": "16-bucket differentiable HBV 1.1p (δMG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent β, near-surface recession coefficient K0, and ET shape parameter γ predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
+      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) δHBV 1.1p (dynamic β, K0, γ + capillary rise C) trained on 531 CAMELS-US basins over WY1999-2008 and evaluated over WY1989-1999 with Daymet forcing; 5-seed ensemble mean (seeds 111, 222, 333, 444, 555; Med NSE = 0.759).",
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 3,
@@ -2449,7 +2365,7 @@
       "ens_med_nse_display": "0.759",
       "single_med_nse": 0.732,
       "single_med_nse_std": 0.002,
-      "single_med_nse_display": "0.732 \u00b1 0.002",
+      "single_med_nse_display": "0.732 ± 0.002",
       "single_med_nse_per_member": [
         0.7305,
         0.7353,
@@ -3168,34 +3084,6 @@
           "p95": 1.2,
           "p99": 1.6,
           "max": 2.375
-        },
-        "Missed-Peaks": {
-          "median": 0.3704,
-          "mean": 0.3921,
-          "min": 0.1034,
-          "p01": 0.1565,
-          "p05": 0.2037,
-          "p10": 0.2308,
-          "q25": 0.2892,
-          "q75": 0.4634,
-          "p90": 0.6,
-          "p95": 0.6775,
-          "p99": 0.845,
-          "max": 0.9524
-        },
-        "Peak-MAPE": {
-          "median": 39.01,
-          "mean": 41.16,
-          "min": 12.43,
-          "p01": 17.05,
-          "p05": 22.73,
-          "p10": 25.33,
-          "q25": 30.84,
-          "q75": 48.18,
-          "p90": 59.72,
-          "p95": 70.05,
-          "p99": 88.7,
-          "max": 127.45
         }
       },
       "regional_huc02": {
@@ -3230,7 +3118,7 @@
       "zenodo_url": "https://zenodo.org/records/3530884",
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
-      "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000\u20132008 and evaluated over WY1990\u20131999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
+      "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000–2008 and evaluated over WY1990–1999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
       "notes": "8-seed ensemble mean of the Kratzert et al. (2019b) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884; 531-basin Ensemble Med NSE = 0.759, Mean NSE = 0.713, Med KGE = 0.742; 447-basin subset Ensemble Med NSE = 0.759).",
       "model_category": "Machine learning",
       "publication_year": 2019,
@@ -3242,7 +3130,7 @@
       "leaderboard_id": "gauged__single_camels",
       "model_name": "MC-LSTM (Frame 2023 Archive, Daymet)",
       "family_id": "frame2023_mclstm_archive",
-      "family_name": "Mass-Conserving LSTM (MC-LSTM \u2014 Frame 2023 Archive)",
+      "family_name": "Mass-Conserving LSTM (MC-LSTM — Frame 2023 Archive)",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "category": "Archive",
       "code_provenance": "Author Archive",
@@ -3965,34 +3853,6 @@
           "p95": 1.25,
           "p99": 1.725,
           "max": 2.3333
-        },
-        "Missed-Peaks": {
-          "median": 0.3538,
-          "mean": 0.3835,
-          "min": 0.0417,
-          "p01": 0.1444,
-          "p05": 0.1944,
-          "p10": 0.2281,
-          "q25": 0.2784,
-          "q75": 0.4505,
-          "p90": 0.6129,
-          "p95": 0.6923,
-          "p99": 0.8141,
-          "max": 0.9
-        },
-        "Peak-MAPE": {
-          "median": 38.14,
-          "mean": 40.54,
-          "min": 13.1,
-          "p01": 15.91,
-          "p05": 21.1,
-          "p10": 24.47,
-          "q25": 29.8,
-          "q75": 46.8,
-          "p90": 60.35,
-          "p95": 67.99,
-          "p99": 87.82,
-          "max": 143.77
         }
       },
       "regional_huc02": {
@@ -4037,9 +3897,9 @@
     {
       "entry_id": "t3_19",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "\u03b4HBV 1.1p / \u03b4MG (single model)",
+      "model_name": "δHBV 1.1p / δMG (single model)",
       "family_id": "song_dhbv11p",
-      "family_name": "\u03b4HBV 1.1p / \u03b4MG",
+      "family_name": "δHBV 1.1p / δMG",
       "paradigm": "LSTM + 16-Bucket Differentiable HBV (Dynamic Parameters)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -4052,7 +3912,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.754,
       "single_med_nse_std": 0.001,
-      "single_med_nse_display": "0.754 \u00b1 0.001",
+      "single_med_nse_display": "0.754 ± 0.001",
       "single_med_nse_per_member": [
         0.754,
         0.7547,
@@ -4780,36 +4640,6 @@
           "p99": 1.9696,
           "max": 2.3261,
           "median_std": 0.0021
-        },
-        "Missed-Peaks": {
-          "median": 0.3592,
-          "mean": 0.3993,
-          "min": 0.08,
-          "p01": 0.1523,
-          "p05": 0.1961,
-          "p10": 0.2296,
-          "q25": 0.2881,
-          "q75": 0.4602,
-          "p90": 0.6621,
-          "p95": 0.7637,
-          "p99": 0.8729,
-          "max": 0.9524,
-          "median_std": 0.0038
-        },
-        "Peak-MAPE": {
-          "median": 38.26,
-          "mean": 40.61,
-          "min": 11.25,
-          "p01": 16.3,
-          "p05": 21.48,
-          "p10": 24.61,
-          "q25": 30.6,
-          "q75": 46.67,
-          "p90": 59.23,
-          "p95": 68.0,
-          "p99": 90.6,
-          "max": 152.28,
-          "median_std": 0.17
         }
       },
       "regional_huc02": {
@@ -4844,8 +4674,8 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "16-bucket differentiable HBV 1.1p (\u03b4MG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent \u03b2, near-surface recession coefficient K0, and ET shape parameter \u03b3 predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
-      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) \u03b4HBV 1.1p trained on 531 CAMELS-US basins over WY1999-2008 and evaluated over WY1989-1999 with Daymet forcing; single-model performance averaged across all 5 random seeds (seeds 111, 222, 333, 444, 555; Med NSE = 0.754 \u00b1 0.001).",
+      "family_description": "16-bucket differentiable HBV 1.1p (δMG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent β, near-surface recession coefficient K0, and ET shape parameter γ predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
+      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) δHBV 1.1p trained on 531 CAMELS-US basins over WY1999-2008 and evaluated over WY1989-1999 with Daymet forcing; single-model performance averaged across all 5 random seeds (seeds 111, 222, 333, 444, 555; Med NSE = 0.754 ± 0.001).",
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 6,
@@ -4869,7 +4699,7 @@
       "ens_med_nse_display": "0.747",
       "single_med_nse": 0.72,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.720 \u00b1 0.004",
+      "single_med_nse_display": "0.720 ± 0.004",
       "single_med_nse_per_member": [
         0.7236,
         0.7189,
@@ -5590,34 +5420,6 @@
           "p95": 1.2,
           "p99": 1.6937,
           "max": 2.625
-        },
-        "Missed-Peaks": {
-          "median": 0.3636,
-          "mean": 0.3941,
-          "min": 0.1163,
-          "p01": 0.1487,
-          "p05": 0.2094,
-          "p10": 0.2407,
-          "q25": 0.2883,
-          "q75": 0.4625,
-          "p90": 0.6364,
-          "p95": 0.7,
-          "p99": 0.8244,
-          "max": 0.9302
-        },
-        "Peak-MAPE": {
-          "median": 38.31,
-          "mean": 42.14,
-          "min": 14.2,
-          "p01": 18.8,
-          "p05": 23.67,
-          "p10": 25.7,
-          "q25": 31.54,
-          "q75": 47.01,
-          "p90": 64.28,
-          "p95": 74.44,
-          "p99": 91.05,
-          "max": 200.03
         }
       },
       "regional_huc02": {
@@ -5652,7 +5454,7 @@
       "zenodo_url": "https://zenodo.org/records/4670268",
       "hydroshare_url": "",
       "data_archive_url": "https://doi.org/10.5281/zenodo.4670268",
-      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
+      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
       "notes": "10-seed ensemble mean of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM trained with NLDAS single-forcing meteorological inputs and 27 static catchment attributes across all 531 CAMELS-US basins (Zenodo 10.5281/zenodo.4670268; 531-basin Ensemble Med NSE = 0.747, Mean NSE = 0.708, Med KGE = 0.737; 447-basin subset Ensemble Med NSE = 0.755).",
       "model_category": "Machine learning",
       "publication_year": 2021,
@@ -5677,7 +5479,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.744,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.744 \u00b1 0.003",
+      "single_med_nse_display": "0.744 ± 0.003",
       "single_med_nse_per_member": [
         0.743,
         0.7439,
@@ -6410,36 +6212,6 @@
           "p99": 1.665,
           "max": 2.234,
           "median_std": 0.0088
-        },
-        "Missed-Peaks": {
-          "median": 0.3777,
-          "mean": 0.4085,
-          "min": 0.1064,
-          "p01": 0.1668,
-          "p05": 0.2166,
-          "p10": 0.2493,
-          "q25": 0.3053,
-          "q75": 0.4778,
-          "p90": 0.6301,
-          "p95": 0.7124,
-          "p99": 0.8242,
-          "max": 0.9608,
-          "median_std": 0.0028
-        },
-        "Peak-MAPE": {
-          "median": 39.87,
-          "mean": 42.99,
-          "min": 12.8,
-          "p01": 17.68,
-          "p05": 22.02,
-          "p10": 25.08,
-          "q25": 31.66,
-          "q75": 50.12,
-          "p90": 63.57,
-          "p95": 72.57,
-          "p99": 94.55,
-          "max": 196.91,
-          "median_std": 0.41
         }
       },
       "regional_huc02": {
@@ -6474,8 +6246,8 @@
       "zenodo_url": "https://zenodo.org/records/4670268",
       "hydroshare_url": "",
       "data_archive_url": "https://doi.org/10.5281/zenodo.4670268",
-      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
-      "notes": "Single-model evaluation scored across all 10 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM on Daymet single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.744 \u00b1 0.003; 447-basin subset Single-Seed Med NSE = 0.762 \u00b1 0.004).",
+      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
+      "notes": "Single-model evaluation scored across all 10 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM on Daymet single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.744 ± 0.003; 447-basin subset Single-Seed Med NSE = 0.762 ± 0.004).",
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 8,
@@ -6484,9 +6256,9 @@
     {
       "entry_id": "hoedt_mclstm_lit_maurer",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 \u2014 Literature, 10-model ensemble)*",
+      "model_name": "MC-LSTM (Hoedt 2021 — Literature, 10-model ensemble)*",
       "family_id": "hoedt_mclstm_lit",
-      "family_name": "Mass-Conserving LSTM (MC-LSTM \u2014 Literature)*",
+      "family_name": "Mass-Conserving LSTM (MC-LSTM — Literature)*",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "category": "Literature",
       "code_provenance": "Published Paper",
@@ -6495,7 +6267,7 @@
       "ens_med_nse_display": "0.744",
       "single_med_nse": 0.726,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.726 \u00b1 0.003",
+      "single_med_nse_display": "0.726 ± 0.003",
       "primary_ranking_nse": 0.744,
       "mean_nse": null,
       "med_kge": null,
@@ -6542,9 +6314,9 @@
     {
       "entry_id": "hoedt_mclstm_maurer",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 \u2014 MIP Re-run, Maurer)",
+      "model_name": "MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer)",
       "family_id": "hoedt_mclstm",
-      "family_name": "Mass-Conserving LSTM (MC-LSTM \u2014 MIP Re-run)",
+      "family_name": "Mass-Conserving LSTM (MC-LSTM — MIP Re-run)",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -6557,7 +6329,7 @@
       "ens_med_nse_display": "0.743",
       "single_med_nse": 0.716,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.716 \u00b1 0.003",
+      "single_med_nse_display": "0.716 ± 0.003",
       "single_med_nse_per_member": [
         0.7119,
         0.7165,
@@ -7271,34 +7043,6 @@
           "p95": 1.2111,
           "p99": 1.775,
           "max": 2.2
-        },
-        "Missed-Peaks": {
-          "median": 0.3651,
-          "mean": 0.3992,
-          "min": 0.1228,
-          "p01": 0.1544,
-          "p05": 0.2043,
-          "p10": 0.2373,
-          "q25": 0.2887,
-          "q75": 0.47,
-          "p90": 0.6154,
-          "p95": 0.6957,
-          "p99": 0.9156,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 39.27,
-          "mean": 41.35,
-          "min": 9.84,
-          "p01": 16.67,
-          "p05": 21.64,
-          "p10": 25.41,
-          "q25": 31.06,
-          "q75": 48.25,
-          "p90": 59.67,
-          "p95": 70.86,
-          "p99": 92.22,
-          "max": 148.51
         }
       },
       "regional_huc02": {
@@ -7343,9 +7087,9 @@
     {
       "entry_id": "t3_29",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "\u03b4HBV 1.0 (5-model ensemble)",
+      "model_name": "δHBV 1.0 (5-model ensemble)",
       "family_id": "feng_dhbv10",
-      "family_name": "\u03b4HBV 1.0",
+      "family_name": "δHBV 1.0",
       "paradigm": "Dynamic-Parameter LSTM + 16-Bucket Differentiable HBV",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -7358,7 +7102,7 @@
       "ens_med_nse_display": "0.742",
       "single_med_nse": 0.733,
       "single_med_nse_std": 0.002,
-      "single_med_nse_display": "0.733 \u00b1 0.002",
+      "single_med_nse_display": "0.733 ± 0.002",
       "single_med_nse_per_member": [
         0.7365,
         0.7316,
@@ -8074,34 +7818,6 @@
           "p95": 1.375,
           "p99": 1.8847,
           "max": 2.5
-        },
-        "Missed-Peaks": {
-          "median": 0.3621,
-          "mean": 0.3986,
-          "min": 0.0667,
-          "p01": 0.133,
-          "p05": 0.1858,
-          "p10": 0.2203,
-          "q25": 0.2797,
-          "q75": 0.4786,
-          "p90": 0.6667,
-          "p95": 0.7593,
-          "p99": 0.8683,
-          "max": 0.9565
-        },
-        "Peak-MAPE": {
-          "median": 38.31,
-          "mean": 41.44,
-          "min": 14.05,
-          "p01": 16.93,
-          "p05": 21.07,
-          "p10": 25.11,
-          "q25": 31.28,
-          "q75": 47.44,
-          "p90": 61.08,
-          "p95": 72.23,
-          "p99": 95.3,
-          "max": 122.84
         }
       },
       "regional_huc02": {
@@ -8161,7 +7877,7 @@
       "ens_med_nse_display": "0.741",
       "single_med_nse": 0.712,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.712 \u00b1 0.004",
+      "single_med_nse_display": "0.712 ± 0.004",
       "single_med_nse_per_member": [
         0.7135,
         0.7193,
@@ -8880,34 +8596,6 @@
           "p95": 1.189,
           "p99": 1.6595,
           "max": 2.5
-        },
-        "Missed-Peaks": {
-          "median": 0.386,
-          "mean": 0.4067,
-          "min": 0.0476,
-          "p01": 0.1507,
-          "p05": 0.209,
-          "p10": 0.2453,
-          "q25": 0.3052,
-          "q75": 0.4732,
-          "p90": 0.6207,
-          "p95": 0.695,
-          "p99": 0.8083,
-          "max": 0.9524
-        },
-        "Peak-MAPE": {
-          "median": 40.52,
-          "mean": 42.72,
-          "min": 12.04,
-          "p01": 16.37,
-          "p05": 22.33,
-          "p10": 25.48,
-          "q25": 32.2,
-          "q75": 51.33,
-          "p90": 61.2,
-          "p95": 70.74,
-          "p99": 85.55,
-          "max": 136.38
         }
       },
       "regional_huc02": {
@@ -8963,7 +8651,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.74,
       "single_med_nse_std": 0.002,
-      "single_med_nse_display": "0.740 \u00b1 0.002",
+      "single_med_nse_display": "0.740 ± 0.002",
       "primary_ranking_nse": 0.74,
       "mean_nse": null,
       "med_kge": null,
@@ -9009,7 +8697,7 @@
       "leaderboard_id": "gauged__single_camels",
       "model_name": "MC-LSTM (Frame 2023 Archive, NLDAS)",
       "family_id": "frame2023_mclstm_archive",
-      "family_name": "Mass-Conserving LSTM (MC-LSTM \u2014 Frame 2023 Archive)",
+      "family_name": "Mass-Conserving LSTM (MC-LSTM — Frame 2023 Archive)",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "category": "Archive",
       "code_provenance": "Author Archive",
@@ -9732,34 +9420,6 @@
           "p95": 1.1909,
           "p99": 1.69,
           "max": 2.1667
-        },
-        "Missed-Peaks": {
-          "median": 0.3585,
-          "mean": 0.397,
-          "min": 0.1111,
-          "p01": 0.1495,
-          "p05": 0.2043,
-          "p10": 0.2333,
-          "q25": 0.2934,
-          "q75": 0.4555,
-          "p90": 0.6316,
-          "p95": 0.7446,
-          "p99": 0.8528,
-          "max": 0.95
-        },
-        "Peak-MAPE": {
-          "median": 37.89,
-          "mean": 41.19,
-          "min": 13.23,
-          "p01": 18.54,
-          "p05": 22.87,
-          "p10": 26.05,
-          "q25": 30.93,
-          "q75": 46.64,
-          "p90": 62.32,
-          "p95": 71.62,
-          "p99": 91.02,
-          "max": 132.98
         }
       },
       "regional_huc02": {
@@ -9819,7 +9479,7 @@
       "ens_med_nse_display": "0.735",
       "single_med_nse": 0.733,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.733 \u00b1 0.003",
+      "single_med_nse_display": "0.733 ± 0.003",
       "single_med_nse_per_member": [
         0.737,
         0.7287,
@@ -10533,34 +10193,6 @@
           "p95": 1.2899,
           "p99": 1.875,
           "max": 2.6667
-        },
-        "Missed-Peaks": {
-          "median": 0.3704,
-          "mean": 0.4072,
-          "min": 0.0889,
-          "p01": 0.1487,
-          "p05": 0.2017,
-          "p10": 0.2333,
-          "q25": 0.2897,
-          "q75": 0.4833,
-          "p90": 0.6667,
-          "p95": 0.7399,
-          "p99": 0.875,
-          "max": 0.9302
-        },
-        "Peak-MAPE": {
-          "median": 39.74,
-          "mean": 43.0,
-          "min": 13.67,
-          "p01": 15.39,
-          "p05": 21.44,
-          "p10": 25.87,
-          "q25": 31.7,
-          "q75": 50.59,
-          "p90": 61.67,
-          "p95": 75.23,
-          "p99": 90.25,
-          "max": 200.58
         }
       },
       "regional_huc02": {
@@ -10605,9 +10237,9 @@
     {
       "entry_id": "t3_33",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "\u03b4HBV 1.0 (single model)",
+      "model_name": "δHBV 1.0 (single model)",
       "family_id": "feng_dhbv10",
-      "family_name": "\u03b4HBV 1.0",
+      "family_name": "δHBV 1.0",
       "paradigm": "Dynamic-Parameter LSTM + 16-Bucket Differentiable HBV",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -10620,7 +10252,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.733,
       "single_med_nse_std": 0.002,
-      "single_med_nse_display": "0.733 \u00b1 0.002",
+      "single_med_nse_display": "0.733 ± 0.002",
       "single_med_nse_per_member": [
         0.7365,
         0.7316,
@@ -11348,36 +10980,6 @@
           "p99": 2.0291,
           "max": 2.4834,
           "median_std": 0.0077
-        },
-        "Missed-Peaks": {
-          "median": 0.3622,
-          "mean": 0.4073,
-          "min": 0.0756,
-          "p01": 0.1337,
-          "p05": 0.1946,
-          "p10": 0.2248,
-          "q25": 0.2864,
-          "q75": 0.4852,
-          "p90": 0.6976,
-          "p95": 0.7789,
-          "p99": 0.8893,
-          "max": 0.9926,
-          "median_std": 0.0025
-        },
-        "Peak-MAPE": {
-          "median": 39.18,
-          "mean": 41.99,
-          "min": 13.97,
-          "p01": 16.57,
-          "p05": 22.01,
-          "p10": 25.57,
-          "q25": 31.63,
-          "q75": 48.22,
-          "p90": 62.11,
-          "p95": 72.8,
-          "p99": 94.45,
-          "max": 150.64,
-          "median_std": 0.4
         }
       },
       "regional_huc02": {
@@ -11437,7 +11039,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.733,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.733 \u00b1 0.003",
+      "single_med_nse_display": "0.733 ± 0.003",
       "single_med_nse_per_member": [
         0.737,
         0.7287,
@@ -12163,36 +11765,6 @@
           "p99": 1.9132,
           "max": 2.6806,
           "median_std": 0.0
-        },
-        "Missed-Peaks": {
-          "median": 0.3708,
-          "mean": 0.4117,
-          "min": 0.0837,
-          "p01": 0.1531,
-          "p05": 0.2048,
-          "p10": 0.2364,
-          "q25": 0.293,
-          "q75": 0.4886,
-          "p90": 0.6822,
-          "p95": 0.7638,
-          "p99": 0.8857,
-          "max": 0.9855,
-          "median_std": 0.0018
-        },
-        "Peak-MAPE": {
-          "median": 40.36,
-          "mean": 43.36,
-          "min": 13.55,
-          "p01": 16.9,
-          "p05": 21.58,
-          "p10": 25.58,
-          "q25": 32.14,
-          "q75": 50.84,
-          "p90": 63.23,
-          "p95": 74.64,
-          "p99": 93.41,
-          "max": 202.48,
-          "median_std": 0.18
         }
       },
       "regional_huc02": {
@@ -12228,7 +11800,7 @@
       "hydroshare_url": "",
       "data_archive_url": null,
       "family_description": "Regional 3-layer Multilayer Perceptron (2048 hidden units) mapping static catchment attributes to time-invariant parameters of a 16-component parallel differentiable HBV rainfall-runoff model with Gamma unit-hydrograph routing.",
-      "notes": "Poudel & Steinschneider (2026) Static-Parameter MLP + 16-HBV (50 epochs x 240 batches/epoch, batch_size=32, 730-day window with 365-day spinup, StepLR gamma=0.5 every 10 epochs) trained on 531 CAMELS-US basins over WY1999-2008 and evaluated over WY1989-1999 with Daymet forcing; single-model performance averaged across all 3 random seeds (seeds 101, 102, 103; Single-Seed Med NSE = 0.733 \u00b1 0.003).",
+      "notes": "Poudel & Steinschneider (2026) Static-Parameter MLP + 16-HBV (50 epochs x 240 batches/epoch, batch_size=32, 730-day window with 365-day spinup, StepLR gamma=0.5 every 10 epochs) trained on 531 CAMELS-US basins over WY1999-2008 and evaluated over WY1989-1999 with Daymet forcing; single-model performance averaged across all 3 random seeds (seeds 101, 102, 103; Single-Seed Med NSE = 0.733 ± 0.003).",
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 17,
@@ -12252,7 +11824,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.732,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.732 \u00b1 0.004",
+      "single_med_nse_display": "0.732 ± 0.004",
       "single_med_nse_per_member": [
         0.7333,
         0.7342,
@@ -12985,36 +12557,6 @@
           "p99": 1.7604,
           "max": 2.3042,
           "median_std": 0.0094
-        },
-        "Missed-Peaks": {
-          "median": 0.3905,
-          "mean": 0.4176,
-          "min": 0.1187,
-          "p01": 0.1683,
-          "p05": 0.2215,
-          "p10": 0.2539,
-          "q25": 0.3124,
-          "q75": 0.4859,
-          "p90": 0.6399,
-          "p95": 0.7398,
-          "p99": 0.8558,
-          "max": 0.9474,
-          "median_std": 0.0036
-        },
-        "Peak-MAPE": {
-          "median": 39.87,
-          "mean": 42.76,
-          "min": 11.58,
-          "p01": 18.5,
-          "p05": 23.81,
-          "p10": 26.67,
-          "q25": 32.19,
-          "q75": 50.1,
-          "p90": 62.67,
-          "p95": 72.03,
-          "p99": 89.81,
-          "max": 136.81,
-          "median_std": 0.44
         }
       },
       "regional_huc02": {
@@ -13049,8 +12591,8 @@
       "zenodo_url": "https://zenodo.org/records/4670268",
       "hydroshare_url": "",
       "data_archive_url": "https://doi.org/10.5281/zenodo.4670268",
-      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
-      "notes": "Single-model evaluation scored across all 10 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 \u00b1 0.002; 447-basin subset Single-Seed Med NSE = 0.747 \u00b1 0.003).",
+      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
+      "notes": "Single-model evaluation scored across all 10 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 ± 0.002; 447-basin subset Single-Seed Med NSE = 0.747 ± 0.003).",
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 18,
@@ -13074,7 +12616,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.732,
       "single_med_nse_std": 0.002,
-      "single_med_nse_display": "0.732 \u00b1 0.002",
+      "single_med_nse_display": "0.732 ± 0.002",
       "single_med_nse_per_member": [
         0.7305,
         0.7353,
@@ -13805,36 +13347,6 @@
           "p99": 1.6117,
           "max": 2.4531,
           "median_std": 0.0066
-        },
-        "Missed-Peaks": {
-          "median": 0.3867,
-          "mean": 0.4151,
-          "min": 0.1293,
-          "p01": 0.1683,
-          "p05": 0.2163,
-          "p10": 0.2509,
-          "q25": 0.309,
-          "q75": 0.4867,
-          "p90": 0.6334,
-          "p95": 0.7324,
-          "p99": 0.8632,
-          "max": 0.9585,
-          "median_std": 0.0034
-        },
-        "Peak-MAPE": {
-          "median": 40.58,
-          "mean": 42.88,
-          "min": 12.9,
-          "p01": 18.26,
-          "p05": 23.82,
-          "p10": 27.06,
-          "q25": 32.51,
-          "q75": 49.83,
-          "p90": 61.96,
-          "p95": 72.57,
-          "p99": 89.44,
-          "max": 138.27,
-          "median_std": 0.65
         }
       },
       "regional_huc02": {
@@ -13869,8 +13381,8 @@
       "zenodo_url": "https://zenodo.org/records/3530884",
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
-      "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000\u20132008 and evaluated over WY1990\u20131999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
-      "notes": "Single-model evaluation scored across all 8 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2019b) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 \u00b1 0.002; 447-basin subset Single-Seed Med NSE = 0.739 \u00b1 0.003).",
+      "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000–2008 and evaluated over WY1990–1999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
+      "notes": "Single-model evaluation scored across all 8 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2019b) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 ± 0.002; 447-basin subset Single-Seed Med NSE = 0.739 ± 0.003).",
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 19,
@@ -13879,9 +13391,9 @@
     {
       "entry_id": "hoedt_mclstm_lit_maurer_single",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 \u2014 Literature, single model)*",
+      "model_name": "MC-LSTM (Hoedt 2021 — Literature, single model)*",
       "family_id": "hoedt_mclstm_lit",
-      "family_name": "Mass-Conserving LSTM (MC-LSTM \u2014 Literature)*",
+      "family_name": "Mass-Conserving LSTM (MC-LSTM — Literature)*",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "category": "Literature",
       "code_provenance": "Published Paper",
@@ -13890,7 +13402,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.726,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.726 \u00b1 0.003",
+      "single_med_nse_display": "0.726 ± 0.003",
       "primary_ranking_nse": 0.726,
       "mean_nse": null,
       "med_kge": null,
@@ -13952,7 +13464,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.72,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.720 \u00b1 0.004",
+      "single_med_nse_display": "0.720 ± 0.004",
       "single_med_nse_per_member": [
         0.7236,
         0.7189,
@@ -14685,36 +14197,6 @@
           "p99": 1.7835,
           "max": 2.3958,
           "median_std": 0.0059
-        },
-        "Missed-Peaks": {
-          "median": 0.3835,
-          "mean": 0.4196,
-          "min": 0.1086,
-          "p01": 0.1669,
-          "p05": 0.2242,
-          "p10": 0.2569,
-          "q25": 0.3112,
-          "q75": 0.4899,
-          "p90": 0.6661,
-          "p95": 0.7482,
-          "p99": 0.8555,
-          "max": 0.9556,
-          "median_std": 0.0025
-        },
-        "Peak-MAPE": {
-          "median": 40.22,
-          "mean": 43.83,
-          "min": 17.01,
-          "p01": 20.52,
-          "p05": 24.68,
-          "p10": 27.42,
-          "q25": 32.94,
-          "q75": 49.72,
-          "p90": 66.47,
-          "p95": 75.86,
-          "p99": 91.93,
-          "max": 200.39,
-          "median_std": 0.46
         }
       },
       "regional_huc02": {
@@ -14749,8 +14231,8 @@
       "zenodo_url": "https://zenodo.org/records/4670268",
       "hydroshare_url": "",
       "data_archive_url": "https://doi.org/10.5281/zenodo.4670268",
-      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
-      "notes": "Single-model evaluation scored across all 10 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM on NLDAS single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.720 \u00b1 0.003; 447-basin subset Single-Seed Med NSE = 0.732 \u00b1 0.002).",
+      "family_description": "Author-archived 10-seed single-forcing (Daymet, Maurer, NLDAS) and multi-forcing (Daymet+Maurer+NLDAS, Daymet+Maurer, Daymet+NLDAS, Maurer+NLDAS) 256-unit CudaLSTM models with 365-day lookback window and 27 static CAMELS attributes, trained with NSE* loss over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins (Kratzert et al., 2021; Zenodo 10.5281/zenodo.4670268).",
+      "notes": "Single-model evaluation scored across all 10 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2021) 365-day lookback regional CudaLSTM on NLDAS single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.720 ± 0.003; 447-basin subset Single-Seed Med NSE = 0.732 ± 0.002).",
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 21,
@@ -14770,7 +14252,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.72,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.720 \u00b1 0.004",
+      "single_med_nse_display": "0.720 ± 0.004",
       "primary_ranking_nse": 0.72,
       "mean_nse": null,
       "med_kge": null,
@@ -15541,34 +15023,6 @@
           "p95": 1.3,
           "p99": 1.8127,
           "max": 2.5
-        },
-        "Missed-Peaks": {
-          "median": 0.3673,
-          "mean": 0.3997,
-          "min": 0.0714,
-          "p01": 0.1471,
-          "p05": 0.2019,
-          "p10": 0.2353,
-          "q25": 0.2922,
-          "q75": 0.47,
-          "p90": 0.6383,
-          "p95": 0.706,
-          "p99": 0.8333,
-          "max": 0.9302
-        },
-        "Peak-MAPE": {
-          "median": 40.89,
-          "mean": 43.45,
-          "min": 10.18,
-          "p01": 19.41,
-          "p05": 24.48,
-          "p10": 27.87,
-          "q25": 33.49,
-          "q75": 50.25,
-          "p90": 63.26,
-          "p95": 71.39,
-          "p99": 85.72,
-          "max": 123.92
         }
       },
       "regional_huc02": {
@@ -15613,9 +15067,9 @@
     {
       "entry_id": "hoedt_mclstm_maurer_single",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 \u2014 MIP Re-run, Maurer, Single Model)",
+      "model_name": "MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer, Single Model)",
       "family_id": "hoedt_mclstm",
-      "family_name": "Mass-Conserving LSTM (MC-LSTM \u2014 MIP Re-run)",
+      "family_name": "Mass-Conserving LSTM (MC-LSTM — MIP Re-run)",
       "paradigm": "Mass-Conserving Recurrent Neural Network (MC-LSTM)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -15628,7 +15082,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.716,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.716 \u00b1 0.003",
+      "single_med_nse_display": "0.716 ± 0.003",
       "single_med_nse_per_member": [
         0.7119,
         0.7165,
@@ -16354,36 +15808,6 @@
           "p99": 1.7376,
           "max": 2.3334,
           "median_std": 0.0028
-        },
-        "Missed-Peaks": {
-          "median": 0.3852,
-          "mean": 0.4176,
-          "min": 0.1107,
-          "p01": 0.171,
-          "p05": 0.2144,
-          "p10": 0.2411,
-          "q25": 0.305,
-          "q75": 0.494,
-          "p90": 0.6481,
-          "p95": 0.741,
-          "p99": 0.8977,
-          "max": 0.9877,
-          "median_std": 0.0052
-        },
-        "Peak-MAPE": {
-          "median": 40.35,
-          "mean": 42.99,
-          "min": 10.94,
-          "p01": 16.98,
-          "p05": 23.09,
-          "p10": 26.3,
-          "q25": 32.26,
-          "q75": 49.83,
-          "p90": 61.93,
-          "p95": 73.21,
-          "p99": 96.91,
-          "max": 161.88,
-          "median_std": 0.29
         }
       },
       "regional_huc02": {
@@ -16443,7 +15867,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.712,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.712 \u00b1 0.004",
+      "single_med_nse_display": "0.712 ± 0.004",
       "single_med_nse_per_member": [
         0.7135,
         0.7193,
@@ -17174,36 +16598,6 @@
           "p99": 1.7201,
           "max": 2.4094,
           "median_std": 0.0106
-        },
-        "Missed-Peaks": {
-          "median": 0.3982,
-          "mean": 0.4254,
-          "min": 0.1166,
-          "p01": 0.1654,
-          "p05": 0.2221,
-          "p10": 0.2581,
-          "q25": 0.3215,
-          "q75": 0.5,
-          "p90": 0.6526,
-          "p95": 0.7363,
-          "p99": 0.8551,
-          "max": 0.9432,
-          "median_std": 0.004
-        },
-        "Peak-MAPE": {
-          "median": 42.0,
-          "mean": 44.26,
-          "min": 12.71,
-          "p01": 18.27,
-          "p05": 23.91,
-          "p10": 27.11,
-          "q25": 33.63,
-          "q75": 52.34,
-          "p90": 63.94,
-          "p95": 72.86,
-          "p99": 89.59,
-          "max": 136.49,
-          "median_std": 0.7
         }
       },
       "regional_huc02": {
@@ -17239,7 +16633,7 @@
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
       "family_description": "Entity-Aware Long Short-Term Memory network (EA-LSTM; H = 256 memory cells, T = 270-day sequence length, dropout = 0.4, basin-averaged NSE* loss) in which the 27 static CAMELS catchment attributes exclusively modulate a time-invariant sigmoid input gate i = sigma(W_i x_s + b_i) while the 5 dynamic extended Maurer meteorological forcings drive the forget, cell-candidate, and output gates across all 531 CAMELS-US basins (Kratzert et al., 2019b; Zenodo code archive 10.5281/zenodo.3530884; HydroShare hydrograph archive 10.4211/hs.83ea5312635e44dc824eeb99eda12f06).",
-      "notes": "Single-model evaluation of the official Kratzert et al. (2019b) EA-LSTM archive scored across all 8 individual seed members (seeds 111..888 in t3_23.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.712 \u00b1 0.004, matching Kratzert et al., 2019b Table 2 reported 0.71 \u00b1 0.005).",
+      "notes": "Single-model evaluation of the official Kratzert et al. (2019b) EA-LSTM archive scored across all 8 individual seed members (seeds 111..888 in t3_23.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.712 ± 0.004, matching Kratzert et al., 2019b Table 2 reported 0.71 ± 0.005).",
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 25,
@@ -17973,34 +17367,6 @@
           "p95": 1.5548,
           "p99": 2.1208,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.413,
-          "mean": 0.4572,
-          "min": 0.1404,
-          "p01": 0.2034,
-          "p05": 0.25,
-          "p10": 0.2833,
-          "q25": 0.3333,
-          "q75": 0.5455,
-          "p90": 0.7241,
-          "p95": 0.7958,
-          "p99": 0.9156,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 45.67,
-          "mean": 47.18,
-          "min": 16.27,
-          "p01": 20.11,
-          "p05": 27.49,
-          "p10": 31.34,
-          "q25": 37.59,
-          "q75": 53.72,
-          "p90": 66.21,
-          "p95": 75.72,
-          "p99": 89.4,
-          "max": 98.41
         }
       },
       "regional_huc02": {
@@ -18035,7 +17401,7 @@
       "zenodo_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1",
-      "family_description": "Conceptual semi-distributed/lumped HBV-light rainfall-runoff model (Seibert & Vis, 2012) providing dual upper and lower reference benchmarks on all 531 CAMELS-US basins forced by Maurer meteorology (Seibert et al., 2018; executed by Jan Seibert and Marc Vis for Kratzert et al., 2019b; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1): HBV-upper (gauged__single_camels) is the 100-member genetically calibrated GAP ensemble upper benchmark over WY2000\u20132008, and HBV-lower (pub__single_camels) is the 1000-member uncalibrated random-parameter ensemble lower benchmark sampled uniformly from physically plausible parameter bounds (using zero target or donor streamflow observations, NOT a donor-transfer calibration).",
+      "family_description": "Conceptual semi-distributed/lumped HBV-light rainfall-runoff model (Seibert & Vis, 2012) providing dual upper and lower reference benchmarks on all 531 CAMELS-US basins forced by Maurer meteorology (Seibert et al., 2018; executed by Jan Seibert and Marc Vis for Kratzert et al., 2019b; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1): HBV-upper (gauged__single_camels) is the 100-member genetically calibrated GAP ensemble upper benchmark over WY2000–2008, and HBV-lower (pub__single_camels) is the 1000-member uncalibrated random-parameter ensemble lower benchmark sampled uniformly from physically plausible parameter bounds (using zero target or donor streamflow observations, NOT a donor-transfer calibration).",
       "notes": "Upper benchmark (HBV_ub): unweighted ensemble mean of 100 independent Genetic Algorithm + Powell (GAP) calibrations per basin (2,500 GA + 1,000 Powell evaluations per trial maximizing daily NSE over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, NetCDF variable HBV_ub; stores the pre-computed 100-member ensemble mean hydrograph as 1 array; Median NSE = 0.678 on 531 basins, 0.676 on the 447-basin Kratzert et al. 2019b Table 3 intersection).",
       "model_category": "Conceptual",
       "publication_year": 2018,
@@ -18772,34 +18138,6 @@
           "p95": 1.9327,
           "p99": 2.5,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.4364,
-          "mean": 0.4795,
-          "min": 0.119,
-          "p01": 0.1964,
-          "p05": 0.2637,
-          "p10": 0.291,
-          "q25": 0.3527,
-          "q75": 0.572,
-          "p90": 0.7746,
-          "p95": 0.8571,
-          "p99": 0.9587,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 46.09,
-          "mean": 48.23,
-          "min": 18.58,
-          "p01": 22.59,
-          "p05": 29.52,
-          "p10": 33.25,
-          "q25": 39.14,
-          "q75": 54.86,
-          "p90": 66.13,
-          "p95": 76.23,
-          "p99": 89.62,
-          "max": 99.28
         }
       },
       "regional_huc02": {
@@ -18834,8 +18172,8 @@
       "zenodo_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1",
-      "family_description": "Mesoscale Hydrologic Model (mHM; Samaniego et al., 2010) at 0.25\u00b0 grid resolution forced by daily 1/8\u00b0 Maurer meteorology and calibrated independently per basin via Dynamically Dimensioned Search (DDS) on MPR transfer-function parameters over WY2000\u20132008 and evaluated over WY1990\u20131999 (Mizukami et al., 2019; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
-      "notes": "Basin-calibrated mHM (0.25\u00b0 hydrological grid with 1/48\u00b0 MPR physiographic transfer functions calibrated independently per basin via DDS over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable mHm_basin, Median NSE = 0.665 across 492 evaluated basins [0.666 on the 447-basin Kratzert et al. 2019b intersection]).",
+      "family_description": "Mesoscale Hydrologic Model (mHM; Samaniego et al., 2010) at 0.25° grid resolution forced by daily 1/8° Maurer meteorology and calibrated independently per basin via Dynamically Dimensioned Search (DDS) on MPR transfer-function parameters over WY2000–2008 and evaluated over WY1990–1999 (Mizukami et al., 2019; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "notes": "Basin-calibrated mHM (0.25° hydrological grid with 1/48° MPR physiographic transfer functions calibrated independently per basin via DDS over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable mHm_basin, Median NSE = 0.665 across 492 evaluated basins [0.666 on the 447-basin Kratzert et al. 2019b intersection]).",
       "model_category": "Process-based",
       "publication_year": 2019,
       "rank": 27,
@@ -19571,34 +18909,6 @@
           "p95": 1.4721,
           "p99": 2.0,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.375,
-          "mean": 0.4154,
-          "min": 0.0889,
-          "p01": 0.1431,
-          "p05": 0.2137,
-          "p10": 0.2407,
-          "q25": 0.3018,
-          "q75": 0.4818,
-          "p90": 0.6857,
-          "p95": 0.7778,
-          "p99": 0.9221,
-          "max": 0.9565
-        },
-        "Peak-MAPE": {
-          "median": 43.27,
-          "mean": 46.0,
-          "min": 16.28,
-          "p01": 19.24,
-          "p05": 25.93,
-          "p10": 30.03,
-          "q25": 35.63,
-          "q75": 53.33,
-          "p90": 64.78,
-          "p95": 74.4,
-          "p99": 91.01,
-          "max": 179.87
         }
       },
       "regional_huc02": {
@@ -19633,7 +18943,7 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room C++17/OpenMP and Python re-implementation of coupled Snow-17 + SAC-SMA + 15-day Duamel Gamma unit hydrograph (27 calibrated parameters) calibrated per basin using Dynamically Dimensioned Search (DDS; Tolson & Shoemaker, 2007) over WY2000\u20132008 (Nearing et al., 2020), and extended to ungauged 12-fold PUB and 18-fold HUC-02 PUR prediction via k=1 nearest-neighbor donor parameter transfer in a 29-dimensional joint geographic and standardized static catchment-attribute space.",
+      "family_description": "Clean-room C++17/OpenMP and Python re-implementation of coupled Snow-17 + SAC-SMA + 15-day Duamel Gamma unit hydrograph (27 calibrated parameters) calibrated per basin using Dynamically Dimensioned Search (DDS; Tolson & Shoemaker, 2007) over WY2000–2008 (Nearing et al., 2020), and extended to ungauged 12-fold PUB and 18-fold HUC-02 PUR prediction via k=1 nearest-neighbor donor parameter transfer in a 29-dimensional joint geographic and standardized static catchment-attribute space.",
       "notes": "Clean-room 27-parameter Snow-17 + SAC-SMA + 15-day Duamel Gamma unit hydrograph calibrated independently per basin via DDS (400 iterations, r=0.2, 365-day spinup, daily RMSE objective) on Daymet forcings over 1999-10-01 to 2008-09-30 and evaluated over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (1 seed; Median NSE = 0.661).",
       "model_category": "Conceptual",
       "publication_year": 2020,
@@ -19645,7 +18955,7 @@
       "leaderboard_id": "gauged__single_camels",
       "model_name": "XGBoost (8-model ensemble)",
       "family_id": "gauch_xgboost_lit",
-      "family_name": "Gradient-Boosted Decision Trees (XGBoost \u2014 Literature)",
+      "family_name": "Gradient-Boosted Decision Trees (XGBoost — Literature)",
       "paradigm": "Gradient-Boosted Decision Trees on Lagged Forcings (XGBoost)",
       "category": "Literature",
       "code_provenance": "Published Paper",
@@ -19654,7 +18964,7 @@
       "ens_med_nse_display": "0.659",
       "single_med_nse": 0.639,
       "single_med_nse_std": 0.002,
-      "single_med_nse_display": "0.639 \u00b1 0.002",
+      "single_med_nse_display": "0.639 ± 0.002",
       "primary_ranking_nse": 0.659,
       "mean_nse": 0.619,
       "med_kge": null,
@@ -19673,7 +18983,7 @@
       "zenodo_url": "https://zenodo.org/records/3648270",
       "hydroshare_url": "",
       "data_archive_url": "https://zenodo.org/records/3648270",
-      "family_description": "Regional Extreme Gradient Boosting (XGBoost; Chen & Guestrin, 2016) regression tree ensemble trained on 30 days of raw daily meteorological lag features (5 forcings x 30 lags = 150 dynamic features + 27 static catchment attributes = 177 input features) across all 531 CAMELS-US basins on Extended Maurer forcings over WY2000\u20132008 and evaluated over WY1990\u20131999 (Gauch, Mai, & Lin, 2021b, Environmental Modelling & Software 135, 104926; Zenodo 10.5281/zenodo.3648270).",
+      "family_description": "Regional Extreme Gradient Boosting (XGBoost; Chen & Guestrin, 2016) regression tree ensemble trained on 30 days of raw daily meteorological lag features (5 forcings x 30 lags = 150 dynamic features + 27 static catchment attributes = 177 input features) across all 531 CAMELS-US basins on Extended Maurer forcings over WY2000–2008 and evaluated over WY1990–1999 (Gauch, Mai, & Lin, 2021b, Environmental Modelling & Software 135, 104926; Zenodo 10.5281/zenodo.3648270).",
       "notes": "Published and archived full-data benchmark from Gauch, Mai, & Lin (2021b, Environmental Modelling & Software 135, 104926, Table 2; Zenodo 10.5281/zenodo.3648270): regional XGBoost regressor with 30-day raw meteorological lag window (150 dynamic + 27 static = 177 features) trained on 1999-10-01 to 2008-09-30 and evaluated on 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins with Extended Maurer forcing (Ensemble Median NSE = 0.659 [0.6585 unrounded, 0.66 in Table 2], Mean NSE = 0.619, Median |FHV| = 27.79%, NSE <= 0 = 6 basins).",
       "is_ensemble": true,
       "num_members": 8,
@@ -20438,34 +19748,6 @@
           "p95": 1.7027,
           "p99": 2.1895,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.3878,
-          "mean": 0.421,
-          "min": 0.0714,
-          "p01": 0.1464,
-          "p05": 0.2372,
-          "p10": 0.2667,
-          "q25": 0.324,
-          "q75": 0.4741,
-          "p90": 0.6471,
-          "p95": 0.7778,
-          "p99": 0.9106,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 45.73,
-          "mean": 47.37,
-          "min": 14.89,
-          "p01": 22.04,
-          "p05": 27.95,
-          "p10": 30.31,
-          "q25": 37.84,
-          "q75": 54.78,
-          "p90": 66.03,
-          "p95": 76.8,
-          "p99": 88.47,
-          "max": 123.21
         }
       },
       "regional_huc02": {
@@ -20500,7 +19782,7 @@
       "zenodo_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1",
-      "family_description": "Framework for Understanding Structural Errors (FUSE; Clark et al., 2008) modular conceptual hydrology suite combining process components from PRMS, SAC-SMA, TOPMODEL, and ARNO/VIC with a degree-day snow module (naddor/fuse), calibrated independently per basin via SCE-UA on Maurer forcings over WY2000\u20132008 and evaluated over WY1990\u20131999 across three structural configurations (900, 902, 904; Addor et al., 2017; Kratzert et al., 2019b HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "family_description": "Framework for Understanding Structural Errors (FUSE; Clark et al., 2008) modular conceptual hydrology suite combining process components from PRMS, SAC-SMA, TOPMODEL, and ARNO/VIC with a degree-day snow module (naddor/fuse), calibrated independently per basin via SCE-UA on Maurer forcings over WY2000–2008 and evaluated over WY1990–1999 across three structural configurations (900, 902, 904; Addor et al., 2017; Kratzert et al., 2019b HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
       "notes": "FUSE structure 902 (PRMS tension1_1 upper layer + TOPMODEL unlimpow_2 nonlinear power-law baseflow + PRMS surface runoff +perc_f2sat + sequential ET + temp_index degree-day snow, no routing), calibrated per basin via SCE-UA minimizing RMSE on Maurer forcings over 1999-10-01 to 2008-09-30 and evaluated over 1989-10-01 to 1999-09-30 (HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable q_sim_fuse_902; Median NSE = 0.654 across 479 valid basins in t3_43.zarr, 0.650 on the 447-basin Kratzert et al. 2019b intersection).",
       "model_category": "Conceptual",
       "publication_year": 2017,
@@ -20525,7 +19807,7 @@
       "ens_med_nse_display": "0.642",
       "single_med_nse": 0.593,
       "single_med_nse_std": 0.008,
-      "single_med_nse_display": "0.593 \u00b1 0.008",
+      "single_med_nse_display": "0.593 ± 0.008",
       "single_med_nse_per_member": [
         0.5938,
         0.5931,
@@ -21244,34 +20526,6 @@
           "p95": 1.554,
           "p99": 2.1974,
           "max": 2.625
-        },
-        "Missed-Peaks": {
-          "median": 0.4242,
-          "mean": 0.4529,
-          "min": 0.0682,
-          "p01": 0.1532,
-          "p05": 0.2222,
-          "p10": 0.2632,
-          "q25": 0.3333,
-          "q75": 0.5445,
-          "p90": 0.717,
-          "p95": 0.7842,
-          "p99": 0.9231,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 48.69,
-          "mean": 50.36,
-          "min": 18.99,
-          "p01": 20.33,
-          "p05": 25.28,
-          "p10": 30.31,
-          "q25": 37.89,
-          "q75": 61.63,
-          "p90": 73.05,
-          "p95": 78.63,
-          "p99": 90.98,
-          "max": 170.27
         }
       },
       "regional_huc02": {
@@ -22043,34 +21297,6 @@
           "p95": 1.6364,
           "p99": 2.1,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.383,
-          "mean": 0.425,
-          "min": 0.0702,
-          "p01": 0.1667,
-          "p05": 0.2333,
-          "p10": 0.2623,
-          "q25": 0.3171,
-          "q75": 0.4857,
-          "p90": 0.6774,
-          "p95": 0.8,
-          "p99": 0.9048,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 45.67,
-          "mean": 47.53,
-          "min": 15.49,
-          "p01": 21.51,
-          "p05": 28.73,
-          "p10": 31.86,
-          "q25": 38.07,
-          "q75": 54.77,
-          "p90": 65.03,
-          "p95": 73.6,
-          "p99": 89.24,
-          "max": 111.86
         }
       },
       "regional_huc02": {
@@ -22105,7 +21331,7 @@
       "zenodo_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1",
-      "family_description": "Framework for Understanding Structural Errors (FUSE; Clark et al., 2008) modular conceptual hydrology suite combining process components from PRMS, SAC-SMA, TOPMODEL, and ARNO/VIC with a degree-day snow module (naddor/fuse), calibrated independently per basin via SCE-UA on Maurer forcings over WY2000\u20132008 and evaluated over WY1990\u20131999 across three structural configurations (900, 902, 904; Addor et al., 2017; Kratzert et al., 2019b HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "family_description": "Framework for Understanding Structural Errors (FUSE; Clark et al., 2008) modular conceptual hydrology suite combining process components from PRMS, SAC-SMA, TOPMODEL, and ARNO/VIC with a degree-day snow module (naddor/fuse), calibrated independently per basin via SCE-UA on Maurer forcings over WY2000–2008 and evaluated over WY1990–1999 across three structural configurations (900, 902, 904; Addor et al., 2017; Kratzert et al., 2019b HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
       "notes": "FUSE structure 900 (TOPMODEL/ARNO onestate_1 upper layer + PRMS unlimfrc_2 linear fractional baseflow + PRMS surface runoff + perc_f2sat + sequential ET + temp_index degree-day snow, no routing), calibrated per basin via SCE-UA minimizing RMSE on Maurer forcings over 1999-10-01 to 2008-09-30 and evaluated over 1989-10-01 to 1999-09-30 (HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable q_sim_fuse_900; Median NSE = 0.641 across 501 valid basins in t3_45.zarr, 0.639 on the 447-basin Kratzert et al. 2019b intersection).",
       "model_category": "Conceptual",
       "publication_year": 2017,
@@ -22117,7 +21343,7 @@
       "leaderboard_id": "gauged__single_camels",
       "model_name": "XGBoost (single model)",
       "family_id": "gauch_xgboost_lit",
-      "family_name": "Gradient-Boosted Decision Trees (XGBoost \u2014 Literature)",
+      "family_name": "Gradient-Boosted Decision Trees (XGBoost — Literature)",
       "paradigm": "Gradient-Boosted Decision Trees on Lagged Forcings (XGBoost)",
       "category": "Literature",
       "code_provenance": "Published Paper",
@@ -22126,7 +21352,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.639,
       "single_med_nse_std": 0.002,
-      "single_med_nse_display": "0.639 \u00b1 0.002",
+      "single_med_nse_display": "0.639 ± 0.002",
       "primary_ranking_nse": 0.639,
       "mean_nse": 0.61,
       "med_kge": null,
@@ -22145,7 +21371,7 @@
       "zenodo_url": "https://zenodo.org/records/3648270",
       "hydroshare_url": "",
       "data_archive_url": "https://zenodo.org/records/3648270",
-      "family_description": "Regional Extreme Gradient Boosting (XGBoost; Chen & Guestrin, 2016) regression tree ensemble trained on 30 days of raw daily meteorological lag features (5 forcings x 30 lags = 150 dynamic features + 27 static catchment attributes = 177 input features) across all 531 CAMELS-US basins on Extended Maurer forcings over WY2000\u20132008 and evaluated over WY1990\u20131999 (Gauch, Mai, & Lin, 2021b, Environmental Modelling & Software 135, 104926; Zenodo 10.5281/zenodo.3648270).",
+      "family_description": "Regional Extreme Gradient Boosting (XGBoost; Chen & Guestrin, 2016) regression tree ensemble trained on 30 days of raw daily meteorological lag features (5 forcings x 30 lags = 150 dynamic features + 27 static catchment attributes = 177 input features) across all 531 CAMELS-US basins on Extended Maurer forcings over WY2000–2008 and evaluated over WY1990–1999 (Gauch, Mai, & Lin, 2021b, Environmental Modelling & Software 135, 104926; Zenodo 10.5281/zenodo.3648270).",
       "notes": "Single-model evaluation of Gauch, Mai, & Lin (2021b, Environmental Modelling & Software 135, 104926; Zenodo 10.5281/zenodo.3648270) across all 531 CAMELS-US basins on 1989-10-01 to 1999-09-30 with Extended Maurer forcing (Single-Model Median NSE = 0.639; 0.6531 +/- 0.0023 across the 8 seeds seed111..seed888 in performance_gridEvaluation.ipynb).",
       "is_ensemble": false,
       "num_members": 8,
@@ -22910,34 +22136,6 @@
           "p95": 1.6,
           "p99": 2.4,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.3962,
-          "mean": 0.4295,
-          "min": 0.0714,
-          "p01": 0.1864,
-          "p05": 0.2391,
-          "p10": 0.2687,
-          "q25": 0.322,
-          "q75": 0.4844,
-          "p90": 0.6429,
-          "p95": 0.7632,
-          "p99": 0.9259,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 47.38,
-          "mean": 48.6,
-          "min": 16.35,
-          "p01": 20.09,
-          "p05": 28.4,
-          "p10": 31.86,
-          "q25": 40.06,
-          "q75": 55.34,
-          "p90": 65.5,
-          "p95": 72.5,
-          "p99": 90.58,
-          "max": 150.53
         }
       },
       "regional_huc02": {
@@ -22972,7 +22170,7 @@
       "zenodo_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1",
-      "family_description": "Framework for Understanding Structural Errors (FUSE; Clark et al., 2008) modular conceptual hydrology suite combining process components from PRMS, SAC-SMA, TOPMODEL, and ARNO/VIC with a degree-day snow module (naddor/fuse), calibrated independently per basin via SCE-UA on Maurer forcings over WY2000\u20132008 and evaluated over WY1990\u20131999 across three structural configurations (900, 902, 904; Addor et al., 2017; Kratzert et al., 2019b HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "family_description": "Framework for Understanding Structural Errors (FUSE; Clark et al., 2008) modular conceptual hydrology suite combining process components from PRMS, SAC-SMA, TOPMODEL, and ARNO/VIC with a degree-day snow module (naddor/fuse), calibrated independently per basin via SCE-UA on Maurer forcings over WY2000–2008 and evaluated over WY1990–1999 across three structural configurations (900, 902, 904; Addor et al., 2017; Kratzert et al., 2019b HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
       "notes": "FUSE structure 904 (SAC-SMA tension2_1 upper layer + TOPMODEL unlimpow_2 nonlinear power-law baseflow + PRMS surface runoff + perc_f2sat + sequential ET + temp_index degree-day snow, no routing), calibrated per basin via SCE-UA minimizing RMSE on Maurer forcings over 1999-10-01 to 2008-09-30 and evaluated over 1989-10-01 to 1999-09-30 (HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable q_sim_fuse_904; Median NSE = 0.624 across 501 valid basins in t3_46.zarr, 0.622 on the 447-basin Kratzert et al. 2019b intersection).",
       "model_category": "Conceptual",
       "publication_year": 2017,
@@ -23707,34 +22905,6 @@
           "p95": 2.2733,
           "p99": 3.0,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.4425,
-          "mean": 0.4867,
-          "min": 0.0,
-          "p01": 0.2079,
-          "p05": 0.2644,
-          "p10": 0.295,
-          "q25": 0.3668,
-          "q75": 0.551,
-          "p90": 0.7896,
-          "p95": 0.9218,
-          "p99": 1.0,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 49.7,
-          "mean": 50.8,
-          "min": 16.47,
-          "p01": 21.72,
-          "p05": 30.49,
-          "p10": 34.54,
-          "q25": 41.05,
-          "q75": 56.81,
-          "p90": 70.02,
-          "p95": 80.63,
-          "p99": 95.88,
-          "max": 114.09
         }
       },
       "regional_huc02": {
@@ -23769,7 +22939,7 @@
       "zenodo_url": "https://doi.org/10.5065/D6MW2F4D",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.5065/D6MW2F4D",
-      "family_description": "Operational US National Weather Service Sacramento Soil Moisture Accounting (SAC-SMA) model coupled with the Snow-17 snow accumulation/ablation model and a Duamel Gamma unit hydrograph (Burnash et al., 1973; Anderson, 1973), calibrated independently per basin across 10 SCE-UA/DDS trials over WY2000\u20132008 and evaluated over WY1990\u20131999 (Newman et al., 2017; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "family_description": "Operational US National Weather Service Sacramento Soil Moisture Accounting (SAC-SMA) model coupled with the Snow-17 snow accumulation/ablation model and a Duamel Gamma unit hydrograph (Burnash et al., 1973; Anderson, 1973), calibrated independently per basin across 10 SCE-UA/DDS trials over WY2000–2008 and evaluated over WY1990–1999 (Newman et al., 2017; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
       "notes": "Basin-calibrated Snow-17 + SAC-SMA + Duamel Gamma unit hydrograph from the NCAR/HydroShare CAMELS benchmark archive (Newman et al., 2017; HydroShare DOI 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1). Note: The 10 SCE-UA/DDS calibrations per basin were archived as a single pre-averaged/selected hydrograph array (num_members=1 in t3_48.zarr without individual qsim_members; Median NSE = 0.607 across 530 non-zero basins in t3_48.zarr [basin 01634500 is all-zero], 0.603 on the 447-basin Kratzert et al. 2019b Table 3 intersection).",
       "model_category": "Conceptual",
       "publication_year": 2017,
@@ -23794,7 +22964,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.593,
       "single_med_nse_std": 0.008,
-      "single_med_nse_display": "0.593 \u00b1 0.008",
+      "single_med_nse_display": "0.593 ± 0.008",
       "single_med_nse_per_member": [
         0.5938,
         0.5931,
@@ -24525,36 +23695,6 @@
           "p99": 2.0691,
           "max": 2.4577,
           "median_std": 0.0167
-        },
-        "Missed-Peaks": {
-          "median": 0.4491,
-          "mean": 0.4826,
-          "min": 0.1128,
-          "p01": 0.1748,
-          "p05": 0.2486,
-          "p10": 0.2916,
-          "q25": 0.3602,
-          "q75": 0.5822,
-          "p90": 0.7479,
-          "p95": 0.8147,
-          "p99": 0.9131,
-          "max": 0.9824,
-          "median_std": 0.0039
-        },
-        "Peak-MAPE": {
-          "median": 51.18,
-          "mean": 52.9,
-          "min": 17.54,
-          "p01": 23.33,
-          "p05": 29.23,
-          "p10": 32.91,
-          "q25": 40.17,
-          "q75": 62.99,
-          "p90": 74.78,
-          "p95": 81.86,
-          "p99": 94.39,
-          "max": 191.62,
-          "median_std": 0.66
         }
       },
       "regional_huc02": {
@@ -24590,7 +23730,7 @@
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
       "family_description": "Regional single-layer Long Short-Term Memory network (H = 256 memory cells, T = 270-day sequence length, dropout = 0.4, basin-averaged NSE* loss) trained jointly across all 531 CAMELS-US basins using only the 5 dynamic extended Maurer meteorological forcings without any static catchment attributes (D_static = 0 input-ablation baseline from Kratzert et al., 2019b; Zenodo code archive 10.5281/zenodo.3530884; HydroShare hydrograph archive 10.4211/hs.83ea5312635e44dc824eeb99eda12f06).",
-      "notes": "Single-model evaluation of the official Kratzert et al. (2019b) LSTM without Static Attributes archive scored across all 8 individual seed members (seeds 111..888 in t3_44.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.593 \u00b1 0.008, matching Kratzert et al., 2019b Table 2 reported 0.59 \u00b1 0.008).",
+      "notes": "Single-model evaluation of the official Kratzert et al. (2019b) LSTM without Static Attributes archive scored across all 8 individual seed members (seeds 111..888 in t3_44.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.593 ± 0.008, matching Kratzert et al., 2019b Table 2 reported 0.59 ± 0.008).",
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 36,
@@ -25326,34 +24466,6 @@
           "p95": 2.4,
           "p99": 2.8968,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.4112,
-          "mean": 0.4616,
-          "min": 0.0,
-          "p01": 0.1762,
-          "p05": 0.2314,
-          "p10": 0.2769,
-          "q25": 0.3391,
-          "q75": 0.5227,
-          "p90": 0.7391,
-          "p95": 0.92,
-          "p99": 1.0,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 51.86,
-          "mean": 52.25,
-          "min": 14.46,
-          "p01": 23.96,
-          "p05": 30.92,
-          "p10": 36.7,
-          "q25": 43.08,
-          "q75": 60.06,
-          "p90": 67.96,
-          "p95": 75.41,
-          "p99": 91.23,
-          "max": 97.25
         }
       },
       "regional_huc02": {
@@ -25388,7 +24500,7 @@
       "zenodo_url": "https://doi.org/10.5065/D6MW2F4D",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.5065/D6MW2F4D",
-      "family_description": "Variable Infiltration Capacity (VIC 4.1.2) macroscale land-surface hydrology model calibrated independently per basin using Shuffled Complex Evolution (SCE-UA) over WY2000\u20132008 and evaluated over WY1990\u20131999 (Newman et al., 2017; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "family_description": "Variable Infiltration Capacity (VIC 4.1.2) macroscale land-surface hydrology model calibrated independently per basin using Shuffled Complex Evolution (SCE-UA) over WY2000–2008 and evaluated over WY1990–1999 (Newman et al., 2017; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
       "notes": "Basin-calibrated VIC 4.1.2 (10 calibrated water-balance, snow, and routing parameters per basin via SCE-UA over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable VIC_basin, Median NSE = 0.554 across 530 valid basins in t3_52.zarr [basin 08082700 missing]).",
       "model_category": "Process-based",
       "publication_year": 2017,
@@ -26125,34 +25237,6 @@
           "p95": 2.0,
           "p99": 2.5123,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.4286,
-          "mean": 0.4769,
-          "min": 0.1429,
-          "p01": 0.1794,
-          "p05": 0.248,
-          "p10": 0.2778,
-          "q25": 0.3464,
-          "q75": 0.5808,
-          "p90": 0.7882,
-          "p95": 0.8621,
-          "p99": 0.9567,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 59.44,
-          "mean": 59.05,
-          "min": 21.31,
-          "p01": 25.64,
-          "p05": 32.9,
-          "p10": 38.8,
-          "q25": 47.21,
-          "q75": 68.31,
-          "p90": 80.05,
-          "p95": 89.12,
-          "p99": 97.97,
-          "max": 140.71
         }
       },
       "regional_huc02": {
@@ -26187,8 +25271,8 @@
       "zenodo_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1",
-      "family_description": "Mesoscale Hydrologic Model (mHM; Samaniego et al., 2010) at 0.25\u00b0 grid resolution forced by daily 1/8\u00b0 Maurer meteorology and parameterized simultaneously across CONUS via Multiscale Parameter Regionalization (MPR; 48 global transfer-function parameters calibrated via DDS over WY2000\u20132008 and evaluated over WY1990\u20131999; Rakovec et al., 2019; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
-      "notes": "CONUS-wide Multiscale Parameter Regionalization (MPR) of mHM (single 48-parameter global transfer-function vector calibrated simultaneously across CONUS via DDS over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable mHm_conus, Median NSE = 0.528 across 492 evaluated basins [0.527 on the 447-basin Kratzert et al. 2019b intersection]). Placed in Table 3 (gauged__single_camels) rather than Table 7 (PUB) because the CAMELS evaluation gauges were included in the CONUS-wide calibration objective during 1999\u20132008.",
+      "family_description": "Mesoscale Hydrologic Model (mHM; Samaniego et al., 2010) at 0.25° grid resolution forced by daily 1/8° Maurer meteorology and parameterized simultaneously across CONUS via Multiscale Parameter Regionalization (MPR; 48 global transfer-function parameters calibrated via DDS over WY2000–2008 and evaluated over WY1990–1999; Rakovec et al., 2019; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "notes": "CONUS-wide Multiscale Parameter Regionalization (MPR) of mHM (single 48-parameter global transfer-function vector calibrated simultaneously across CONUS via DDS over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable mHm_conus, Median NSE = 0.528 across 492 evaluated basins [0.527 on the 447-basin Kratzert et al. 2019b intersection]). Placed in Table 3 (gauged__single_camels) rather than Table 7 (PUB) because the CAMELS evaluation gauges were included in the CONUS-wide calibration objective during 1999–2008.",
       "model_category": "Process-based",
       "publication_year": 2019,
       "rank": 38,
@@ -26227,8 +25311,8 @@
       "zenodo_url": "https://zenodo.org/records/6383415",
       "hydroshare_url": "",
       "data_archive_url": "https://zenodo.org/records/6383415",
-      "family_description": "Differentiable Parameter Learning (dPL) using a static-attribute neural parameter network (g_A, trained via an iteratively refined 4-round LSTM runoff surrogate) to infer 8 basin-specific soil/infiltration parameters for the C-language Variable Infiltration Capacity (VIC 4.1.2) land-surface model and 2 Gamma unit-hydrograph routing parameters, evaluated with the physical C-language VIC 4.1.2 model over WY1990\u20131999.",
-      "notes": "Evaluated on 498 of 531 CAMELS basins from the authors' Figure 6a VIC validation archive (Zenodo 10.5281/zenodo.6383415, script_data/paper_results/figure6/gA_NSE_VIC.csv; calibrated on WY2000\u20132008 and evaluated with the physical C-language VIC 4.1.2 model on WY1990\u20131999; companion g_Z LSTM parameter network achieves 0.435 median NSE, -0.248 mean NSE, and 65 basins with NSE <= 0 across 499 basins). Note: Zenodo 10.5281/zenodo.6383415 archives only the per-basin NSE vectors without daily streamflow hydrographs or 8-digit USGS gauge IDs; row ID is t3_55 (t3_53.zarr in gauged__single_camels belongs to Gauch et al. 2021b XGBoost).",
+      "family_description": "Differentiable Parameter Learning (dPL) using a static-attribute neural parameter network (g_A, trained via an iteratively refined 4-round LSTM runoff surrogate) to infer 8 basin-specific soil/infiltration parameters for the C-language Variable Infiltration Capacity (VIC 4.1.2) land-surface model and 2 Gamma unit-hydrograph routing parameters, evaluated with the physical C-language VIC 4.1.2 model over WY1990–1999.",
+      "notes": "Evaluated on 498 of 531 CAMELS basins from the authors' Figure 6a VIC validation archive (Zenodo 10.5281/zenodo.6383415, script_data/paper_results/figure6/gA_NSE_VIC.csv; calibrated on WY2000–2008 and evaluated with the physical C-language VIC 4.1.2 model on WY1990–1999; companion g_Z LSTM parameter network achieves 0.435 median NSE, -0.248 mean NSE, and 65 basins with NSE <= 0 across 499 basins). Note: Zenodo 10.5281/zenodo.6383415 archives only the per-basin NSE vectors without daily streamflow hydrographs or 8-digit USGS gauge IDs; row ID is t3_55 (t3_53.zarr in gauged__single_camels belongs to Gauch et al. 2021b XGBoost).",
       "is_ensemble": false,
       "num_members": 1,
       "has_qsim_members": false,
@@ -26984,34 +26068,6 @@
           "p95": 2.4,
           "p99": 2.8538,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.4324,
-          "mean": 0.4841,
-          "min": 0.1053,
-          "p01": 0.1951,
-          "p05": 0.2521,
-          "p10": 0.283,
-          "q25": 0.3485,
-          "q75": 0.5652,
-          "p90": 0.8085,
-          "p95": 0.9183,
-          "p99": 1.0,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 65.87,
-          "mean": 64.72,
-          "min": 22.08,
-          "p01": 27.73,
-          "p05": 40.34,
-          "p10": 44.95,
-          "q25": 57.61,
-          "q75": 73.79,
-          "p90": 79.8,
-          "p95": 82.72,
-          "p99": 88.63,
-          "max": 231.68
         }
       },
       "regional_huc02": {
@@ -27046,8 +26102,8 @@
       "zenodo_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "hydroshare_url": "https://www.hydroshare.org/resource/474ecc37e7db45baa425cdb4fc1b61e1/",
       "data_archive_url": "https://doi.org/10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1",
-      "family_description": "Variable Infiltration Capacity (VIC 4.1.2) macroscale land-surface hydrology model parameterized across CONUS via Multiscale Parameter Regionalization (MPR-flex; 16 global transfer-function coefficients calibrated via SCE-UA over WY2000\u20132008 and evaluated over WY1990\u20131999; Mizukami et al., 2017; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
-      "notes": "CONUS-wide Multiscale Parameter Regionalization (MPR-flex) of VIC 4.1.2 (16 global transfer-function coefficients calibrated simultaneously across CONUS gauges via SCE-UA over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable VIC_conus, Median NSE = 0.307 across all 531 CAMELS basins). Placed in Table 3 (gauged__single_camels) rather than Table 7 (PUB) because the CAMELS evaluation gauges were included in the CONUS-wide calibration objective during 1999\u20132008.",
+      "family_description": "Variable Infiltration Capacity (VIC 4.1.2) macroscale land-surface hydrology model parameterized across CONUS via Multiscale Parameter Regionalization (MPR-flex; 16 global transfer-function coefficients calibrated via SCE-UA over WY2000–2008 and evaluated over WY1990–1999; Mizukami et al., 2017; HydroShare benchmark archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1).",
+      "notes": "CONUS-wide Multiscale Parameter Regionalization (MPR-flex) of VIC 4.1.2 (16 global transfer-function coefficients calibrated simultaneously across CONUS gauges via SCE-UA over 1999-10-01 to 2008-09-30; evaluated over 1989-10-01 to 1999-09-30; HydroShare archive 10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1, variable VIC_conus, Median NSE = 0.307 across all 531 CAMELS basins). Placed in Table 3 (gauged__single_camels) rather than Table 7 (PUB) because the CAMELS evaluation gauges were included in the CONUS-wide calibration objective during 1999–2008.",
       "model_category": "Process-based",
       "publication_year": 2017,
       "rank": 40,
@@ -27057,32 +26113,32 @@
   "protocol": {
     "benchmark_name": "CAMELS-531 Unified Model Intercomparison Project (Newman Period)",
     "n_basins": 531,
-    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000\u20132008; 3,288 daily steps)",
-    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990\u20131999; 3652 daily steps)",
+    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000–2008; 3,288 daily steps)",
+    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990–1999; 3652 daily steps)",
     "spatial_regimes": [
       {
         "id": "gauged",
         "section": "4.1",
         "title": "Gauged Simulation",
-        "short_title": "Gauged (\u00a74.1)",
-        "tables_range": "Tables 3\u20136",
-        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000\u20132008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990\u20131999 (1989-10-01 to 1999-09-30)."
+        "short_title": "Gauged (§4.1)",
+        "tables_range": "Tables 3–6",
+        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000–2008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990–1999 (1989-10-01 to 1999-09-30)."
       },
       {
         "id": "pub",
         "section": "4.2",
         "title": "Prediction in Ungauged Basins (12-Fold Random PUB)",
-        "short_title": "12-Fold PUB (\u00a74.2)",
-        "tables_range": "Tables 7\u201310",
-        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44\u201345 basins/fold), trained on 11 folds during water years 2000\u20132008 and evaluated on the held-out fold during water years 1990\u20131999."
+        "short_title": "12-Fold PUB (§4.2)",
+        "tables_range": "Tables 7–10",
+        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44–45 basins/fold), trained on 11 folds during water years 2000–2008 and evaluated on the held-out fold during water years 1990–1999."
       },
       {
         "id": "pur",
         "section": "4.3",
         "title": "Prediction in Ungauged Regions (18-Fold HUC-02 PUR)",
-        "short_title": "18-Fold PUR (\u00a74.3)",
-        "tables_range": "Tables 11\u201314",
-        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000\u20132008 and evaluated on the held-out HUC-02 region during water years 1990\u20131999."
+        "short_title": "18-Fold PUR (§4.3)",
+        "tables_range": "Tables 11–14",
+        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000–2008 and evaluated on the held-out HUC-02 region during water years 1990–1999."
       }
     ],
     "forcing_regimes": [

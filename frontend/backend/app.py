@@ -445,7 +445,7 @@ def _empirical_cdf_101(values: np.ndarray) -> list[float]:
 
 
 def _attach_flat_gauch_metrics(row: dict[str, Any]) -> None:
-    """Attach flat numeric fields for all 14 Gauch et al. (2023) metrics so every column is sortable."""
+    """Attach flat numeric fields for all 12 Gauch et al. (2023) metrics so every column is sortable."""
     gauch = row.get("gauch_2023_metrics")
     g = gauch if isinstance(gauch, dict) else {}
 
@@ -487,8 +487,6 @@ def _attach_flat_gauch_metrics(row: dict[str, Any]) -> None:
     row["gauch_fms"] = _gmed("FMS")
     row["gauch_flv"] = _gmed("FLV")
     row["gauch_peak_timing"] = _gmed("Peak-Timing")
-    row["gauch_missed_peaks"] = _gmed("Missed-Peaks")
-    row["gauch_peak_mape"] = _gmed("Peak-MAPE")
 
 
 def build_enriched_leaderboards(
@@ -1061,7 +1059,7 @@ def _compute_matrix_metrics(
     qsim: np.ndarray,
     dates_np: np.ndarray | None = None,
 ) -> dict[str, np.ndarray]:
-    """Compute all 14 Gauch et al. (2023) hydrological metrics per basin via `metrics/metrics.py`.
+    """Compute all 12 Gauch et al. (2023) hydrological metrics per basin via `metrics/metrics.py`.
 
     Mirrors `metrics.evaluator.calculate_model_leaderboard_metrics` exactly: float64 inputs,
     predictions scored as submitted (negative values are NOT clipped), observations masked to
@@ -1164,7 +1162,7 @@ def _summarize_per_basin(per_basin: dict[str, np.ndarray], mask: np.ndarray | No
     }
     for m_name in GAUCH_2023_METRICS:
         vals = sel(per_basin[m_name])
-        digits = 2 if m_name in ("FHV", "FMS", "FLV", "Peak-MAPE") else 4
+        digits = 2 if m_name in ("FHV", "FMS", "FLV") else 4
         summary_out[f"median_{m_name}"] = _clean_float(np.median(vals), digits) if len(vals) else None
         summary_out[f"mean_{m_name}"] = _clean_float(np.mean(vals), digits) if len(vals) else None
 
@@ -1355,8 +1353,6 @@ def score_hydrograph_predictions(parsed: ParsedHydrograph, eval_targets: dict[st
             "FMS": _clean_float(ens_per_basin["FMS"][idx], 2),
             "FLV": _clean_float(ens_per_basin["FLV"][idx], 2),
             "Peak-Timing": _clean_float(ens_per_basin["Peak-Timing"][idx], 4),
-            "Missed-Peaks": _clean_float(ens_per_basin["Missed-Peaks"][idx], 4),
-            "Peak-MAPE": _clean_float(ens_per_basin["Peak-MAPE"][idx], 2),
         }
         per_basin_rows.append(row_dict)
 

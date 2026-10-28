@@ -5,9 +5,9 @@
   "spatial_regime": "pur",
   "forcing_regime": "lagged_streamflow",
   "title": "18-Fold HUC-02 PUR: With Lagged Streamflow Inputs",
-  "short_title": "Table 13: 18-Fold PUR \u2022 Lagged Streamflow",
+  "short_title": "Table 13: 18-Fold PUR • Lagged Streamflow",
   "tab_label": "With Lagged Streamflow (Table 13)",
-  "subtitle": "531 basins \u2014 Models trained on 17 HUC-02 regions (held-out in space during training) and evaluated with lagged observed streamflow Q(t-1), autoregression, or data assimilation in the held-out HUC-02 region during inference.",
+  "subtitle": "531 basins — Models trained on 17 HUC-02 regions (held-out in space during training) and evaluated with lagged observed streamflow Q(t-1), autoregression, or data assimilation in the held-out HUC-02 region during inference.",
   "n_entries": 2,
   "top_model": "DI(1)-LSTM (3-model ensemble)",
   "top_nse": 0.747,
@@ -17,7 +17,7 @@
       "leaderboard_id": "pur__lagged_streamflow",
       "model_name": "DI(1)-LSTM (3-model ensemble)",
       "family_id": "feng2020_di_lstm",
-      "family_name": "Data-Integration LSTM (DI(1)-LSTM \u2014 MIP Re-run)",
+      "family_name": "Data-Integration LSTM (DI(1)-LSTM — MIP Re-run)",
       "paradigm": "Data-Integration LSTM with 1-Day Lagged Streamflow Q(t-1)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -30,7 +30,7 @@
       "ens_med_nse_display": "0.747",
       "single_med_nse": 0.737,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.737 \u00b1 0.004",
+      "single_med_nse_display": "0.737 ± 0.004",
       "single_med_nse_per_member": [
         0.7316,
         0.7422,
@@ -744,34 +744,6 @@
           "p95": 1.3038,
           "p99": 1.582,
           "max": 1.75
-        },
-        "Missed-Peaks": {
-          "median": 0.3333,
-          "mean": 0.3615,
-          "min": 0.0909,
-          "p01": 0.1343,
-          "p05": 0.1962,
-          "p10": 0.2167,
-          "q25": 0.2667,
-          "q75": 0.4259,
-          "p90": 0.5625,
-          "p95": 0.6581,
-          "p99": 0.757,
-          "max": 0.85
-        },
-        "Peak-MAPE": {
-          "median": 41.15,
-          "mean": 42.92,
-          "min": 5.32,
-          "p01": 10.36,
-          "p05": 18.03,
-          "p10": 22.56,
-          "q25": 32.03,
-          "q75": 52.36,
-          "p90": 66.47,
-          "p95": 72.76,
-          "p99": 88.1,
-          "max": 116.91
         }
       },
       "regional_huc02": {
@@ -818,7 +790,7 @@
       "leaderboard_id": "pur__lagged_streamflow",
       "model_name": "DI(1)-LSTM (single model)",
       "family_id": "feng2020_di_lstm",
-      "family_name": "Data-Integration LSTM (DI(1)-LSTM \u2014 MIP Re-run)",
+      "family_name": "Data-Integration LSTM (DI(1)-LSTM — MIP Re-run)",
       "paradigm": "Data-Integration LSTM with 1-Day Lagged Streamflow Q(t-1)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -831,7 +803,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.737,
       "single_med_nse_std": 0.004,
-      "single_med_nse_display": "0.737 \u00b1 0.004",
+      "single_med_nse_display": "0.737 ± 0.004",
       "single_med_nse_per_member": [
         0.7316,
         0.7422,
@@ -1557,36 +1529,6 @@
           "p99": 1.558,
           "max": 1.7549,
           "median_std": 0.0067
-        },
-        "Missed-Peaks": {
-          "median": 0.3377,
-          "mean": 0.3671,
-          "min": 0.1193,
-          "p01": 0.1469,
-          "p05": 0.1934,
-          "p10": 0.2189,
-          "q25": 0.2665,
-          "q75": 0.4333,
-          "p90": 0.5725,
-          "p95": 0.6611,
-          "p99": 0.7772,
-          "max": 0.8644,
-          "median_std": 0.0079
-        },
-        "Peak-MAPE": {
-          "median": 41.53,
-          "mean": 43.63,
-          "min": 5.38,
-          "p01": 10.17,
-          "p05": 17.17,
-          "p10": 23.84,
-          "q25": 32.66,
-          "q75": 53.02,
-          "p90": 67.07,
-          "p95": 75.09,
-          "p99": 88.36,
-          "max": 124.61,
-          "median_std": 0.3
         }
       },
       "regional_huc02": {
@@ -1622,7 +1564,7 @@
       "hydroshare_url": "",
       "data_archive_url": null,
       "family_description": "Clean-room PyTorch re-implementation of the Feng et al. (2020) 256-unit Data-Integration LSTM (DI(1)-LSTM) ingesting daily meteorological forcings, standardized 1-day lagged target-basin observed specific discharge Q(t-1) with binary validity indicator, and 27 static catchment attributes, trained with basin-variance-weighted NSE* loss over 365-day sequences across 6 random seeds on the canonical 531-basin Newman Split-1 Gauged protocol (1999-10-01 to 2008-09-30 training, 1989-10-01 to 1999-09-30 evaluation).",
-      "notes": "Single-model evaluation scored across all 3 individual seed members (seeds 101, 102, 103; evaluation_mode='single_member_mean') of our clean-room DI(1)-LSTM implementation under 18-fold leave-one-HUC-02-region-out (PUR) across all 531 CAMELS-US basins over 1989-10-01 to 1999-09-30 with NLDAS forcing + 1-day lagged observed streamflow Q(t-1) (Single-Seed Med NSE = 0.732 \u00b1 0.001).",
+      "notes": "Single-model evaluation scored across all 3 individual seed members (seeds 101, 102, 103; evaluation_mode='single_member_mean') of our clean-room DI(1)-LSTM implementation under 18-fold leave-one-HUC-02-region-out (PUR) across all 531 CAMELS-US basins over 1989-10-01 to 1999-09-30 with NLDAS forcing + 1-day lagged observed streamflow Q(t-1) (Single-Seed Med NSE = 0.732 ± 0.001).",
       "model_category": "Machine learning",
       "publication_year": 2020,
       "rank": 2,
@@ -1632,32 +1574,32 @@
   "protocol": {
     "benchmark_name": "CAMELS-531 Unified Model Intercomparison Project (Newman Period)",
     "n_basins": 531,
-    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000\u20132008; 3,288 daily steps)",
-    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990\u20131999; 3652 daily steps)",
+    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000–2008; 3,288 daily steps)",
+    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990–1999; 3652 daily steps)",
     "spatial_regimes": [
       {
         "id": "gauged",
         "section": "4.1",
         "title": "Gauged Simulation",
-        "short_title": "Gauged (\u00a74.1)",
-        "tables_range": "Tables 3\u20136",
-        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000\u20132008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990\u20131999 (1989-10-01 to 1999-09-30)."
+        "short_title": "Gauged (§4.1)",
+        "tables_range": "Tables 3–6",
+        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000–2008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990–1999 (1989-10-01 to 1999-09-30)."
       },
       {
         "id": "pub",
         "section": "4.2",
         "title": "Prediction in Ungauged Basins (12-Fold Random PUB)",
-        "short_title": "12-Fold PUB (\u00a74.2)",
-        "tables_range": "Tables 7\u201310",
-        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44\u201345 basins/fold), trained on 11 folds during water years 2000\u20132008 and evaluated on the held-out fold during water years 1990\u20131999."
+        "short_title": "12-Fold PUB (§4.2)",
+        "tables_range": "Tables 7–10",
+        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44–45 basins/fold), trained on 11 folds during water years 2000–2008 and evaluated on the held-out fold during water years 1990–1999."
       },
       {
         "id": "pur",
         "section": "4.3",
         "title": "Prediction in Ungauged Regions (18-Fold HUC-02 PUR)",
-        "short_title": "18-Fold PUR (\u00a74.3)",
-        "tables_range": "Tables 11\u201314",
-        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000\u20132008 and evaluated on the held-out HUC-02 region during water years 1990\u20131999."
+        "short_title": "18-Fold PUR (§4.3)",
+        "tables_range": "Tables 11–14",
+        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000–2008 and evaluated on the held-out HUC-02 region during water years 1990–1999."
       }
     ],
     "forcing_regimes": [

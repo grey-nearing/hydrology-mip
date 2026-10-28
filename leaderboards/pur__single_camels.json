@@ -5,19 +5,19 @@
   "spatial_regime": "pur",
   "forcing_regime": "single_camels",
   "title": "18-Fold HUC-02 PUR: Single CAMELS Forcing",
-  "short_title": "Table 11: 18-Fold PUR \u2022 Single Forcing",
+  "short_title": "Table 11: 18-Fold PUR • Single Forcing",
   "tab_label": "Single CAMELS Forcing (Table 11)",
-  "subtitle": "18-fold leave-one-HUC-02-region-out cross-validation over 1989\u20131999 using a single CAMELS forcing.",
+  "subtitle": "18-fold leave-one-HUC-02-region-out cross-validation over 1989–1999 using a single CAMELS forcing.",
   "n_entries": 13,
-  "top_model": "\u03b4HBV 1.1p / \u03b4MG (5-model ensemble)",
+  "top_model": "δHBV 1.1p / δMG (5-model ensemble)",
   "top_nse": 0.65,
   "rows": [
     {
       "entry_id": "t11_04",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "\u03b4HBV 1.1p / \u03b4MG (5-model ensemble)",
+      "model_name": "δHBV 1.1p / δMG (5-model ensemble)",
       "family_id": "song_dhbv11p",
-      "family_name": "\u03b4HBV 1.1p / \u03b4MG",
+      "family_name": "δHBV 1.1p / δMG",
       "paradigm": "LSTM + 16-Bucket Differentiable HBV (Dynamic Parameters)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -30,7 +30,7 @@
       "ens_med_nse_display": "0.650",
       "single_med_nse": 0.634,
       "single_med_nse_std": 0.011,
-      "single_med_nse_display": "0.634 \u00b1 0.011",
+      "single_med_nse_display": "0.634 ± 0.011",
       "single_med_nse_per_member": [
         0.6227,
         0.6487,
@@ -746,34 +746,6 @@
           "p95": 1.5,
           "p99": 2.0813,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.383,
-          "mean": 0.4231,
-          "min": 0.0444,
-          "p01": 0.1635,
-          "p05": 0.2101,
-          "p10": 0.2353,
-          "q25": 0.3021,
-          "q75": 0.5091,
-          "p90": 0.7,
-          "p95": 0.7826,
-          "p99": 0.8873,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 47.72,
-          "mean": 53.61,
-          "min": 12.39,
-          "p01": 17.52,
-          "p05": 26.14,
-          "p10": 28.91,
-          "q25": 36.14,
-          "q75": 60.8,
-          "p90": 81.09,
-          "p95": 92.85,
-          "p99": 207.42,
-          "max": 358.2
         }
       },
       "regional_huc02": {
@@ -808,8 +780,8 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "16-bucket differentiable HBV 1.1p (\u03b4MG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent \u03b2, near-surface recession coefficient K0, and ET shape parameter \u03b3 predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
-      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) \u03b4HBV 1.1p evaluated under 18-fold HUC-02 regional hold-out cross-validation (PUR) across 531 CAMELS-US basins with Daymet forcing; 5-seed ensemble mean (seeds 111, 222, 333, 444, 555; Med NSE = 0.651).",
+      "family_description": "16-bucket differentiable HBV 1.1p (δMG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent β, near-surface recession coefficient K0, and ET shape parameter γ predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
+      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) δHBV 1.1p evaluated under 18-fold HUC-02 regional hold-out cross-validation (PUR) across 531 CAMELS-US basins with Daymet forcing; 5-seed ensemble mean (seeds 111, 222, 333, 444, 555; Med NSE = 0.651).",
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 1,
@@ -833,7 +805,7 @@
       "ens_med_nse_display": "0.635",
       "single_med_nse": 0.621,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.621 \u00b1 0.003",
+      "single_med_nse_display": "0.621 ± 0.003",
       "single_med_nse_per_member": [
         0.6241,
         0.6269,
@@ -1554,34 +1526,6 @@
           "p95": 1.5192,
           "p99": 2.0,
           "max": 2.5
-        },
-        "Missed-Peaks": {
-          "median": 0.4082,
-          "mean": 0.4416,
-          "min": 0.0889,
-          "p01": 0.1675,
-          "p05": 0.2261,
-          "p10": 0.25,
-          "q25": 0.3204,
-          "q75": 0.5257,
-          "p90": 0.7,
-          "p95": 0.7826,
-          "p99": 0.9256,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 48.35,
-          "mean": 52.88,
-          "min": 13.8,
-          "p01": 19.41,
-          "p05": 26.43,
-          "p10": 31.34,
-          "q25": 37.92,
-          "q75": 60.98,
-          "p90": 78.6,
-          "p95": 90.31,
-          "p99": 154.38,
-          "max": 257.46
         }
       },
       "regional_huc02": {
@@ -1616,7 +1560,7 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
+      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
       "notes": "10-seed ensemble of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM trained on 1999-10-01 to 2008-09-30 and evaluated on 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with Daymet single-forcing meteorological inputs and 27 static catchment attributes (Ensemble Med NSE = 0.635, Mean NSE = 0.454, Med KGE = 0.637).",
       "model_category": "Machine learning",
       "publication_year": 2021,
@@ -1626,9 +1570,9 @@
     {
       "entry_id": "t11_06",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "\u03b4HBV 1.0 (5-model ensemble)",
+      "model_name": "δHBV 1.0 (5-model ensemble)",
       "family_id": "feng_dhbv10",
-      "family_name": "\u03b4HBV 1.0",
+      "family_name": "δHBV 1.0",
       "paradigm": "Dynamic-Parameter LSTM + 16-Bucket Differentiable HBV",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -1641,7 +1585,7 @@
       "ens_med_nse_display": "0.634",
       "single_med_nse": 0.62,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.620 \u00b1 0.003",
+      "single_med_nse_display": "0.620 ± 0.003",
       "single_med_nse_per_member": [
         0.6193,
         0.626,
@@ -2357,34 +2301,6 @@
           "p95": 1.6,
           "p99": 2.1078,
           "max": 2.3125
-        },
-        "Missed-Peaks": {
-          "median": 0.3725,
-          "mean": 0.4233,
-          "min": 0.0444,
-          "p01": 0.1523,
-          "p05": 0.211,
-          "p10": 0.2391,
-          "q25": 0.2965,
-          "q75": 0.5132,
-          "p90": 0.7111,
-          "p95": 0.7826,
-          "p99": 0.8859,
-          "max": 0.95
-        },
-        "Peak-MAPE": {
-          "median": 46.66,
-          "mean": 52.61,
-          "min": 13.0,
-          "p01": 17.7,
-          "p05": 26.08,
-          "p10": 29.17,
-          "q25": 36.81,
-          "q75": 60.47,
-          "p90": 79.79,
-          "p95": 91.18,
-          "p99": 150.45,
-          "max": 288.71
         }
       },
       "regional_huc02": {
@@ -2429,9 +2345,9 @@
     {
       "entry_id": "t11_04_single",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "\u03b4HBV 1.1p / \u03b4MG (single model)",
+      "model_name": "δHBV 1.1p / δMG (single model)",
       "family_id": "song_dhbv11p",
-      "family_name": "\u03b4HBV 1.1p / \u03b4MG",
+      "family_name": "δHBV 1.1p / δMG",
       "paradigm": "LSTM + 16-Bucket Differentiable HBV (Dynamic Parameters)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -2444,7 +2360,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.634,
       "single_med_nse_std": 0.011,
-      "single_med_nse_display": "0.634 \u00b1 0.011",
+      "single_med_nse_display": "0.634 ± 0.011",
       "single_med_nse_per_member": [
         0.6227,
         0.6487,
@@ -3172,36 +3088,6 @@
           "p99": 2.1442,
           "max": 2.7667,
           "median_std": 0.0112
-        },
-        "Missed-Peaks": {
-          "median": 0.3902,
-          "mean": 0.4339,
-          "min": 0.0622,
-          "p01": 0.1532,
-          "p05": 0.2181,
-          "p10": 0.2467,
-          "q25": 0.3074,
-          "q75": 0.5147,
-          "p90": 0.7277,
-          "p95": 0.798,
-          "p99": 0.8979,
-          "max": 0.97,
-          "median_std": 0.0039
-        },
-        "Peak-MAPE": {
-          "median": 47.84,
-          "mean": 54.44,
-          "min": 14.1,
-          "p01": 18.65,
-          "p05": 25.89,
-          "p10": 29.74,
-          "q25": 36.53,
-          "q75": 61.9,
-          "p90": 82.49,
-          "p95": 93.44,
-          "p99": 207.1,
-          "max": 406.89,
-          "median_std": 0.45
         }
       },
       "regional_huc02": {
@@ -3236,8 +3122,8 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "16-bucket differentiable HBV 1.1p (\u03b4MG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent \u03b2, near-surface recession coefficient K0, and ET shape parameter \u03b3 predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
-      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) \u03b4HBV 1.1p evaluated under 18-fold HUC-02 regional hold-out cross-validation (PUR) across 531 CAMELS-US basins with Daymet forcing; single-model performance averaged across all 5 random seeds (seeds 111, 222, 333, 444, 555; Med NSE = 0.634 \u00b1 0.011).",
+      "family_description": "16-bucket differentiable HBV 1.1p (δMG) with capillary rise flux and time-varying (dynamic) soil-moisture recharge exponent β, near-surface recession coefficient K0, and ET shape parameter γ predicted daily by a 256-unit DropConnect LSTM with 15-day Gamma unit-hydrograph routing.",
+      "notes": "Clean-room PyTorch + C++/OpenMP re-implementation of Song et al. (2024) δHBV 1.1p evaluated under 18-fold HUC-02 regional hold-out cross-validation (PUR) across 531 CAMELS-US basins with Daymet forcing; single-model performance averaged across all 5 random seeds (seeds 111, 222, 333, 444, 555; Med NSE = 0.634 ± 0.011).",
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 4,
@@ -3261,7 +3147,7 @@
       "ens_med_nse_display": "0.624",
       "single_med_nse": 0.618,
       "single_med_nse_std": 0.005,
-      "single_med_nse_display": "0.618 \u00b1 0.005",
+      "single_med_nse_display": "0.618 ± 0.005",
       "single_med_nse_per_member": [
         0.6248,
         0.6165,
@@ -3975,34 +3861,6 @@
           "p95": 1.4143,
           "p99": 1.7894,
           "max": 2.25
-        },
-        "Missed-Peaks": {
-          "median": 0.3962,
-          "mean": 0.4421,
-          "min": 0.0444,
-          "p01": 0.151,
-          "p05": 0.2314,
-          "p10": 0.2609,
-          "q25": 0.322,
-          "q75": 0.5251,
-          "p90": 0.7143,
-          "p95": 0.7826,
-          "p99": 0.8875,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 49.13,
-          "mean": 53.35,
-          "min": 12.83,
-          "p01": 19.15,
-          "p05": 26.69,
-          "p10": 30.82,
-          "q25": 37.75,
-          "q75": 62.35,
-          "p90": 80.23,
-          "p95": 90.81,
-          "p99": 145.36,
-          "max": 329.49
         }
       },
       "regional_huc02": {
@@ -4062,7 +3920,7 @@
       "ens_med_nse_display": "0.622",
       "single_med_nse": 0.605,
       "single_med_nse_std": 0.006,
-      "single_med_nse_display": "0.605 \u00b1 0.006",
+      "single_med_nse_display": "0.605 ± 0.006",
       "single_med_nse_per_member": [
         0.6081,
         0.6086,
@@ -4783,34 +4641,6 @@
           "p95": 1.4734,
           "p99": 2.0813,
           "max": 2.625
-        },
-        "Missed-Peaks": {
-          "median": 0.4211,
-          "mean": 0.4572,
-          "min": 0.0714,
-          "p01": 0.174,
-          "p05": 0.2368,
-          "p10": 0.2769,
-          "q25": 0.3402,
-          "q75": 0.5372,
-          "p90": 0.7209,
-          "p95": 0.805,
-          "p99": 0.9063,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 50.08,
-          "mean": 53.41,
-          "min": 14.23,
-          "p01": 22.53,
-          "p05": 28.52,
-          "p10": 32.33,
-          "q25": 39.66,
-          "q75": 62.5,
-          "p90": 78.88,
-          "p95": 88.19,
-          "p99": 116.41,
-          "max": 165.04
         }
       },
       "regional_huc02": {
@@ -4845,7 +4675,7 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
+      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
       "notes": "10-seed ensemble of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM trained on 1999-10-01 to 2008-09-30 and evaluated on 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with Maurer single-forcing meteorological inputs and 27 static catchment attributes (Ensemble Med NSE = 0.622, Mean NSE = 0.469, Med KGE = 0.629).",
       "model_category": "Machine learning",
       "publication_year": 2021,
@@ -4870,7 +4700,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.621,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.621 \u00b1 0.003",
+      "single_med_nse_display": "0.621 ± 0.003",
       "single_med_nse_per_member": [
         0.6241,
         0.6269,
@@ -5603,36 +5433,6 @@
           "p99": 2.0266,
           "max": 2.4561,
           "median_std": 0.0082
-        },
-        "Missed-Peaks": {
-          "median": 0.4162,
-          "mean": 0.4492,
-          "min": 0.099,
-          "p01": 0.1648,
-          "p05": 0.2252,
-          "p10": 0.2584,
-          "q25": 0.3291,
-          "q75": 0.5409,
-          "p90": 0.7064,
-          "p95": 0.7939,
-          "p99": 0.913,
-          "max": 0.9833,
-          "median_std": 0.0035
-        },
-        "Peak-MAPE": {
-          "median": 49.57,
-          "mean": 53.86,
-          "min": 13.81,
-          "p01": 19.77,
-          "p05": 27.76,
-          "p10": 31.7,
-          "q25": 39.16,
-          "q75": 61.89,
-          "p90": 79.9,
-          "p95": 90.23,
-          "p99": 149.46,
-          "max": 296.71,
-          "median_std": 0.42
         }
       },
       "regional_huc02": {
@@ -5667,8 +5467,8 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
-      "notes": "Single-model evaluation scored across all 10 individual seed members (evaluation_mode='single_member_mean') of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with Daymet single-forcing inputs across all 531 CAMELS-US basins (Single-Seed Med NSE = 0.621 \u00b1 0.003).",
+      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
+      "notes": "Single-model evaluation scored across all 10 individual seed members (evaluation_mode='single_member_mean') of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with Daymet single-forcing inputs across all 531 CAMELS-US basins (Single-Seed Med NSE = 0.621 ± 0.003).",
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 7,
@@ -5677,9 +5477,9 @@
     {
       "entry_id": "t11_10",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "\u03b4HBV 1.0 (single model)",
+      "model_name": "δHBV 1.0 (single model)",
       "family_id": "feng_dhbv10",
-      "family_name": "\u03b4HBV 1.0",
+      "family_name": "δHBV 1.0",
       "paradigm": "Dynamic-Parameter LSTM + 16-Bucket Differentiable HBV",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -5692,7 +5492,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.62,
       "single_med_nse_std": 0.003,
-      "single_med_nse_display": "0.620 \u00b1 0.003",
+      "single_med_nse_display": "0.620 ± 0.003",
       "single_med_nse_per_member": [
         0.6193,
         0.626,
@@ -6420,36 +6220,6 @@
           "p99": 2.115,
           "max": 2.6722,
           "median_std": 0.0103
-        },
-        "Missed-Peaks": {
-          "median": 0.3835,
-          "mean": 0.4342,
-          "min": 0.0747,
-          "p01": 0.1532,
-          "p05": 0.212,
-          "p10": 0.2482,
-          "q25": 0.3062,
-          "q75": 0.528,
-          "p90": 0.7311,
-          "p95": 0.8018,
-          "p99": 0.9005,
-          "max": 0.9751,
-          "median_std": 0.0043
-        },
-        "Peak-MAPE": {
-          "median": 47.46,
-          "mean": 53.48,
-          "min": 14.49,
-          "p01": 18.25,
-          "p05": 26.76,
-          "p10": 29.96,
-          "q25": 37.35,
-          "q75": 61.81,
-          "p90": 80.0,
-          "p95": 92.61,
-          "p99": 169.81,
-          "max": 319.64,
-          "median_std": 0.29
         }
       },
       "regional_huc02": {
@@ -6509,7 +6279,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.618,
       "single_med_nse_std": 0.005,
-      "single_med_nse_display": "0.618 \u00b1 0.005",
+      "single_med_nse_display": "0.618 ± 0.005",
       "single_med_nse_per_member": [
         0.6248,
         0.6165,
@@ -7235,36 +7005,6 @@
           "p99": 1.9268,
           "max": 2.525,
           "median_std": 0.0069
-        },
-        "Missed-Peaks": {
-          "median": 0.4049,
-          "mean": 0.4465,
-          "min": 0.0518,
-          "p01": 0.1592,
-          "p05": 0.2301,
-          "p10": 0.2615,
-          "q25": 0.3198,
-          "q75": 0.5365,
-          "p90": 0.7164,
-          "p95": 0.7935,
-          "p99": 0.9059,
-          "max": 0.9845,
-          "median_std": 0.0035
-        },
-        "Peak-MAPE": {
-          "median": 48.96,
-          "mean": 53.69,
-          "min": 13.38,
-          "p01": 19.57,
-          "p05": 27.08,
-          "p10": 31.06,
-          "q25": 37.66,
-          "q75": 63.29,
-          "p90": 79.26,
-          "p95": 90.23,
-          "p99": 149.28,
-          "max": 329.49,
-          "median_std": 0.53
         }
       },
       "regional_huc02": {
@@ -7300,7 +7040,7 @@
       "hydroshare_url": "",
       "data_archive_url": null,
       "family_description": "Regional 3-layer Multilayer Perceptron (2048 hidden units) mapping static catchment attributes to time-invariant parameters of a 16-component parallel differentiable HBV rainfall-runoff model with Gamma unit-hydrograph routing.",
-      "notes": "Poudel & Steinschneider (2026) Static-Parameter MLP + 16-HBV (50 epochs x 240 batches/epoch) evaluated under 18-fold HUC-02 regional hold-out (PUR) across 531 CAMELS-US basins with Daymet forcing; single-model performance averaged across all 3 random seeds (seeds 101, 102, 103; Single-Seed Med NSE = 0.618 \u00b1 0.005).",
+      "notes": "Poudel & Steinschneider (2026) Static-Parameter MLP + 16-HBV (50 epochs x 240 batches/epoch) evaluated under 18-fold HUC-02 regional hold-out (PUR) across 531 CAMELS-US basins with Daymet forcing; single-model performance averaged across all 3 random seeds (seeds 101, 102, 103; Single-Seed Med NSE = 0.618 ± 0.005).",
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 9,
@@ -7324,7 +7064,7 @@
       "ens_med_nse_display": "0.612",
       "single_med_nse": 0.598,
       "single_med_nse_std": 0.006,
-      "single_med_nse_display": "0.598 \u00b1 0.006",
+      "single_med_nse_display": "0.598 ± 0.006",
       "single_med_nse_per_member": [
         0.6031,
         0.5963,
@@ -8045,34 +7785,6 @@
           "p95": 1.4059,
           "p99": 1.9288,
           "max": 2.2778
-        },
-        "Missed-Peaks": {
-          "median": 0.42,
-          "mean": 0.456,
-          "min": 0.1071,
-          "p01": 0.1492,
-          "p05": 0.234,
-          "p10": 0.2609,
-          "q25": 0.3333,
-          "q75": 0.537,
-          "p90": 0.7391,
-          "p95": 0.8086,
-          "p99": 0.9112,
-          "max": 0.9643
-        },
-        "Peak-MAPE": {
-          "median": 48.89,
-          "mean": 53.45,
-          "min": 16.9,
-          "p01": 21.58,
-          "p05": 27.31,
-          "p10": 31.7,
-          "q25": 39.46,
-          "q75": 61.54,
-          "p90": 81.21,
-          "p95": 88.82,
-          "p99": 122.51,
-          "max": 212.59
         }
       },
       "regional_huc02": {
@@ -8107,7 +7819,7 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
+      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
       "notes": "10-seed ensemble of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM trained on 1999-10-01 to 2008-09-30 and evaluated on 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with NLDAS single-forcing meteorological inputs and 27 static catchment attributes (Ensemble Med NSE = 0.612, Mean NSE = 0.415, Med KGE = 0.613).",
       "model_category": "Machine learning",
       "publication_year": 2021,
@@ -8132,7 +7844,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.605,
       "single_med_nse_std": 0.006,
-      "single_med_nse_display": "0.605 \u00b1 0.006",
+      "single_med_nse_display": "0.605 ± 0.006",
       "single_med_nse_per_member": [
         0.6081,
         0.6086,
@@ -8865,36 +8577,6 @@
           "p99": 2.1041,
           "max": 2.5556,
           "median_std": 0.011
-        },
-        "Missed-Peaks": {
-          "median": 0.4313,
-          "mean": 0.4667,
-          "min": 0.0873,
-          "p01": 0.1755,
-          "p05": 0.2422,
-          "p10": 0.2798,
-          "q25": 0.3478,
-          "q75": 0.5522,
-          "p90": 0.7337,
-          "p95": 0.8128,
-          "p99": 0.9136,
-          "max": 0.9958,
-          "median_std": 0.0052
-        },
-        "Peak-MAPE": {
-          "median": 51.29,
-          "mean": 54.54,
-          "min": 15.83,
-          "p01": 23.28,
-          "p05": 29.41,
-          "p10": 33.17,
-          "q25": 40.56,
-          "q75": 64.04,
-          "p90": 80.06,
-          "p95": 89.42,
-          "p99": 122.15,
-          "max": 206.24,
-          "median_std": 0.89
         }
       },
       "regional_huc02": {
@@ -8929,8 +8611,8 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
-      "notes": "Single-model evaluation scored across all 10 individual seed members (evaluation_mode='single_member_mean') of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with Maurer single-forcing inputs across all 531 CAMELS-US basins (Single-Seed Med NSE = 0.605 \u00b1 0.006).",
+      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
+      "notes": "Single-model evaluation scored across all 10 individual seed members (evaluation_mode='single_member_mean') of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with Maurer single-forcing inputs across all 531 CAMELS-US basins (Single-Seed Med NSE = 0.605 ± 0.006).",
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 11,
@@ -8954,7 +8636,7 @@
       "ens_med_nse_display": "---",
       "single_med_nse": 0.598,
       "single_med_nse_std": 0.006,
-      "single_med_nse_display": "0.598 \u00b1 0.006",
+      "single_med_nse_display": "0.598 ± 0.006",
       "single_med_nse_per_member": [
         0.6031,
         0.5963,
@@ -9687,36 +9369,6 @@
           "p99": 1.9176,
           "max": 2.2774,
           "median_std": 0.0093
-        },
-        "Missed-Peaks": {
-          "median": 0.428,
-          "mean": 0.4631,
-          "min": 0.1127,
-          "p01": 0.1678,
-          "p05": 0.2363,
-          "p10": 0.2707,
-          "q25": 0.3395,
-          "q75": 0.5463,
-          "p90": 0.7398,
-          "p95": 0.8074,
-          "p99": 0.908,
-          "max": 0.963,
-          "median_std": 0.0045
-        },
-        "Peak-MAPE": {
-          "median": 50.18,
-          "mean": 54.51,
-          "min": 16.6,
-          "p01": 21.93,
-          "p05": 28.38,
-          "p10": 32.33,
-          "q25": 40.02,
-          "q75": 63.33,
-          "p90": 81.47,
-          "p95": 89.86,
-          "p99": 134.27,
-          "max": 250.8,
-          "median_std": 0.46
         }
       },
       "regional_huc02": {
@@ -9751,8 +9403,8 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
-      "notes": "Single-model evaluation scored across all 10 individual seed members (evaluation_mode='single_member_mean') of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with NLDAS single-forcing inputs across all 531 CAMELS-US basins (Single-Seed Med NSE = 0.598 \u00b1 0.006).",
+      "family_description": "Clean-room PyTorch re-implementation (models/kratzert_lstm) of the Kratzert et al. (2021) 256-unit, 365-day lookback regional CudaLSTM with 27 static catchment attributes and basin-normalized NSE* loss, trained over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins under the canonical 12-fold PUB and 18-fold HUC-02 Leave-One-Region-Out PUR spatial cross-validation protocols.",
+      "notes": "Single-model evaluation scored across all 10 individual seed members (evaluation_mode='single_member_mean') of our clean-room Kratzert et al. (2021) 365-day lookback regional CudaLSTM under 18-fold HUC-02 Leave-One-Region-Out cross-validation (PUR) with NLDAS single-forcing inputs across all 531 CAMELS-US basins (Single-Seed Med NSE = 0.598 ± 0.006).",
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 12,
@@ -10488,34 +10140,6 @@
           "p95": 1.8377,
           "p99": 2.5,
           "max": 3.0
-        },
-        "Missed-Peaks": {
-          "median": 0.4,
-          "mean": 0.4564,
-          "min": 0.1017,
-          "p01": 0.1648,
-          "p05": 0.2155,
-          "p10": 0.25,
-          "q25": 0.321,
-          "q75": 0.5668,
-          "p90": 0.75,
-          "p95": 0.8481,
-          "p99": 0.9483,
-          "max": 1.0
-        },
-        "Peak-MAPE": {
-          "median": 53.49,
-          "mean": 62.06,
-          "min": 15.95,
-          "p01": 21.61,
-          "p05": 29.91,
-          "p10": 34.79,
-          "q25": 42.87,
-          "q75": 67.75,
-          "p90": 82.83,
-          "p95": 98.88,
-          "p99": 208.57,
-          "max": 1271.21
         }
       },
       "regional_huc02": {
@@ -10550,7 +10174,7 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Clean-room C++17/OpenMP and Python re-implementation of coupled Snow-17 + SAC-SMA + 15-day Duamel Gamma unit hydrograph (27 calibrated parameters) calibrated per basin using Dynamically Dimensioned Search (DDS; Tolson & Shoemaker, 2007) over WY2000\u20132008 (Nearing et al., 2020), and extended to ungauged 12-fold PUB and 18-fold HUC-02 PUR prediction via k=1 nearest-neighbor donor parameter transfer in a 29-dimensional joint geographic and standardized static catchment-attribute space.",
+      "family_description": "Clean-room C++17/OpenMP and Python re-implementation of coupled Snow-17 + SAC-SMA + 15-day Duamel Gamma unit hydrograph (27 calibrated parameters) calibrated per basin using Dynamically Dimensioned Search (DDS; Tolson & Shoemaker, 2007) over WY2000–2008 (Nearing et al., 2020), and extended to ungauged 12-fold PUB and 18-fold HUC-02 PUR prediction via k=1 nearest-neighbor donor parameter transfer in a 29-dimensional joint geographic and standardized static catchment-attribute space.",
       "notes": "18-fold HUC-02 regional hold-out (PUR) across all 531 CAMELS-US basins on Daymet forcings: training basins outside the held-out HUC-02 region calibrated via DDS (400 iterations, 1999-10-01 to 2008-09-30), and held-out regional test basins predicted via k=1 nearest-neighbor parameter transfer in a 29-D joint (0.2*lat, 0.2*lon) + 27 standardized static catchment-attribute space (1 seed; Median NSE = 0.512).",
       "model_category": "Conceptual",
       "publication_year": 2020,
@@ -10561,32 +10185,32 @@
   "protocol": {
     "benchmark_name": "CAMELS-531 Unified Model Intercomparison Project (Newman Period)",
     "n_basins": 531,
-    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000\u20132008; 3,288 daily steps)",
-    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990\u20131999; 3652 daily steps)",
+    "train_period": "1999-10-01 to 2008-09-30 (9 water years, water years 2000–2008; 3,288 daily steps)",
+    "eval_period": "1989-10-01 to 1999-09-30 (10 water years, water years 1990–1999; 3652 daily steps)",
     "spatial_regimes": [
       {
         "id": "gauged",
         "section": "4.1",
         "title": "Gauged Simulation",
-        "short_title": "Gauged (\u00a74.1)",
-        "tables_range": "Tables 3\u20136",
-        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000\u20132008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990\u20131999 (1989-10-01 to 1999-09-30)."
+        "short_title": "Gauged (§4.1)",
+        "tables_range": "Tables 3–6",
+        "description": "Temporal split-sample across all 531 CAMELS-US benchmark basins: calibrated/trained on water years 2000–2008 (1999-10-01 to 2008-09-30) and evaluated out-of-sample on water years 1990–1999 (1989-10-01 to 1999-09-30)."
       },
       {
         "id": "pub",
         "section": "4.2",
         "title": "Prediction in Ungauged Basins (12-Fold Random PUB)",
-        "short_title": "12-Fold PUB (\u00a74.2)",
-        "tables_range": "Tables 7\u201310",
-        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44\u201345 basins/fold), trained on 11 folds during water years 2000\u20132008 and evaluated on the held-out fold during water years 1990\u20131999."
+        "short_title": "12-Fold PUB (§4.2)",
+        "tables_range": "Tables 7–10",
+        "description": "Out-of-sample spatial cross-validation across k = 12 random folds of the 531 basins (44–45 basins/fold), trained on 11 folds during water years 2000–2008 and evaluated on the held-out fold during water years 1990–1999."
       },
       {
         "id": "pur",
         "section": "4.3",
         "title": "Prediction in Ungauged Regions (18-Fold HUC-02 PUR)",
-        "short_title": "18-Fold PUR (\u00a74.3)",
-        "tables_range": "Tables 11\u201314",
-        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000\u20132008 and evaluated on the held-out HUC-02 region during water years 1990\u20131999."
+        "short_title": "18-Fold PUR (§4.3)",
+        "tables_range": "Tables 11–14",
+        "description": "Zero-shot regional extrapolation across all 18 USGS two-digit HUC-02 hydrologic regions: trained on 17 regions during water years 2000–2008 and evaluated on the held-out HUC-02 region during water years 1990–1999."
       }
     ],
     "forcing_regimes": [

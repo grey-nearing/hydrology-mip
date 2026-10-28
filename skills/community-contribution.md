@@ -1,6 +1,6 @@
 ---
 name: community-contribution
-description: End-to-end protocol and engineering guide for contributing a community hydrological model (`Contribution`) or a benchmark re-run (`MIP Re-run`) to the CAMELS-US Model Intercomparison Project (MIP). Use when adding a new model implementation to `models/<model_name>/`, packaging external `(531, 3652)` hydrographs into Zarr v2 on `gs://camels-us-mip/`, scoring all 14 Gauch et al. (2023) hydrological metrics, updating `leaderboards/*.json`, or regenerating manuscript tables and figures.
+description: End-to-end protocol and engineering guide for contributing a community hydrological model (`Contribution`) or a benchmark re-run (`MIP Re-run`) to the CAMELS-US Model Intercomparison Project (MIP). Use when adding a new model implementation to `models/<model_name>/`, packaging external `(531, 3652)` hydrographs into Zarr v2 on `gs://camels-us-mip/`, scoring all 12 Gauch et al. (2023) hydrological metrics, updating `leaderboards/*.json`, or regenerating manuscript tables and figures.
 ---
 
 # Community Model Contribution Skill (`camels-us-mip`)
@@ -40,7 +40,7 @@ Every model run is routed to one of the **12 canonical leaderboards** defined in
 - **Ensemble vs. Single-Model Competing Rows (`Option B`):**
   Whenever a model architecture is evaluated across $N \ge 2$ random seeds (`qsim_members` of shape `(N, 531, 3652)`), it appears as **two separate, competing rows** on the same leaderboard:
   1. **Ensemble Row (`is_ensemble: true`, `entry_id: "<base_id>"`, `model_name: "<Base Name> (<N>-model ensemble)"`)**: Scored and ranked on the ensemble-mean daily hydrograph `qsim = np.mean(qsim_members, axis=0)`.
-  2. **Single-Model Row (`is_ensemble: false`, `entry_id: "<base_id>_single"`, `model_name: "<Base Name>"`)**: Scored and ranked using the **mean ($\pm$ std) across all $N$ individual seed members** (`qsim_members[0 .. N-1]`) across all 14 Gauch et al. (2023) metrics—never by `member[0]` (`seed 0`) alone.
+  2. **Single-Model Row (`is_ensemble: false`, `entry_id: "<base_id>_single"`, `model_name: "<Base Name>"`)**: Scored and ranked using the **mean ($\pm$ std) across all $N$ individual seed members** (`qsim_members[0 .. N-1]`) across all 12 Gauch et al. (2023) metrics—never by `member[0]` (`seed 0`) alone.
 - **Strictly One Canonical Citation & Strictly One Provenance Category per Model Entry:**
   Every model entry in `leaderboards/table_2_registry.json` has **strictly one canonical citation** (the first paper to run the model over the Newman split, or the first paper to run it on CAMELS data) and **strictly one provenance category** (`Archive`, `Archive*`, `Literature`, `Literature*`, `MIP Re-run (Our Code)`, `MIP Re-run (Author Code)`, or `Contribution`). If a model was published on the Newman split in a given configuration, we report the published `Literature` or `Archive` values and never replace them with a MIP re-run; any additional or competing `MIP Re-run (Our Code)` runs live under a separate `<family_id>_rerun` model entry.
 - **No Unauthored Configurations for External `MIP Re-run` Models ("If They Didn't Run It, We Don't Run It"):**
@@ -59,7 +59,7 @@ Every model run is routed to one of the **12 canonical leaderboards** defined in
   - **`Archive`** and **`Archive*`**: Pre-existing public hydrograph archives scored by `metrics.evaluator` (flagged as `Archive*` with `asterisk: true` if basin coverage is `< 531` or evaluation window differs from the Newman decade).
   - **`Literature`** and **`Literature*`**: Historical paper-reported metrics extracted directly from a published paper without re-scoring daily hydrographs (`NSE` only; all other metric cells are `--`; flagged as `Literature*` with `asterisk: true` if evaluated on a 9-water-year window such as `WY1991–1999`).
 
-### Rule 3: Multi-Metric Hydrological Evaluation (All 14 Gauch et al., 2023 Metrics)
+### Rule 3: Multi-Metric Hydrological Evaluation (All 12 Gauch et al., 2023 Metrics)
 Never hand-type or hardcode metrics in JSON or Markdown. All metrics for `MIP Re-run` and `Contribution` models are computed automatically from the consolidated Zarr store on `gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr` by [`metrics.calculate_model_leaderboard_metrics`](../metrics/evaluator.py) (*"In Defense of Metrics"*, Gauch et al., 2023):
 1. `NSE` (Median & Mean across evaluated basins; higher is better, optimal $= 1$)
 2. `KGE` (Gupta et al., 2009 Kling-Gupta Efficiency, Median & Mean; higher is better, optimal $= 1$)
@@ -73,9 +73,7 @@ Never hand-type or hardcode metrics in JSON or Markdown. All metrics for `MIP Re
 10. `FMS` (Mid-segment FDC slope bias between 20% and 70% exceedance in %; optimal $= 0\%$)
 11. `FLV` (Bottom 30% low-flow log-space volume bias in %; optimal $= 0\%$)
 12. `Peak-Timing` (Mean absolute peak timing lag in days across detected flood events; optimal $= 0\text{ days}$)
-13. `Missed-Peaks` (% of observed flood peaks without a simulated peak within $\pm 1$ day; optimal $= 0\%$)
-14. `Peak-MAPE` (Mean absolute percentage error of peak magnitudes in %; optimal $= 0\%$)
-15. Plus `NSE<=0` count (number of basins with $\text{NSE} \le 0$) and paired two-sided Wilcoxon signed-rank $p$-values (`p_value_vs_sota_nse`, `p_value_vs_sota_kge`).
+13. Plus `NSE<=0` count (number of basins with $\text{NSE} \le 0$) and paired two-sided Wilcoxon signed-rank $p$-values (`p_value_vs_sota_nse`, `p_value_vs_sota_kge`).
 
 ### Rule 4: Open Hydrograph Archiving, Open Code, and Architectural Documentation
 Every community contribution requires:
@@ -267,7 +265,7 @@ write_hydrograph_zarr(
 
 > **Alternative (Zero-Clone Browser / REST API Submission)**:
 > Contributors with a local `.zarr.zip`, `.nc` (NetCDF), or `.npz` file containing `qsim (531, 3652)`, `basin (531,)`, and `time (3652,)` can upload directly via the web frontend (`frontend/backend/app.py`):
-> - `POST /api/score`: Validates all 531 basins and 3,652 days in memory and returns all 14 Gauch et al. (2023) metrics plus live leaderboard rank without persisting.
+> - `POST /api/score`: Validates all 531 basins and 3,652 days in memory and returns all 12 Gauch et al. (2023) metrics plus live leaderboard rank without persisting.
 > - `POST /api/submit`: Writes the validated Zarr v2 store to `gs://camels-us-mip/hydrographs/<leaderboard_id>/<entry_id>.zarr`, updates the leaderboard JSONs, and regenerates the figures.
 
 ---
@@ -287,7 +285,7 @@ mip-score-model \
 Verify the JSON output:
 - `"status": "SCORED"`
 - `"num_Submitted_basins": 531` and `"num_evaluated_basins": 530` (531 basins verified with zero `NaN` predictions on valid observation days; constant-zero observation basin `09535100` excluded from variance-normalized summary statistics)
-- All 14 Gauch et al. (2023) metrics (`NSE`, `KGE`, `MSE`, `RMSE`, `Pearson-r`, `Alpha-NSE`, `Beta-NSE`, `Beta-KGE`, `FHV`, `FMS`, `FLV`, `Peak-Timing`, `Missed-Peaks`, `Peak-MAPE`) and `NSE<=0` are finite numbers.
+- All 12 Gauch et al. (2023) metrics (`NSE`, `KGE`, `MSE`, `RMSE`, `Pearson-r`, `Alpha-NSE`, `Beta-NSE`, `Beta-KGE`, `FHV`, `FMS`, `FLV`, `Peak-Timing`) and `NSE<=0` are finite numbers.
 
 ### Step 2: Update Leaderboards & Regenerate Manuscript Figures via `mip-update-leaderboard`
 Run `mip-update-leaderboard` ([`leaderboards/update_leaderboard.py`](../leaderboards/update_leaderboard.py)):
@@ -299,7 +297,7 @@ mip-update-leaderboard \
   --leaderboards-dir leaderboards
 ```
 What `mip-update-leaderboard` (`trigger_submission_from_gcs`) does automatically:
-1. Pulls the Zarr store from `gs://camels-us-mip/hydrographs/<leaderboard_id>/<entry_id>.zarr` and computes all 14 Gauch et al. (2023) metrics and paired two-sided Wilcoxon signed-rank $p$-values (`p_value_vs_sota_nse`, `p_value_vs_sota_kge`).
+1. Pulls the Zarr store from `gs://camels-us-mip/hydrographs/<leaderboard_id>/<entry_id>.zarr` and computes all 12 Gauch et al. (2023) metrics and paired two-sided Wilcoxon signed-rank $p$-values (`p_value_vs_sota_nse`, `p_value_vs_sota_kge`).
 2. Upserts the entry into `leaderboards/<leaderboard_id>.json` and re-ranks all entries by **Median NSE** (descending, tie-broken by Mean NSE).
 3. **Dual-Eligibility Routing (`single_camels` $\rightarrow$ `single_camels_ensemble`)**: If a submission is a single-seed, single-CAMELS model (`<regime>__single_camels`, `is_ensemble=False`), remember that every single-forcing single model is also a 1-member contender on `<regime>__single_camels_ensemble` (Tables 4, 8, and 12). Ensure the model is also registered/scored on `<regime>__single_camels_ensemble` if applicable.
 4. Rebuilds the consolidated `leaderboards/tables_3_to_14.json` and updates `leaderboards/contributions_index.json` and `leaderboards/table_2_registry.json`.
@@ -332,7 +330,7 @@ Before opening a Pull Request or committing a new community model contribution, 
   - When `is_ensemble=True`, `qsim_members` has shape `(N_members, 531, 3652)` and `np.allclose(qsim, qsim_members.mean(axis=0), atol=1e-4)` passes.
   - All 15 `REQUIRED_GLOBAL_ATTRS` in [`models/zarr_writer.py`](../models/zarr_writer.py) are populated with non-empty `code_url` and `archive_url`.
 - [ ] **3. Live Metric Calculation (`mip-score-model` & `mip-update-leaderboard`)**:
-  - All 14 Gauch et al. (2023) metrics and Wilcoxon $p$-values were generated by [`metrics/evaluator.py`](../metrics/evaluator.py) from the Zarr store (zero hand-edited numbers).
+  - All 12 Gauch et al. (2023) metrics and Wilcoxon $p$-values were generated by [`metrics/evaluator.py`](../metrics/evaluator.py) from the Zarr store (zero hand-edited numbers).
   - `leaderboards/<leaderboard_id>.json`, `leaderboards/tables_3_to_14.json`, `leaderboards/table_2_registry.json`, `leaderboards/contributions_index.json`, and `figures/figure_2_leaderboard_progress_all_regimes.{png,pdf}` are updated and in sync.
 - [ ] **4. Linter & Full-Dimension Unit Tests**:
   - `ruff check .` passes with zero warnings or errors.
