@@ -26,7 +26,7 @@ adds the rules an agent needs. All paths in this skill are relative to the repos
 | `metrics/` | Scoring: `evaluator.py`, the `mip-score-model` CLI, and `build_eval_targets.py` | Bug fixes only, with tests |
 | `leaderboards/` | Maintainer tools that update leaderboard JSON and draw figures. Holds code only, never data. | Maintainers |
 | `benchmarks/` | End-to-end verification of every store in the bucket | Maintainers |
-| `frontend/` | Current web portal. It will be replaced by a new `web/` folder. | Do not edit unless a maintainer asks |
+| `web/` | Portal UI (`web/portal/`), stateless preview scorer API (`web/scorer_api/`), Cloudflare Worker bundler (`web/worker/`), and tests (`web/tests/`). | Maintainers (or PRs touching portal UI/scorer) |
 | `skills/` | Agent skills (this folder). `.agents/skills` and `.claude/skills` are symlinks to it. | Follow `skills/docs-style/SKILL.md` |
 | `.github/` | CI workflows, PR and issue templates, `CODEOWNERS` | Maintainers |
 | Root files | `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `LICENSE`, `NOTICE`, `DATA_LICENSE.md`, `THIRD_PARTY_NOTICES.md`, `CITATION.cff`, `.zenodo.json`, `pyproject.toml` | Docs: anyone. Legal and metadata files: maintainers. |
@@ -78,4 +78,4 @@ python -m hydromip.tools.ci_guardrails --mode all
 
 - the change needs a new top-level folder, or a change to `hydromip/`, `protocol.json`, or `splits/`;
 - you are unsure whether a file is generated;
-- you would have to edit `frontend/` or `.github/`.
+- you would have to edit `.github/` workflows or security guardrails.

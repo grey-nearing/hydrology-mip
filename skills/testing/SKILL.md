@@ -17,7 +17,7 @@ All paths are relative to the repository root.
 ## 1. Where tests live
 
 - Each package has its own `tests/` folder: `hydromip/tests`, `metrics/tests`, `models/tests`,
-  `models/kratzert_lstm/tests`, `leaderboards/tests`, `frontend/tests`, `benchmarks/tests`.
+  `models/kratzert_lstm/tests`, `leaderboards/tests`, `web/tests`, `benchmarks/tests`.
 - `pyproject.toml` lists them under `[tool.pytest.ini_options] testpaths`. A new test folder must be
   added there. For a new model, prefer `models/tests/test_<key>.py`, which is already covered.
 - Repository guardrails test themselves: `python -m hydromip.tools.ci_guardrails --self-test`.

@@ -3,23 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HydroMIP — Hydrological Model Intercomparison Project</title>
-  <meta name="description" content="Standardized hydrological model intercomparison across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes." />
+  <title>HydrologyMIP — Hydrological Model Intercomparison Project</title>
+  <meta name="description" content="Standardized hydrological model intercomparison across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes with interactive daily hydrograph comparison." />
+  <link rel="canonical" href="https://hydrologymip.org/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="icon" href="/favicon.ico" sizes="32x32" />
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="HydroMIP" />
-  <meta property="og:title" content="HydroMIP" />
-  <meta property="og:description" content="Standardized benchmarking for hydrological models." />
-  <meta property="og:url" content="https://hydromip.org/" />
+  <meta property="og:site_name" content="HydrologyMIP" />
+  <meta property="og:title" content="HydrologyMIP — Standardized Benchmarking for Large-Sample Hydrology" />
+  <meta property="og:description" content="Shared experimental protocols, common catchments, and daily hydrograph evaluation across Gauged, PUB, and PUR spatial regimes." />
+  <meta property="og:url" content="https://hydrologymip.org/" />
+  <meta property="og:image" content="https://hydrologymip.org/og-card.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="HydrologyMIP — Hydrological Model Intercomparison Project" />
+  <meta name="twitter:description" content="Standardized hydrological model intercomparison across Gauged, PUB, and PUR spatial regimes." />
+  <meta name="twitter:image" content="https://hydrologymip.org/og-card.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=20261025_conusmap" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261120_v1_preview" />
 </head>
 <body>
   <header class="site-header" id="site-header">
     <div class="header-inner">
       <a href="#landing" class="brand-lockup" id="brand-home-link">
-        HydroMIP
+        HydrologyMIP
       </a>
 
       <nav class="header-nav" role="tablist" aria-label="Main Navigation">
@@ -37,9 +47,6 @@
         </button>
         <button type="button" role="tab" aria-selected="false" class="nav-tab-btn" id="nav-tab-publications" data-view="publications">
           Publications
-        </button>
-        <button type="button" role="tab" aria-selected="false" class="nav-tab-btn" id="nav-tab-comments" data-view="comments">
-          Community Discussion
         </button>
       </nav>
     </div>
@@ -70,31 +77,74 @@
           </div>
         </div>
 
-        <div class="editorial-hero-art" aria-label="HydroMIP Illustration">
-          <img
-            src="/static/hydrologymip-hero.png?v=20261023_placeholder"
-            alt="HydroMIP placeholder watershed illustration"
-            class="editorial-hero-img"
-          />
-          <p class="editorial-hero-caption">
-            Image NOT created by Daniel Klotz.
-          </p>
+        <div class="editorial-hero-art" aria-label="Multi-model hydrograph comparison schematic">
+          <svg viewBox="0 0 440 295" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Schematic rainfall-runoff hydrograph comparing observed streamflow and multiple models" style="width:100%;max-width:440px;height:auto;display:block;border-radius:10px;border:1px solid #e2ddd5;background:#ffffff;box-shadow:0 4px 20px rgba(22,25,29,0.04);">
+            <rect width="440" height="295" rx="10" fill="#ffffff"/>
+            <!-- Top hyetograph precipitation strip -->
+            <text x="26" y="24" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6b7280" letter-spacing="0.06em">MULTI-MODEL INTERCOMPARISON</text>
+            <text x="414" y="24" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#1b5e55">GAUGED · PUB · PUR</text>
+            <line x1="26" y1="34" x2="414" y2="34" stroke="#ece8e1" stroke-width="1"/>
+            <!-- Subtle inverted rainfall bars -->
+            <g fill="#1b5e55" opacity="0.22">
+              <rect x="64" y="34" width="6" height="14"/>
+              <rect x="73" y="34" width="6" height="32"/>
+              <rect x="82" y="34" width="6" height="44"/>
+              <rect x="91" y="34" width="6" height="20"/>
+              <rect x="190" y="34" width="6" height="12"/>
+              <rect x="199" y="34" width="6" height="28"/>
+              <rect x="208" y="34" width="6" height="18"/>
+              <rect x="298" y="34" width="6" height="22"/>
+              <rect x="307" y="34" width="6" height="36"/>
+              <rect x="316" y="34" width="6" height="15"/>
+            </g>
+            <!-- Horizontal gridlines -->
+            <g stroke="#f1eee8" stroke-width="1">
+              <line x1="36" y1="95" x2="412" y2="95"/>
+              <line x1="36" y1="142" x2="412" y2="142"/>
+              <line x1="36" y1="189" x2="412" y2="189"/>
+            </g>
+            <!-- Axes -->
+            <line x1="36" y1="78" x2="36" y2="236" stroke="#b6bdc4" stroke-width="1.25"/>
+            <line x1="36" y1="236" x2="412" y2="236" stroke="#b6bdc4" stroke-width="1.25"/>
+            <!-- Soft area fill under Model A -->
+            <path d="M 38 224 C 66 224, 74 218, 86 154 C 94 110, 102 96, 112 126 C 126 168, 146 206, 182 216 C 198 218, 206 166, 218 148 C 228 134, 240 166, 258 194 C 276 218, 294 220, 308 178 C 318 144, 326 122, 338 146 C 354 180, 376 214, 410 223 L 410 236 L 38 236 Z" fill="#1b5e55" opacity="0.07"/>
+            <!-- Model B (ochre) -->
+            <path d="M 38 223 C 68 223, 79 216, 92 168 C 102 132, 110 122, 120 144 C 134 176, 154 208, 186 217 C 204 219, 212 178, 224 162 C 234 148, 246 176, 264 199 C 282 219, 300 221, 314 188 C 324 160, 332 142, 344 162 C 360 190, 380 215, 410 223" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round"/>
+            <!-- Model C (slate blue dashed) -->
+            <path d="M 38 225 C 64 225, 72 219, 84 162 C 92 124, 100 112, 110 138 C 124 174, 144 208, 180 218 C 196 220, 204 172, 216 155 C 226 142, 238 172, 256 196 C 274 218, 292 221, 306 184 C 316 152, 324 134, 336 155 C 352 184, 374 215, 410 224" fill="none" stroke="#3b6e8c" stroke-width="1.8" stroke-dasharray="4 3" stroke-linecap="round"/>
+            <!-- Model A (editorial teal) -->
+            <path d="M 38 224 C 66 224, 74 218, 86 154 C 94 110, 102 96, 112 126 C 126 168, 146 206, 182 216 C 198 218, 206 166, 218 148 C 228 134, 240 166, 258 194 C 276 218, 294 220, 308 178 C 318 144, 326 122, 338 146 C 354 180, 376 214, 410 223" fill="none" stroke="#1b5e55" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Observed discharge (ink) -->
+            <path d="M 38 224 C 66 224, 75 217, 87 148 C 96 102, 104 90, 114 122 C 128 166, 148 205, 184 215 C 200 217, 208 162, 220 144 C 230 130, 242 164, 260 193 C 278 217, 296 220, 310 174 C 320 138, 328 116, 340 142 C 356 178, 378 213, 410 222" fill="none" stroke="#16191d" stroke-width="2" stroke-linecap="round"/>
+            <!-- Axis labels & legend -->
+            <text x="20" y="160" transform="rotate(-90 20 160)" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="#6b7280">Q (mm/d)</text>
+            <g font-family="JetBrains Mono, monospace" font-size="9.5" fill="#5a626a">
+              <line x1="36" y1="264" x2="54" y2="264" stroke="#16191d" stroke-width="2"/>
+              <text x="60" y="267">Observed</text>
+              <line x1="126" y1="264" x2="144" y2="264" stroke="#1b5e55" stroke-width="2.5"/>
+              <text x="150" y="267">Model A</text>
+              <line x1="210" y1="264" x2="228" y2="264" stroke="#b45309" stroke-width="2"/>
+              <text x="234" y="267">Model B</text>
+              <line x1="294" y1="264" x2="312" y2="264" stroke="#3b6e8c" stroke-width="1.8" stroke-dasharray="4 3"/>
+              <text x="318" y="267">Model C</text>
+            </g>
+          </svg>
         </div>
       </div>
 
       <div class="resource-index-section">
         <div class="resource-index-grid">
-          <a href="https://github.com/grey-nearing/camels-us-mip" target="_blank" rel="noopener noreferrer" class="resource-cell">
+          <a href="#leaderboards-hub" class="resource-cell" id="resource-card-leaderboards">
             <div class="resource-cell-top">
-              <span class="resource-label">Code</span>
+              <span class="resource-label">Benchmarks</span>
               <span class="resource-status">Active</span>
             </div>
-            <h3>GitHub Repositories</h3>
-            <p>Benchmark model implementations, spatial fold definitions, and leaderboard JSONs.</p>
-            <span class="resource-link-line">github.com &#8599;</span>
+            <h3>Leaderboards &amp; Hydrographs</h3>
+            <p>Standardized multi-metric tables, spatial maps, and interactive daily hydrograph comparison.</p>
+            <span class="resource-link-line">Leaderboards &rarr;</span>
           </a>
 
-          <a href="https://zenodo.org/search?q=hydromip" target="_blank" rel="noopener noreferrer" class="resource-cell">
+          <a href="https://zenodo.org/search?q=hydrologymip" target="_blank" rel="noopener noreferrer" class="resource-cell">
             <div class="resource-cell-top">
               <span class="resource-label">Archive</span>
               <span class="resource-status">DOI</span>
@@ -104,14 +154,14 @@
             <span class="resource-link-line">zenodo.org &#8599;</span>
           </a>
 
-          <a href="https://console.cloud.google.com/storage/browser/camels-us-mip" target="_blank" rel="noopener noreferrer" class="resource-cell">
+          <a href="#about" class="resource-cell" id="resource-card-protocol">
             <div class="resource-cell-top">
-              <span class="resource-label">Cloud Store</span>
-              <span class="resource-status">Live</span>
+              <span class="resource-label">Protocol</span>
+              <span class="resource-status">Open</span>
             </div>
-            <h3>Google Cloud Storage</h3>
-            <p>Public Zarr v2 daily hydrograph archives for direct cloud-native evaluation.</p>
-            <span class="resource-link-line">console.cloud.google.com &#8599;</span>
+            <h3>Canonical Splits &amp; Metrics</h3>
+            <p>Shared catchment lists, spatial cross-validation folds, and Gauch et al. (2023) diagnostics.</p>
+            <span class="resource-link-line">Protocol &rarr;</span>
           </a>
 
           <a href="#publications" class="resource-cell" id="resource-card-publications">
@@ -134,7 +184,7 @@
       <div class="page-head">
         <div>
           <p class="editorial-kicker">Protocol &amp; Design</p>
-          <h2 class="page-title">About HydroMIP</h2>
+          <h2 class="page-title">About HydrologyMIP</h2>
           <p class="page-sub">
             Hydrological models are evaluated on identical catchments and dates within each benchmark suite, stratified by spatial regime and model inputs, and backed by DOI-minted prediction archives.
           </p>
@@ -217,20 +267,6 @@
               <span class="lsc-cta">CAMELS-US Protocol &amp; Splits &rarr;</span>
             </div>
           </article>
-
-          <article class="leaderboard-suite-card" id="card-about-caravan" role="button" tabindex="0" aria-label="Open Caravan Benchmark Specification">
-            <div class="lsc-top">
-              <span class="resource-label">Global &middot; Multi-Continent</span>
-              <span class="resource-status">In Preparation</span>
-            </div>
-            <h3 class="lsc-title">Caravan Benchmark</h3>
-            <p class="lsc-desc">
-              Global evaluation periods, k-fold PUB and continental/regional PUR splits, and global forcing categories.
-            </p>
-            <div class="lsc-footer">
-              <span class="lsc-cta">Caravan Protocol &amp; Splits &rarr;</span>
-            </div>
-          </article>
         </div>
       </div>
     </section>
@@ -242,7 +278,7 @@
       <div class="page-head">
         <div>
           <button type="button" class="breadcrumb-back-btn" id="btn-back-to-about-from-camels">
-            &larr; About HydroMIP
+            &larr; About HydrologyMIP
           </button>
           <h2 class="page-title" style="margin-top: 0.25rem;">CAMELS-US Benchmark Specification</h2>
           <p class="page-sub">
@@ -328,85 +364,6 @@
     </section>
 
     <!-- ===================================================================
-         2B. ABOUT CARAVAN
-         =================================================================== -->
-    <section id="view-about-caravan" role="tabpanel" aria-labelledby="nav-tab-about" style="display: none;">
-      <div class="page-head">
-        <div>
-          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-about-from-caravan">
-            &larr; About HydroMIP
-          </button>
-          <h2 class="page-title" style="margin-top: 0.25rem;">Caravan Benchmark Specification</h2>
-          <p class="page-sub">
-            Global multi-continent catchment set, temporal holdout periods, spatial cross-validation splits, and forcing categories for the Caravan MIP.
-          </p>
-        </div>
-      </div>
-
-      <div class="spec-grid-3">
-        <div class="spec-block">
-          <h3>Catchments &amp; Windows</h3>
-          <dl class="spec-dl">
-            <div>
-              <dt>Catchment Set</dt>
-              <dd>Standardized global Caravan benchmark basins across multiple continents and hydroclimates.</dd>
-            </div>
-            <div>
-              <dt>Training &amp; Evaluation</dt>
-              <dd>Fixed calibration/training period and blind out-of-sample evaluation holdout period.</dd>
-            </div>
-            <div>
-              <dt>Evaluation Metrics</dt>
-              <dd>Sorted by any metric across the Gauch et al. (2023) rainfall&ndash;runoff diagnostic suite.</dd>
-            </div>
-          </dl>
-        </div>
-
-        <div class="spec-block">
-          <h3>Spatial Splits</h3>
-          <dl class="spec-dl">
-            <div>
-              <dt>Gauged Simulation</dt>
-              <dd>In-sample locations evaluated on the blind temporal holdout across all Caravan benchmark gauges.</dd>
-            </div>
-            <div>
-              <dt>Global k-Fold PUB</dt>
-              <dd>Out-of-sample (ungauged) locations evaluated via k-fold cross-validation across global basins.</dd>
-            </div>
-            <div>
-              <dt>Regional / Continental PUR</dt>
-              <dd>Out-of-sample (ungauged) regions evaluated by holding out entire hydroclimatic or continental regions.</dd>
-            </div>
-          </dl>
-        </div>
-
-        <div class="spec-block">
-          <h3>Forcing Categories</h3>
-          <dl class="spec-dl">
-            <div>
-              <dt>Single Caravan Forcing</dt>
-              <dd>Driven by standard Caravan ERA5-Land meteorological forcings and static catchment attributes.</dd>
-            </div>
-            <div>
-              <dt>Multiple Global Forcings</dt>
-              <dd>Driven by ERA5-Land combined with additional global products (e.g., MSWEP, CHIRPS, GLDAS).</dd>
-            </div>
-            <div>
-              <dt>Lagged Streamflow &amp; Freeform</dt>
-              <dd>Separate leaderboards for models ingesting lagged streamflow (Gauged only) or freeform external inputs.</dd>
-            </div>
-          </dl>
-        </div>
-      </div>
-
-      <div style="margin-top: 1.5rem; display: flex; gap: 0.65rem; flex-wrap: wrap;">
-        <button type="button" class="btn-primary-cta" id="btn-contribute-caravan-from-about">
-          Contribute to Caravan &rarr;
-        </button>
-      </div>
-    </section>
-
-    <!-- ===================================================================
          3A. LEADERBOARDS HUB
          =================================================================== -->
     <section id="view-leaderboards-hub" role="tabpanel" aria-labelledby="nav-tab-leaderboards-hub" style="display: none;">
@@ -421,7 +378,7 @@
         <article class="leaderboard-suite-card" id="card-camels-us-daily-deterministic" role="button" tabindex="0" aria-label="Open CAMELS-US Daily Deterministic Leaderboards">
           <div class="lsc-top">
             <span class="resource-label">531 Basins &middot; 1989-10-01 to 1999-09-30</span>
-            <span class="resource-status">10 Tables</span>
+            <span class="resource-status">12 Tables</span>
           </div>
           <h3 class="lsc-title">CAMELS-US Daily Deterministic</h3>
           <p class="lsc-desc">
@@ -429,20 +386,6 @@
           </p>
           <div class="lsc-footer">
             <span class="lsc-cta">Open Leaderboards &rarr;</span>
-          </div>
-        </article>
-
-        <article class="leaderboard-suite-card" id="card-caravan-daily-deterministic" role="button" tabindex="0" aria-label="Contribute to Caravan Global Benchmark">
-          <div class="lsc-top">
-            <span class="resource-label">Global Catchments &middot; ERA5-Land &amp; Multi-Forcing</span>
-            <span class="resource-status">In Preparation</span>
-          </div>
-          <h3 class="lsc-title">Caravan Global Daily Streamflow</h3>
-          <p class="lsc-desc">
-            Global large-sample intercomparison across Gauged, k-fold PUB, and regional PUR regimes using standardized Caravan basins and forcings.
-          </p>
-          <div class="lsc-footer">
-            <span class="lsc-cta">Contribute a Model &rarr;</span>
           </div>
         </article>
       </div>
@@ -573,9 +516,11 @@
               <option value="pub__single_camels">12-Fold PUB &middot; Single CAMELS Forcing</option>
               <option value="pub__multi_camels">12-Fold PUB &middot; Multiple CAMELS Forcings</option>
               <option value="pub__lagged_streamflow">12-Fold PUB &middot; Lagged Streamflow</option>
+              <option value="pub__freeform">12-Fold PUB &middot; Freeform</option>
               <option value="pur__single_camels">18-Fold PUR &middot; Single CAMELS Forcing</option>
               <option value="pur__multi_camels">18-Fold PUR &middot; Multiple CAMELS Forcings</option>
               <option value="pur__lagged_streamflow">18-Fold PUR &middot; Lagged Streamflow</option>
+              <option value="pur__freeform">18-Fold PUR &middot; Freeform</option>
             </select>
             <select id="hydro-add-model-select" class="filter-select hydro-model-picker-select" aria-label="Add model to hydrograph comparison">
               <option value="">+ Add Model to Compare...</option>
@@ -759,9 +704,6 @@
             <option value="statistical">Statistical</option>
           </select>
           <input type="search" id="family-search-input" class="search-input" style="padding-left: 0.75rem;" placeholder="Filter models..." />
-          <button type="button" class="btn-primary-cta" id="btn-open-family-modal">
-            + Register Model
-          </button>
         </div>
       </div>
 
@@ -777,7 +719,7 @@
     </section>
 
     <!-- ===================================================================
-         5. CONTRIBUTE A MODEL
+         5. CONTRIBUTE A MODEL (OPTION C: BROWSER PREVIEW + GITHUB PR)
          =================================================================== -->
     <section id="view-contribute" role="tabpanel" aria-labelledby="nav-tab-contribute" style="display: none;">
       <div class="page-head">
@@ -785,7 +727,7 @@
           <p class="editorial-kicker">Community Submissions</p>
           <h2 class="page-title">Contribute a Model</h2>
           <p class="page-sub" id="contrib-page-sub">
-            Submit a model by linking a DOI-minted prediction archive and specifying the target benchmark, spatial regime, and model inputs.
+            Inspect and score daily discharge predictions right away in a browser-local leaderboard preview, then publish permanently via an automated GitHub PR.
           </p>
         </div>
       </div>
@@ -803,165 +745,330 @@
               <span>Use the canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> basin splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target-basin leakage.</span>
             </li>
             <li>
-              <strong>Forcing Inputs</strong>
-              <span>Declare all meteorological and lagged streamflow inputs used; the submission system automatically places the model into the matching forcing category (Single CAMELS, Multi-CAMELS, Lagged Streamflow, or Freeform).</span>
+              <strong>Forcing Inputs &amp; 14 Canonical Metrics</strong>
+              <span>Declare all meteorological and lagged streamflow inputs used. Models are scored across the 14 canonical Gauch et al. (2023) deterministic metrics including <code>logNSE</code> and <code>logKGE</code> (<code>mm/day</code> specific discharge).</span>
             </li>
             <li>
-              <strong>DOI-Minted Coordinate-Labeled Archive</strong>
-              <span>Link a DOI-minted repository (Zenodo or HydroShare) containing coordinate-labeled daily predictions in Zarr v2 (<code>.zarr.zip</code>) or keyed <code>.npz</code> format (with canonical <code>qsim</code>, <code>basin</code>, and <code>date</code> arrays, plus optional 3D <code>qsim_members</code> for ensembles; unlabeled <code>.npy</code> arrays are rejected).</span>
+              <strong>Instant Preview + Open GitHub PR</strong>
+              <span>Step 1&ndash;3 previews remain strictly local in your browser (<code>localStorage</code>). Permanent leaderboard publication requires a DOI-minted prediction archive, codebase URL (or Closed-Source declaration), and automated CI verification via GitHub.</span>
             </li>
           </ol>
         </div>
 
         <div class="workbench-card">
-          <h3 class="sub-heading" style="margin-top: 0;">Submit Entry via DOI Archive</h3>
+          <div class="contrib-stepper" role="tablist" aria-label="Contribution Steps">
+            <button type="button" class="contrib-step-pill is-active" data-contrib-step-btn="1" id="contrib-pill-1">
+              <span class="step-num">1</span>
+              <span>Upload / DOI</span>
+            </button>
+            <button type="button" class="contrib-step-pill" data-contrib-step-btn="2" id="contrib-pill-2">
+              <span class="step-num">2</span>
+              <span>Sanity Check</span>
+            </button>
+            <button type="button" class="contrib-step-pill" data-contrib-step-btn="3" id="contrib-pill-3">
+              <span class="step-num">3</span>
+              <span>Local Preview</span>
+            </button>
+            <button type="button" class="contrib-step-pill" data-contrib-step-btn="4" id="contrib-pill-4">
+              <span class="step-num">4</span>
+              <span>GitHub PR</span>
+            </button>
+          </div>
 
-          <form id="form-score-submit">
-            <input type="hidden" id="select-sample-archive-key" value="" />
-
-            <div class="form-grid" style="margin-bottom: 1rem;">
-              <div class="form-field full-width">
-                <label for="sub-mip-benchmark">Benchmark (MIP) *</label>
-                <select id="sub-mip-benchmark" required>
-                  <option value="camels_us" selected>CAMELS-US Daily Deterministic (531 basins)</option>
-                  <option value="caravan">Caravan Global Daily Streamflow</option>
-                </select>
+          <form id="form-score-submit" novalidate>
+            <!-- STEP 1: Upload Hydrographs or Paste DOI -->
+            <div class="contrib-step-section" id="contrib-step-1">
+              <div class="contrib-step-head">
+                <h3>1. Upload Hydrographs or Paste DOI</h3>
+                <span class="contrib-step-tag">Step 1 of 4</span>
               </div>
 
-              <div class="form-field">
-                <label for="sub-spatial-regime">Spatial Regime *</label>
-                <select id="sub-spatial-regime" required>
-                  <option value="gauged">Gauged Simulation</option>
-                  <option value="pub">12-Fold PUB (Ungauged Basins)</option>
-                  <option value="pur">18-Fold HUC-02 PUR (Ungauged Regions)</option>
-                </select>
-                <input type="hidden" id="sub-leaderboard-id" value="gauged__single_camels" />
+              <div class="form-field full-width" style="margin-bottom: 0.9rem;">
+                <label class="field-label" for="sub-file-input">Hydrograph File (<code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.parquet</code>, <code>.npz</code>) &mdash; <code>.pkl</code> rejected for security</label>
+                <div class="upload-dropzone" id="sub-dropzone" tabindex="0" role="button" aria-label="Drop or choose prediction file">
+                  <div class="dropzone-title">
+                    Drag &amp; drop a prediction file here, or <strong style="color: var(--color-accent);">browse files</strong>
+                  </div>
+                  <div style="font-size: 0.74rem; color: var(--color-muted); margin-top: 0.2rem;">
+                    Accepted: <code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.parquet</code>, <code>.npz</code> (<code>.pkl</code> / pickle files are blocked)
+                  </div>
+                  <input type="file" id="sub-file-input" accept=".nc,.nc4,.cdf,.zip,.csv,.parquet,.pq,.npz" hidden />
+                </div>
+                <div class="selected-file-bar" id="sub-selected-file-bar" hidden>
+                  <span id="sub-selected-file-label"></span>
+                  <button type="button" class="btn-row-link" id="btn-clear-selected-file">Remove</button>
+                </div>
               </div>
 
-              <div class="form-field">
-                <label for="sub-forcing">Forcing Inputs *</label>
-                <select id="sub-forcing" required>
-                  <optgroup label="Single CAMELS Forcing">
-                    <option value="Daymet" selected>Daymet</option>
-                    <option value="Maurer">Maurer</option>
-                    <option value="NLDAS">NLDAS</option>
-                  </optgroup>
-                  <optgroup label="Multiple CAMELS Forcings">
-                    <option value="Daymet + Maurer">Daymet + Maurer</option>
-                    <option value="Daymet + NLDAS">Daymet + NLDAS</option>
-                    <option value="Maurer + NLDAS">Maurer + NLDAS</option>
-                    <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
-                  </optgroup>
-                  <optgroup label="With Lagged Streamflow">
-                    <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
-                    <option value="Maurer + Lagged Streamflow">Maurer + Lagged Streamflow</option>
-                    <option value="NLDAS + Lagged Streamflow">NLDAS + Lagged Streamflow</option>
-                    <option value="Daymet + Maurer + Lagged Streamflow">Daymet + Maurer + Lagged Streamflow</option>
-                    <option value="Daymet + NLDAS + Lagged Streamflow">Daymet + NLDAS + Lagged Streamflow</option>
-                    <option value="Maurer + NLDAS + Lagged Streamflow">Maurer + NLDAS + Lagged Streamflow</option>
-                    <option value="Daymet + Maurer + NLDAS + Lagged Streamflow">Daymet + Maurer + NLDAS + Lagged Streamflow</option>
-                  </optgroup>
-                  <optgroup label="Freeform (Non-CAMELS / External)">
-                    <option value="Freeform (None of the above)">Freeform (None of the above)</option>
-                  </optgroup>
-                </select>
+              <div class="form-grid" style="margin-bottom: 0.9rem;">
+                <div class="form-field full-width">
+                  <label for="sub-zenodo-doi">Permanent Archive DOI / URL (Zenodo or HydroShare) &mdash; optional for file inspection, required for Step 4 PR</label>
+                  <input type="text" id="sub-zenodo-doi" placeholder="10.5281/zenodo.XXXXXXX or https://www.hydroshare.org/resource/..." />
+                </div>
+
+                <div class="form-field full-width">
+                  <label for="sub-mip-benchmark">Benchmark (MIP) *</label>
+                  <select id="sub-mip-benchmark" required>
+                    <option value="camels_us" selected>CAMELS-US Daily Deterministic (531 basins)</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-spatial-regime">Spatial Regime *</label>
+                  <select id="sub-spatial-regime" required>
+                    <option value="gauged">Gauged Simulation</option>
+                    <option value="pub">12-Fold PUB (Ungauged Basins)</option>
+                    <option value="pur">18-Fold HUC-02 PUR (Ungauged Regions)</option>
+                  </select>
+                  <input type="hidden" id="sub-leaderboard-id" value="gauged__single_camels" />
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-forcing">Forcing Inputs *</label>
+                  <select id="sub-forcing" required>
+                    <optgroup label="Single CAMELS Forcing">
+                      <option value="Daymet" selected>Daymet</option>
+                      <option value="Maurer">Maurer</option>
+                      <option value="NLDAS">NLDAS</option>
+                    </optgroup>
+                    <optgroup label="Multiple CAMELS Forcings">
+                      <option value="Daymet + Maurer">Daymet + Maurer</option>
+                      <option value="Daymet + NLDAS">Daymet + NLDAS</option>
+                      <option value="Maurer + NLDAS">Maurer + NLDAS</option>
+                      <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
+                    </optgroup>
+                    <optgroup label="With Lagged Streamflow (Gauged Only)">
+                      <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
+                      <option value="Maurer + Lagged Streamflow">Maurer + Lagged Streamflow</option>
+                      <option value="NLDAS + Lagged Streamflow">NLDAS + Lagged Streamflow</option>
+                      <option value="Daymet + Maurer + Lagged Streamflow">Daymet + Maurer + Lagged Streamflow</option>
+                      <option value="Daymet + NLDAS + Lagged Streamflow">Daymet + NLDAS + Lagged Streamflow</option>
+                      <option value="Maurer + NLDAS + Lagged Streamflow">Maurer + NLDAS + Lagged Streamflow</option>
+                      <option value="Daymet + Maurer + NLDAS + Lagged Streamflow">Daymet + Maurer + NLDAS + Lagged Streamflow</option>
+                    </optgroup>
+                    <optgroup label="Freeform (Non-CAMELS / External)">
+                      <option value="Freeform (None of the above)">Freeform (None of the above)</option>
+                    </optgroup>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-model-name">Model Name *</label>
+                  <input type="text" id="sub-model-name" placeholder="e.g., HydroTransformer (10-seed)" required />
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-paradigm">Category *</label>
+                  <select id="sub-paradigm" required>
+                    <option value="Machine learning">Machine learning</option>
+                    <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
+                    <option value="Conceptual">Conceptual</option>
+                    <option value="Process-based">Process-based</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-category">Provenance *</label>
+                  <select id="sub-category" required>
+                    <option value="Contribution" selected>Contribution</option>
+                    <option value="MIP Re-run (Author Code)">MIP Re-run (Author Code)</option>
+                    <option value="MIP Re-run (Our Code)">MIP Re-run (Our Code)</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-ensemble-info">Ensemble / Seed Info</label>
+                  <input type="text" id="sub-ensemble-info" placeholder="e.g., 10-seed ensemble or single seed (seed=42)" />
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-family-id">Model Family</label>
+                  <select id="sub-family-id">
+                    <option value="">+ Register as New Model Family</option>
+                  </select>
+                </div>
+
+                <div class="form-field" id="sub-new-family-wrap">
+                  <label for="sub-new-family-name">New Model Family Name</label>
+                  <input type="text" id="sub-new-family-name" placeholder="Defaults to Model Name if blank" />
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-github-url">Code Repository URL (optional if Closed-Source)</label>
+                  <input type="text" id="sub-github-url" placeholder="https://github.com/owner/repo" />
+                  <label class="checklist-label" style="margin-top: 0.35rem; font-size: 0.76rem;">
+                    <input type="checkbox" id="sub-closed-source" />
+                    <span>Closed-Source / Proprietary (no public code URL)</span>
+                  </label>
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-citation">Citation</label>
+                  <input type="text" id="sub-citation" placeholder="Author et al. (2026)" />
+                </div>
+
+                <input type="hidden" id="sub-hydroshare-url" value="" />
+                <input type="hidden" id="sub-paper-url" value="" />
               </div>
 
-              <div class="form-field full-width">
-                <label for="sub-zenodo-doi">Data Archive DOI / URL *</label>
-                <input type="text" id="sub-zenodo-doi" placeholder="10.5281/zenodo.XXXXXXX or https://www.hydroshare.org/resource/..." required />
+              <div id="live-repo-badge-preview" style="display: none; align-items: center; gap: 0.45rem; margin-bottom: 0.75rem; font-size: 0.78rem;"></div>
+
+              <div class="checklist-box" id="contrib-checklist-box">
+                <div class="checklist-header">Confirm benchmark compliance</div>
+                <label class="checklist-label">
+                  <input type="checkbox" id="chk-rule-1" checked required />
+                  <span id="chk-rule-1-text">Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)</span>
+                </label>
+                <label class="checklist-label">
+                  <input type="checkbox" id="chk-rule-2" checked required />
+                  <span id="chk-rule-2-text">Canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target leakage</span>
+                </label>
+                <label class="checklist-label">
+                  <input type="checkbox" id="chk-rule-3" checked required />
+                  <span id="chk-rule-3-text">Selected forcing inputs include all meteorological and lagged streamflow inputs used</span>
+                </label>
+                <label class="checklist-label">
+                  <input type="checkbox" id="chk-rule-4" checked required />
+                  <span id="chk-rule-4-text">Deterministic daily predictions in mm/day across the 531 CAMELS-US basins</span>
+                </label>
               </div>
 
-              <div class="form-field">
-                <label for="sub-model-name">Model Name *</label>
-                <input type="text" id="sub-model-name" placeholder="e.g., ModelName (Ensemble)" required />
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                <button type="button" class="btn-primary-cta" id="btn-preview-inspect">
+                  Inspect &amp; Validate File
+                </button>
+                <button type="button" class="btn-secondary" id="btn-jump-step4-direct">
+                  Go to GitHub PR Submission (Step 4) &rarr;
+                </button>
               </div>
-
-              <div class="form-field">
-                <label for="sub-paradigm">Model Type *</label>
-                <select id="sub-paradigm" required>
-                  <option value="Machine learning">Machine learning</option>
-                  <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
-                  <option value="Conceptual">Conceptual</option>
-                  <option value="Process-based">Process-based</option>
-                  <option value="Statistical">Statistical</option>
-                </select>
-              </div>
-
-              <div class="form-field">
-                <label for="sub-github-url">Codebase URL (Recommended)</label>
-                <input type="text" id="sub-github-url" placeholder="https://github.com/owner/repo (omitting flags Closed-Source)" />
-              </div>
-
-              <div class="form-field">
-                <label for="sub-citation">Citation</label>
-                <input type="text" id="sub-citation" placeholder="Author et al. (2026)" />
-              </div>
-
-              <div class="form-field full-width">
-                <label for="sub-family-id">Model Family</label>
-                <select id="sub-family-id">
-                  <option value="">+ Register as New Model Family</option>
-                </select>
-              </div>
-
-              <div class="form-field full-width" id="sub-new-family-wrap">
-                <label for="sub-new-family-name">New Model Family Name</label>
-                <input type="text" id="sub-new-family-name" placeholder="e.g., ERA, HydroDiffusion, or leave blank to derive from Model Name" />
-              </div>
-
-              <input type="hidden" id="sub-hydroshare-url" value="" />
-              <input type="hidden" id="sub-paper-url" value="" />
-              <input type="hidden" id="sub-category" value="Contribution" />
+              <div id="inspect-status-msg" style="font-size: 0.82rem; margin-top: 0.65rem; line-height: 1.5;"></div>
+              <div id="step1-diagnostic-card" hidden></div>
             </div>
 
-            <div id="live-repo-badge-preview" style="display: none;"></div>
-
-            <div class="checklist-box" id="contrib-checklist-box">
-              <div class="checklist-header">Please check that you have met all contribution requirements</div>
-              <label class="checklist-label">
-                <input type="checkbox" id="chk-rule-1" checked required />
-                <span id="chk-rule-1-text">Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)</span>
-              </label>
-              <label class="checklist-label">
-                <input type="checkbox" id="chk-rule-2" checked required />
-                <span id="chk-rule-2-text">Canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target leakage</span>
-              </label>
-              <label class="checklist-label">
-                <input type="checkbox" id="chk-rule-3" checked required />
-                <span id="chk-rule-3-text">Selected forcing inputs include all meteorological and lagged streamflow inputs used</span>
-              </label>
-              <label class="checklist-label">
-                <input type="checkbox" id="chk-rule-4" checked required />
-                <span id="chk-rule-4-text">Deterministic daily predictions in mm/day across the 531 CAMELS-US basins</span>
-              </label>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-              <button type="button" class="btn-secondary" id="btn-run-live-score">
-                Verify &amp; Score
-              </button>
-              <button type="submit" class="btn-primary-cta" id="btn-submit-to-leaderboard">
-                Submit Entry
-              </button>
-              <button type="button" class="btn-secondary" id="btn-export-pr-manifest">
-                Export JSON
-              </button>
-            </div>
-            <div id="score-status-msg" style="font-size: 0.82rem; margin-top: 0.5rem;"></div>
-
-            <div class="score-preview-card" id="score-preview-card">
-              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
-                <strong style="font-size: 0.86rem;" id="preview-headline">531-Basin Score</strong>
-                <span class="lb-table-pill" id="preview-rank-badge">Rank #1</span>
+            <!-- STEP 2: Mapping Verification & Physical Sanity Card -->
+            <div class="contrib-step-section" id="contrib-step-2" hidden>
+              <div class="contrib-step-head">
+                <h3>2. Mapping Verification &amp; Physical Sanity</h3>
+                <span class="contrib-step-tag" id="step2-tier-badge">Schema Verified</span>
               </div>
-              <div style="font-size: 0.75rem; color: var(--text-secondary);" id="preview-subline"></div>
-              <div class="score-metrics-strip" style="grid-template-columns: repeat(5, 1fr);">
-                <div class="score-metric-box"><span class="m-label">Med NSE</span><span class="m-val" id="prev-ens-nse">&mdash;</span></div>
-                <div class="score-metric-box"><span class="m-label">Mean NSE</span><span class="m-val" id="prev-mean-nse">&mdash;</span></div>
-                <div class="score-metric-box"><span class="m-label">Med KGE</span><span class="m-val" id="prev-med-kge">&mdash;</span></div>
-                <div class="score-metric-box"><span class="m-label">|FHV|</span><span class="m-val" id="prev-med-fhv">&mdash;</span></div>
-                <div class="score-metric-box"><span class="m-label">NSE &le; 0</span><span class="m-val" id="prev-nse-le0">&mdash;</span></div>
+
+              <div id="step2-schema-summary" style="font-size: 0.82rem; color: var(--color-ink-2);"></div>
+
+              <div class="schema-override-grid" id="step2-override-grid">
+                <div class="form-field">
+                  <label for="override-var">Prediction Variable</label>
+                  <select id="override-var"></select>
+                </div>
+                <div class="form-field">
+                  <label for="override-basin-dim">Basin Dimension</label>
+                  <select id="override-basin-dim"></select>
+                </div>
+                <div class="form-field">
+                  <label for="override-time-dim">Date Dimension</label>
+                  <select id="override-time-dim"></select>
+                </div>
+                <div class="form-field">
+                  <label for="override-member-dim">Member Dim (optional)</label>
+                  <select id="override-member-dim"></select>
+                </div>
+              </div>
+
+              <div class="sanity-badges-row" id="step2-sanity-badges"></div>
+              <div id="step2-diagnostic-card" hidden></div>
+              <div id="step2-sanity-plots"></div>
+
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem;">
+                <button type="button" class="btn-primary-cta" id="btn-preview-score">
+                  Score &amp; Preview on Leaderboard
+                </button>
+                <button type="button" class="btn-secondary" id="btn-reinspect-overrides">
+                  Re-validate Overrides
+                </button>
+                <button type="button" class="btn-secondary" id="btn-back-to-step1">
+                  &larr; Back to Upload / DOI
+                </button>
+              </div>
+              <div id="score-status-msg" style="font-size: 0.82rem; margin-top: 0.65rem; line-height: 1.5;"></div>
+            </div>
+
+            <!-- STEP 3: Instant Ephemeral Leaderboard Preview -->
+            <div class="contrib-step-section" id="contrib-step-3" hidden>
+              <div class="contrib-step-head">
+                <h3>3. Browser-Local Leaderboard Preview</h3>
+                <span class="local-preview-badge">LOCAL PREVIEW &middot; PENDING PR</span>
+              </div>
+              <p style="margin: 0 0 0.75rem; font-size: 0.83rem; color: var(--color-ink-2); line-height: 1.5;" id="step3-summary-note"></p>
+              <div class="score-metrics-strip" id="step3-metrics-strip" style="grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));"></div>
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem;">
+                <button type="button" class="btn-primary-cta" id="btn-view-preview-on-lb">
+                  View on Leaderboard Table &rarr;
+                </button>
+                <button type="button" class="btn-secondary" id="btn-goto-step4">
+                  Proceed to Step 4: Submit GitHub PR &rarr;
+                </button>
+                <button type="button" class="btn-danger-ghost" id="btn-clear-current-preview">
+                  Clear This Preview
+                </button>
+              </div>
+            </div>
+
+            <!-- STEP 4: 1-Click Official GitHub Submission -->
+            <div class="contrib-step-section" id="contrib-step-4" hidden>
+              <div class="contrib-step-head">
+                <h3>4. Official GitHub Submission</h3>
+                <span class="contrib-step-tag">Permanent Publication</span>
+              </div>
+              <p style="margin: 0 0 0.8rem; font-size: 0.82rem; color: var(--color-ink-2); line-height: 1.5;">
+                Official leaderboard publication requires a permanent archive DOI/URL (Zenodo or HydroShare) and either a public codebase URL or a Closed-Source / Proprietary declaration. All metadata is validated below before generating your GitHub issue and manifest.
+              </p>
+
+              <div class="form-grid" style="margin-bottom: 0.85rem;">
+                <div class="form-field full-width">
+                  <label for="step4-archive-url">Permanent Archive DOI / URL *</label>
+                  <input type="text" id="step4-archive-url" placeholder="https://doi.org/10.5281/zenodo.XXXXXXX or HydroShare URL" />
+                </div>
+                <div class="form-field full-width">
+                  <label for="step4-code-url">Code Repository URL (optional if Closed-Source)</label>
+                  <input type="text" id="step4-code-url" placeholder="https://github.com/owner/repo" />
+                  <label class="checklist-label" style="margin-top: 0.35rem; font-size: 0.78rem;">
+                    <input type="checkbox" id="step4-closed-source" />
+                    <span>Closed-Source / Proprietary (no public code URL; render <code>Closed-Source</code> badge)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div id="step4-validation-msg" style="font-size: 0.82rem; margin-bottom: 0.7rem; line-height: 1.45;"></div>
+
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                <button type="button" class="btn-primary-cta" id="btn-open-github-issue">
+                  Open GitHub Submission Issue &#8599;
+                </button>
+                <button type="button" class="btn-secondary" id="btn-export-pr-manifest">
+                  Download Manifest &amp; Open PR Guide
+                </button>
+                <button type="button" class="btn-secondary" id="btn-copy-manifest-json">
+                  Copy Manifest JSON
+                </button>
+                <button type="button" class="btn-secondary" id="btn-back-from-step4">
+                  &larr; Edit Metadata
+                </button>
+              </div>
+
+              <div class="score-preview-card visible" id="score-preview-card" style="margin-top: 0.9rem;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.45rem;">
+                  <strong style="font-size: 0.84rem;" id="preview-headline">Canonical Submission Manifest (JSON)</strong>
+                </div>
+                <div style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 0.55rem;" id="preview-subline"></div>
+                <pre id="submission-manifest-preview" style="margin: 0; padding: 0.65rem; background: var(--color-paper, #faf8f4); border: 1px solid var(--color-rule, #e2ddd5); border-radius: 6px; font-family: var(--font-mono); font-size: 0.72rem; max-height: 220px; overflow: auto; white-space: pre-wrap;"></pre>
+              </div>
+
+              <div id="step4-pr-guide" class="diagnostic-card" style="border-color: var(--color-rule); background: var(--color-paper); margin-top: 0.85rem;" hidden>
+                <strong>Direct GitHub Pull Request Guide</strong>
+                <ol style="margin: 0.45rem 0 0; padding-left: 1.2rem; font-size: 0.8rem; line-height: 1.55;">
+                  <li>Fork <code>grey-nearing/camels-us-mip</code> and follow <a href="https://github.com/grey-nearing/camels-us-mip/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><code>CONTRIBUTING.md</code> &#8599;</a>.</li>
+                  <li>Place the downloaded manifest JSON in your branch submission directory (or attach it to the automated issue above) and ensure <code>archive_url</code> + <code>code_url</code> resolve cleanly.</li>
+                  <li>Open a Pull Request targeting <code>main</code> &mdash; CI verifies schema hygiene, 14 canonical metrics, and regenerates leaderboard figures automatically upon review.</li>
+                </ol>
               </div>
             </div>
           </form>
@@ -985,160 +1092,30 @@
           <span class="resource-status">In Preparation</span>
           <span>CAMELS-US Benchmark</span>
         </div>
-        <h3 class="publication-title">HydroMIP: A CAMELS-US Model Intercomparison Project</h3>
-        <p class="publication-authors">Nearing, G. S., Klotz, D., Ebel, P., &amp; Gauch, M. (2026)</p>
-        <div class="publication-links">
-          <a href="https://github.com/grey-nearing/camels-us-mip" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-code">GitHub &#8599;</a>
-          <a href="https://doi.org/10.5281/zenodo.24383448" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-archive">Zenodo v1.0.0 &#8599;</a>
-          <a href="https://console.cloud.google.com/storage/browser/camels-us-mip" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-archive">gs://camels-us-mip &#8599;</a>
-        </div>
+        <h3 class="publication-title">A CAMELS-US Model Intercomparison Project</h3>
+        <p class="publication-authors">Nearing, G., et al. (<em>in preparation</em>)</p>
+        <p style="margin: 0.45rem 0 0; font-size: 0.84rem; color: var(--color-muted, #5a626a);">
+          Manuscript preprint, benchmark code repository, and open hydrograph archive will be linked here upon release.
+        </p>
       </article>
-    </section>
-
-    <!-- ===================================================================
-         7. COMMUNITY DISCUSSION
-         =================================================================== -->
-    <section id="view-comments" role="tabpanel" aria-labelledby="nav-tab-comments" style="display: none;">
-      <div class="page-head">
-        <div>
-          <p class="editorial-kicker">Forum</p>
-          <h2 class="page-title">Community Discussion</h2>
-        </div>
-      </div>
-
-      <div class="comments-layout-grid">
-        <div>
-          <div id="comments-feed-container" aria-live="polite"></div>
-        </div>
-
-        <div class="workbench-card">
-          <h3 class="sub-heading" style="margin-top: 0;">New Comment</h3>
-          <form id="form-community-comment">
-            <div style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
-              <input type="text" id="cmt-website-honeypot" name="website_honeypot" tabindex="-1" autocomplete="off" />
-            </div>
-
-            <div class="form-grid" style="margin-bottom: 0.9rem;">
-              <div class="form-field">
-                <label for="cmt-author-name">Name *</label>
-                <input type="text" id="cmt-author-name" placeholder="Full name" required />
-              </div>
-
-              <div class="form-field">
-                <label for="cmt-affiliation">Affiliation</label>
-                <input type="text" id="cmt-affiliation" placeholder="Institution" />
-              </div>
-
-              <div class="form-field full-width">
-                <label for="cmt-orcid-github">ORCID or GitHub</label>
-                <input type="text" id="cmt-orcid-github" placeholder="0000-0002-... or @username" />
-              </div>
-
-              <div class="form-field full-width">
-                <label for="cmt-title">Title *</label>
-                <input type="text" id="cmt-title" placeholder="Summary" required />
-              </div>
-
-              <div class="form-field full-width">
-                <label for="cmt-body">Comment *</label>
-                <textarea id="cmt-body" rows="4" placeholder="Share ideas, model contributions, or suggestions for new MIPs..." required></textarea>
-              </div>
-            </div>
-
-            <input type="checkbox" id="cmt-coc-attest" checked required style="display: none;" />
-
-            <button type="submit" class="btn-primary-cta" id="btn-submit-comment">
-              Post Comment
-            </button>
-            <div id="comment-status-msg" style="font-size: 0.82rem; margin-top: 0.5rem;"></div>
-          </form>
-        </div>
-      </div>
     </section>
   </main>
 
   <footer class="site-footer">
     <div>
-      <strong>HydroMIP</strong> &middot; <span style="font-family: var(--font-mono); font-size: 0.75rem;">hydromip.org</span>
+      <strong>HydrologyMIP</strong> &middot; <span style="font-family: var(--font-mono); font-size: 0.75rem;">hydrologymip.org</span>
+      &middot; <span style="font-size: 0.76rem; color: var(--color-muted, #5a626a);">CC-BY-4.0</span>
     </div>
     <div class="footer-links-inline">
-      <a href="https://github.com/grey-nearing/camels-us-mip" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="mailto:contact@hydrologymip.org">contact@hydrologymip.org</a>
       <span>&middot;</span>
-      <a href="https://console.cloud.google.com/storage/browser/camels-us-mip" target="_blank" rel="noopener noreferrer">GCS Bucket</a>
+      <a href="#contribute" id="footer-link-contribute">Contribute</a>
       <span>&middot;</span>
-      <a href="https://github.com/grey-nearing/camels-us-mip/blob/main/CITATION.cff" target="_blank" rel="noopener noreferrer">Citation</a>
+      <a href="#about" id="footer-link-protocol">Protocol</a>
+      <span>&middot;</span>
+      <a href="#publications" id="footer-link-publications">Publications</a>
     </div>
   </footer>
-
-  <!-- Modal: Edit Model Links -->
-  <div class="modal-backdrop" id="modal-family-editor" role="dialog" aria-modal="true" aria-labelledby="modal-family-title">
-    <div class="modal-dialog" style="max-width: 600px;">
-      <div class="modal-header">
-        <h2 id="modal-family-title">Model Repository Links</h2>
-        <button type="button" class="modal-close-btn" id="btn-close-family-modal" aria-label="Close">&times;</button>
-      </div>
-
-      <div class="modal-body">
-        <form id="form-family-editor">
-          <input type="hidden" id="fam-edit-id" value="" />
-          <div class="form-grid">
-            <div class="form-field full-width">
-              <label for="fam-edit-name">Model Name *</label>
-              <input type="text" id="fam-edit-name" required />
-            </div>
-            <div class="form-field">
-              <label for="fam-edit-zenodo">Zenodo DOI / URL</label>
-              <input type="text" id="fam-edit-zenodo" placeholder="10.5281/zenodo.XXXXXXX" />
-            </div>
-            <div class="form-field">
-              <label for="fam-edit-hydroshare">Alternative Archive URL</label>
-              <input type="text" id="fam-edit-hydroshare" placeholder="https://..." />
-            </div>
-            <div class="form-field full-width">
-              <label for="fam-edit-github">GitHub URL</label>
-              <input type="text" id="fam-edit-github" placeholder="https://github.com/owner/repo" />
-            </div>
-            <div class="form-field">
-              <label for="fam-edit-paradigm">Model Type *</label>
-              <select id="fam-edit-paradigm" required>
-                <option value="Machine learning">Machine learning</option>
-                <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
-                <option value="Conceptual">Conceptual</option>
-                <option value="Process-based">Process-based</option>
-                <option value="Statistical">Statistical</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="fam-edit-category">Source Category</label>
-              <select id="fam-edit-category">
-                <option value="Literature">Literature</option>
-                <option value="MIP Re-run">MIP Re-run</option>
-                <option value="Archive">Archive</option>
-                <option value="Contribution">Contribution</option>
-              </select>
-            </div>
-            <div class="form-field">
-              <label for="fam-edit-citation">Citation</label>
-              <input type="text" id="fam-edit-citation" />
-            </div>
-            <div class="form-field">
-              <label for="fam-edit-paper-url">Paper URL</label>
-              <input type="text" id="fam-edit-paper-url" />
-            </div>
-            <div class="form-field full-width">
-              <label for="fam-edit-desc">Notes</label>
-              <textarea id="fam-edit-desc" rows="2"></textarea>
-            </div>
-          </div>
-
-          <div style="display: flex; justify-content: flex-end; gap: 0.6rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-top: 1rem;">
-            <button type="button" class="btn-secondary" id="btn-cancel-family-modal">Cancel</button>
-            <button type="submit" class="btn-primary-cta" id="btn-save-family">Save</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
 
   <!-- Floating Hydrograph Comparison Tray (appears on Leaderboards when >= 1 model is selected) -->
   <div id="hydrograph-compare-tray" class="hydro-compare-tray" hidden>
@@ -1158,6 +1135,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261025_navcursor"></script>
+  <script src="/static/app.js?v=20261120_v1_preview"></script>
 </body>
 </html>

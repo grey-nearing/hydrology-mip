@@ -131,8 +131,8 @@ jobs:
             test_targets: "models/tests models/kratzert_lstm/tests"
           - shard_name: leaderboards
             test_targets: "leaderboards/tests"
-          - shard_name: frontend
-            test_targets: "frontend/tests"
+          - shard_name: web
+            test_targets: "web/tests"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -154,17 +154,8 @@ jobs:
         env:
           HYDROMIP_GCS_ANON: "1"
         run: |
-          if [[ "${{ matrix.shard_name }}" == "frontend" ]]; then
-            if [[ -d frontend/tests ]]; then
-              pytest frontend/tests -n auto --dist worksteal --maxfail=5 -v
-            elif [[ -d web/tests ]]; then
-              pytest web/tests -n auto --dist worksteal --maxfail=5 -v
-            elif [[ -d web ]]; then
-              echo "Legacy frontend/tests absent and web/ present; skipping legacy frontend pytest shard."
-            else
-              echo "::error::Neither frontend/tests nor web/ directory found."
-              exit 1
-            fi
+          if [[ "${{ matrix.shard_name }}" == "web" ]]; then
+            pytest web/tests -n auto --dist worksteal --maxfail=5 -v
           else
             pytest ${{ matrix.test_targets }} -n auto --dist worksteal --maxfail=5 -v
           fi

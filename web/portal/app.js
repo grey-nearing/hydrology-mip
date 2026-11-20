@@ -1,5 +1,5 @@
-/* Copyright 2026 HydroMIP Contributors
- * Tab-driven frontend controller for hydromip.org
+/* Copyright 2026 HydrologyMIP Contributors
+ * Tab-driven frontend controller for hydrologymip.org
  */
 
 (function () {
@@ -9,13 +9,9 @@
     allLeaderboards: [],
     families: [],
     protocol: null,
-    comments: [],
-    sessionPendingComments: [],
-    activeView: "landing", // landing | about | leaderboards | models | contribute | comments
+    activeView: "landing", // landing | about | leaderboards | models | contribute | publications
     activeSpatialTab: "gauged", // gauged | pub | pur
     activeForcingTab: "single_camels", // single_camels | multi_camels | lagged_streamflow | freeform
-    activeCommentChannel: "all",
-    activeCommentScope: "all",
     categoryFilter: "",
     searchQuery: "",
     familySearchQuery: "",
@@ -28,6 +24,11 @@
     inspectedEntryId: null,
     uploadedFile: null,
     lastScoringResult: null,
+    contribStep: 1,
+    previewInspectData: null,
+    activePreviewEntryId: null,
+    baseLeaderboards: null,
+    baseFamilies: null,
     // Hydrograph Comparison Explorer State
     comparedModels: [], // Array of model_key ("<leaderboard_id>__<entry_id>")
     hydroIndex: null, // Loaded from /api/hydrographs/index
@@ -81,14 +82,6 @@
     },
   };
 
-  const COMMENT_CHANNEL_LABELS = {
-    protocol_design: "Protocol & Evaluation Windows",
-    leaderboard_audit: "Leaderboard Audit & Reproducibility",
-    forcings_folds: "Forcing Datasets & Spatial Folds",
-    model_contributions: "Model Architectures & Contributions",
-    general_feedback: "General Benchmark Feedback",
-  };
-
   function formatLeaderboardShortLabel(lb) {
     if (!lb) return "";
     const id = String(lb.id || "");
@@ -99,9 +92,11 @@
       gauged__freeform: "Gauged · Freeform",
       pub__single_camels: "PUB · Single",
       pub__multi_camels: "PUB · Multi",
+      pub__lagged_streamflow: "PUB · Streamflow",
       pub__freeform: "PUB · Freeform",
       pur__single_camels: "PUR · Single",
       pur__multi_camels: "PUR · Multi",
+      pur__lagged_streamflow: "PUR · Streamflow",
       pur__freeform: "PUR · Freeform",
     };
     return map[id] || lb.short_title || lb.title || id;
@@ -136,6 +131,20 @@
       .replace(/'/g, "&#39;");
   }
 
+  function sanitizeExternalUrl(rawUrl) {
+    const s = String(rawUrl || "").trim();
+    if (!s || !/^https?:\/\//i.test(s)) return "";
+    try {
+      const parsed = new URL(s);
+      if (parsed.protocol === "https:" || parsed.protocol === "http:") {
+        return parsed.href;
+      }
+    } catch (_e) {
+      return "";
+    }
+    return "";
+  }
+
   function fmtNum(val, digits = 3, asterisk = false) {
     if (val === null || val === undefined || val === "" || Number.isNaN(Number(val))) {
       return '<span style="color: var(--text-muted);">N/A</span>';
@@ -159,9 +168,10 @@
     renderActiveLeaderboardPanel();
   }
 
-  const SESSION_SUBMISSIONS_KEY = "hmip_session_submissions_v2";
+  const LOCAL_PREVIEWS_STORAGE_KEY = "hydrologymip_local_previews_v1";
   try {
     sessionStorage.removeItem("hmip_session_submissions_v1");
+    sessionStorage.removeItem("hmip_session_submissions_v2");
   } catch (_e) {
     // ignore
   }
@@ -182,57 +192,59 @@
     }
   }
 
-  function loadSessionSubmissions() {
+  function loadLocalPreviews() {
     try {
-      const raw = sessionStorage.getItem(SESSION_SUBMISSIONS_KEY);
-      if (!raw) return { entries: [], families: [] };
+      const raw = localStorage.getItem(LOCAL_PREVIEWS_STORAGE_KEY);
+      if (!raw) return [];
       const parsed = JSON.parse(raw);
-      return {
-        entries: Array.isArray(parsed.entries) ? parsed.entries : [],
-        families: Array.isArray(parsed.families) ? parsed.families : [],
-      };
+      return Array.isArray(parsed) ? parsed.filter((x) => x && x.entry && x.entry.entry_id) : [];
     } catch (_e) {
-      return { entries: [], families: [] };
+      return [];
     }
   }
 
-  function recordSessionSubmission(entry, singleEntry, family) {
+  function saveLocalPreviews(items) {
     try {
-      const store = loadSessionSubmissions();
-      for (const e of [entry, singleEntry]) {
-        if (e && e.entry_id) {
-          store.entries = store.entries.filter((x) => x.entry_id !== e.entry_id);
-          store.entries.push(e);
-        }
-      }
-      if (family && family.family_id) {
-        store.families = store.families.filter((f) => f.family_id !== family.family_id);
-        store.families.push(family);
-      }
-      sessionStorage.setItem(SESSION_SUBMISSIONS_KEY, JSON.stringify(store));
+      localStorage.setItem(LOCAL_PREVIEWS_STORAGE_KEY, JSON.stringify(Array.isArray(items) ? items : []));
     } catch (_e) {
-      // ignore sessionStorage quota errors
+      // ignore localStorage quota errors
     }
   }
 
-  function mergeSessionSubmissionsIntoData(data) {
-    const store = loadSessionSubmissions();
-    if (!store.entries.length && !store.families.length) return data;
-    const lbs = Array.isArray(data.leaderboards) ? data.leaderboards : [];
-    const fams = Array.isArray(data.families) ? data.families : [];
+  function upsertLocalPreview(record) {
+    if (!record || !record.entry || !record.entry.entry_id) return;
+    const list = loadLocalPreviews().filter((x) => x.entry.entry_id !== record.entry.entry_id);
+    list.push(record);
+    saveLocalPreviews(list);
+    refreshLeaderboardsWithLocalPreviews();
+  }
 
-    for (const fam of store.families) {
-      if (!fam || !fam.family_id) continue;
-      const idx = fams.findIndex((f) => f.family_id === fam.family_id);
-      if (idx >= 0) {
-        fams[idx] = { ...fams[idx], ...fam };
-      } else {
-        fams.push(fam);
+  function removeLocalPreview(entryId = null) {
+    if (!entryId) {
+      saveLocalPreviews([]);
+      STATE.activePreviewEntryId = null;
+    } else {
+      const list = loadLocalPreviews().filter((x) => x.entry.entry_id !== entryId);
+      saveLocalPreviews(list);
+      if (STATE.activePreviewEntryId === entryId) {
+        STATE.activePreviewEntryId = null;
       }
     }
+    refreshLeaderboardsWithLocalPreviews();
+    renderLeaderboardTabs();
+    renderActiveLeaderboardPanel();
+    renderFamiliesGrid();
+  }
 
-    for (const entry of store.entries) {
-      if (!entry || !entry.entry_id || !entry.leaderboard_id) continue;
+  function refreshLeaderboardsWithLocalPreviews() {
+    if (!Array.isArray(STATE.baseLeaderboards)) return;
+    const lbs = JSON.parse(JSON.stringify(STATE.baseLeaderboards));
+    const fams = JSON.parse(JSON.stringify(STATE.baseFamilies || []));
+    const previews = loadLocalPreviews();
+
+    for (const item of previews) {
+      const entry = { ...item.entry, is_local_preview: true };
+      if (!entry.leaderboard_id) continue;
       const lb = lbs.find((b) => b.id === entry.leaderboard_id);
       if (!lb) continue;
       if (!Array.isArray(lb.rows)) lb.rows = [];
@@ -245,15 +257,18 @@
       lb.rows.sort((a, b) => {
         const na = typeof a.primary_ranking_nse === "number" ? a.primary_ranking_nse : -999;
         const nb = typeof b.primary_ranking_nse === "number" ? b.primary_ranking_nse : -999;
-        return nb - na;
+        if (nb !== na) return nb - na;
+        return (a.rank || 9999) - (b.rank || 9999);
       });
       lb.rows.forEach((r, idx) => {
         r.rank = idx + 1;
       });
     }
 
-    data.total_entries = lbs.reduce((acc, lb) => acc + ((lb.rows && lb.rows.length) || 0), 0);
-    return data;
+    STATE.allLeaderboards = lbs;
+    STATE.families = fams;
+    const totalEntries = lbs.reduce((acc, lb) => acc + ((lb.rows && lb.rows.length) || 0), 0);
+    updateHeroStats({ leaderboards: lbs, families: fams, total_entries: totalEntries });
   }
 
   function computeLocalQuantiles101(vals) {
@@ -280,13 +295,12 @@
     try {
       const res = await fetch("/api/leaderboards");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const rawData = await parseApiJson(res);
-      const data = mergeSessionSubmissionsIntoData(rawData);
-      STATE.allLeaderboards = data.leaderboards || [];
-      STATE.families = data.families || [];
+      const data = await parseApiJson(res);
+      STATE.baseLeaderboards = data.leaderboards || [];
+      STATE.baseFamilies = data.families || [];
       STATE.protocol = data.protocol || null;
+      refreshLeaderboardsWithLocalPreviews();
 
-      updateHeroStats(data);
       await loadHydrographIndex();
       renderLeaderboardTabs();
       renderActiveLeaderboardPanel();
@@ -296,9 +310,8 @@
       if (STATE.activeView === "hydrographs") {
         openHydrographExplorer();
       }
-      await loadComments();
     } catch (err) {
-      console.error("Failed to load HydroMIP data:", err);
+      console.error("Failed to load HydrologyMIP data:", err);
     }
   }
 
@@ -368,11 +381,12 @@
   // 2. Render Buttons for Data Archive & Codebase
   // =========================================================================
   function renderDataArchiveButton(row) {
-    const archiveUrl =
+    const rawArchiveUrl =
       row.data_archive_url ||
       row.zenodo_url ||
       row.hydroshare_url ||
       (row.zenodo_doi ? `https://doi.org/${row.zenodo_doi}` : "");
+    const archiveUrl = sanitizeExternalUrl(rawArchiveUrl);
 
     if (archiveUrl) {
       const tooltip = row.zenodo_doi
@@ -395,7 +409,7 @@
   }
 
   function renderCodebaseButton(row) {
-    const codeUrl = row.code_url || row.github_url || "";
+    const codeUrl = sanitizeExternalUrl(row.code_url || row.github_url || "");
     if (codeUrl) {
       return `
         <a
@@ -411,7 +425,13 @@
     }
 
     const srcCat = formatSourceCategory(row.category || row.code_provenance);
-    if (row.is_closed_source || srcCat === "Contribution" || row.is_user_submission) {
+    if (
+      row.closed_source ||
+      row.is_closed_source ||
+      srcCat === "Contribution" ||
+      row.is_user_submission ||
+      row.is_local_preview
+    ) {
       return `<span class="badge-closed-source" title="Closed-source submission: no public code repository linked">Closed-Source</span>`;
     }
 
@@ -470,6 +490,11 @@
     if (!isValidMetric(row.med_kge) && row.gauch_kge !== null) {
       row.med_kge = row.gauch_kge;
     }
+    if (!isValidMetric(row.mean_kge) && gmean("KGE") !== null) {
+      row.mean_kge = gmean("KGE");
+    }
+    if (row.gauch_log_nse === undefined) row.gauch_log_nse = gmed("logNSE");
+    if (row.gauch_log_kge === undefined) row.gauch_log_kge = gmed("logKGE");
     if (row.gauch_pearson_r === undefined) row.gauch_pearson_r = gmed("Pearson-r");
     if (row.gauch_alpha_nse === undefined) row.gauch_alpha_nse = gmed("Alpha-NSE");
     if (row.gauch_beta_nse === undefined) row.gauch_beta_nse = gmed("Beta-NSE");
@@ -513,6 +538,39 @@
       col: "med_kge",
       label: "KGE",
       title: "Median Kling-Gupta Efficiency (ideal = 1)",
+      defaultAsc: false,
+      direction: "higher",
+      optimalityText: "Higher is better \u2191",
+      rawFmt: (v, star) => Number(v).toFixed(3) + (star ? "*" : ""),
+      tickFmt: (v) => Number(v).toFixed(2),
+      fmt: (v, star) => fmtNum(v, 3, star),
+    },
+    {
+      col: "mean_kge",
+      label: "Mean KGE",
+      title: "Mean Kling-Gupta Efficiency across 531 basins (ideal = 1)",
+      defaultAsc: false,
+      direction: "higher",
+      optimalityText: "Higher is better \u2191",
+      rawFmt: (v, star) => Number(v).toFixed(3) + (star ? "*" : ""),
+      tickFmt: (v) => Number(v).toFixed(2),
+      fmt: (v, star) => fmtNum(v, 3, star),
+    },
+    {
+      col: "gauch_log_nse",
+      label: "logNSE",
+      title: "Median NSE on log(max(Q, 0) + 1e-5) emphasizing low-flow performance (ideal = 1)",
+      defaultAsc: false,
+      direction: "higher",
+      optimalityText: "Higher is better \u2191",
+      rawFmt: (v, star) => Number(v).toFixed(3) + (star ? "*" : ""),
+      tickFmt: (v) => Number(v).toFixed(2),
+      fmt: (v, star) => fmtNum(v, 3, star),
+    },
+    {
+      col: "gauch_log_kge",
+      label: "logKGE",
+      title: "Median KGE on log(max(Q, 0) + 1e-5) emphasizing low-flow performance (ideal = 1)",
       defaultAsc: false,
       direction: "higher",
       optimalityText: "Higher is better \u2191",
@@ -676,6 +734,7 @@
     das2023_tide: 2023,
     rasiya_koya_tft: 2023,
     nh_tft_rerun: 2023,
+    hy2dl_hbv: 2024,
     song_dhbv11p: 2024,
     wang_s4dft: 2025,
     wang2025_s4d: 2025,
@@ -716,7 +775,7 @@
     const paradigm = String(row.paradigm || "").toLowerCase();
     const name = String(row.model_name || "").toLowerCase();
     if (
-      ["dhbv", "\u03b4hbv", "mlp_hbv", "mlp-hbv", "16hbv", "dpl"].some(
+      ["dhbv", "\u03b4hbv", "mlp_hbv", "mlp-hbv", "16hbv", "dpl", "hy2dl"].some(
         (t) => fid.includes(t) || name.includes(t)
       )
     ) {
@@ -1353,12 +1412,21 @@
 
   const METRIC_PRESETS = {
     all: {
-      label: "All 12 Metrics",
+      label: "Full 14 (+ Summary)",
       cols: GAUCH_METRIC_COLUMNS.map((c) => c.col),
     },
     core: {
       label: "Core Metrics",
-      cols: ["primary_ranking_nse", "mean_nse", "med_kge", "gauch_fhv", "nse_le_0"],
+      cols: [
+        "primary_ranking_nse",
+        "mean_nse",
+        "med_kge",
+        "mean_kge",
+        "gauch_log_nse",
+        "gauch_log_kge",
+        "gauch_fhv",
+        "nse_le_0",
+      ],
     },
     efficiency: {
       label: "Efficiency & Bias",
@@ -1366,6 +1434,9 @@
         "primary_ranking_nse",
         "mean_nse",
         "med_kge",
+        "mean_kge",
+        "gauch_log_nse",
+        "gauch_log_kge",
         "gauch_pearson_r",
         "gauch_alpha_nse",
         "gauch_beta_nse",
@@ -1412,6 +1483,14 @@
     if (col === "med_kge") {
       if (n <= 0) return 0;
       return Math.max(5, Math.min(100, ((n - 0.30) / 0.54) * 100));
+    }
+    if (col === "mean_kge") {
+      if (n <= 0) return 0;
+      return Math.max(5, Math.min(100, ((n - 0.25) / 0.56) * 100));
+    }
+    if (col === "gauch_log_nse" || col === "gauch_log_kge") {
+      if (n <= 0) return 0;
+      return Math.max(5, Math.min(100, ((n - 0.15) / 0.80) * 100));
     }
     if (col === "gauch_pearson_r") {
       if (n <= 0) return 0;
@@ -1530,6 +1609,37 @@
     const activeFigFile = `figure_${lb.id}.png`;
     const isFigHidden = STATE.figureMode === "hidden";
     const visibleMetrics = getActiveMetricColumns(activeSortCol);
+    const allLocalPreviews = loadLocalPreviews();
+    const boardPreviewCount = allLocalPreviews.filter(
+      (p) => p.entry && p.entry.leaderboard_id === lb.id
+    ).length;
+
+    const localPreviewBannerHtml =
+      allLocalPreviews.length > 0
+        ? `
+      <div class="local-preview-banner" id="local-preview-banner" role="status">
+        <div class="local-preview-banner-body">
+          <div class="local-preview-banner-title">
+            <span class="local-preview-badge">LOCAL PREVIEW &middot; PENDING PR</span>
+            <span>${allLocalPreviews.length} local preview ${allLocalPreviews.length === 1 ? "entry" : "entries"} active (${boardPreviewCount} on this table)</span>
+          </div>
+          <div>
+            Local Preview Only &mdash; Your preview model is stored only in this browser so you can inspect its rank, metrics, and hydrographs right away. Other visitors cannot see it, and clearing browser storage or switching devices will remove it. To publish permanently to the official leaderboard, submit a GitHub PR below.
+          </div>
+        </div>
+        <div class="local-preview-banner-actions">
+          <button type="button" class="btn-primary-cta" data-preview-submit-pr="1" style="padding: 0.36rem 0.75rem; font-size: 0.76rem;">
+            Submit Official GitHub PR
+          </button>
+          <button type="button" class="btn-secondary" data-preview-download-manifest="1" style="padding: 0.34rem 0.65rem; font-size: 0.76rem;">
+            Download Manifest JSON
+          </button>
+          <button type="button" class="btn-danger-ghost" data-preview-clear-all="1">
+            Clear Preview
+          </button>
+        </div>
+      </div>`
+        : "";
 
     const presetBtnsHtml = Object.entries(METRIC_PRESETS)
       .map(
@@ -1568,6 +1678,15 @@
         </div>
 
         <div class="lb-header-controls">
+          <a
+            href="/api/figures/${esc(activeFigFile)}"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn-row-link"
+            title="Open static publication PNG figure (${esc(activeFigFile)})"
+          >
+            Static PNG &#8599;
+          </a>
           <button
             type="button"
             data-fig-toggle="1"
@@ -1578,6 +1697,7 @@
         </div>
       </div>
 
+      ${localPreviewBannerHtml}
       ${!isFigHidden ? renderInteractiveLeaderboardChart(lb, filteredRows, activeSortCol) : ""}
 
       <div class="metric-selector-bar">
@@ -1699,8 +1819,20 @@
             </td>`;
         }).join("");
 
+        const isPreview = Boolean(row.is_local_preview);
+        const previewBadgeAndActions = isPreview
+          ? `<div style="margin-top: 0.28rem;">
+              <span class="local-preview-badge">LOCAL PREVIEW &middot; PENDING PR</span>
+              <div class="preview-row-actions">
+                <button type="button" class="btn-preview-inline" data-preview-submit-row="${esc(row.entry_id)}">Submit Official GitHub PR</button>
+                <button type="button" class="btn-preview-inline" data-preview-download-row="${esc(row.entry_id)}">Download Manifest JSON</button>
+                <button type="button" class="btn-preview-inline" data-preview-clear-row="${esc(row.entry_id)}">Clear Preview</button>
+              </div>
+            </div>`
+          : "";
+
         html += `
-          <tr class="${isSelected ? "selected-row" : ""} ${isComparing ? "comparing-row" : ""}" id="row-${esc(row.entry_id)}">
+          <tr class="${isSelected ? "selected-row" : ""} ${isComparing ? "comparing-row" : ""} ${isPreview ? "local-preview-row" : ""}" id="row-${esc(row.entry_id)}">
             <td class="sticky-col-rank">
               <span class="rank-badge ${rankClass}">${row.rank}</span>
             </td>
@@ -1709,12 +1841,13 @@
                 <button
                   type="button"
                   class="model-name-btn"
-                  data-family-id="${esc(row.family_id)}"
-                  title="${row.asterisk_reason ? esc(row.asterisk_reason) + " — Click to inspect or edit Model Family" : "Inspect or edit Model Family"}"
+                  data-inspect-entry="${esc(row.entry_id)}"
+                  title="${row.asterisk_reason ? esc(row.asterisk_reason) + " — Click to inspect 531-basin CDF & regional breakdown" : "Click to inspect 531-basin CDF & regional breakdown"}"
                 >
                   ${esc(row.model_name)}
                 </button>
                 ${row.citation ? `<span class="model-cite-inline">${esc(row.citation)}</span>` : ""}
+                ${previewBadgeAndActions}
               </div>
             </td>
             <td>
@@ -1887,11 +2020,48 @@
       });
     });
 
-    // Bind Family name clicks -> open Family link editor
-    panel.querySelectorAll("[data-family-id]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        openFamilyModal(btn.getAttribute("data-family-id"));
-      });
+    // Bind Local Preview Banner & Row Actions
+    const getPreviewRecordById = (eid) => {
+      const list = loadLocalPreviews();
+      if (eid) return list.find((p) => p.entry && p.entry.entry_id === eid) || null;
+      return (
+        list.find((p) => p.entry && p.entry.leaderboard_id === lb.id) ||
+        list[list.length - 1] ||
+        null
+      );
+    };
+    const openPreviewInStep4 = (eid) => {
+      const rec = getPreviewRecordById(eid);
+      if (rec) loadPreviewRecordIntoContribute(rec);
+      setContribStep(4);
+      switchMainTab("contribute");
+    };
+    const downloadPreviewManifest = (eid) => {
+      const rec = getPreviewRecordById(eid);
+      if (rec && rec.manifest) {
+        downloadManifestJsonObject(rec.manifest);
+      } else {
+        exportPullRequestManifest();
+      }
+    };
+
+    panel.querySelectorAll("[data-preview-submit-pr]").forEach((btn) => {
+      btn.addEventListener("click", () => openPreviewInStep4(null));
+    });
+    panel.querySelectorAll("[data-preview-download-manifest]").forEach((btn) => {
+      btn.addEventListener("click", () => downloadPreviewManifest(null));
+    });
+    panel.querySelectorAll("[data-preview-clear-all]").forEach((btn) => {
+      btn.addEventListener("click", () => removeLocalPreview(null));
+    });
+    panel.querySelectorAll("[data-preview-submit-row]").forEach((btn) => {
+      btn.addEventListener("click", () => openPreviewInStep4(btn.getAttribute("data-preview-submit-row")));
+    });
+    panel.querySelectorAll("[data-preview-download-row]").forEach((btn) => {
+      btn.addEventListener("click", () => downloadPreviewManifest(btn.getAttribute("data-preview-download-row")));
+    });
+    panel.querySelectorAll("[data-preview-clear-row]").forEach((btn) => {
+      btn.addEventListener("click", () => removeLocalPreview(btn.getAttribute("data-preview-clear-row")));
     });
 
     // Bind Hydrograph "+ Compare" toggle buttons
@@ -2098,27 +2268,30 @@
       STATE.inspectedEntryId = entryId;
       renderActiveLeaderboardPanel();
 
-      let data = null;
-      const res = await fetch(`/api/entry/${encodeURIComponent(entryId)}/basins`);
-      if (res.ok) {
-        data = await parseApiJson(res);
-      } else {
-        // Fallback to local STATE.allLeaderboards if edge isolate hasn't synced yet
-        let foundRow = null;
-        for (const lb of STATE.allLeaderboards || []) {
-          for (const r of lb.rows || []) {
-            if (r.entry_id === entryId) {
-              foundRow = r;
-              break;
-            }
+      let localFoundRow = null;
+      for (const lb of STATE.allLeaderboards || []) {
+        for (const r of lb.rows || []) {
+          if (r.entry_id === entryId) {
+            localFoundRow = r;
+            break;
           }
-          if (foundRow) break;
         }
-        if (!foundRow) throw new Error(`HTTP ${res.status}`);
+        if (localFoundRow) break;
+      }
+
+      let data = null;
+      if (!localFoundRow || !localFoundRow.is_local_preview) {
+        const res = await fetch(`/api/entry/${encodeURIComponent(entryId)}/basins`);
+        if (res.ok) {
+          data = await parseApiJson(res);
+        }
+      }
+      if (!data) {
+        if (!localFoundRow) throw new Error(`Entry '${entryId}' not found`);
         const hucRows = [];
-        if (foundRow.regional_huc02 && typeof foundRow.regional_huc02 === "object") {
-          for (const hucKey of Object.keys(foundRow.regional_huc02).sort()) {
-            const hd = foundRow.regional_huc02[hucKey] || {};
+        if (localFoundRow.regional_huc02 && typeof localFoundRow.regional_huc02 === "object") {
+          for (const hucKey of Object.keys(localFoundRow.regional_huc02).sort()) {
+            const hd = localFoundRow.regional_huc02[hucKey] || {};
             hucRows.push({
               huc_02: hucKey,
               n_basins: hd.num_basins ?? hd.n_basins ?? 0,
@@ -2130,12 +2303,12 @@
           }
         }
         data = {
-          entry: foundRow,
+          entry: localFoundRow,
           source:
-            Array.isArray(foundRow.per_basin_nse) && foundRow.per_basin_nse.length > 0
+            Array.isArray(localFoundRow.per_basin_nse) && localFoundRow.per_basin_nse.length > 0
               ? "empirical_531_basins"
               : "summary_anchored_distribution",
-          nse_cdf_101: computeLocalQuantiles101(foundRow.per_basin_nse || []),
+          nse_cdf_101: computeLocalQuantiles101(localFoundRow.per_basin_nse || []),
           huc_02_breakdown: hucRows,
         };
       }
@@ -2417,7 +2590,6 @@
                 <th>Source</th>
                 <th>Archive &amp; Code</th>
                 <th style="min-width: 180px;">Leaderboards</th>
-                <th style="text-align: right;">Edit</th>
               </tr>
             </thead>
             <tbody>
@@ -2426,7 +2598,7 @@
     if (filtered.length === 0) {
       html += `
         <tr>
-          <td colspan="6" class="empty-table-cell">
+          <td colspan="5" class="empty-table-cell">
             <div class="empty-table-inner">
               <strong>No matching models</strong>
             </div>
@@ -2483,6 +2655,7 @@
           .map((c) => `<span class="cat-badge">${esc(c)}</span>`)
           .join("")}</div>`;
 
+        const safePaperUrl = sanitizeExternalUrl(fam.paper_url);
         html += `
           <tr class="model-row-colored row-type-${esc(typeInfo.key)}" id="family-row-${esc(fam.family_id)}" title="${esc(typeInfo.label)}${fam.description ? " — " + esc(fam.description) : ""}">
             <td style="font-weight: 600; color: var(--text-primary);">
@@ -2490,8 +2663,8 @@
             </td>
             <td style="font-size: 0.83rem;">
               ${
-                fam.paper_url
-                  ? `<a href="${esc(fam.paper_url)}" target="_blank" rel="noopener noreferrer" style="font-weight: 500; color: var(--accent-primary); text-decoration: none;">${esc(fam.citation || "Reference")} &#8599;</a>`
+                safePaperUrl
+                  ? `<a href="${esc(safePaperUrl)}" target="_blank" rel="noopener noreferrer" style="font-weight: 500; color: var(--accent-primary); text-decoration: none;">${esc(fam.citation || "Reference")} &#8599;</a>`
                   : `<span style="color: var(--text-secondary);">${esc(fam.citation || "—")}</span>`
               }
             </td>
@@ -2506,15 +2679,6 @@
             </td>
             <td>
               ${boardsHtml}
-            </td>
-            <td style="text-align: right;">
-              <button
-                type="button"
-                class="btn-cdf btn-edit-family-card"
-                data-family-id="${esc(fam.family_id)}"
-              >
-                Edit
-              </button>
             </td>
           </tr>
         `;
@@ -2555,16 +2719,10 @@
         selectLeaderboardTab(targetBoard);
       });
     });
-
-    grid.querySelectorAll(".btn-edit-family-card").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        openFamilyModal(btn.getAttribute("data-family-id"));
-      });
-    });
   }
 
   // =========================================================================
-  // 6. Community Contributions Workbench & Family Link Editor Modal
+  // 6. Option C Community Contributions (Preview + Official GitHub PR)
   // =========================================================================
   function inferForcingCategoryFromInputs(forcingStr) {
     const s = String(forcingStr || "").toLowerCase();
@@ -2580,7 +2738,7 @@
       return "lagged_streamflow";
     }
     let count = 0;
-    for (const prod of ["daymet", "maurer", "nldas", "era5", "mswep", "chirps", "gldas"]) {
+    for (const prod of ["daymet", "maurer", "nldas"]) {
       if (s.includes(prod)) count += 1;
     }
     if (count === 1) return "single_camels";
@@ -2638,76 +2796,18 @@
           <span>Use the canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> basin splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target-basin leakage.</span>
         </li>
         <li>
-          <strong>Forcing Inputs</strong>
-          <span>Declare all meteorological and lagged streamflow inputs used; the submission system automatically places the model into the matching forcing category (Single CAMELS, Multi-CAMELS, Lagged Streamflow, or Freeform).</span>
+          <strong>Forcing Inputs &amp; 14 Canonical Metrics</strong>
+          <span>Declare all meteorological and lagged streamflow inputs used. Models are scored across the 14 canonical Gauch et al. (2023) deterministic metrics including <code>logNSE</code> and <code>logKGE</code> (<code>mm/day</code> specific discharge).</span>
         </li>
         <li>
-          <strong>Open Archive &amp; Code</strong>
-          <span>Provide deterministic daily predictions (in mm/day) archived on Zenodo/HydroShare and code on GitHub (if available).</span>
+          <strong>Instant Preview + Open GitHub PR</strong>
+          <span>Step 1&ndash;3 previews remain strictly local in your browser (<code>localStorage</code>). Permanent leaderboard publication requires a DOI-minted prediction archive, codebase URL (or Closed-Source declaration), and automated CI verification via GitHub.</span>
         </li>
       `,
       chk1Html: `Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)`,
       chk2Html: `Canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target leakage`,
       chk3Html: `Selected forcing inputs include all meteorological and lagged streamflow inputs used`,
       chk4Html: `Deterministic daily predictions in mm/day across the 531 CAMELS-US basins`,
-    },
-    caravan: {
-      title: "Caravan",
-      defaultForcing: "ERA5-Land (Caravan Standard)",
-      spatialOptions: [
-        { value: "gauged", label: "Gauged Simulation" },
-        { value: "pub", label: "Global k-Fold PUB (Ungauged Basins)" },
-        { value: "pur", label: "Continental / Regional PUR (Ungauged Regions)" },
-      ],
-      forcingGroups: [
-        {
-          label: "Single Caravan Forcing",
-          options: ["ERA5-Land (Caravan Standard)"],
-        },
-        {
-          label: "Multiple Global Forcings",
-          options: [
-            "ERA5-Land + MSWEP",
-            "ERA5-Land + CHIRPS",
-            "ERA5-Land + GLDAS",
-            "ERA5-Land + MSWEP + CHIRPS",
-          ],
-        },
-        {
-          label: "With Lagged Streamflow (Gauged Only)",
-          options: [
-            "ERA5-Land + Lagged Streamflow",
-            "ERA5-Land + MSWEP + Lagged Streamflow",
-            "ERA5-Land + CHIRPS + Lagged Streamflow",
-          ],
-        },
-        {
-          label: "Freeform (Other Global / Local Forcings)",
-          options: ["Freeform (None of the above)"],
-        },
-      ],
-      rulesHtml: `
-        <li>
-          <strong>Blind Evaluation Window</strong>
-          <span>Select architectures, hyperparameters, and early stopping strictly on the Caravan calibration period; evaluate blindly on the held-out evaluation period.</span>
-        </li>
-        <li>
-          <strong>Canonical Spatial Folds</strong>
-          <span>Use the canonical Caravan global k-fold PUB and continental/regional PUR basin splits with zero target-basin leakage.</span>
-        </li>
-        <li>
-          <strong>Forcing Inputs</strong>
-          <span>Declare all meteorological and lagged streamflow inputs used; the submission system automatically places the model into the matching forcing category (Single Forcing, Multi-Forcing, Lagged Streamflow, or Freeform).</span>
-        </li>
-        <li>
-          <strong>Open Archive &amp; Code</strong>
-          <span>Provide deterministic daily predictions (in mm/day) archived on Zenodo/HydroShare and code on GitHub (if available).</span>
-        </li>
-      `,
-      chk1Html: `Blind Caravan evaluation holdout (hyperparameters and early stopping selected strictly on calibration period)`,
-      chk2Html: `Canonical Caravan global PUB and regional PUR splits with zero target leakage`,
-      chk3Html: `Selected forcing inputs include all meteorological and lagged streamflow inputs used`,
-      chk4Html: `Deterministic daily predictions in mm/day across the Caravan benchmark basins`,
     },
   };
 
@@ -2772,7 +2872,6 @@
     const lbInput = document.getElementById("sub-leaderboard-id");
     const sp = spEl ? spEl.value : "gauged";
 
-    // Disable Lagged Streamflow options when PUB or PUR is selected
     if (foEl) {
       const isUngauged = sp === "pub" || sp === "pur";
       foEl.querySelectorAll("option").forEach((opt) => {
@@ -2821,479 +2920,901 @@
       }
       syncNewFamilyNameVisibility();
     }
+  }
 
-    const lbOptsHtml = STATE.allLeaderboards
-      .map(
-        (lb) =>
-          `<option value="${esc(lb.id)}">${esc(lb.title)}</option>`
-      )
-      .join("");
-
-    const cmtScopeSelect = document.getElementById("cmt-target-scope");
-    if (cmtScopeSelect) {
-      cmtScopeSelect.innerHTML =
-        `<option value="general">General / All Leaderboards</option>` +
-        `<option value="table_2_registry">Participating Models</option>` +
-        lbOptsHtml;
+  function normalizeClientUrl(raw, kind) {
+    const s = String(raw || "").trim();
+    if (!s) return "";
+    if (/^https?:\/\//i.test(s)) return sanitizeExternalUrl(s);
+    if (kind === "zenodo") {
+      if (s.startsWith("10.")) return sanitizeExternalUrl(`https://doi.org/${s}`);
+      if (/^doi:/i.test(s)) return sanitizeExternalUrl(`https://doi.org/${s.replace(/^doi:\s*/i, "")}`);
+      if (/^\d{5,}$/.test(s)) return sanitizeExternalUrl(`https://doi.org/10.5281/zenodo.${s}`);
     }
-
-    const cmtScopeFilter = document.getElementById("comment-scope-filter");
-    if (cmtScopeFilter) {
-      cmtScopeFilter.innerHTML =
-        `<option value="all">All Leaderboards &amp; Scopes</option>` +
-        `<option value="general">General / All Leaderboards</option>` +
-        `<option value="table_2_registry">Participating Models</option>` +
-        lbOptsHtml;
+    if (kind === "github") {
+      if (s.startsWith("github.com/")) return sanitizeExternalUrl(`https://${s}`);
+      if (/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/.test(s)) {
+        return sanitizeExternalUrl(`https://github.com/${s.replace(/^@/, "")}`);
+      }
     }
+    return sanitizeExternalUrl(s);
   }
 
-  function openFamilyModal(familyId) {
-    const modal = document.getElementById("modal-family-editor");
-    if (!modal) return;
-
-    const fam = familyId ? STATE.families.find((f) => f.family_id === familyId) : null;
-    document.getElementById("fam-edit-id").value = fam ? fam.family_id : "";
-    document.getElementById("fam-edit-name").value = fam ? fam.name : "";
-    const typeInfo = classifyModelType(fam && fam.paradigm ? fam.paradigm : "Machine learning");
-    document.getElementById("fam-edit-paradigm").value = typeInfo.label;
-    document.getElementById("fam-edit-category").value = fam
-      ? formatSourceCategory(fam.provenance_category).replace("*", "")
-      : "Contribution";
-    document.getElementById("fam-edit-github").value = fam ? fam.github_url || "" : "";
-    document.getElementById("fam-edit-zenodo").value = fam ? fam.zenodo_doi || fam.zenodo_url || "" : "";
-    document.getElementById("fam-edit-hydroshare").value = fam ? fam.hydroshare_url || "" : "";
-    document.getElementById("fam-edit-citation").value = fam ? fam.citation || "" : "";
-    document.getElementById("fam-edit-paper-url").value = fam ? fam.paper_url || "" : "";
-    document.getElementById("fam-edit-desc").value = fam ? fam.description || "" : "";
-
-    modal.classList.add("open");
+  function isClosedSourceSelected() {
+    const s1 = document.getElementById("sub-closed-source");
+    const s4 = document.getElementById("step4-closed-source");
+    return Boolean((s1 && s1.checked) || (s4 && s4.checked));
   }
 
-  function closeFamilyModal() {
-    const modal = document.getElementById("modal-family-editor");
-    if (modal) modal.classList.remove("open");
+  function setClosedSourceSelection(checked) {
+    const val = Boolean(checked);
+    ["sub-closed-source", "step4-closed-source"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.checked = val;
+    });
+    ["sub-github-url", "step4-code-url"].forEach((id) => {
+      const inp = document.getElementById(id);
+      if (!inp) return;
+      inp.disabled = val;
+      if (val) {
+        inp.placeholder = "Closed-Source / Proprietary (no public code URL)";
+      } else {
+        inp.placeholder = "https://github.com/owner/repo";
+      }
+    });
   }
 
-  async function updateLiveRepoBadgePreview() {
-    const gh = document.getElementById("sub-github-url").value.trim();
-    const zn = document.getElementById("sub-zenodo-doi").value.trim();
+  function updateLiveRepoBadgePreview() {
+    const gh = ((document.getElementById("sub-github-url") || {}).value || "").trim();
+    const zn = ((document.getElementById("sub-zenodo-doi") || {}).value || "").trim();
+    const closedSource = isClosedSourceSelected();
     const previewEl = document.getElementById("live-repo-badge-preview");
     if (!previewEl) return;
 
-    if (!gh && !zn) {
+    const safeCode = closedSource ? "" : normalizeClientUrl(gh, "github");
+    const safeArch = normalizeClientUrl(zn, "zenodo");
+    if (!safeCode && !safeArch && !closedSource) {
+      previewEl.style.display = "none";
       previewEl.innerHTML = "";
       return;
     }
 
+    const rowPreview = {
+      data_archive_url: safeArch,
+      zenodo_doi: zn.startsWith("10.") ? zn : "",
+      code_url: safeCode,
+      closed_source: closedSource,
+      is_closed_source: closedSource,
+    };
+    previewEl.style.display = "flex";
+    previewEl.innerHTML =
+      `<span style="font-weight: 600; color: var(--text-secondary);">Validated Link Badges:</span>` +
+      renderDataArchiveButton(rowPreview) +
+      renderCodebaseButton(rowPreview);
+  }
+
+  function buildHydromipPackageCliSnippet() {
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const regime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
+    return (
+      `pip install git+https://github.com/grey-nearing/camels-us-mip.git\n` +
+      `hydromip package --input ./your_predictions.nc --output ./camels_submission.zarr.zip \\\n` +
+      `  --forcing "${forcing}" --regime ${regime}`
+    );
+  }
+
+  function renderDiagnosticCard(containerId, title, detailLines, isError = false, showCliSnippet = true) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!title && (!detailLines || detailLines.length === 0)) {
+      el.hidden = true;
+      el.innerHTML = "";
+      return;
+    }
+    const snippet = showCliSnippet ? buildHydromipPackageCliSnippet() : "";
+    const itemsHtml = (detailLines || [])
+      .map((line) => `<li>${esc(line)}</li>`)
+      .join("");
+    el.hidden = false;
+    el.className = `diagnostic-card ${isError ? "is-error" : !showCliSnippet ? "is-info" : ""}`;
+    el.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:0.5rem; flex-wrap:wrap;">
+        <strong>${esc(title)}</strong>
+        ${showCliSnippet ? '<button type="button" class="btn-row-link" data-copy-cli-snippet="1">Copy CLI Snippet</button>' : ""}
+      </div>
+      ${itemsHtml ? `<ul style="margin:0.4rem 0 0; padding-left:1.2rem; line-height:1.45;">${itemsHtml}</ul>` : ""}
+      ${
+        showCliSnippet
+          ? `<div style="font-size:0.76rem; color:var(--color-ink-2); margin-top:0.5rem;">
+               Standardize predictions locally before re-uploading or attaching to a GitHub PR:
+             </div>
+             <pre class="cli-snippet-box">${esc(snippet)}</pre>`
+          : ""
+      }
+    `;
+    const copyBtn = el.querySelector("[data-copy-cli-snippet]");
+    if (copyBtn) {
+      copyBtn.addEventListener("click", async () => {
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(snippet);
+          }
+          copyBtn.textContent = "Copied!";
+          setTimeout(() => {
+            copyBtn.textContent = "Copy CLI Snippet";
+          }, 1800);
+        } catch (_e) {
+          // ignore clipboard denial
+        }
+      });
+    }
+  }
+
+  function setContribStep(stepNum) {
+    const s = Math.max(1, Math.min(4, Number(stepNum) || 1));
+    STATE.contribStep = s;
+    for (let i = 1; i <= 4; i++) {
+      const sec = document.getElementById(`contrib-step-${i}`);
+      const pill = document.getElementById(`contrib-pill-${i}`);
+      if (sec) sec.hidden = i !== s;
+      if (pill) {
+        pill.classList.toggle("is-active", i === s);
+        pill.classList.toggle("is-done", i < s);
+      }
+    }
+    if (s === 4) {
+      syncStep4UrlInputsAndManifest();
+    }
+  }
+
+  function populateOverrideDropdown(selectId, options, selectedVal, allowNone = false) {
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    const opts = [];
+    if (allowNone) opts.push("");
+    for (const o of Array.isArray(options) ? options : []) {
+      const str = String(o || "").trim();
+      if (str && !opts.includes(str)) opts.push(str);
+    }
+    const chosen = selectedVal ? String(selectedVal).trim() : "";
+    if (chosen && !opts.includes(chosen)) opts.push(chosen);
+    sel.innerHTML = opts
+      .map((val) => {
+        const label = val || "(none — single deterministic run)";
+        return `<option value="${esc(val)}"${val === chosen ? " selected" : ""}>${esc(label)}</option>`;
+      })
+      .join("");
+  }
+
+  function renderSanityHydrographSvgGrid(sampleBasins) {
+    const container = document.getElementById("step2-sanity-plots");
+    if (!container) return;
+    const basins = Array.isArray(sampleBasins) ? sampleBasins.slice(0, 3) : [];
+    if (basins.length === 0) {
+      container.innerHTML = "";
+      return;
+    }
+
+    const cardsHtml = basins
+      .map((b) => {
+        const qobs = Array.isArray(b.qobs) ? b.qobs : [];
+        const qsim = Array.isArray(b.qsim) ? b.qsim : [];
+        const dates = Array.isArray(b.dates) ? b.dates : [];
+        const n = Math.min(qobs.length, qsim.length);
+        if (n < 2) {
+          return `
+            <div class="sanity-basin-card">
+              <div class="sanity-basin-card-head">
+                <strong>USGS ${esc(b.basin_id || "?")}</strong>
+                <span>Insufficient series</span>
+              </div>
+            </div>`;
+        }
+        // Downsample to <= 180 points for crisp lightweight inline SVG
+        const step = Math.max(1, Math.floor(n / 180));
+        const obsPts = [];
+        const simPts = [];
+        let maxV = 1e-3;
+        for (let i = 0; i < n; i += step) {
+          const vo = Number(qobs[i]);
+          const vs = Number(qsim[i]);
+          if (Number.isFinite(vo) && vo > maxV) maxV = vo;
+          if (Number.isFinite(vs) && vs > maxV) maxV = vs;
+          obsPts.push([i, vo]);
+          simPts.push([i, vs]);
+        }
+        const W = 250;
+        const H = 92;
+        const padL = 6;
+        const padR = 6;
+        const padT = 8;
+        const padB = 10;
+        const xMap = (idx) => padL + (idx / Math.max(1, n - 1)) * (W - padL - padR);
+        const yMap = (v) =>
+          padT + (1 - Math.max(0, Math.min(1, v / maxV))) * (H - padT - padB);
+        const toPolyline = (pairs) =>
+          pairs
+            .filter(([, v]) => Number.isFinite(v))
+            .map(([idx, v]) => `${xMap(idx).toFixed(1)},${yMap(v).toFixed(1)}`)
+            .join(" ");
+
+        const nseStr =
+          b.nse !== null && b.nse !== undefined && Number.isFinite(Number(b.nse))
+            ? `NSE ${Number(b.nse).toFixed(2)}`
+            : "";
+        const dateSpan =
+          dates.length >= 2 ? `${dates[0]} to ${dates[dates.length - 1]}` : `${n} steps`;
+
+        return `
+          <div class="sanity-basin-card">
+            <div class="sanity-basin-card-head">
+              <strong>USGS ${esc(b.basin_id)}</strong>
+              <span style="color: var(--color-accent); font-weight: 600;">${esc(nseStr)}</span>
+            </div>
+            <div style="font-size:0.68rem; color:var(--color-muted); margin-bottom:0.25rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${esc(b.gauge_name || "")}">
+              ${esc(b.gauge_name || dateSpan)}
+            </div>
+            <svg viewBox="0 0 ${W} ${H}" width="100%" height="92" role="img" aria-label="Sanity plot for basin ${esc(b.basin_id)}" style="display:block; background:#ffffff; border:1px solid var(--color-rule); border-radius:4px;">
+              <polyline fill="none" stroke="#16191d" stroke-width="1.3" points="${toPolyline(obsPts)}" />
+              <polyline fill="none" stroke="#0284c7" stroke-width="1.2" opacity="0.9" points="${toPolyline(simPts)}" />
+            </svg>
+            <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:0.64rem; color:var(--color-muted); margin-top:0.2rem;">
+              <span><span style="color:#16191d;">&#9644;</span> Obs &nbsp;<span style="color:#0284c7;">&#9644;</span> Pred</span>
+              <span>max ${maxV.toFixed(1)} mm/d</span>
+            </div>
+          </div>`;
+      })
+      .join("");
+
+    container.innerHTML = `
+      <div style="font-size:0.78rem; font-weight:600; color:var(--color-ink); margin-top:0.75rem;">
+        3-Basin Observed vs. Predicted Sanity Hydrographs
+      </div>
+      <div class="sanity-plot-grid">${cardsHtml}</div>
+    `;
+  }
+
+  function renderInspectResponseStep2(inspectData) {
+    STATE.previewInspectData = inspectData;
+    const schema = inspectData.schema || {};
+    const sanity = inspectData.sanity || {};
+    const fmt = inspectData.format || "unknown";
+    const recipeSrc = inspectData.recipe_source || "deterministic_tier1";
+    const tierBadge = document.getElementById("step2-tier-badge");
+    const summaryEl = document.getElementById("step2-schema-summary");
+    const badgesEl = document.getElementById("step2-sanity-badges");
+
+    const tierLabel =
+      recipeSrc === "llm_tier2"
+        ? "Tier 2 Schema-Recipe"
+        : recipeSrc === "user_override"
+        ? "Manual Override"
+        : "Tier 1 Deterministic";
+
+    if (tierBadge) tierBadge.textContent = `${tierLabel} · ${fmt}`;
+    if (summaryEl) {
+      summaryEl.innerHTML =
+        `Detected <code>${esc(fmt)}</code> schema via <strong>${esc(tierLabel)}</strong>. ` +
+        `Verify variable/dimension mappings below before scoring.`;
+    }
+
+    const availVars = schema.available_vars || (schema.var ? [schema.var] : ["qsim"]);
+    const availDims =
+      schema.available_dims ||
+      [schema.basin_dim, schema.time_dim, schema.member_dim].filter(Boolean);
+    populateOverrideDropdown("override-var", availVars, schema.var || availVars[0] || "qsim", false);
+    populateOverrideDropdown("override-basin-dim", availDims, schema.basin_dim || "basin", false);
+    populateOverrideDropdown("override-time-dim", availDims, schema.time_dim || "date", false);
+    populateOverrideDropdown("override-member-dim", availDims, schema.member_dim || "", true);
+
+    const nMatched = Number(sanity.n_basins_matched ?? 0);
+    const nExpected = Number(sanity.n_basins_expected ?? 531);
+    const nanCount = Number(sanity.nan_count ?? 0);
+    const dStart = sanity.date_start || "";
+    const dEnd = sanity.date_end || "";
+    const ratio = sanity.median_sim_obs_ratio;
+    const unitWarn = sanity.unit_warning || "";
+
+    const basinOk = nMatched === nExpected && nExpected === 531;
+    const nanOk = nanCount === 0;
+    const winOk = dStart === "1989-10-01" && dEnd === "1999-09-30";
+    const ratioNum = ratio !== null && ratio !== undefined ? Number(ratio) : null;
+    const unitBad =
+      Boolean(unitWarn) ||
+      (ratioNum !== null && Number.isFinite(ratioNum) && (ratioNum > 10 || ratioNum < 0.1));
+
+    const badgeList = [
+      {
+        cls: basinOk ? "is-ok" : "is-fail",
+        text: `${nMatched}/${nExpected} basins`,
+      },
+      {
+        cls: nanOk ? "is-ok" : "is-warn",
+        text: `${nanCount} NaNs`,
+      },
+      {
+        cls: winOk ? "is-ok" : "is-warn",
+        text: dStart && dEnd ? `${dStart} to ${dEnd}` : "Date window unverified",
+      },
+      {
+        cls: unitBad ? "is-warn" : "is-ok",
+        text: unitWarn
+          ? `Unit Warning: ${unitWarn}`
+          : ratioNum !== null && Number.isFinite(ratioNum)
+          ? `Sim/Obs ratio ${ratioNum.toFixed(2)}x (mm/day OK)`
+          : "Units checked",
+      },
+    ];
+    if (badgesEl) {
+      badgesEl.innerHTML = badgeList
+        .map((b) => `<span class="sanity-badge ${b.cls}">${esc(b.text)}</span>`)
+        .join("");
+    }
+
+    const diagnostics = Array.isArray(sanity.diagnostics) ? [...sanity.diagnostics] : [];
+    if (unitBad && !unitWarn) {
+      diagnostics.push(
+        `Median simulated/observed ratio is ${ratioNum.toFixed(2)}x — predictions may be in cfs or m³/s instead of specific discharge (mm/day).`
+      );
+    }
+    if (!basinOk || !winOk || sanity.checks_passed === false || diagnostics.length > 0) {
+      const checksPassed = sanity.checks_passed !== false && basinOk && winOk && !unitBad;
+      renderDiagnosticCard(
+        "step2-diagnostic-card",
+        checksPassed ? "Sanity Diagnostics" : "Physical Sanity Check Requires Attention",
+        diagnostics,
+        sanity.checks_passed === false,
+        !checksPassed
+      );
+    } else {
+      renderDiagnosticCard("step2-diagnostic-card", "", [], false, false);
+    }
+
+    renderSanityHydrographSvgGrid(inspectData.sample_basins || []);
+    setContribStep(2);
+  }
+
+  function getConfirmedRecipeFromStep2() {
+    return {
+      var: ((document.getElementById("override-var") || {}).value || "").trim(),
+      basin_dim: ((document.getElementById("override-basin-dim") || {}).value || "").trim(),
+      time_dim: ((document.getElementById("override-time-dim") || {}).value || "").trim(),
+      member_dim: ((document.getElementById("override-member-dim") || {}).value || "").trim() || null,
+    };
+  }
+
+  async function inspectPreviewSubmission(isOverrideReinspect = false) {
+    const statusEl = document.getElementById("inspect-status-msg");
+    const step1Diag = document.getElementById("step1-diagnostic-card");
+    if (step1Diag) step1Diag.hidden = true;
+
+    const lbId = syncContributeTargetLeaderboard();
+    const spatialRegime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
+    const rawArchive = ((document.getElementById("sub-zenodo-doi") || {}).value || "").trim();
+    const archiveUrl = normalizeClientUrl(rawArchive, "zenodo");
+    const file = STATE.uploadedFile;
+
+    if (!file && !archiveUrl) {
+      if (statusEl) {
+        statusEl.textContent = "Please attach a hydrograph file (.nc, .zarr.zip, .csv, .parquet, .npz) OR paste a valid archive DOI/URL.";
+        statusEl.style.color = "var(--status-danger)";
+      }
+      return;
+    }
+    if (!modelName) {
+      if (statusEl) {
+        statusEl.textContent = "Please enter a Model Name before inspecting.";
+        statusEl.style.color = "var(--status-danger)";
+      }
+      return;
+    }
+
+    for (const chkId of ["chk-rule-1", "chk-rule-2", "chk-rule-3", "chk-rule-4"]) {
+      const chk = document.getElementById(chkId);
+      if (chk && !chk.checked) {
+        if (statusEl) {
+          statusEl.textContent = "Please confirm all benchmark compliance checkboxes before inspecting.";
+          statusEl.style.color = "var(--status-danger)";
+        }
+        return;
+      }
+    }
+
+    const btn = document.getElementById("btn-preview-inspect");
+    if (btn) btn.disabled = true;
+    if (statusEl) {
+      statusEl.textContent = file
+        ? `Inspecting '${file.name}' schema and 531-basin physical sanity...`
+        : "Fetching remote archive metadata and inspecting hydrograph schema...";
+      statusEl.style.color = "var(--color-ink-2)";
+    }
+
     try {
-      const res = await fetch("/api/validate-links", {
+      const recipeOverride = isOverrideReinspect ? getConfirmedRecipeFromStep2() : null;
+      let res;
+      if (file) {
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("leaderboard_id", lbId);
+        fd.append("spatial_regime", spatialRegime);
+        fd.append("forcing", forcing);
+        fd.append("model_name", modelName);
+        if (archiveUrl) fd.append("archive_url", archiveUrl);
+        if (recipeOverride) fd.append("recipe_override", JSON.stringify(recipeOverride));
+        res = await fetch("/api/preview/inspect", { method: "POST", body: fd });
+      } else {
+        res = await fetch("/api/preview/inspect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            archive_url: archiveUrl,
+            leaderboard_id: lbId,
+            spatial_regime: spatialRegime,
+            forcing: forcing,
+            model_name: modelName,
+            ...(recipeOverride ? { recipe_override: recipeOverride } : {}),
+          }),
+        });
+      }
+
+      const payload = await parseApiJson(res);
+      if (!res.ok) {
+        const msg = payload.error || payload.detail || `HTTP ${res.status}`;
+        if (payload.code === "SCORER_UNCONFIGURED" || res.status === 503) {
+          if (statusEl) {
+            statusEl.textContent = msg;
+            statusEl.style.color = "var(--status-warning)";
+          }
+          renderDiagnosticCard(
+            "step1-diagnostic-card",
+            "Live Scoring Backend Unavailable on This Deployment — Use GitHub PR Submission",
+            [
+              msg,
+              "You can package & validate locally with `hydromip package` or jump straight to Step 4 to submit your official GitHub PR / Issue with your DOI.",
+            ],
+            false
+          );
+          return;
+        }
+        throw new Error(msg);
+      }
+
+      if (statusEl) {
+        statusEl.textContent = "Inspection complete — review Step 2 mappings and sanity plots below.";
+        statusEl.style.color = "var(--status-success)";
+      }
+      renderInspectResponseStep2(payload);
+    } catch (err) {
+      const msg = err && err.message ? err.message : String(err);
+      if (statusEl) {
+        statusEl.textContent = `Inspection failed: ${msg}`;
+        statusEl.style.color = "var(--status-danger)";
+      }
+      renderDiagnosticCard(
+        "step1-diagnostic-card",
+        "Unable to Parse or Validate File",
+        [msg],
+        true
+      );
+    } finally {
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  async function scorePreviewSubmission() {
+    const scoreStatusEl = document.getElementById("score-status-msg");
+    if (!STATE.previewInspectData || !STATE.previewInspectData.preview_token) {
+      if (scoreStatusEl) {
+        scoreStatusEl.textContent = "Please complete Step 1 inspection first.";
+        scoreStatusEl.style.color = "var(--status-danger)";
+      }
+      return;
+    }
+
+    const lbId = syncContributeTargetLeaderboard();
+    const spatialRegime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
+    const familyId = ((document.getElementById("sub-family-id") || {}).value || "").trim();
+    const newFamilyName = ((document.getElementById("sub-new-family-name") || {}).value || "").trim();
+    const paradigm = ((document.getElementById("sub-paradigm") || {}).value || "Machine learning").trim();
+    const category = ((document.getElementById("sub-category") || {}).value || "Contribution").trim();
+    const ensembleInfo = ((document.getElementById("sub-ensemble-info") || {}).value || "").trim();
+    const closedSource = isClosedSourceSelected();
+    const codeUrl = closedSource
+      ? ""
+      : normalizeClientUrl(((document.getElementById("sub-github-url") || {}).value || "").trim(), "github");
+    const archiveUrl = normalizeClientUrl(((document.getElementById("sub-zenodo-doi") || {}).value || "").trim(), "zenodo");
+    const citation = ((document.getElementById("sub-citation") || {}).value || "").trim();
+
+    const recipe = getConfirmedRecipeFromStep2();
+    const btn = document.getElementById("btn-preview-score");
+    if (btn) btn.disabled = true;
+    if (scoreStatusEl) {
+      scoreStatusEl.textContent = "Computing 14 canonical Gauch et al. (2023) metrics (including logNSE & logKGE) across 531 basins...";
+      scoreStatusEl.style.color = "var(--color-ink-2)";
+    }
+
+    try {
+      const res = await fetch("/api/preview/score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ github_url: gh, zenodo_doi: zn }),
+        body: JSON.stringify({
+          preview_token: STATE.previewInspectData.preview_token,
+          recipe,
+          metadata: {
+            leaderboard_id: lbId,
+            spatial_regime: spatialRegime,
+            forcing,
+            model_name: modelName,
+            family_id: familyId || null,
+            new_family_name: familyId ? null : newFamilyName || modelName,
+            paradigm,
+            category,
+            ensemble_info: ensembleInfo,
+            code_url: codeUrl,
+            archive_url: archiveUrl,
+            citation: citation || "Community Contribution (2026)",
+          },
+        }),
       });
-      if (!res.ok) return;
       const data = await parseApiJson(res);
-      const rowPreview = {
-        data_archive_url: data.zenodo?.zenodo_url || "",
-        zenodo_doi: data.zenodo?.zenodo_doi || "",
-        code_url: data.github?.normalized_url || "",
+      if (!res.ok) {
+        throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+      }
+
+      const rawEntry = data.entry || data;
+      const entryId =
+        rawEntry.entry_id ||
+        `local_preview_${Date.now().toString(36)}`;
+      const entry = ensureFlatGauchMetrics({
+        ...rawEntry,
+        entry_id: entryId,
+        leaderboard_id: rawEntry.leaderboard_id || lbId,
+        model_name: rawEntry.model_name || modelName,
+        family_id: rawEntry.family_id || familyId || `preview_${entryId}`,
+        family_name: rawEntry.family_name || newFamilyName || modelName,
+        paradigm: rawEntry.paradigm || paradigm,
+        category: rawEntry.category || category,
+        forcing: rawEntry.forcing || forcing,
+        ensemble_info: rawEntry.ensemble_info || ensembleInfo,
+        code_url: sanitizeExternalUrl(rawEntry.code_url || codeUrl),
+        github_url: sanitizeExternalUrl(rawEntry.github_url || codeUrl),
+        closed_source: closedSource || !codeUrl,
+        is_closed_source: closedSource || !codeUrl,
+        data_archive_url: sanitizeExternalUrl(rawEntry.data_archive_url || archiveUrl),
+        citation: rawEntry.citation || citation || "Community Contribution (2026)",
+        is_local_preview: true,
+        has_preview_hydrographs: Boolean(
+          rawEntry.hydrograph_samples || (STATE.previewInspectData && STATE.previewInspectData.sample_basins)
+        ),
+        hydrograph_samples: rawEntry.hydrograph_samples || null,
+      });
+
+      STATE.activePreviewEntryId = entry.entry_id;
+      const manifest = buildSubmissionManifest(entry, recipe);
+      const previewRecord = {
+        entry,
+        manifest,
+        recipe,
+        sanity: STATE.previewInspectData.sanity || null,
+        sample_basins: STATE.previewInspectData.sample_basins || null,
+        created_at: new Date().toISOString(),
       };
-      previewEl.innerHTML =
-        `<span style="font-weight: 600; color: var(--text-secondary);">Row Buttons Preview:</span>` +
-        renderDataArchiveButton(rowPreview) +
-        renderCodebaseButton(rowPreview);
-    } catch (e) {
-      console.error(e);
-    }
-  }
+      upsertLocalPreview(previewRecord);
+      await loadHydrographIndex();
+      populateStep3Summary(previewRecord);
+      renderLeaderboardTabs();
+      renderActiveLeaderboardPanel();
+      renderFamiliesGrid();
 
-  async function runLiveScoringPreview() {
-    const statusEl = document.getElementById("score-status-msg");
-    const previewCard = document.getElementById("score-preview-card");
-    const sampleKey = document.getElementById("select-sample-archive-key").value;
-    const zenodoDoi = (
-      (document.getElementById("sub-zenodo-doi") &&
-        document.getElementById("sub-zenodo-doi").value) ||
-      ""
-    ).trim();
-    const lbId = syncContributeTargetLeaderboard();
-    const spatialRegime =
-      (document.getElementById("sub-spatial-regime") &&
-        document.getElementById("sub-spatial-regime").value) ||
-      "gauged";
-    const forcing =
-      (document.getElementById("sub-forcing") && document.getElementById("sub-forcing").value) ||
-      "Daymet";
-
-    if (!zenodoDoi && !sampleKey) {
-      statusEl.textContent =
-        "Please enter a Data Archive DOI or URL (Zenodo or HydroShare) above.";
-      statusEl.style.color = "var(--status-danger)";
-      return;
-    }
-
-    statusEl.textContent =
-      "Resolving DOI archive, inspecting file schema, and running deterministic verification...";
-    statusEl.style.color = "var(--accent-primary)";
-
-    const fd = new FormData();
-    if (sampleKey) {
-      fd.append("sample_archive_key", sampleKey);
-    }
-    fd.append("zenodo_doi", zenodoDoi);
-    fd.append("leaderboard_id", lbId);
-    fd.append("spatial_regime", spatialRegime);
-    fd.append("forcing", forcing);
-    fd.append(
-      "model_name",
-      ((document.getElementById("sub-model-name") && document.getElementById("sub-model-name").value) || "").trim()
-    );
-    fd.append(
-      "family_id",
-      ((document.getElementById("sub-family-id") && document.getElementById("sub-family-id").value) || "").trim()
-    );
-    fd.append(
-      "new_family_name",
-      ((document.getElementById("sub-new-family-name") && document.getElementById("sub-new-family-name").value) || "").trim()
-    );
-
-    try {
-      const res = await fetch("/api/score", { method: "POST", body: fd });
-      const data = await parseApiJson(res);
-      if (!res.ok) {
-        throw new Error(data.detail || `Scoring failed (${res.status})`);
-      }
-
-      STATE.lastScoringResult = data;
-      const sc = data.scoring;
-      const s531 = sc.summary_531 || {};
-      const s447 = sc.summary_447 || {};
-
-      const fmeta = data.file_metadata || {};
-      const parserLabel =
-        fmeta.parser_mode === "llm_declarative"
-          ? `LLM Schema Parser (${fmeta.llm_model || "Gemini"})`
-          : fmeta.parser_mode === "llm_python_adapter"
-          ? `LLM Sandboxed Adapter (${fmeta.llm_model || "Gemini"})`
-          : "Fast Deterministic Parser";
-
-      previewCard.classList.add("visible");
-      document.getElementById("preview-headline").textContent =
-        `Verified ${s531.n_basins || 531} Basins (1989-10-01 to 1999-09-30; ${sc.n_seeds || 1} seed${(sc.n_seeds || 1) > 1 ? "s" : ""})`;
-      document.getElementById("preview-subline").textContent =
-        `447-Basin Subset Med NSE: ${s447.median_NSE != null ? Number(s447.median_NSE).toFixed(3) : "N/A"} • ` +
-        `${parserLabel} • SHA-256: ${String(fmeta.sha256 || "").slice(0, 16)}`;
-      document.getElementById("preview-rank-badge").textContent =
-        `Prospective Rank: #${data.prospective_rank} of ${data.total_on_leaderboard}`;
-
-      document.getElementById("prev-ens-nse").textContent =
-        sc.primary_ranking_NSE != null ? Number(sc.primary_ranking_NSE).toFixed(3) : "N/A";
-      document.getElementById("prev-mean-nse").textContent =
-        s531.mean_NSE != null ? Number(s531.mean_NSE).toFixed(3) : "N/A";
-      document.getElementById("prev-med-kge").textContent =
-        s531.median_KGE != null ? Number(s531.median_KGE).toFixed(3) : "N/A";
-      document.getElementById("prev-med-fhv").textContent =
-        s531.median_abs_FHV != null ? Number(s531.median_abs_FHV).toFixed(1) + "%" : "N/A";
-      document.getElementById("prev-nse-le0").textContent =
-        s531.n_NSE_le_0 != null ? String(s531.n_NSE_le_0) : "N/A";
-
-      statusEl.textContent = fmeta.llm_reasoning
-        ? `Verification passed (${parserLabel}): ${fmeta.llm_reasoning}`
-        : "Verification passed: daily hydrographs aligned with 1989-10-01 to 1999-09-30 across 531 basins.";
-      statusEl.style.color = "var(--status-success)";
-    } catch (err) {
-      statusEl.textContent = err.message || String(err);
-      statusEl.style.color = "var(--status-danger)";
-    }
-  }
-
-  async function submitRunToLeaderboard(ev) {
-    ev.preventDefault();
-    const statusEl = document.getElementById("score-status-msg");
-    const sampleKey = document.getElementById("select-sample-archive-key").value;
-    const zenodoDoi = (
-      (document.getElementById("sub-zenodo-doi") &&
-        document.getElementById("sub-zenodo-doi").value) ||
-      ""
-    ).trim();
-    const lbId = syncContributeTargetLeaderboard();
-    const spatialRegime =
-      (document.getElementById("sub-spatial-regime") &&
-        document.getElementById("sub-spatial-regime").value) ||
-      "gauged";
-    const modelName = document.getElementById("sub-model-name").value.trim();
-    const forcing = document.getElementById("sub-forcing").value.trim();
-
-    if (!zenodoDoi && !sampleKey) {
-      statusEl.textContent =
-        "Please enter a Data Archive DOI or URL (Zenodo or HydroShare).";
-      statusEl.style.color = "var(--status-danger)";
-      return;
-    }
-
-    statusEl.textContent = "Resolving DOI archive, verifying hydrographs, and publishing entry...";
-    statusEl.style.color = "var(--accent-primary)";
-
-    const fd = new FormData();
-    if (sampleKey) {
-      fd.append("sample_archive_key", sampleKey);
-    }
-    fd.append("leaderboard_id", lbId);
-    fd.append("spatial_regime", spatialRegime);
-    fd.append("model_name", modelName);
-    fd.append("forcing", forcing);
-    fd.append("category", "Contribution");
-    const selectedFamId = document.getElementById("sub-family-id").value;
-    const rawNewFamName = (
-      (document.getElementById("sub-new-family-name") &&
-        document.getElementById("sub-new-family-name").value) ||
-      ""
-    ).trim();
-    fd.append("family_id", selectedFamId);
-    fd.append("new_family_name", selectedFamId ? "" : rawNewFamName || modelName);
-    fd.append("github_url", document.getElementById("sub-github-url").value);
-    fd.append("zenodo_doi", document.getElementById("sub-zenodo-doi").value);
-    fd.append("citation", document.getElementById("sub-citation").value || "Community Contribution (2026)");
-    fd.append(
-      "paradigm",
-      (document.getElementById("sub-paradigm") && document.getElementById("sub-paradigm").value) ||
-        "Machine learning"
-    );
-
-    try {
-      const res = await fetch("/api/submit", { method: "POST", body: fd });
-      const data = await parseApiJson(res);
-      if (!res.ok) {
-        throw new Error(data.detail || `Submission failed (${res.status})`);
-      }
-
-      recordSessionSubmission(data.entry || null, data.single_entry || null, data.family || null);
-
-      const targetBoard = (data.entry && data.entry.leaderboard_id) || lbId;
-      await loadAllData();
+      // Switch directly to target leaderboard and scroll to highlighted preview row
+      setContribStep(3);
       switchMainTab("leaderboards");
-      selectLeaderboardTab(targetBoard);
-      if (data.entry && data.entry.entry_id) {
-        await inspectEntryBasins(data.entry.entry_id);
-      }
+      selectLeaderboardTab(entry.leaderboard_id);
+      requestAnimationFrame(() => {
+        const targetTr = document.getElementById(`row-${entry.entry_id}`);
+        if (targetTr) {
+          targetTr.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      });
     } catch (err) {
-      statusEl.textContent = err.message || String(err);
-      statusEl.style.color = "var(--status-danger)";
+      const msg = err && err.message ? err.message : String(err);
+      if (scoreStatusEl) {
+        scoreStatusEl.textContent = `Scoring failed: ${msg}`;
+        scoreStatusEl.style.color = "var(--status-danger)";
+      }
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
 
-  function exportPullRequestManifest() {
-    const lbId = syncContributeTargetLeaderboard();
-    const spatialRegime =
-      (document.getElementById("sub-spatial-regime") &&
-        document.getElementById("sub-spatial-regime").value) ||
-      "gauged";
-    const modelName = document.getElementById("sub-model-name").value.trim() || "Unspecified_Model";
-    const forcing = document.getElementById("sub-forcing").value.trim() || "Daymet";
-    const paradigm =
-      (document.getElementById("sub-paradigm") && document.getElementById("sub-paradigm").value) ||
-      "Machine learning";
-    const gh = document.getElementById("sub-github-url").value.trim();
-    const zn = document.getElementById("sub-zenodo-doi").value.trim();
-    const cit = document.getElementById("sub-citation").value.trim();
+  function populateStep3Summary(record) {
+    const entry = (record && record.entry) || {};
+    const noteEl = document.getElementById("step3-summary-note");
+    const stripEl = document.getElementById("step3-metrics-strip");
+    if (noteEl) {
+      noteEl.innerHTML =
+        `Saved <strong>${esc(entry.model_name || "Preview Model")}</strong> locally under key ` +
+        `<code>${esc(LOCAL_PREVIEWS_STORAGE_KEY)}</code> on <code>${esc(entry.leaderboard_id || "")}</code> ` +
+        `(#${esc(entry.rank || "?")} by Median NSE). Only visible in this browser until published via GitHub PR.`;
+    }
+    if (stripEl) {
+      const boxes = [
+        ["Rank", entry.rank ? `#${entry.rank}` : "—"],
+        ["Median NSE", isValidMetric(entry.primary_ranking_nse) ? Number(entry.primary_ranking_nse).toFixed(3) : "N/A"],
+        ["Mean NSE", isValidMetric(entry.mean_nse) ? Number(entry.mean_nse).toFixed(3) : "N/A"],
+        ["Median KGE", isValidMetric(entry.med_kge) ? Number(entry.med_kge).toFixed(3) : "N/A"],
+        ["Mean KGE", isValidMetric(entry.mean_kge) ? Number(entry.mean_kge).toFixed(3) : "N/A"],
+        ["logNSE", isValidMetric(entry.gauch_log_nse) ? Number(entry.gauch_log_nse).toFixed(3) : "N/A"],
+        ["logKGE", isValidMetric(entry.gauch_log_kge) ? Number(entry.gauch_log_kge).toFixed(3) : "N/A"],
+        ["FHV (%)", isValidMetric(entry.gauch_fhv) ? `${Number(entry.gauch_fhv).toFixed(1)}%` : "N/A"],
+        ["NSE ≤ 0", entry.nse_le_0 !== undefined && entry.nse_le_0 !== null ? String(entry.nse_le_0) : "N/A"],
+      ];
+      stripEl.innerHTML = boxes
+        .map(
+          ([lbl, val]) =>
+            `<div class="score-metric-box"><span class="m-label">${esc(lbl)}</span><span class="m-val">${esc(val)}</span></div>`
+        )
+        .join("");
+    }
+  }
 
-    const manifest = {
-      schema_version: "1.0",
-      benchmark: "CAMELS-US MIP (1989-10-01 to 1999-09-30)",
+  function loadPreviewRecordIntoContribute(record) {
+    if (!record || !record.entry) return;
+    const e = record.entry;
+    STATE.activePreviewEntryId = e.entry_id;
+    const setVal = (id, v) => {
+      const el = document.getElementById(id);
+      if (el && v !== undefined && v !== null) el.value = String(v);
+    };
+    setVal("sub-spatial-regime", (e.leaderboard_id || "").split("__")[0] || "gauged");
+    setVal("sub-forcing", e.forcing || "Daymet");
+    setVal("sub-model-name", e.model_name || "");
+    setVal("sub-paradigm", e.paradigm || "Machine learning");
+    setVal("sub-category", e.category || "Contribution");
+    setVal("sub-ensemble-info", e.ensemble_info || "");
+    setVal("sub-github-url", e.code_url || e.github_url || "");
+    setClosedSourceSelection(Boolean(e.closed_source || e.is_closed_source));
+    setVal("sub-zenodo-doi", e.data_archive_url || e.zenodo_doi || "");
+    setVal("sub-citation", e.citation || "");
+    syncContributeTargetLeaderboard();
+    updateLiveRepoBadgePreview();
+    populateStep3Summary(record);
+    syncStep4UrlInputsAndManifest();
+  }
+
+  function buildSubmissionManifest(scoredEntry = null, recipeOverride = null) {
+    const lbId = syncContributeTargetLeaderboard();
+    const spatialRegime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
+    const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const paradigm = ((document.getElementById("sub-paradigm") || {}).value || "Machine learning").trim();
+    const category = ((document.getElementById("sub-category") || {}).value || "Contribution").trim();
+    const ensembleInfo = ((document.getElementById("sub-ensemble-info") || {}).value || "").trim();
+
+    const step4CodeEl = document.getElementById("step4-code-url");
+    const step4ArchEl = document.getElementById("step4-archive-url");
+    const closedSource = isClosedSourceSelected();
+    const rawCode = closedSource
+      ? ""
+      : (step4CodeEl && step4CodeEl.value.trim()) || ((document.getElementById("sub-github-url") || {}).value || "").trim();
+    const rawArch = (step4ArchEl && step4ArchEl.value.trim()) || ((document.getElementById("sub-zenodo-doi") || {}).value || "").trim();
+
+    const codeUrl = closedSource ? "" : normalizeClientUrl(rawCode, "github");
+    const archiveUrl = normalizeClientUrl(rawArch, "zenodo");
+    const cit = ((document.getElementById("sub-citation") || {}).value || "").trim();
+    const selectedFamId = ((document.getElementById("sub-family-id") || {}).value || "").trim();
+    const newFamName = ((document.getElementById("sub-new-family-name") || {}).value || "").trim();
+    const recipe = recipeOverride || (STATE.previewInspectData ? getConfirmedRecipeFromStep2() : null);
+
+    const activePreviewRec =
+      scoredEntry ||
+      (STATE.activePreviewEntryId
+        ? (loadLocalPreviews().find((p) => p.entry && p.entry.entry_id === STATE.activePreviewEntryId) || {}).entry
+        : null);
+
+    return {
+      schema_version: "1.1",
+      benchmark: "camels_us_daily",
+      evaluation_window: "1989-10-01 to 1999-09-30",
       spatial_regime: spatialRegime,
       leaderboard_id: lbId,
-      model_name: modelName,
-      model_type: paradigm,
-      source_category: "Contribution",
+      model_name: modelName || "Unspecified_Model",
+      family_id: selectedFamId || null,
+      new_family_name: selectedFamId ? null : newFamName || modelName || null,
+      category: category,
+      paradigm: paradigm,
       forcing: forcing,
-      citation: cit,
-      repositories: {
-        data_archive_doi_or_url: zn,
-        open_source_codebase_url: gh,
+      ensemble_info: ensembleInfo || null,
+      citation: cit || "Community Contribution (2026)",
+      archive_url: archiveUrl || rawArch,
+      code_url: closedSource ? "" : codeUrl || rawCode,
+      closed_source: closedSource,
+      confirmed_recipe: recipe || null,
+      preview_summary: activePreviewRec
+        ? {
+            median_nse: activePreviewRec.primary_ranking_nse ?? null,
+            mean_nse: activePreviewRec.mean_nse ?? null,
+            median_kge: activePreviewRec.med_kge ?? null,
+            nse_le_0: activePreviewRec.nse_le_0 ?? null,
+          }
+        : null,
+      compliance_attestation: {
+        blind_holdout_window: Boolean((document.getElementById("chk-rule-1") || {}).checked),
+        strict_spatial_holdout_canonical_folds: Boolean((document.getElementById("chk-rule-2") || {}).checked),
+        all_forcing_inputs_declared: Boolean((document.getElementById("chk-rule-3") || {}).checked),
+        deterministic_daily_predictions_mm_per_day: Boolean((document.getElementById("chk-rule-4") || {}).checked),
       },
-      responsible_benchmarking_attestation: {
-        blind_1989_1999_holdout: document.getElementById("chk-rule-1").checked,
-        strict_spatial_holdout_canonical_folds: document.getElementById("chk-rule-2").checked,
-        all_forcing_inputs_declared: document.getElementById("chk-rule-3").checked,
-        deterministic_daily_predictions_mm_per_day: document.getElementById("chk-rule-4").checked,
-      },
-      verified_scoring: STATE.lastScoringResult ? STATE.lastScoringResult.scoring.summary_531 : null,
-      file_metadata: STATE.lastScoringResult ? STATE.lastScoringResult.file_metadata : null,
       generated_at: new Date().toISOString(),
     };
+  }
 
+  function syncStep4UrlInputsAndManifest() {
+    const s1Arch = ((document.getElementById("sub-zenodo-doi") || {}).value || "").trim();
+    const s1Code = ((document.getElementById("sub-github-url") || {}).value || "").trim();
+    const s4Arch = document.getElementById("step4-archive-url");
+    const s4Code = document.getElementById("step4-code-url");
+    if (s4Arch && !s4Arch.value.trim() && s1Arch) s4Arch.value = normalizeClientUrl(s1Arch, "zenodo") || s1Arch;
+    if (s4Code && !s4Code.value.trim() && s1Code) s4Code.value = normalizeClientUrl(s1Code, "github") || s1Code;
+
+    const manifest = buildSubmissionManifest();
+    const manifestEl = document.getElementById("submission-manifest-preview");
+    const sublineEl = document.getElementById("preview-subline");
+    if (manifestEl) manifestEl.textContent = JSON.stringify(manifest, null, 2);
+    if (sublineEl) {
+      sublineEl.textContent =
+        `Target leaderboard: ${manifest.leaderboard_id} · Verified automatically via GitHub Actions upon issue/PR submission.`;
+    }
+    return manifest;
+  }
+
+  function validateStep4RequiredUrls() {
+    const msgEl = document.getElementById("step4-validation-msg");
+    const s4ArchEl = document.getElementById("step4-archive-url");
+    const s4CodeEl = document.getElementById("step4-code-url");
+    const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
+
+    const archUrl = normalizeClientUrl(s4ArchEl ? s4ArchEl.value : "", "zenodo");
+    const closedSource = isClosedSourceSelected();
+    const codeUrl = closedSource ? "" : normalizeClientUrl(s4CodeEl ? s4CodeEl.value : "", "github");
+
+    if (!modelName) {
+      if (msgEl) {
+        msgEl.textContent = "Please enter a Model Name in Step 1 before generating an official submission.";
+        msgEl.style.color = "var(--status-danger)";
+      }
+      return null;
+    }
+    if (!archUrl) {
+      if (msgEl) {
+        msgEl.textContent = "A valid permanent Archive DOI/URL (https:// or http://, e.g., Zenodo or HydroShare) is required.";
+        msgEl.style.color = "var(--status-danger)";
+      }
+      return null;
+    }
+    if (!closedSource && !codeUrl) {
+      if (msgEl) {
+        msgEl.textContent = "Enter a valid Code Repository URL (https:// or http://) or check Closed-Source / Proprietary.";
+        msgEl.style.color = "var(--status-danger)";
+      }
+      return null;
+    }
+
+    if (s4ArchEl) s4ArchEl.value = archUrl;
+    if (s4CodeEl && !closedSource) s4CodeEl.value = codeUrl;
+    const s1Arch = document.getElementById("sub-zenodo-doi");
+    const s1Code = document.getElementById("sub-github-url");
+    if (s1Arch) s1Arch.value = archUrl;
+    if (s1Code && !closedSource) s1Code.value = codeUrl;
+
+    if (msgEl) {
+      msgEl.textContent = closedSource
+        ? "Archive DOI validated (Closed-Source / Proprietary codebase declaration active)."
+        : "Archive DOI and open-source code URL validated.";
+      msgEl.style.color = "var(--status-success)";
+    }
+    return syncStep4UrlInputsAndManifest();
+  }
+
+  function openGitHubSubmissionIssue() {
+    const manifest = validateStep4RequiredUrls();
+    if (!manifest) return;
+    const jsonText = JSON.stringify(manifest, null, 2);
+    const title = encodeURIComponent(
+      `[Model Submission] ${manifest.model_name} (${manifest.leaderboard_id})`
+    );
+    const codeDisplay = manifest.closed_source
+      ? "Closed-Source / Proprietary (no public code URL)"
+      : manifest.code_url || "None";
+    const body = encodeURIComponent(
+      `### Model Submission\n` +
+        `- **Model:** ${manifest.model_name}\n` +
+        `- **Leaderboard:** \`${manifest.leaderboard_id}\`\n` +
+        `- **Archive DOI / URL:** ${manifest.archive_url}\n` +
+        `- **Code Repository:** ${codeDisplay}\n\n` +
+        `### Canonical Submission Manifest\n\`\`\`json\n${jsonText}\n\`\`\`\n`
+    );
+    const issueUrl =
+      `https://github.com/grey-nearing/camels-us-mip/issues/new` +
+      `?template=model_submission.yml&title=${title}&body=${body}`;
+    window.open(issueUrl, "_blank", "noopener,noreferrer");
+  }
+
+  function downloadManifestJsonObject(manifest) {
+    const slug = (manifest.model_name || "model").replace(/[^a-z0-9]+/gi, "_").toLowerCase();
     const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `hydromip_pr_manifest_${modelName.replace(/[^a-z0-9]+/gi, "_").toLowerCase()}.json`;
+    a.download = `hydrologymip_submission_${slug}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
   }
 
-  async function saveFamilyForm(ev) {
-    ev.preventDefault();
-    const payload = {
-      family_id: document.getElementById("fam-edit-id").value.trim() || null,
-      name: document.getElementById("fam-edit-name").value.trim(),
-      paradigm: document.getElementById("fam-edit-paradigm").value.trim(),
-      provenance_category: document.getElementById("fam-edit-category").value.trim(),
-      github_url: document.getElementById("fam-edit-github").value.trim(),
-      zenodo_doi: document.getElementById("fam-edit-zenodo").value.trim(),
-      hydroshare_url: document.getElementById("fam-edit-hydroshare").value.trim(),
-      citation: document.getElementById("fam-edit-citation").value.trim(),
-      paper_url: document.getElementById("fam-edit-paper-url").value.trim(),
-      description: document.getElementById("fam-edit-desc").value.trim(),
-    };
-
-    try {
-      const res = await fetch("/api/families", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await parseApiJson(res);
-      if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`);
-      if (data && data.family) {
-        recordSessionSubmission(null, null, data.family);
-      }
-      closeFamilyModal();
-      await loadAllData();
-    } catch (err) {
-      console.error("Failed to save family:", err);
+  function exportPullRequestManifest() {
+    const manifest = validateStep4RequiredUrls();
+    if (!manifest) return;
+    downloadManifestJsonObject(manifest);
+    const prGuide = document.getElementById("step4-pr-guide");
+    if (prGuide) {
+      prGuide.hidden = false;
+      prGuide.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }
 
-  // =========================================================================
-  // 7. Community Comments & Peer Discussion (§7)
-  // =========================================================================
-  async function loadComments() {
-    try {
-      const res = await fetch("/api/comments");
-      if (!res.ok) return;
-      const data = await parseApiJson(res);
-      STATE.comments = data.comments || [];
-      renderCommentsFeed();
-    } catch (err) {
-      console.error("Failed to load comments:", err);
-      renderCommentsFeed();
-    }
-  }
+  function handleSelectedPredictionFile(file) {
+    const statusEl = document.getElementById("inspect-status-msg");
+    const dropzone = document.getElementById("sub-dropzone");
+    const bar = document.getElementById("sub-selected-file-bar");
+    const lbl = document.getElementById("sub-selected-file-label");
 
-  function formatScopeLabel(scopeVal) {
-    if (!scopeVal || scopeVal === "general") return "General / All Leaderboards";
-    if (scopeVal === "table_2_registry") return "Participating Models";
-    const lb = STATE.allLeaderboards.find((b) => b.id === scopeVal);
-    return lb ? formatLeaderboardShortLabel(lb) : scopeVal;
-  }
-
-  function renderCommentsFeed() {
-    const container = document.getElementById("comments-feed-container");
-    if (!container) return;
-
-    const allToRender = [...STATE.sessionPendingComments, ...STATE.comments];
-
-    if (allToRender.length === 0) {
-      container.innerHTML = `
-        <div class="comment-card" style="text-align: center; padding: 2.4rem 1.5rem;">
-          <div style="font-weight: 700; font-size: 0.96rem; color: var(--text-primary); margin-bottom: 0.35rem;">
-            No Community Comments Yet
-          </div>
-          <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; max-width: 540px; margin-inline: auto;">
-            Use the form on the right to start a discussion, suggest a new MIP, or ask a question.
-          </p>
-        </div>
-      `;
+    if (!file) {
+      STATE.uploadedFile = null;
+      if (dropzone) dropzone.classList.remove("has-file");
+      if (bar) bar.hidden = true;
+      if (lbl) lbl.textContent = "";
       return;
     }
 
-    let html = "";
-    for (const c of allToRender) {
-      const isPending = c.status === "pending_moderation";
-
-      html += `
-        <article class="comment-card ${isPending ? "pending-preview" : ""}" id="comment-${esc(c.comment_id)}">
-          <div class="comment-card-header">
-            <div class="comment-author-meta" style="margin: 0;">
-              <strong style="color: var(--text-primary);">${esc(c.author_name)}</strong>
-              ${c.affiliation ? `<span>&bull; ${esc(c.affiliation)}</span>` : ""}
-              ${
-                c.verified_badge
-                  ? c.verified_url
-                    ? `<a href="${esc(c.verified_url)}" target="_blank" rel="noopener noreferrer" class="verified-researcher-badge">&#10003; ${esc(c.verified_badge)} &#8599;</a>`
-                    : `<span class="verified-researcher-badge">&#10003; ${esc(c.verified_badge)}</span>`
-                  : ""
-              }
-              ${
-                isPending
-                  ? `<span class="moderation-pill">&#9203; Queued for Moderator Review (Preview)</span>`
-                  : ""
-              }
-            </div>
-            <span style="font-family: var(--font-mono); font-size: 0.73rem; color: var(--text-muted);">
-              ${esc(c.created_at || "")}
-            </span>
-          </div>
-
-          <h4 class="comment-title">${esc(c.title)}</h4>
-          <p class="comment-body">${esc(c.body)}</p>
-        </article>
-      `;
+    const nameLow = String(file.name || "").toLowerCase();
+    if (nameLow.endsWith(".pkl") || nameLow.endsWith(".pickle")) {
+      STATE.uploadedFile = null;
+      if (dropzone) dropzone.classList.remove("has-file");
+      if (bar) bar.hidden = true;
+      if (statusEl) {
+        statusEl.textContent =
+          "Pickle files (.pkl / .pickle) are rejected for security. Please export predictions as .nc, .zarr.zip, .csv, .parquet, or .npz.";
+        statusEl.style.color = "var(--status-danger)";
+      }
+      return;
     }
 
-    container.innerHTML = html;
-  }
-
-  async function submitCommunityComment(ev) {
-    ev.preventDefault();
-    const statusEl = document.getElementById("comment-status-msg");
-    const channelEl = document.getElementById("cmt-channel");
-    const scopeEl = document.getElementById("cmt-target-scope");
-    const payload = {
-      channel: channelEl ? channelEl.value : "general_feedback",
-      target_scope: scopeEl ? scopeEl.value : "general",
-      author_name: document.getElementById("cmt-author-name").value.trim(),
-      affiliation: document.getElementById("cmt-affiliation").value.trim(),
-      orcid_or_github: document.getElementById("cmt-orcid-github").value.trim(),
-      title: document.getElementById("cmt-title").value.trim(),
-      body: document.getElementById("cmt-body").value.trim(),
-      coc_attested: document.getElementById("cmt-coc-attest").checked,
-      website_honeypot: document.getElementById("cmt-website-honeypot").value,
-    };
-
-    statusEl.textContent = "Posting comment...";
-    statusEl.style.color = "var(--accent-primary)";
-
-    try {
-      const res = await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await parseApiJson(res);
-      if (!res.ok) {
-        throw new Error(data.detail || `Submission failed (${res.status})`);
+    const okExt = [".nc", ".nc4", ".cdf", ".zarr.zip", ".zip", ".csv", ".parquet", ".pq", ".npz"].some(
+      (ext) => nameLow.endsWith(ext)
+    );
+    if (!okExt) {
+      STATE.uploadedFile = null;
+      if (statusEl) {
+        statusEl.textContent =
+          "Unsupported file extension. Allowed formats: .nc, .zarr.zip, .csv, .parquet, .npz.";
+        statusEl.style.color = "var(--status-danger)";
       }
+      return;
+    }
 
-      if (data.comment) {
-        const exists = STATE.comments.some((c) => c.comment_id === data.comment.comment_id);
-        if (!exists) {
-          STATE.comments.unshift(data.comment);
-        }
-      }
-      renderCommentsFeed();
-
-      document.getElementById("cmt-title").value = "";
-      document.getElementById("cmt-body").value = "";
-      statusEl.textContent =
-        data.message ||
-        "Thank you! Your comment has been posted to the Community Discussion.";
-      statusEl.style.color = "var(--status-success)";
-    } catch (err) {
-      statusEl.textContent = err.message || String(err);
-      statusEl.style.color = "var(--status-danger)";
+    STATE.uploadedFile = file;
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+    if (dropzone) dropzone.classList.add("has-file");
+    if (bar) bar.hidden = false;
+    if (lbl) lbl.textContent = `${file.name} (${sizeMb} MB)`;
+    if (statusEl) {
+      statusEl.textContent = `Selected '${file.name}'. Click "Inspect & Validate File" to verify schema and units.`;
+      statusEl.style.color = "var(--color-ink-2)";
     }
   }
 
@@ -3319,10 +3840,10 @@
           HYDRO_MODELS_BY_KEY.set(m.model_key, m);
         }
       }
-      // Also register any session-submitted entries that have hydrographs
+      // Also register any local preview or submitted entries that carry hydrographs
       for (const lb of STATE.allLeaderboards || []) {
         for (const r of lb.rows || []) {
-          if (r && r.has_hydrograph) {
+          if (r && (r.has_hydrograph || (r.is_local_preview && r.has_preview_hydrographs))) {
             const mk = r.hydrograph_model_key || r.model_key || `${lb.id}__${r.entry_id}`;
             HYDRO_AVAILABLE_KEYS_SET.add(mk);
             if (!HYDRO_MODELS_BY_KEY.has(mk)) {
@@ -3362,6 +3883,7 @@
 
   function isModelHydrographAvailable(row, lbId) {
     if (!row) return false;
+    if (row.is_local_preview && row.has_preview_hydrographs) return true;
     if (row.has_hydrograph === true) return true;
     const mk = row.model_key || `${lbId || row.leaderboard_id || ""}__${row.entry_id}`;
     return HYDRO_AVAILABLE_KEYS_SET.has(mk);
@@ -3792,6 +4314,8 @@
             <th class="num-col" title="Single-basin NSE on this catchment">Basin NSE</th>
             <th class="num-col" title="531-Basin Benchmark Median NSE">531-Basin Med NSE</th>
             <th class="num-col" title="Single-basin KGE on this catchment">Basin KGE</th>
+            <th class="num-col" title="Single-basin logNSE on log(max(Q, 0) + 1e-5)">Basin logNSE</th>
+            <th class="num-col" title="Single-basin logKGE on log(max(Q, 0) + 1e-5)">Basin logKGE</th>
             <th class="num-col" title="Single-basin Pearson r on this catchment">Basin r</th>
             <th class="num-col" title="Single-basin Peak-Flow Bias FHV (%)">Basin FHV (%)</th>
             <th class="num-col" title="Single-basin Low-Flow Bias FLV (%)">Basin FLV (%)</th>
@@ -3820,6 +4344,8 @@
           <td class="num-col" style="font-weight: 700;">${fmtNum(bm.NSE, 3)}</td>
           <td class="num-col">${fmtNum(s.primary_ranking_nse, 3)}</td>
           <td class="num-col">${fmtNum(bm.KGE, 3)}</td>
+          <td class="num-col">${fmtNum(bm.logNSE ?? bm.log_nse, 3)}</td>
+          <td class="num-col">${fmtNum(bm.logKGE ?? bm.log_kge, 3)}</td>
           <td class="num-col">${fmtNum(bm.Pearson_r, 3)}</td>
           <td class="num-col">${bm.FHV != null ? `${Number(bm.FHV).toFixed(1)}%` : "&mdash;"}</td>
           <td class="num-col">${bm.FLV != null ? `${Number(bm.FLV).toFixed(1)}%` : "&mdash;"}</td>
@@ -3847,6 +4373,37 @@
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const payload = await res.json();
+
+      // Overlay any local preview hydrographs for this basin if compared
+      if (Array.isArray(payload.series)) {
+        const previewItems = loadLocalPreviews();
+        for (const item of previewItems) {
+          const r = item && item.entry;
+          if (!r) continue;
+          const mk = r.model_key || `${r.leaderboard_id}__${r.entry_id}`;
+          if (!STATE.comparedModels.includes(mk)) continue;
+          if (payload.series.some((s) => s.model_key === mk)) continue;
+          const sample =
+            (r.hydrograph_samples && r.hydrograph_samples[basinId]) ||
+            (Array.isArray(item.sample_basins)
+              ? item.sample_basins.find((sb) => sb.basin_id === basinId)
+              : null);
+          if (sample && Array.isArray(sample.qsim)) {
+            payload.series.push({
+              model_key: mk,
+              entry_id: r.entry_id,
+              leaderboard_id: r.leaderboard_id,
+              model_name: `${r.model_name} (Local Preview)`,
+              forcing: r.forcing,
+              category: r.category || "Contribution",
+              primary_ranking_nse: r.primary_ranking_nse,
+              qsim: sample.qsim,
+              basin_metrics: sample.basin_metrics || { NSE: sample.nse ?? null },
+            });
+          }
+        }
+      }
+
       STATE.hydroBasinPayload = payload;
 
       renderHydroBasinMetaStrip(payload.basin);
@@ -5264,14 +5821,12 @@
     "landing",
     "about",
     "about-camels-us",
-    "about-caravan",
     "contribute",
     "leaderboards-hub",
     "leaderboards",
     "hydrographs",
     "models",
     "publications",
-    "comments",
   ]);
 
   function persistNavState() {
@@ -5354,14 +5909,12 @@
       landing: "nav-tab-landing",
       about: "nav-tab-about",
       "about-camels-us": "nav-tab-about",
-      "about-caravan": "nav-tab-about",
       contribute: "nav-tab-contribute",
       "leaderboards-hub": "nav-tab-leaderboards-hub",
       leaderboards: "nav-tab-leaderboards-hub",
       hydrographs: "nav-tab-leaderboards-hub",
       models: "nav-tab-leaderboards-hub",
       publications: "nav-tab-publications",
-      comments: "nav-tab-comments",
     };
     const activeNavId = navMap[viewName] || "nav-tab-landing";
     document.querySelectorAll(".nav-tab-btn").forEach((btn) => {
@@ -5397,7 +5950,7 @@
     const btnCopyShare = document.getElementById("btn-copy-share-link");
     if (btnCopyShare) {
       btnCopyShare.addEventListener("click", async () => {
-        const shareUrl = window.location.href || "https://hydromip.org/";
+        const shareUrl = window.location.href || "https://hydrologymip.org/";
         const lbl = document.getElementById("copy-share-link-label");
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -5413,35 +5966,14 @@
       });
     }
 
-    // Community Comments channel pills, scope filter, and form
-    document.querySelectorAll("#comment-channel-pills .channel-pill-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        STATE.activeCommentChannel = btn.getAttribute("data-channel");
-        document.querySelectorAll("#comment-channel-pills .channel-pill-btn").forEach((b) => {
-          b.classList.toggle("active", b === btn);
-        });
-        renderCommentsFeed();
-      });
-    });
-
-    const cmtScopeFilter = document.getElementById("comment-scope-filter");
-    if (cmtScopeFilter) {
-      cmtScopeFilter.addEventListener("change", (e) => {
-        STATE.activeCommentScope = e.target.value;
-        renderCommentsFeed();
-      });
-    }
-
-    const formComment = document.getElementById("form-community-comment");
-    if (formComment) {
-      formComment.addEventListener("submit", submitCommunityComment);
-    }
-
-    // CTA buttons across Landing, Header, and CAMELS-US Leaderboards pages
+    // CTA buttons across Landing, Header, Footer, and CAMELS-US Leaderboards pages
     const bindViewButton = (id, viewName) => {
       const el = document.getElementById(id);
       if (el) {
-        el.addEventListener("click", () => switchMainTab(viewName));
+        el.addEventListener("click", (e) => {
+          if (el.tagName === "A") e.preventDefault();
+          switchMainTab(viewName);
+        });
       }
     };
 
@@ -5452,13 +5984,17 @@
     bindViewButton("hero-btn-open-about", "about");
     bindViewButton("hero-btn-open-contribute", "contribute");
     bindViewButton("leaderboards-top-contribute-btn", "contribute");
-    bindViewButton("card-btn-open-comments", "comments");
+    bindViewButton("resource-card-leaderboards", "leaderboards-hub");
+    bindViewButton("resource-card-protocol", "about");
+    bindViewButton("resource-card-publications", "publications");
+    bindViewButton("footer-link-contribute", "contribute");
+    bindViewButton("footer-link-protocol", "about");
+    bindViewButton("footer-link-publications", "publications");
     bindViewButton("btn-back-to-leaderboards-hub", "leaderboards-hub");
     bindViewButton("btn-open-models-from-lb", "models");
     bindViewButton("btn-back-to-camels-lb", "leaderboards");
     bindViewButton("btn-back-to-lb-from-hydro", "leaderboards");
     bindViewButton("btn-back-to-about-from-camels", "about");
-    bindViewButton("btn-back-to-about-from-caravan", "about");
     bindViewButton("btn-open-camels-lb-from-about", "leaderboards");
 
     // Hydrograph Comparison Explorer buttons & controls
@@ -5478,7 +6014,7 @@
         renderActiveLeaderboardPanel();
       });
     }
-    const btnInspCompareHydro = document.getElementById("btn-insp-compare-hydrographs");
+    const btnInspCompareHydro = document.getElementById("btn-insp-compare-hydrograph");
     if (btnInspCompareHydro) {
       btnInspCompareHydro.addEventListener("click", () => {
         if (STATE.inspectedEntryId) {
@@ -5648,7 +6184,6 @@
       }
     };
     bindAboutCard("card-about-camels-us", "about-camels-us");
-    bindAboutCard("card-about-caravan", "about-caravan");
 
     const btnContribCamelsAbout = document.getElementById("btn-contribute-camels-from-about");
     if (btnContribCamelsAbout) {
@@ -5662,18 +6197,6 @@
       });
     }
 
-    const btnContribCaravanAbout = document.getElementById("btn-contribute-caravan-from-about");
-    if (btnContribCaravanAbout) {
-      btnContribCaravanAbout.addEventListener("click", () => {
-        const mipSel = document.getElementById("sub-mip-benchmark");
-        if (mipSel) {
-          mipSel.value = "caravan";
-          populateMipBenchmarkFields("caravan");
-        }
-        switchMainTab("contribute");
-      });
-    }
-
     const camelsSuiteCard = document.getElementById("card-camels-us-daily-deterministic");
     if (camelsSuiteCard) {
       camelsSuiteCard.addEventListener("click", () => switchMainTab("leaderboards"));
@@ -5681,25 +6204,6 @@
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
           switchMainTab("leaderboards");
-        }
-      });
-    }
-
-    const caravanSuiteCard = document.getElementById("card-caravan-daily-deterministic");
-    if (caravanSuiteCard) {
-      const openCaravanContribute = () => {
-        const mipSel = document.getElementById("sub-mip-benchmark");
-        if (mipSel) {
-          mipSel.value = "caravan";
-          populateMipBenchmarkFields("caravan");
-        }
-        switchMainTab("contribute");
-      };
-      caravanSuiteCard.addEventListener("click", openCaravanContribute);
-      caravanSuiteCard.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openCaravanContribute();
         }
       });
     }
@@ -5759,28 +6263,43 @@
         renderFamiliesGrid();
       });
     }
-    document.getElementById("family-search-input").addEventListener("input", (e) => {
-      STATE.familySearchQuery = e.target.value.trim();
-      renderFamiliesGrid();
-    });
-    document.getElementById("btn-open-family-modal").addEventListener("click", () => openFamilyModal(null));
-    document.getElementById("btn-close-family-modal").addEventListener("click", closeFamilyModal);
-    document.getElementById("btn-cancel-family-modal").addEventListener("click", closeFamilyModal);
-    document.getElementById("form-family-editor").addEventListener("submit", saveFamilyForm);
+    const famSearchInput = document.getElementById("family-search-input");
+    if (famSearchInput) {
+      famSearchInput.addEventListener("input", (e) => {
+        STATE.familySearchQuery = e.target.value.trim();
+        renderFamiliesGrid();
+      });
+    }
 
-    document.getElementById("sub-family-id").addEventListener("change", (e) => {
-      const fid = e.target.value;
-      const fam = STATE.families.find((f) => f.family_id === fid);
-      if (fam) {
-        document.getElementById("sub-github-url").value = fam.github_url || "";
-        document.getElementById("sub-zenodo-doi").value = fam.zenodo_doi || fam.zenodo_url || "";
-        document.getElementById("sub-citation").value = fam.citation || "";
-        updateLiveRepoBadgePreview();
-      }
-    });
+    const subFamSelect = document.getElementById("sub-family-id");
+    if (subFamSelect) {
+      subFamSelect.addEventListener("change", (e) => {
+        const fid = e.target.value;
+        const fam = STATE.families.find((f) => f.family_id === fid);
+        if (fam) {
+          document.getElementById("sub-github-url").value = fam.github_url || "";
+          if (fam.github_url) setClosedSourceSelection(false);
+          document.getElementById("sub-zenodo-doi").value = fam.zenodo_doi || fam.zenodo_url || "";
+          document.getElementById("sub-citation").value = fam.citation || "";
+          updateLiveRepoBadgePreview();
+        }
+      });
+    }
 
     ["sub-github-url", "sub-zenodo-doi"].forEach((id) => {
-      document.getElementById(id).addEventListener("input", updateLiveRepoBadgePreview);
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("input", updateLiveRepoBadgePreview);
+    });
+
+    ["sub-closed-source", "step4-closed-source"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener("change", (ev) => {
+          setClosedSourceSelection(Boolean(ev.target.checked));
+          updateLiveRepoBadgePreview();
+          syncStep4UrlInputsAndManifest();
+        });
+      }
     });
 
     const mipBenchSelect = document.getElementById("sub-mip-benchmark");
@@ -5797,9 +6316,137 @@
       }
     });
 
-    document.getElementById("btn-run-live-score").addEventListener("click", runLiveScoringPreview);
-    document.getElementById("form-score-submit").addEventListener("submit", submitRunToLeaderboard);
-    document.getElementById("btn-export-pr-manifest").addEventListener("click", exportPullRequestManifest);
+    const formSubmit = document.getElementById("form-score-submit");
+    if (formSubmit) {
+      formSubmit.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        if (STATE.contribStep === 1) inspectPreviewSubmission(false);
+        else if (STATE.contribStep === 2) scorePreviewSubmission();
+      });
+    }
+
+    // Option C Contribute Stepper, Dropzone, Preview, and GitHub PR bindings
+    document.querySelectorAll("[data-contrib-step-btn]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const stepNum = Number(btn.getAttribute("data-contrib-step-btn")) || 1;
+        if (stepNum === 2 && !STATE.previewInspectData) return;
+        if (stepNum === 3 && !STATE.activePreviewEntryId) return;
+        setContribStep(stepNum);
+      });
+    });
+
+    const dropzone = document.getElementById("sub-dropzone");
+    const fileInput = document.getElementById("sub-file-input");
+    if (dropzone && fileInput) {
+      dropzone.addEventListener("click", () => fileInput.click());
+      dropzone.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          fileInput.click();
+        }
+      });
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("is-dragover");
+      });
+      dropzone.addEventListener("dragleave", () => {
+        dropzone.classList.remove("is-dragover");
+      });
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("is-dragover");
+        const dtFile = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (dtFile) handleSelectedPredictionFile(dtFile);
+      });
+      fileInput.addEventListener("change", (e) => {
+        const picked = e.target.files && e.target.files[0];
+        if (picked) handleSelectedPredictionFile(picked);
+      });
+    }
+
+    const btnClearFile = document.getElementById("btn-clear-selected-file");
+    if (btnClearFile) {
+      btnClearFile.addEventListener("click", () => {
+        if (fileInput) fileInput.value = "";
+        handleSelectedPredictionFile(null);
+      });
+    }
+
+    const btnInspect = document.getElementById("btn-preview-inspect");
+    if (btnInspect) btnInspect.addEventListener("click", () => inspectPreviewSubmission(false));
+
+    const btnReinspect = document.getElementById("btn-reinspect-overrides");
+    if (btnReinspect) btnReinspect.addEventListener("click", () => inspectPreviewSubmission(true));
+
+    const btnJumpStep4Direct = document.getElementById("btn-jump-step4-direct");
+    if (btnJumpStep4Direct) btnJumpStep4Direct.addEventListener("click", () => setContribStep(4));
+
+    const btnScore = document.getElementById("btn-preview-score");
+    if (btnScore) btnScore.addEventListener("click", scorePreviewSubmission);
+
+    const btnBackStep1 = document.getElementById("btn-back-to-step1");
+    if (btnBackStep1) btnBackStep1.addEventListener("click", () => setContribStep(1));
+
+    const btnViewPreviewOnLb = document.getElementById("btn-view-preview-on-lb");
+    if (btnViewPreviewOnLb) {
+      btnViewPreviewOnLb.addEventListener("click", () => {
+        const list = loadLocalPreviews();
+        const rec =
+          list.find((p) => p.entry && p.entry.entry_id === STATE.activePreviewEntryId) ||
+          list[list.length - 1];
+        if (rec && rec.entry) {
+          switchMainTab("leaderboards");
+          selectLeaderboardTab(rec.entry.leaderboard_id);
+          requestAnimationFrame(() => {
+            const tr = document.getElementById(`row-${rec.entry.entry_id}`);
+            if (tr) tr.scrollIntoView({ behavior: "smooth", block: "center" });
+          });
+        }
+      });
+    }
+
+    const btnGotoStep4 = document.getElementById("btn-goto-step4");
+    if (btnGotoStep4) btnGotoStep4.addEventListener("click", () => setContribStep(4));
+
+    const btnClearCurrentPreview = document.getElementById("btn-clear-current-preview");
+    if (btnClearCurrentPreview) {
+      btnClearCurrentPreview.addEventListener("click", () => {
+        removeLocalPreview(STATE.activePreviewEntryId);
+        setContribStep(1);
+      });
+    }
+
+    const btnBackFromStep4 = document.getElementById("btn-back-from-step4");
+    if (btnBackFromStep4) btnBackFromStep4.addEventListener("click", () => setContribStep(1));
+
+    ["step4-archive-url", "step4-code-url"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener("input", syncStep4UrlInputsAndManifest);
+    });
+
+    const btnOpenGhIssue = document.getElementById("btn-open-github-issue");
+    if (btnOpenGhIssue) btnOpenGhIssue.addEventListener("click", openGitHubSubmissionIssue);
+
+    const btnExport = document.getElementById("btn-export-pr-manifest");
+    if (btnExport) btnExport.addEventListener("click", exportPullRequestManifest);
+
+    const btnCopyManifest = document.getElementById("btn-copy-manifest-json");
+    if (btnCopyManifest) {
+      btnCopyManifest.addEventListener("click", async () => {
+        const manifest = syncStep4UrlInputsAndManifest();
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            await navigator.clipboard.writeText(JSON.stringify(manifest, null, 2));
+          }
+          btnCopyManifest.textContent = "Copied JSON!";
+          setTimeout(() => {
+            btnCopyManifest.textContent = "Copy Manifest JSON";
+          }, 1800);
+        } catch (_e) {
+          // ignore
+        }
+      });
+    }
   }
 
   document.addEventListener("DOMContentLoaded", () => {

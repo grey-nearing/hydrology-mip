@@ -55,9 +55,8 @@ venv/
 *.pkl
 *.pickle
 hydrographs/
-
-# --- Community submissions written by the web portal (default `<repo>/submissions/`) ---
-submissions/
+web/scorer_api/data/*.npz
+web/worker/.cf_staging/
 
 # --- Model checkpoints and experiment-tracking output ---
 *.pt

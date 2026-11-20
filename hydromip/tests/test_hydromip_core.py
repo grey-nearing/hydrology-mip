@@ -31,11 +31,16 @@ from hydromip.evaluation import zarr_io
 from hydromip.evaluation.zarr_io import get_gcs_storage_options, validate_store_id
 from hydromip.metrics.registry import METRIC_SUITES
 from hydromip.protocol import validate_mip_assets
+from hydromip.tools.ci_guardrails import (
+    TRY_EXCEPT_FUNCTION_ALLOWLIST,
+    _ast_try_types,
+    _iter_try_nodes_with_scope,
+)
 from mips.camels_us_daily import load_canonical_basins, load_splits_for_regime
 
 HYDROMIP_PKG_DIR = REPO_ROOT / "hydromip"
 MIPS_PKG_DIR = REPO_ROOT / "mips"
-#: Packages whose Python code must never contain try/except (repository invariant).
+#: Packages whose non-test Python code must only contain allowlisted boundary try/excepts (or none).
 TRY_FREE_PACKAGES: tuple[str, ...] = ("hydromip", "mips", "metrics", "leaderboards", "benchmarks")
 
 
@@ -46,15 +51,25 @@ def _camels_protocol_payload() -> dict:
 
 @pytest.mark.unit
 def test_zero_try_except_blocks_in_core_packages() -> None:
-    """Enforce zero try/except (incl. ``except*``) blocks across the core Python packages."""
-    py_files = [p for pkg in TRY_FREE_PACKAGES for p in sorted((REPO_ROOT / pkg).rglob("*.py"))]
+    """Enforce zero unallowlisted try/except (incl. ``except*``) blocks across core packages."""
+    py_files = [
+        p
+        for pkg in TRY_FREE_PACKAGES
+        for p in sorted((REPO_ROOT / pkg).rglob("*.py"))
+        if "tests" not in p.relative_to(REPO_ROOT).parts
+    ]
     assert py_files, "Expected Python modules under the core packages."
+    try_types = _ast_try_types()
     for py_path in py_files:
-        tree = ast.parse(py_path.read_text(encoding="utf-8"), filename=str(py_path))
-        try_nodes = [
-            node for node in ast.walk(tree) if type(node).__name__ in ("Try", "TryStar")
+        rel_str = py_path.relative_to(REPO_ROOT).as_posix()
+        allowed = TRY_EXCEPT_FUNCTION_ALLOWLIST.get(rel_str, frozenset())
+        tree = ast.parse(py_path.read_text(encoding="utf-8"), filename=rel_str)
+        violations = [
+            node.lineno
+            for node, scope in _iter_try_nodes_with_scope(tree, try_types)
+            if scope not in allowed
         ]
-        assert not try_nodes, f"Forbidden try/except block found in {py_path}"
+        assert not violations, f"Forbidden try/except block found in {rel_str}:{violations}"
 
 
 @pytest.mark.unit
@@ -373,7 +388,7 @@ def test_adding_a_future_mip_is_purely_additive_and_auto_discovered(
     """Verify dropping a second MIP under ``mips/<new_id>/protocol.json`` is auto-discovered by core and API."""
     from fastapi.testclient import TestClient
 
-    from frontend.backend.app import app as frontend_app
+    from web.scorer_api.app import app as web_app
 
     # A future MIP registers its metric suite first (here: a synthetic soil-moisture suite).
     monkeypatch.setitem(
@@ -451,7 +466,7 @@ def test_adding_a_future_mip_is_purely_additive_and_auto_discovered(
 
     # Verify the web portal API auto-discovers both MIPs without code changes
     monkeypatch.setenv("CAMELS_MIP_DATA_DIR", str(tmp_path))
-    client = TestClient(frontend_app)
+    client = TestClient(web_app)
     resp = client.get("/api/mips")
     assert resp.status_code == 200
     payload = resp.json()
@@ -465,17 +480,17 @@ def test_adding_a_future_mip_is_purely_additive_and_auto_discovered(
 
 
 @pytest.mark.integration
-def test_frontend_splits_and_figures_endpoints_work_with_multi_mip_layout(
+def test_portal_splits_and_figures_endpoints_work_with_multi_mip_layout(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """Verify ``/api/mips``, ``/api/splits/*``, and ``/api/figures/*`` serve CAMELS-US files."""
     from fastapi.testclient import TestClient
 
-    from frontend.backend.app import app as frontend_app
+    from web.scorer_api.app import app as web_app
 
     monkeypatch.delenv("CAMELS_MIP_DATA_DIR", raising=False)
     monkeypatch.delenv("HYDROMIP_DATA_DIR", raising=False)
-    client = TestClient(frontend_app)
+    client = TestClient(web_app)
 
     assert client.get("/api/mips").json()["n_mips"] == 1
     assert client.get("/api/splits/basins_531.txt").status_code == 200

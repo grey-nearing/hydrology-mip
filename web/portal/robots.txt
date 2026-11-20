@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hydrologymip.org/sitemap.xml

@@ -22,7 +22,7 @@ New benchmarks plug in under `mips/<mip_id>/` and reuse the same models, metrics
 | `metrics/` | Scores one model on one leaderboard (`mip-score-model`) | [metrics/README.md](metrics/README.md) |
 | `leaderboards/` | Maintainer tools that update the leaderboard tables and draw the figures | [leaderboards/README.md](leaderboards/README.md) |
 | `benchmarks/` | End-to-end checks of every stored hydrograph | [benchmarks/README.md](benchmarks/README.md) |
-| `frontend/` | The current website code; it will be replaced by a new `web/` folder | [frontend/README.md](frontend/README.md) |
+| `web/` | Portal UI (`web/portal/`), stateless preview scorer API (`web/scorer_api/`), and Cloudflare Worker bundler (`web/worker/`) | [web/README.md](web/README.md) |
 | `skills/` | Step-by-step guides for AI coding agents | [skills/README.md](skills/README.md) |
 
 ```text
@@ -33,7 +33,7 @@ camels-us-mip/
 ├── pyproject.toml                      # package, command-line tools, test and lint settings
 ├── .github/                            # CI, pull request and issue templates, CODEOWNERS
 ├── .agents/skills, .claude/skills      # links to skills/ so agent tools find the skills
-├── hydromip/  mips/  models/  metrics/  leaderboards/  benchmarks/  frontend/  skills/
+├── hydromip/  mips/  models/  metrics/  leaderboards/  benchmarks/  web/  skills/
 └── mips/camels_us_daily/               # protocol.json, adapter.py, splits/, leaderboards/, figures/, data/, era_experiments/
 ```
 

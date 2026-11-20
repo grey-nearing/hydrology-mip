@@ -25,8 +25,10 @@ benchmark folders live in [`mips/`](../mips/README.md).
 | [`splits.py`](splits.py) | Loads CV folds and checks them for leakage. | `CvFold`, `load_cv_splits_json`, `validate_cv_folds` |
 | [`metrics/registry.py`](metrics/registry.py) | Registry of metric suites. | `MetricSuiteSpec`, `register_metric_suite`, `get_metric_suite`, `list_metric_suites` |
 | [`metrics/deterministic_daily.py`](metrics/deterministic_daily.py) | The 14 daily streamflow metrics of the Gauch et al. (2023) suite. This is the only implementation; `metrics/metrics.py` re-exports it. | `calculate_all_metrics`, `calculate_metrics`, `nse`, `kge`, `log_nse`, `log_kge`, and the other metric functions |
-| [`evaluation/zarr_io.py`](evaluation/zarr_io.py) | Opens local or `gs://` Zarr stores and chooses Google Cloud credentials. | `open_zarr_store`, `zarr_store_exists`, `get_gcs_storage_options`, `deterministic_io`, `validate_store_id` |
+| [`evaluation/zarr_io.py`](evaluation/zarr_io.py) | Opens local, public `https://`, or `gs://` Zarr stores and chooses Google Cloud credentials. | `open_zarr_store`, `zarr_store_exists`, `get_gcs_storage_options`, `deterministic_io`, `validate_store_id` |
+| [`io/`](io/__init__.py) | Safe multi-format prediction ingestion (`NetCDF`, `Zarr`, `CSV`, `Parquet`, `NPZ`), 531-basin physical sanity checks, and optional schema fallback. | `ingest_hydrograph`, `extract_file_metadata`, `resolve_deterministic_recipe`, `run_physical_sanity_checks`, `write_canonical_zarr_v2` |
 | [`leaderboards/registry.py`](leaderboards/registry.py) | Gives the leaderboard and figure folders of a MIP. | `get_mip_leaderboards_dir`, `get_mip_figures_dir`, `get_mip_leaderboard_ids` |
+| [`tools/cli.py`](tools/cli.py) | Unified CLI entrypoint (`hydromip package`, `hydromip-package`, `process-submission`, `guardrails`). | `hydromip package --input ... --output ...` |
 | [`tools/ci_guardrails.py`](tools/ci_guardrails.py) | The repository checks that CI runs. | `python -m hydromip.tools.ci_guardrails` |
 | [`tools/enable_public_launch_guardrails.sh`](tools/enable_public_launch_guardrails.sh) | **Maintainers only.** Turns on branch protection for `main` on GitHub. | `bash hydromip/tools/enable_public_launch_guardrails.sh` |
 | [`tests/`](tests/) | Tests for this package. | `pytest hydromip/tests` |

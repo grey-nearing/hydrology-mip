@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 import dask
+import fsspec
 import gcsfs
 import xarray as xr
 import zarr
@@ -126,8 +127,17 @@ def zarr_store_exists(
     store_uri: str,
     storage_options: dict[str, Any] | None = None,
 ) -> bool:
-    """Explicitly check whether a GCS or local Zarr store exists."""
-    if store_uri.startswith("gs://"):
+    """Explicitly check whether a GCS, public HTTPS/HTTP, or local Zarr store exists."""
+    clean_uri = store_uri.rstrip("/")
+    if clean_uri.startswith(("https://", "http://")):
+        scheme = "https" if clean_uri.startswith("https://") else "http"
+        fs = fsspec.filesystem(scheme)
+        return bool(
+            fs.exists(f"{clean_uri}/.zmetadata")
+            or fs.exists(f"{clean_uri}/zarr.json")
+            or fs.exists(f"{clean_uri}/.zgroup")
+        )
+    if clean_uri.startswith("gs://"):
         opts = (
             storage_options
             if storage_options is not None
@@ -135,12 +145,12 @@ def zarr_store_exists(
         )
         fs = gcsfs.GCSFileSystem(**opts)
         return bool(
-            fs.exists(store_uri)
-            or fs.exists(f"{store_uri}/.zmetadata")
-            or fs.exists(f"{store_uri}/zarr.json")
-            or fs.exists(f"{store_uri}/.zgroup")
+            fs.exists(clean_uri)
+            or fs.exists(f"{clean_uri}/.zmetadata")
+            or fs.exists(f"{clean_uri}/zarr.json")
+            or fs.exists(f"{clean_uri}/.zgroup")
         )
-    local_path = Path(store_uri.removeprefix("file://"))
+    local_path = Path(clean_uri.removeprefix("file://"))
     if not local_path.exists() or not local_path.is_dir():
         return False
     return (
@@ -151,29 +161,44 @@ def zarr_store_exists(
 
 
 def open_zarr_store(store_uri: str) -> xr.Dataset:
-    """Verify store existence and open a GCS or local Zarr store with ``xarray``."""
-    if store_uri.startswith("gs://"):
-        storage_options = get_gcs_storage_options()
-        fs = gcsfs.GCSFileSystem(**storage_options)
-        has_consolidated = bool(fs.exists(f"{store_uri}/.zmetadata"))
+    """Verify store existence and open a GCS, public HTTPS/HTTP, or local Zarr store."""
+    clean_uri = store_uri.rstrip("/")
+    if clean_uri.startswith(("https://", "http://")):
+        scheme = "https" if clean_uri.startswith("https://") else "http"
+        fs = fsspec.filesystem(scheme)
+        has_consolidated = bool(fs.exists(f"{clean_uri}/.zmetadata"))
         if not (
             has_consolidated
-            or fs.exists(store_uri)
-            or fs.exists(f"{store_uri}/zarr.json")
-            or fs.exists(f"{store_uri}/.zgroup")
+            or fs.exists(f"{clean_uri}/zarr.json")
+            or fs.exists(f"{clean_uri}/.zgroup")
         ):
             raise FileNotFoundError(
-                f"Required cloud Zarr store not found on GCS: {store_uri}"
+                f"Required public HTTP(S) Zarr store not found: {clean_uri}"
+            )
+        store = zarr.storage.FsspecStore.from_url(clean_uri)
+        return xr.open_zarr(store, consolidated=has_consolidated)
+    if clean_uri.startswith("gs://"):
+        storage_options = get_gcs_storage_options()
+        fs = gcsfs.GCSFileSystem(**storage_options)
+        has_consolidated = bool(fs.exists(f"{clean_uri}/.zmetadata"))
+        if not (
+            has_consolidated
+            or fs.exists(clean_uri)
+            or fs.exists(f"{clean_uri}/zarr.json")
+            or fs.exists(f"{clean_uri}/.zgroup")
+        ):
+            raise FileNotFoundError(
+                f"Required cloud Zarr store not found on GCS: {clean_uri}"
             )
         return xr.open_zarr(
-            store_uri,
+            clean_uri,
             consolidated=has_consolidated,
             storage_options=storage_options,
         )
-    if not zarr_store_exists(store_uri):
+    if not zarr_store_exists(clean_uri):
         raise FileNotFoundError(
-            f"Required Zarr store not found at path: {store_uri}"
+            f"Required Zarr store not found at path: {clean_uri}"
         )
-    local_path = Path(store_uri.removeprefix("file://"))
+    local_path = Path(clean_uri.removeprefix("file://"))
     has_consolidated = (local_path / ".zmetadata").exists()
     return xr.open_zarr(str(local_path), consolidated=has_consolidated)

@@ -1,0 +1,59 @@
+name: Deploy HydrologyMIP Website & Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "web/**"
+      - "mips/camels_us_daily/leaderboards/**"
+      - "mips/camels_us_daily/figures/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-website-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-cloudflare:
+    name: Build Unified Portal Bundle & Deploy Cloudflare Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install deployment dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=1.26" "pandas>=2.2" "pyyaml>=6.0.1"
+
+      - name: Dry-run unified Worker & portal asset bundle
+        run: |
+          python -m web.worker.deploy_cf_worker --dry-run
+
+      - name: Deploy unified Cloudflare Worker bundle
+        if: env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          HYDROLOGYMIP_SCORER_API_URL: ${{ secrets.SCORER_API_URL }}
+          HYDROLOGYMIP_PREVIEW_GATE: ${{ vars.HYDROLOGYMIP_PREVIEW_GATE || 'true' }}
+          HYDROLOGYMIP_SCRUB_PRIVATE_URLS: ${{ vars.HYDROLOGYMIP_SCRUB_PRIVATE_URLS || 'true' }}
+          HYDROMIP_EXPLORER_STORE: ${{ vars.HYDROMIP_EXPLORER_STORE || '' }}
+        run: |
+          if [[ -n "${HYDROMIP_EXPLORER_STORE:-}" && -f "${HYDROMIP_EXPLORER_STORE}" ]]; then
+            PYTHONPATH=. python web/worker/deploy_cf_worker.py --explorer-store "${HYDROMIP_EXPLORER_STORE}"
+          else
+            PYTHONPATH=. python web/worker/deploy_cf_worker.py --allow-partial-hydrographs
+          fi

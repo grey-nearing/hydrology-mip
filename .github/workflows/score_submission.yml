@@ -1,0 +1,270 @@
+name: Score Community Model Submission
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - "submissions/**/*.json"
+  push:
+    branches:
+      - main
+    paths:
+      - "submissions/**/*.json"
+  workflow_dispatch:
+    inputs:
+      submission_file:
+        description: "Path to a submission manifest JSON under submissions/"
+        required: true
+      dry_run:
+        description: "Score without mutating leaderboard JSONs"
+        required: false
+        default: "false"
+
+# Strict read-only default permissions (fork-safe for all pull requests).
+permissions:
+  contents: read
+
+concurrency:
+  group: score-submission-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  validate-and-score:
+    name: Process, Score (14 Metrics) & Stage Zarr v2
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0"
+          python -m pip install -e ".[dev]" "pydantic>=2.7.0"
+
+      - name: Discover changed submission manifests
+        id: discover
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          MANUAL_FILE: ${{ github.event.inputs.submission_file }}
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, os, subprocess
+          manual = os.environ.get("MANUAL_FILE", "").strip()
+          if manual:
+              files = [manual]
+          else:
+              base = os.environ.get("BASE_SHA", "").strip()
+              head = os.environ.get("HEAD_SHA", "HEAD").strip()
+              if base and base != "0" * 40:
+                  out = subprocess.check_output(
+                      ["git", "diff", "--name-only", base, head, "--", "submissions/"],
+                      text=True,
+                  ).splitlines()
+              else:
+                  out = subprocess.check_output(
+                      ["git", "ls-files", "submissions/"],
+                      text=True,
+                  ).splitlines()
+              files = [f for f in out if f.endswith(".json")]
+          print(f"files={json.dumps(files)}")
+          print(f"has_files={'true' if files else 'false'}")
+          PY
+
+      - name: Run protocol & AST guardrails
+        run: python -m hydromip.tools.ci_guardrails --mode all
+
+      - name: Run process_submission (dry-run on PR) across manifests
+        if: steps.discover.outputs.has_files == 'true'
+        env:
+          HYDROMIP_GCS_ANON: "1"
+          SUBMISSION_FILES: ${{ steps.discover.outputs.files }}
+          TARGET_OBSERVATIONS_URI: ${{ vars.CAMELS_OBSERVATIONS_URI || 'https://data.hydrologymip.org/observations/newman_eval_targets.zarr' }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          from hydromip.evaluation.zarr_io import open_zarr_store
+
+          files = json.loads(os.environ["SUBMISSION_FILES"])
+          local_targets = Path("mips/camels_us_daily/observations/newman_eval_targets.zarr")
+          if not local_targets.exists():
+              local_targets.parent.mkdir(parents=True, exist_ok=True)
+              obs_ds = open_zarr_store(os.environ["TARGET_OBSERVATIONS_URI"])
+              obs_ds.to_zarr(str(local_targets), mode="w", consolidated=True, zarr_format=2)
+
+          combined_md = []
+          for idx, manifest_file in enumerate(files):
+              md_out = Path("staging_reports") / f"summary_{idx}.md"
+              subprocess.run(
+                  [
+                      "python",
+                      "-m",
+                      "hydromip.tools.process_submission",
+                      "--manifest",
+                      manifest_file,
+                      "--mip-dir",
+                      "mips/camels_us_daily",
+                      "--out-zarr-dir",
+                      "staging_zarr",
+                      "--summary-md",
+                      str(md_out),
+                      "--dry-run",
+                  ],
+                  check=True,
+              )
+              combined_md.append(md_out.read_text(encoding="utf-8"))
+
+          Path("staging_reports").mkdir(exist_ok=True)
+          Path("staging_reports/combined_pr_summary.md").write_text(
+              "\n---\n\n".join(combined_md), encoding="utf-8"
+          )
+          PY
+
+      - name: Upload staged Zarr v2 & scoring summary artifact
+        if: steps.discover.outputs.has_files == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-submission-zarr-${{ github.event.pull_request.number || github.run_id }}
+          path: |
+            staging_zarr/
+            staging_reports/combined_pr_summary.md
+          if-no-files-found: ignore
+
+  comment-pr-summary:
+    name: Post Scoring Summary on Non-Fork PR
+    needs: validate-and-score
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download scoring summary artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: canonical-submission-zarr-${{ github.event.pull_request.number || github.run_id }}
+          path: downloaded_report
+
+      - name: Post summary comment
+        if: hashFiles('downloaded_report/combined_pr_summary.md') != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr comment "${PR_NUMBER}" --body-file downloaded_report/combined_pr_summary.md
+
+  publish-on-main:
+    name: Score, Update Leaderboards & Sync Zarr on Main
+    needs: validate-and-score
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0"
+          python -m pip install -e ".[dev]" "pydantic>=2.7.0"
+
+      - name: Discover manifests and score officially
+        env:
+          HYDROMIP_GCS_ANON: "1"
+          BASE_SHA: ${{ github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
+          MANUAL_FILE: ${{ github.event.inputs.submission_file }}
+          TARGET_OBSERVATIONS_URI: ${{ vars.CAMELS_OBSERVATIONS_URI || 'https://data.hydrologymip.org/observations/newman_eval_targets.zarr' }}
+        run: |
+          python - <<'PY'
+          import json, os, subprocess
+          from pathlib import Path
+          from hydromip.evaluation.zarr_io import open_zarr_store
+
+          manual = os.environ.get("MANUAL_FILE", "").strip()
+          if manual:
+              files = [manual]
+          else:
+              base = os.environ.get("BASE_SHA", "").strip()
+              head = os.environ.get("HEAD_SHA", "HEAD").strip()
+              if base and base != "0" * 40:
+                  out = subprocess.check_output(
+                      ["git", "diff", "--name-only", base, head, "--", "submissions/"],
+                      text=True,
+                  ).splitlines()
+              else:
+                  out = subprocess.check_output(["git", "ls-files", "submissions/"], text=True).splitlines()
+              files = [f for f in out if f.endswith(".json")]
+
+          if not files:
+              print("No submission manifests changed; exiting.")
+              raise SystemExit(0)
+
+          local_targets = Path("mips/camels_us_daily/observations/newman_eval_targets.zarr")
+          if not local_targets.exists():
+              local_targets.parent.mkdir(parents=True, exist_ok=True)
+              obs_ds = open_zarr_store(os.environ["TARGET_OBSERVATIONS_URI"])
+              obs_ds.to_zarr(str(local_targets), mode="w", consolidated=True, zarr_format=2)
+
+          for idx, manifest_file in enumerate(files):
+              subprocess.run(
+                  [
+                      "python",
+                      "-m",
+                      "hydromip.tools.process_submission",
+                      "--manifest",
+                      manifest_file,
+                      "--mip-dir",
+                      "mips/camels_us_daily",
+                      "--out-zarr-dir",
+                      "staging_zarr",
+                      "--summary-md",
+                      f"staging_reports/main_{idx}.md",
+                      "--update-figures",
+                  ],
+                  check=True,
+              )
+          PY
+
+      - name: Commit updated leaderboards & figures
+        run: |
+          git add mips/camels_us_daily/leaderboards/ mips/camels_us_daily/figures/
+          if ! git diff --cached --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "chore(leaderboards): score merged community model submission [skip ci]"
+            git push
+          fi
+
+      - name: Upload canonical Zarr v2 archive to cloud storage
+        env:
+          CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
+          R2_S3_ENDPOINT: ${{ vars.R2_S3_ENDPOINT }}
+          GCS_HYDROGRAPH_BUCKET: ${{ vars.GCS_HYDROGRAPH_BUCKET }}
+        run: |
+          if [[ -n "${GCS_HYDROGRAPH_BUCKET:-}" && -d "staging_zarr/hydrographs" ]]; then
+            gsutil -m rsync -r staging_zarr/hydrographs "${GCS_HYDROGRAPH_BUCKET%/}/hydrographs"
+          elif [[ -n "${CLOUDFLARE_R2_BUCKET:-}" && -d "staging_zarr/hydrographs" ]]; then
+            aws s3 sync staging_zarr/hydrographs "s3://${CLOUDFLARE_R2_BUCKET}/hydrographs" --endpoint-url "${R2_S3_ENDPOINT}"
+          else
+            echo "No cloud hydrograph bucket configured; skipping remote Zarr upload."
+          fi

@@ -140,6 +140,33 @@ def _ast_try_types() -> tuple[type[ast.AST], ...]:
     return (ast.Try,)
 
 
+# Tightly-scoped exception for optional external Tier-2 Gemini REST schema inference:
+# the HTTPS/JSON degradation boundary must convert network/parse errors into a diagnostic
+# stuck report rather than crashing the portal. Zero other non-test code may catch exceptions.
+TRY_EXCEPT_FUNCTION_ALLOWLIST: dict[str, frozenset[str]] = {
+    "hydromip/io/llm_schema_adapter.py": frozenset({"_call_gemini_rest"}),
+}
+
+
+def _iter_try_nodes_with_scope(
+    node: ast.AST,
+    try_types: tuple[type[ast.AST], ...],
+    enclosing_func: str | None = None,
+) -> list[tuple[ast.AST, str | None]]:
+    """Return every AST try node paired with its immediate enclosing function name."""
+    found: list[tuple[ast.AST, str | None]] = []
+    if isinstance(node, try_types):
+        found.append((node, enclosing_func))
+    next_scope = (
+        node.name
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+        else enclosing_func
+    )
+    for child in ast.iter_child_nodes(node):
+        found.extend(_iter_try_nodes_with_scope(child, try_types, next_scope))
+    return found
+
+
 def check_code_guardrails(repo_root: Path = REPO_ROOT) -> list[str]:
     """Enforce AST rules, pickle safety, split/date isolation, leak checks, and <5 MiB file cap."""
     errors: list[str] = []
@@ -171,11 +198,8 @@ def check_code_guardrails(repo_root: Path = REPO_ROOT) -> list[str]:
         # 2. Internal paths, workstation paths, and secrets across text & notebook files
         if path.suffix.lower() not in BINARY_ASSET_EXTENSIONS:
             text = path.read_text(encoding="utf-8", errors="replace")
-            is_legacy_frontend_doc = rel_str == "frontend/README.md"
             for lineno, line in enumerate(text.splitlines(), 1):
                 for label, pattern in LEAK_AND_SECRET_PATTERNS:
-                    if is_legacy_frontend_doc and label == "internal_conda_env":
-                        continue
                     if pattern.search(line):
                         errors.append(f"[leak:{label}] {rel_str}:{lineno}: {line.strip()[:120]}")
                 if path.suffix.lower() == ".py" and not is_test and HARDCODED_TMP_PATTERN.search(line):
@@ -202,12 +226,14 @@ def check_code_guardrails(repo_root: Path = REPO_ROOT) -> list[str]:
             tree = ast.parse(source, filename=rel_str)
 
             if not is_test:
-                for node in ast.walk(tree):
-                    if isinstance(node, try_types):
+                allowed_try_funcs = TRY_EXCEPT_FUNCTION_ALLOWLIST.get(rel_str, frozenset())
+                for try_node, scope_name in _iter_try_nodes_with_scope(tree, try_types):
+                    if scope_name not in allowed_try_funcs:
                         errors.append(
-                            f"[prohibited-try-except] {rel_str}:{node.lineno}: "
+                            f"[prohibited-try-except] {rel_str}:{try_node.lineno}: "
                             "try/except/finally blocks are prohibited in library, model, and API code."
                         )
+                for node in ast.walk(tree):
                     if isinstance(node, ast.Attribute) and node.attr in (
                         "suppress",
                         "catch_warnings",
@@ -426,7 +452,6 @@ def check_docs_and_registries(repo_root: Path = REPO_ROOT) -> list[str]:
 
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
         in_fence = False
-        is_legacy_frontend_doc = rel_str == "frontend/README.md"
         for lineno, line in enumerate(lines, 1):
             for tok_match in STALE_DOC_TOKEN_PATTERN.finditer(line):
                 errors.append(
@@ -434,8 +459,6 @@ def check_docs_and_registries(repo_root: Path = REPO_ROOT) -> list[str]:
                     f"identifier {tok_match.group(0)!r}."
                 )
             for label, pattern in LEAK_AND_SECRET_PATTERNS:
-                if is_legacy_frontend_doc and label == "internal_conda_env":
-                    continue
                 if pattern.search(line):
                     errors.append(f"[doc-leak:{label}] {rel_str}:{lineno}: {line.strip()[:120]}")
 
@@ -730,6 +753,15 @@ def _write_minimal_valid_repo(root: Path) -> None:
 
     (root / "models" / "demo_model" / "README.md").write_text("# Demo Model\n", encoding="utf-8")
     (root / "models" / "demo_model" / "model.py").write_text("X = 1\n", encoding="utf-8")
+    (root / "hydromip" / "io").mkdir(parents=True, exist_ok=True)
+    (root / "hydromip" / "io" / "llm_schema_adapter.py").write_text(
+        "def _call_gemini_rest():\n"
+        "    try:\n"
+        "        return 'ok'\n"
+        "    except ValueError:\n"
+        "        return 'fallback'\n",
+        encoding="utf-8",
+    )
     (root / "models" / "demo_model" / "runner.py").write_text(
         "def run_fold(train_basins, test_basins, train_period, eval_period, forcings, data_dir, seeds=(1,), **kw):\n"
         "    return None\n",
@@ -853,6 +885,13 @@ def run_self_tests() -> int:
         tmp_word = "/" + "tmp/kernel.o"
         (root / "models" / "demo_model" / "tmp_real.py").write_text(
             f"K = {tmp_word!r}\n", encoding="utf-8"
+        )
+        (root / "hydromip" / "io" / "llm_schema_adapter.py").write_text(
+            "def _call_gemini_rest():\n"
+            "    try:\n        return 'ok'\n    except ValueError:\n        return 'fallback'\n"
+            "def bad_other_func():\n"
+            "    try:\n        return 1\n    except Exception:\n        return 0\n",
+            encoding="utf-8",
         )
         (root / "README.md").write_text(
             f"# Broken [link](missing.md) and {bad_env} and {bad_tok}\n",

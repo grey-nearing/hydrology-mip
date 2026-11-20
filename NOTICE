@@ -11,7 +11,7 @@ benchmark, the CAMELS-US Daily Streamflow Model Intercomparison Project
    (`hydromip/`), the per-MIP adapters (`mips/*/adapter.py`), `metrics/`,
    `models/` (all 20 model implementations and the shared
    `models/_dhbv_common/` dHBV core), the ERA notebooks in
-   `mips/camels_us_daily/era_experiments/`, `leaderboards/*.py`, `frontend/`,
+   `mips/camels_us_daily/era_experiments/`, `leaderboards/*.py`, `web/`,
    and `benchmarks/`—is licensed under the Apache License, Version 2.0 (see
    `LICENSE`). Portions derived from permissively licensed third-party
    open-source software (`BSD-3-Clause`, `MIT`, `Apache-2.0`) carry the

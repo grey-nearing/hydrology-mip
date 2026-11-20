@@ -1,0 +1,156 @@
+name: Convert Submission Issue to Pull Request
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: issue-to-pr-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  open-submission-pr:
+    name: Create Community Submission PR from Issue
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    if: >-
+      !github.event.issue.pull_request &&
+      (contains(github.event.issue.labels.*.name, 'community-submission') ||
+       startsWith(github.event.issue.title, '[Model Submission]') ||
+       startsWith(github.event.issue.title, '[Submission]:'))
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Parse submission manifest & open Pull Request safely
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          python - <<'PY'
+          import json, os, re, subprocess
+          from pathlib import Path
+
+          body = os.environ.get("ISSUE_BODY") or ""
+          json_matches = re.findall(r"```json\s*\n(.*?)\n```", body, flags=re.DOTALL | re.IGNORECASE)
+          manifest = None
+          for blk in reversed(json_matches):
+              candidate = json.loads(blk)
+              if isinstance(candidate, dict) and candidate.get("leaderboard_id") and candidate.get("model_name"):
+                  manifest = candidate
+                  break
+
+          if manifest is None:
+              sections = {}
+              cur_key = None
+              buf = []
+              for line in body.splitlines():
+                  if line.startswith("### "):
+                      if cur_key:
+                          sections[cur_key] = "\n".join(buf).strip()
+                      cur_key = line[4:].strip()
+                      buf = []
+                  else:
+                      buf.append(line)
+              if cur_key:
+                  sections[cur_key] = "\n".join(buf).strip()
+
+              lb_id = sections.get("Target Leaderboard (Table 3–14)", "").strip()
+              model_name = sections.get("Model Name", "").strip()
+              archive_url = sections.get(
+                  "Public Hydrograph Archive DOI or HTTPS URL (Zenodo / HydroShare / OSF / Figshare)", ""
+              ).strip()
+              code_url = sections.get(
+                  "Public Code Repository URL (Leave blank or write Closed-Source if proprietary)",
+                  sections.get("Public Code Repository URL", ""),
+              ).strip()
+              is_closed = code_url.lower() in ("", "none", "n/a", "closed-source", "_no response_")
+              manifest = {
+                  "schema_version": "1.1",
+                  "benchmark": "camels_us_daily",
+                  "leaderboard_id": lb_id,
+                  "model_name": model_name,
+                  "forcing": sections.get("Meteorological Forcing Product(s)", "Daymet").strip(),
+                  "category": sections.get("Submission Category", "Contribution").strip(),
+                  "paradigm": sections.get(
+                      "Model Paradigm / Category",
+                      sections.get("Model Paradigm / Family", "Machine learning"),
+                  ).strip(),
+                  "archive_url": archive_url,
+                  "code_url": "" if is_closed else code_url,
+                  "closed_source": is_closed,
+                  "citation": sections.get("Citation / Reference", "Community Contribution (2026)").strip(),
+                  "compliance_attestation": {
+                      "blind_holdout_window": True,
+                      "strict_spatial_holdout_canonical_folds": True,
+                      "all_forcing_inputs_declared": True,
+                      "deterministic_daily_predictions_mm_per_day": True,
+                  },
+              }
+
+          lb_id = str(manifest["leaderboard_id"]).strip()
+          if not re.fullmatch(r"(gauged|pub|pur)__(single_camels|multi_camels|lagged_streamflow|freeform)", lb_id):
+              raise ValueError(f"Unsupported leaderboard_id {lb_id!r}")
+
+          model_name = str(manifest["model_name"]).strip()
+          slug = re.sub(r"[^a-z0-9_]+", "_", model_name.lower()).strip("_")[:32] or "model"
+          issue_num = int(os.environ["ISSUE_NUMBER"])
+          issue_author = os.environ.get("ISSUE_AUTHOR", "").strip()
+          entry_id = f"contrib_{slug}_gh{issue_num}"
+
+          manifest["entry_id"] = entry_id
+          manifest["submitted_by_github"] = issue_author
+          manifest["source_issue"] = issue_num
+
+          sub_path = Path("submissions") / lb_id / f"{entry_id}.json"
+          sub_path.parent.mkdir(parents=True, exist_ok=True)
+          sub_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+          branch = f"submissions/{entry_id}"
+          subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+          subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
+          subprocess.run(["git", "checkout", "-b", branch], check=True)
+          subprocess.run(["git", "add", sub_path.as_posix()], check=True)
+          subprocess.run(["git", "commit", "-m", f"feat(submission): register {model_name} for {lb_id} (#{issue_num})"], check=True)
+          subprocess.run(["git", "push", "-u", "origin", branch], check=True)
+
+          pr_body = (
+              f"Automated submission PR opened from issue #{issue_num} by @{issue_author}.\n\n"
+              f"Closes #{issue_num}\n"
+          )
+          pr_url = subprocess.check_output(
+              [
+                  "gh",
+                  "pr",
+                  "create",
+                  "--base",
+                  "main",
+                  "--head",
+                  branch,
+                  "--title",
+                  f"Community Submission: {model_name} ({lb_id})",
+                  "--body",
+                  pr_body,
+              ],
+              text=True,
+          ).strip()
+          subprocess.run(
+              [
+                  "gh",
+                  "issue",
+                  "comment",
+                  str(issue_num),
+                  "--body",
+                  f"Opened automated submission pull request for scoring & review: {pr_url}",
+              ],
+              check=True,
+          )
+          PY

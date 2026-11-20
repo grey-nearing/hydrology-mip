@@ -19,7 +19,7 @@ All paths are relative to the repository root.
 
 | Layer | Files | Owns |
 | :--- | :--- | :--- |
-| 1. Humans | `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, package READMEs (`hydromip/`, `models/`, `metrics/`, `leaderboards/`, `benchmarks/`, `frontend/`), MIP READMEs (`mips/README.md`, `mips/<mip_id>/**/README.md`), per-model READMEs | What exists and how to use it: layout, protocol, commands, flags, schemas |
+| 1. Humans | `README.md`, `CONTRIBUTING.md`, `SECURITY.md`, `CODE_OF_CONDUCT.md`, package READMEs (`hydromip/`, `models/`, `metrics/`, `leaderboards/`, `benchmarks/`, `web/`), MIP READMEs (`mips/README.md`, `mips/<mip_id>/**/README.md`), per-model READMEs | What exists and how to use it: layout, protocol, commands, flags, schemas |
 | 2. Agents | `AGENTS.md`, `skills/<name>/SKILL.md` (+ `references/`) | How to act: steps, MUST/NEVER rules, checks, when to stop and ask |
 
 - A fact lives in **one** place. Skills link to the Layer-1 file instead of copying tables or

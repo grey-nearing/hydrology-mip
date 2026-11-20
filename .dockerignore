@@ -1,6 +1,6 @@
-# Build context for Docker builds run from the repository root (HydrologyMIP web portal image).
-# The portal image needs only `hydromip/`, `mips/` (protocol, splits, leaderboards,
-# figures), `metrics/`, `leaderboards/`, and `frontend/`; everything else is excluded.
+# Build context for Docker builds run from the repository root (HydrologyMIP web scorer image).
+# The portal/scorer image needs only `hydromip/`, `mips/` (protocol, splits, leaderboards,
+# figures), `metrics/`, and `web/`; everything else is excluded.
 
 # --- VCS, CI, and local tooling ---
 .git
