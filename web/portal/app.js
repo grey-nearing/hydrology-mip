@@ -4169,9 +4169,10 @@
           m.primary_ranking_nse != null && m.primary_ranking_nse > -100
             ? Number(m.primary_ranking_nse).toFixed(3)
             : "N/A";
+        const rankPrefix = m.rank != null ? `#${m.rank} ` : "";
         html += `<option value="${esc(m.model_key)}" ${already ? "disabled" : ""}>${
           already ? "✓ " : ""
-        }#${m.rank} ${esc(m.model_name)} [${esc(m.forcing)}] (Med NSE ${nseStr})</option>`;
+        }${rankPrefix}${esc(m.model_name)} [${esc(m.forcing)}] (Med NSE ${nseStr})</option>`;
       }
       html += `</optgroup>`;
     }

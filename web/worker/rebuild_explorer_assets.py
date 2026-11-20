@@ -563,7 +563,7 @@ def rebuild_explorer_assets(
                     Key=r2_key,
                     Body=fh,
                     ContentType="application/gzip",
-                    CacheControl="public, max-age=86400",
+                    CacheControl="public, max-age=300",
                 )
 
     return {

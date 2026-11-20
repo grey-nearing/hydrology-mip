@@ -19,8 +19,10 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import tarfile
 import time
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path, PurePosixPath
@@ -462,6 +464,7 @@ def build_portal_json_payloads(
                         "model_key": mk,
                         "entry_id": eid,
                         "leaderboard_id": lb_id,
+                        "rank": int(row["rank"]),
                         "model_name": row.get("model_name", eid),
                         "family_id": row.get("family_id", ""),
                         "forcing": row.get("forcing", ""),
@@ -557,14 +560,20 @@ def _download_and_unpack_prebuilt_hydro_assets(url: str, stage_dir: Path) -> Pat
     """Safely download and extract prebuilt 531-basin JSON assets (rejecting traversal/symlinks)."""
     tar_path = stage_dir / "prebuilt_hydro_assets.tar.gz"
     stage_dir.mkdir(parents=True, exist_ok=True)
+    fetch_url = url
+    parsed = urllib.parse.urlsplit(url)
+    if parsed.hostname == "data.hydrologymip.org" and not parsed.query:
+        fetch_url = f"{url}?_cb={int(time.time())}"
     validate_and_fetch_archive_url(
-        url,
+        fetch_url,
         dest_path=tar_path,
         max_bytes=500 * 1024 * 1024,
         timeout=120,
         user_agent="HydrologyMIP-Deploy/1.0",
     )
     out_dir = (stage_dir / "hydro_assets").resolve()
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     stage_resolved = stage_dir.resolve()
 
