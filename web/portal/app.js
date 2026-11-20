@@ -5981,7 +5981,6 @@
     bindViewButton("hero-btn-open-camels-us", "leaderboards-hub");
     bindViewButton("hero-btn-open-models", "models");
     bindViewButton("card-btn-open-camels-us", "leaderboards");
-    bindViewButton("hero-btn-open-about", "about");
     bindViewButton("hero-btn-open-contribute", "contribute");
     bindViewButton("leaderboards-top-contribute-btn", "contribute");
     bindViewButton("resource-card-leaderboards", "leaderboards-hub");
