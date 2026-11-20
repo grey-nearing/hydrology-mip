@@ -25,6 +25,7 @@ from hydromip.io.llm_schema_adapter import (
     DEFAULT_GEMINI_MODEL,
     build_hydromip_package_snippet,
     build_stuck_report,
+    get_llm_backend_mode,
     infer_recipe_from_metadata,
 )
 
@@ -42,6 +43,7 @@ __all__ = [
     "detect_file_format",
     "ensure_hydromip_on_path",
     "extract_file_metadata",
+    "get_llm_backend_mode",
     "infer_recipe_from_metadata",
     "ingest_hydrograph",
     "normalize_basin_id",

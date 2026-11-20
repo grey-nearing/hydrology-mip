@@ -186,6 +186,9 @@
     "bucket_uri": "gs://camels-us-mip",
     "targets_zarr_uri": "gs://camels-us-mip/observations/newman_eval_targets.zarr",
     "hydrographs_prefix": "gs://camels-us-mip/hydrographs",
+    "public_https_mirror": "https://data.hydrologymip.org/camels_us_daily/",
+    "public_targets_https_uri": "https://data.hydrologymip.org/camels_us_daily/observations/newman_eval_targets.zarr",
+    "public_hydrographs_https_prefix": "https://data.hydrologymip.org/camels_us_daily/hydrographs",
     "zenodo_release_doi": "10.5281/zenodo.24383448"
   },
   "authors": [

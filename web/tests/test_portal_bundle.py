@@ -58,9 +58,10 @@ def test_unified_portal_bundle_standalone_14_metrics_and_no_legacy(tmp_path: Pat
         assert expected_key in assets, f"Missing static asset {expected_key}"
         assert assets[expected_key].is_file()
 
-    # Check 14 canonical metrics propagated in protocol and rows
+    # Check 14 canonical metrics and public R2 mirror propagated in protocol and rows
     proto_doc = json.loads(assets["/data_assets/protocol.json"].read_text(encoding="utf-8"))
     assert proto_doc["metrics"] == list(GAUCH_2023_METRICS)
+    assert proto_doc["public_data_mirror"] == "https://data.hydrologymip.org/camels_us_daily/"
     lbs_doc = json.loads(assets["/data_assets/leaderboards.json"].read_text(encoding="utf-8"))
     first_row = lbs_doc["leaderboards"][0]["rows"][0]
     for metric_key in ("gauch_nse", "gauch_kge", "gauch_log_nse", "gauch_log_kge"):
@@ -78,13 +79,16 @@ def test_unified_portal_bundle_standalone_14_metrics_and_no_legacy(tmp_path: Pat
     assert not [n for n in ast.walk(tree) if isinstance(n, ast.Try)]
 
     # Syntax-check portal app.js and rendered worker.js if gjs is installed
+    worker_js = deploy_cf_worker.render_worker_script(
+        preview_gate=True,
+        preview_access_key="camels-mip-2026",
+        scorer_api_url="https://example-scorer.run.app",
+    )
+    assert "GAESA=" in worker_js
+    assert 'fwdHeaders.set("Cookie", gaesaCookie)' in worker_js
+
     gjs_bin = shutil.which("gjs")
     if gjs_bin:
-        worker_js = deploy_cf_worker.render_worker_script(
-            preview_gate=True,
-            preview_access_key="camels-mip-2026",
-            scorer_api_url="https://example-scorer.run.app",
-        )
         worker_path = tmp_path / "worker.mjs"
         worker_path.write_text(worker_js, encoding="utf-8")
         app_js_path = (REPO_ROOT / "web" / "portal" / "app.js").as_posix()

@@ -1,7 +1,7 @@
 # Copyright 2026 HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Schema-only Tier 2 LLM fallback using Gemini Flash REST API.
+"""Schema-only Tier 2 LLM fallback using Vertex AI IAM or Gemini Developer API.
 
 Only structural file metadata JSON (dimensions, variable names, shapes, dtypes,
 and first 5 coordinate/column labels) is sent to Gemini Flash, which returns a
@@ -20,11 +20,16 @@ import urllib.request
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+import google.auth
+import google.auth.exceptions
+import google.auth.transport.requests
 from pydantic import BaseModel, Field, ValidationError
 
 from hydromip.io.ingest import DEFAULT_PREFIX_STRIPS, IngestionRecipe
 
 DEFAULT_GEMINI_MODEL: str = "gemini-2.5-flash"
+DEFAULT_VERTEX_LOCATION: str = "us-central1"
+CLOUD_PLATFORM_SCOPE: str = "https://www.googleapis.com/auth/cloud-platform"
 GEMINI_TIMEOUT_SECONDS: int = 20
 
 _SCHEMA_PROMPT_TEMPLATE = """You are a hydrological data schema mapper for HydrologyMIP (CAMELS-US Daily, 531 USGS basins, 1989-10-01 to 1999-09-30, units mm/day).
@@ -147,13 +152,30 @@ def _extract_gemini_text(response_payload: Mapping[str, Any]) -> str:
     raise ValueError("Gemini response JSON did not include candidates[0].content.parts[0].text.")
 
 
+def get_llm_backend_mode() -> str:
+    """Return active Tier 2 schema LLM backend: 'vertex_ai', 'gemini_api_key', or 'disabled'."""
+    if os.environ.get("VERTEX_AI_PROJECT", "").strip():
+        return "vertex_ai"
+    if os.environ.get("GEMINI_API_KEY", "").strip():
+        return "gemini_api_key"
+    return "disabled"
+
+
 def _call_gemini_rest(
     req: urllib.request.Request,
     default_format: str,
     timeout_seconds: int,
+    *,
+    use_vertex_adc: bool = False,
 ) -> tuple[_GeminiRecipeEnvelope | None, IngestionRecipe | None, str | None]:
-    """Execute Gemini REST HTTPS call and validate JSON schema response at the external boundary."""
+    """Execute Vertex AI / Gemini REST HTTPS call and validate JSON schema response at the external boundary."""
     try:
+        if use_vertex_adc:
+            creds, _ = google.auth.default(scopes=[CLOUD_PLATFORM_SCOPE])
+            creds.refresh(google.auth.transport.requests.Request())
+            if not creds.token:
+                raise ValueError("GCP Application Default Credentials returned an empty Bearer token.")
+            req.add_header("Authorization", f"Bearer {creds.token}")
         with urllib.request.urlopen(req, timeout=timeout_seconds) as resp:
             status_code = getattr(resp, "status", None) or resp.getcode()
             if status_code is not None and int(status_code) >= 400:
@@ -187,7 +209,16 @@ def _call_gemini_rest(
             }
         )
         return envelope, recipe, None
-    except (urllib.error.URLError, TimeoutError, OSError, ValueError, KeyError, json.JSONDecodeError, ValidationError) as exc:
+    except (
+        urllib.error.URLError,
+        google.auth.exceptions.GoogleAuthError,
+        TimeoutError,
+        OSError,
+        ValueError,
+        KeyError,
+        json.JSONDecodeError,
+        ValidationError,
+    ) as exc:
         return None, None, f"Tier 2 schema inference request failed ({type(exc).__name__}: {exc})."
 
 
@@ -198,15 +229,15 @@ def infer_recipe_from_metadata(
     leaderboard_id: str = "gauged__single_camels",
     timeout_seconds: int = GEMINI_TIMEOUT_SECONDS,
 ) -> dict[str, Any]:
-    """Infer an ``IngestionRecipe`` from structural metadata using Gemini Flash REST API."""
+    """Infer an ``IngestionRecipe`` from structural metadata using Vertex AI or Gemini Flash REST API."""
     hints = [str(r) for r in (unresolved_reasons or []) if str(r).strip()]
-    api_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    if not api_key:
+    backend_mode = get_llm_backend_mode()
+    if backend_mode == "disabled":
         report = build_stuck_report(
             reason=(
-                "Automatic schema fallback is unavailable because GEMINI_API_KEY is not configured "
-                "on this scorer instance. Use the manual dropdown mapping below or package locally "
-                "with `hydromip package`."
+                "Automatic schema fallback is unavailable because neither VERTEX_AI_PROJECT "
+                "nor GEMINI_API_KEY is configured on this scorer instance. Use the manual "
+                "dropdown mapping below or package locally with `hydromip package`."
             ),
             missing_or_ambiguous=hints or ["Could not deterministically match schema fields."],
             metadata=metadata,
@@ -215,18 +246,35 @@ def infer_recipe_from_metadata(
         return {"status": "stuck", "recipe": None, "stuck_report": report}
 
     model = os.environ.get("HYDROMIP_LLM_MODEL", DEFAULT_GEMINI_MODEL).strip() or DEFAULT_GEMINI_MODEL
-    endpoint = (
-        f"https://generativelanguage.googleapis.com/v1beta/models/"
-        f"{urllib.parse.quote(model, safe='.-')}:generateContent"
-        f"?key={urllib.parse.quote(api_key, safe='')}"
-    )
+    quoted_model = urllib.parse.quote(model, safe=".-")
+    if backend_mode == "vertex_ai":
+        project = os.environ.get("VERTEX_AI_PROJECT", "").strip()
+        location = (
+            os.environ.get("VERTEX_AI_LOCATION", DEFAULT_VERTEX_LOCATION).strip()
+            or DEFAULT_VERTEX_LOCATION
+        )
+        quoted_project = urllib.parse.quote(project, safe=".-")
+        quoted_location = urllib.parse.quote(location, safe=".-")
+        endpoint = (
+            f"https://{quoted_location}-aiplatform.googleapis.com/v1/"
+            f"projects/{quoted_project}/locations/{quoted_location}/"
+            f"publishers/google/models/{quoted_model}:generateContent"
+        )
+    else:
+        api_key = os.environ.get("GEMINI_API_KEY", "").strip()
+        endpoint = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/"
+            f"{quoted_model}:generateContent"
+            f"?key={urllib.parse.quote(api_key, safe='')}"
+        )
+
     prompt = (
         _SCHEMA_PROMPT_TEMPLATE.replace("__HINTS_JSON__", json.dumps(hints, indent=2)).replace(
             "__METADATA_JSON__", json.dumps(dict(metadata), indent=2, default=str)
         )
     )
     request_body = {
-        "contents": [{"parts": [{"text": prompt}]}],
+        "contents": [{"role": "user", "parts": [{"text": prompt}]}],
         "generationConfig": {
             "responseMimeType": "application/json",
             "temperature": 0.0,
@@ -243,6 +291,7 @@ def infer_recipe_from_metadata(
         req,
         default_format=str(metadata.get("format") or ""),
         timeout_seconds=timeout_seconds,
+        use_vertex_adc=(backend_mode == "vertex_ai"),
     )
     if err_reason is not None or envelope is None:
         report = build_stuck_report(

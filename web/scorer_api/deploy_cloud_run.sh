@@ -39,30 +39,59 @@ cp -R "${REPO_ROOT}/mips/camels_us_daily/splits" "${BUILD_CTX}/mips/camels_us_da
 cp "${REPO_ROOT}/mips/camels_us_daily/protocol.json" "${BUILD_CTX}/mips/camels_us_daily/protocol.json"
 cp "${QOBS_NPZ_PATH}" "${BUILD_CTX}/data/qobs_531.npz"
 
-IMAGE_URI="gcr.io/${PROJECT_ID}/${SERVICE_NAME}:latest"
+AR_REPO="${AR_REPO:-hydrologymip}"
+IMAGE_URI="${REGION}-docker.pkg.dev/${PROJECT_ID}/${AR_REPO}/${SERVICE_NAME}:latest"
+
+PROJECT_NUMBER="$(gcloud projects describe "${PROJECT_ID}" --format='value(projectNumber)')"
+RUNTIME_SERVICE_ACCOUNT="${RUNTIME_SERVICE_ACCOUNT:-${PROJECT_NUMBER}-compute@developer.gserviceaccount.com}"
+
+# Idempotently grant the Cloud Run runtime service account Vertex AI inference access.
+gcloud projects add-iam-policy-binding "${PROJECT_ID}" \
+  --member="serviceAccount:${RUNTIME_SERVICE_ACCOUNT}" \
+  --role="roles/aiplatform.user" \
+  --condition=None \
+  >/dev/null
+
+if ! gcloud artifacts repositories describe "${AR_REPO}" \
+  --project="${PROJECT_ID}" --location="${REGION}" >/dev/null 2>&1; then
+  gcloud artifacts repositories create "${AR_REPO}" \
+    --project="${PROJECT_ID}" \
+    --location="${REGION}" \
+    --repository-format=docker \
+    --description="HydrologyMIP stateless scorer container images"
+fi
 
 gcloud builds submit "${BUILD_CTX}" \
   --project="${PROJECT_ID}" \
   --tag="${IMAGE_URI}"
+
+VERTEX_AI_LOCATION="${VERTEX_AI_LOCATION:-${REGION}}"
+HYDROMIP_LLM_MODEL="${HYDROMIP_LLM_MODEL:-gemini-2.5-flash}"
+HYDROMIP_MAX_LLM_CALLS_PER_DAY="${HYDROMIP_MAX_LLM_CALLS_PER_DAY:-100}"
+HYDROMIP_MAX_LLM_CALLS_PER_IP_HOUR="${HYDROMIP_MAX_LLM_CALLS_PER_IP_HOUR:-3}"
+
+ENV_VARS="VERTEX_AI_PROJECT=${PROJECT_ID},VERTEX_AI_LOCATION=${VERTEX_AI_LOCATION},HYDROMIP_LLM_MODEL=${HYDROMIP_LLM_MODEL},HYDROMIP_MAX_LLM_CALLS_PER_DAY=${HYDROMIP_MAX_LLM_CALLS_PER_DAY},HYDROMIP_MAX_LLM_CALLS_PER_IP_HOUR=${HYDROMIP_MAX_LLM_CALLS_PER_IP_HOUR}"
+if [[ -n "${GEMINI_API_KEY:-}" ]]; then
+  ENV_VARS="${ENV_VARS},GEMINI_API_KEY=${GEMINI_API_KEY}"
+fi
 
 DEPLOY_ARGS=(
   run deploy "${SERVICE_NAME}"
   --project="${PROJECT_ID}"
   --region="${REGION}"
   --image="${IMAGE_URI}"
+  --service-account="${RUNTIME_SERVICE_ACCOUNT}"
   --platform=managed
   --allow-unauthenticated
   --cpu=2
   --memory=4Gi
-  --concurrency=4
+  --concurrency=8
   --timeout=300
+  --session-affinity
   --min-instances=0
   --max-instances=3
+  --set-env-vars="${ENV_VARS}"
 )
-
-if [[ -n "${GEMINI_API_KEY:-}" ]]; then
-  DEPLOY_ARGS+=(--set-env-vars="GEMINI_API_KEY=${GEMINI_API_KEY}")
-fi
 
 gcloud "${DEPLOY_ARGS[@]}"
 

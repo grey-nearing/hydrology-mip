@@ -531,6 +531,8 @@ def _pick_first_matching(names: Sequence[str], candidates: Sequence[str]) -> str
         if cand in lower_map:
             return lower_map[cand]
     for cand in candidates:
+        if len(cand) < 3:
+            continue
         for n in names:
             nl = str(n).lower()
             if nl in EXCLUDED_OBS_NAMES:
@@ -591,10 +593,11 @@ def resolve_deterministic_recipe(
                 if _looks_like_basin_values(sample_coords.get(d, [])):
                     basin_dim = d
                     break
-        time_dim = _pick_first_matching(var_dims, TIME_DIM_CANDIDATES)
+        remaining_for_time = [d for d in var_dims if d != basin_dim]
+        time_dim = _pick_first_matching(remaining_for_time, TIME_DIM_CANDIDATES)
         if time_dim is None:
-            for d in var_dims:
-                if d != basin_dim and _looks_like_date_values(sample_coords.get(d, [])):
+            for d in remaining_for_time:
+                if _looks_like_date_values(sample_coords.get(d, [])):
                     time_dim = d
                     break
         member_dim = None
@@ -647,8 +650,12 @@ def resolve_deterministic_recipe(
         cols: list[str] = [str(c) for c in meta.get("columns", [])]
         sample_cols: Mapping[str, list[Any]] = meta.get("sample_coords", {})
         date_col = _pick_first_matching(cols, TIME_DIM_CANDIDATES)
-        basin_col = _pick_first_matching(cols, BASIN_DIM_CANDIDATES)
-        member_col = _pick_first_matching(cols, MEMBER_DIM_CANDIDATES)
+        basin_col = _pick_first_matching(
+            [c for c in cols if c != date_col], BASIN_DIM_CANDIDATES
+        )
+        member_col = _pick_first_matching(
+            [c for c in cols if c not in (date_col, basin_col)], MEMBER_DIM_CANDIDATES
+        )
 
         basin_header_cols = [c for c in cols if c != date_col and _looks_like_basin_values([c])]
         if len(basin_header_cols) >= 10:

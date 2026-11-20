@@ -141,9 +141,10 @@ Agents start with [AGENTS.md](AGENTS.md). It holds the hard rules and the list o
   [mips/camels_us_daily/data/README.md](mips/camels_us_daily/data/README.md).
 - HydrologyMIP v1.0 release archive (Zenodo):
   [10.5281/zenodo.24383448](https://doi.org/10.5281/zenodo.24383448).
-- The official hydrograph archive bucket (`gs://camels-us-mip/`) is private to the maintainers.
-  Leaderboard values are published in `mips/camels_us_daily/leaderboards/` and on
-  <https://hydrologymip.org>.
+- Ongoing public hydrograph data mirror (Cloudflare R2, evaluation targets and post-v1.0
+  community Zarr v2 hydrographs): <https://data.hydrologymip.org/camels_us_daily/>.
+- The maintainer archival bucket (`gs://camels-us-mip/`) backs the release; public leaderboard
+  values are published in `mips/camels_us_daily/leaderboards/` and on <https://hydrologymip.org>.
 
 ## Citation
 

@@ -30,3 +30,11 @@ HYDROLOGYMIP_PREVIEW_GATE=true python -m web.worker.deploy_cf_worker \
 
 Set `HYDROLOGYMIP_PREVIEW_GATE=false` for unauthenticated public launch and
 `HYDROLOGYMIP_SCORER_API_URL=https://<cloud-run-service>` to enable live browser preview scoring.
+
+## Public Archive & Telemetry Endpoints
+
+- Ongoing public hydrograph & target Zarr mirror (R2):
+  <https://data.hydrologymip.org/camels_us_daily/> (alongside Zenodo v1.0 release
+  [10.5281/zenodo.24383448](https://doi.org/10.5281/zenodo.24383448)).
+- Scorer readiness & LLM backend telemetry: `GET /api/preview/health` (proxied from the Worker to
+  Cloud Run, forwarding `GAESA` sticky cookies while stripping preview gate cookies).

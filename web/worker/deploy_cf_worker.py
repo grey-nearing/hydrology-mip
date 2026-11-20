@@ -631,6 +631,9 @@ def stage_data_and_portal_assets(
             "pub_12fold": "/api/splits/pub_12fold_random_splits.json",
             "pur_18fold": "/api/splits/pur_18fold_huc02_splits.json",
         },
+        "public_data_mirror": "https://data.hydrologymip.org/camels_us_daily/",
+        "public_targets_url": "https://data.hydrologymip.org/camels_us_daily/observations/newman_eval_targets.zarr",
+        "zenodo_release_doi": "10.5281/zenodo.24383448",
         "submissions_email": "submissions@hydrologymip.org",
     }
 
@@ -1155,6 +1158,12 @@ export default {
       if (ct) fwdHeaders.set("Content-Type", ct);
       const accept = request.headers.get("Accept");
       if (accept) fwdHeaders.set("Accept", accept);
+      const rawCookie = request.headers.get("Cookie") || "";
+      const gaesaCookie = rawCookie
+        .split(";")
+        .map((part) => part.trim())
+        .find((part) => part.startsWith("GAESA="));
+      if (gaesaCookie) fwdHeaders.set("Cookie", gaesaCookie);
       const init = { method: request.method, headers: fwdHeaders };
       if (request.method !== "GET" && request.method !== "HEAD") {
         init.body = request.body;

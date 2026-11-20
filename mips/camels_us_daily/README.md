@@ -51,6 +51,7 @@ A water year runs from 1 October to 30 September. Water year 1990 starts on 1989
 | Extended Maurer forcings (with daily minimum and maximum temperature) | HydroShare | [10.4211/hs.17c896843cf940339c3c3496d0c1c077](https://doi.org/10.4211/hs.17c896843cf940339c3c3496d0c1c077) |
 | Extended NLDAS forcings | HydroShare | [10.4211/hs.0a68bfd7ddf642a8be9041d60f40868c](https://doi.org/10.4211/hs.0a68bfd7ddf642a8be9041d60f40868c) |
 | HydrologyMIP v1.0 release (code, splits, and leaderboards) | Zenodo | [10.5281/zenodo.24383448](https://doi.org/10.5281/zenodo.24383448) |
+| Ongoing public Zarr v2 hydrograph & evaluation-target mirror | Cloudflare R2 | <https://data.hydrologymip.org/camels_us_daily/> |
 
 Download and build steps are in [`data/README.md`](data/README.md). The licenses of the data are
 in [`DATA_LICENSE.md`](../../DATA_LICENSE.md).

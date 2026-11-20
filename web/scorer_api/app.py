@@ -32,6 +32,7 @@ import uuid
 from collections import deque
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -58,6 +59,7 @@ from hydromip.io.ingest import (
 )
 from hydromip.io.llm_schema_adapter import (
     build_stuck_report,
+    get_llm_backend_mode,
     infer_recipe_from_metadata,
 )
 from hydromip.metrics.deterministic_daily import (
@@ -77,6 +79,8 @@ MAX_ACTIVE_TOKENS: int = 20
 TOKEN_TTL_SECONDS: int = 15 * 60
 RATE_LIMIT_MAX_REQUESTS: int = 15
 RATE_LIMIT_WINDOW_SECONDS: int = 60
+DEFAULT_MAX_LLM_CALLS_PER_IP_HOUR: int = 3
+DEFAULT_MAX_LLM_CALLS_PER_DAY: int = 100
 MAX_REDIRECT_HOPS: int = 5
 ARCHIVE_TIMEOUT_SECONDS: int = 60
 
@@ -567,7 +571,87 @@ class EphemeralPreviewStore:
             shutil.rmtree(token_dir)
 
 
+def _env_nonneg_int(name: str, default: int) -> int:
+    raw = os.environ.get(name, "").strip()
+    if raw.isdigit():
+        return int(raw)
+    return default
+
+
+class LLMBudgetLimiter:
+    """Thread-safe in-memory per-IP hourly and global UTC-daily cap for Tier 2 LLM calls."""
+
+    def __init__(
+        self,
+        max_per_ip_hour: int | None = None,
+        max_per_day: int | None = None,
+    ) -> None:
+        self._max_per_ip_hour = max_per_ip_hour
+        self._max_per_day = max_per_day
+        self._lock = threading.Lock()
+        self._ip_hits: dict[str, deque[float]] = {}
+        self._current_day: str = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        self._daily_count: int = 0
+
+    @property
+    def per_ip_hour_limit(self) -> int:
+        if self._max_per_ip_hour is not None:
+            return max(0, int(self._max_per_ip_hour))
+        return _env_nonneg_int(
+            "HYDROMIP_MAX_LLM_CALLS_PER_IP_HOUR", DEFAULT_MAX_LLM_CALLS_PER_IP_HOUR
+        )
+
+    @property
+    def daily_limit(self) -> int:
+        if self._max_per_day is not None:
+            return max(0, int(self._max_per_day))
+        return _env_nonneg_int(
+            "HYDROMIP_MAX_LLM_CALLS_PER_DAY", DEFAULT_MAX_LLM_CALLS_PER_DAY
+        )
+
+    def _rollover_utc_day_locked(self) -> None:
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        if today != self._current_day:
+            self._current_day = today
+            self._daily_count = 0
+
+    def try_acquire(self, client_ip: str) -> tuple[bool, str | None]:
+        now = time.monotonic()
+        cutoff = now - 3600.0
+        day_lim = self.daily_limit
+        ip_lim = self.per_ip_hour_limit
+        with self._lock:
+            self._rollover_utc_day_locked()
+            dq = self._ip_hits.setdefault(client_ip, deque())
+            while dq and dq[0] < cutoff:
+                dq.popleft()
+            if self._daily_count >= day_lim:
+                return False, (
+                    f"Daily AI schema-helper cap reached ({day_lim} calls per UTC day)."
+                )
+            if len(dq) >= ip_lim:
+                return False, (
+                    f"Per-IP hourly AI schema-helper cap reached ({ip_lim} calls per hour)."
+                )
+            self._daily_count += 1
+            dq.append(now)
+            return True, None
+
+    def daily_remaining(self) -> int:
+        lim = self.daily_limit
+        with self._lock:
+            self._rollover_utc_day_locked()
+            return max(0, lim - self._daily_count)
+
+    def reset(self) -> None:
+        with self._lock:
+            self._ip_hits.clear()
+            self._current_day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+            self._daily_count = 0
+
+
 RATE_LIMITER = SlidingWindowRateLimiter()
+LLM_BUDGET_LIMITER = LLMBudgetLimiter()
 PREVIEW_STORE = EphemeralPreviewStore()
 
 
@@ -945,6 +1029,8 @@ def _run_inspect_sync(
     token_dir: Path,
     leaderboard_id: str,
     recipe_override: Mapping[str, Any] | None,
+    *,
+    client_ip: str = "unknown",
 ) -> dict[str, Any]:
     ref = get_canonical_reference()
     meta = extract_file_metadata(staged_path, work_dir=token_dir / "extract_inspect")
@@ -954,13 +1040,36 @@ def _run_inspect_sync(
     stuck_report: dict[str, Any] | None = None
 
     if recipe is None:
-        llm_res = infer_recipe_from_metadata(
-            meta,
-            unresolved_reasons=unresolved,
-            leaderboard_id=leaderboard_id,
-        )
-        recipe = llm_res["recipe"]
-        stuck_report = llm_res["stuck_report"]
+        if get_llm_backend_mode() == "disabled":
+            llm_res = infer_recipe_from_metadata(
+                meta,
+                unresolved_reasons=unresolved,
+                leaderboard_id=leaderboard_id,
+            )
+            recipe = llm_res["recipe"]
+            stuck_report = llm_res["stuck_report"]
+        else:
+            allowed, cap_reason = LLM_BUDGET_LIMITER.try_acquire(client_ip)
+            if not allowed:
+                stuck_report = build_stuck_report(
+                    reason=(
+                        f"{cap_reason} Automated AI schema mapping is paused to stay within "
+                        "public quota limits; select your dimensions manually below or package "
+                        "locally with `hydromip package`."
+                    ),
+                    missing_or_ambiguous=unresolved
+                    or ["Select axes manually below or package locally with `hydromip package`."],
+                    metadata=meta,
+                    leaderboard_id=leaderboard_id,
+                )
+            else:
+                llm_res = infer_recipe_from_metadata(
+                    meta,
+                    unresolved_reasons=unresolved,
+                    leaderboard_id=leaderboard_id,
+                )
+                recipe = llm_res["recipe"]
+                stuck_report = llm_res["stuck_report"]
 
     if recipe is None:
         fallback_fmt = str(meta.get("format") or "netcdf")
@@ -1063,15 +1172,20 @@ async def _key_error_handler(_request: Request, exc: KeyError) -> JSONResponse:
 
 
 @app.get("/health")
+@app.get("/api/preview/health")
 async def health() -> dict[str, Any]:
     """Return service readiness, canonical metric count, and LLM/qobs status."""
     qobs_ready = _CANONICAL_REF is not None or _resolve_qobs_npz_path() is not None
     metric_names = list(GAUCH_2023_METRICS) or list(get_available_metrics())
+    llm_backend = get_llm_backend_mode()
     return {
         "status": "ok",
         "metrics_count": len(metric_names),
         "metrics": metric_names,
-        "llm_adapter_enabled": bool(os.environ.get("GEMINI_API_KEY", "").strip()),
+        "llm_backend": llm_backend,
+        "llm_adapter_enabled": llm_backend != "disabled",
+        "llm_daily_limit": LLM_BUDGET_LIMITER.daily_limit,
+        "llm_daily_remaining": LLM_BUDGET_LIMITER.daily_remaining(),
         "qobs_loaded": qobs_ready,
     }
 
@@ -1088,9 +1202,18 @@ def _record_staged_path_and_inspect(
     token_dir: Path,
     leaderboard_id: str,
     recipe_override: Mapping[str, Any] | None,
+    *,
+    client_ip: str = "unknown",
 ) -> dict[str, Any]:
     (token_dir / "staged_path.txt").write_text(str(staged_path), encoding="utf-8")
-    return _run_inspect_sync(staged_path, token, token_dir, leaderboard_id, recipe_override)
+    return _run_inspect_sync(
+        staged_path,
+        token,
+        token_dir,
+        leaderboard_id,
+        recipe_override,
+        client_ip=client_ip,
+    )
 
 
 def _resolve_download_and_inspect(
@@ -1099,9 +1222,18 @@ def _resolve_download_and_inspect(
     token_dir: Path,
     leaderboard_id: str,
     recipe_override: Mapping[str, Any] | None,
+    *,
+    client_ip: str = "unknown",
 ) -> dict[str, Any]:
     staged_path = resolve_and_download_archive(archive_url, token_dir)
-    return _record_staged_path_and_inspect(staged_path, token, token_dir, leaderboard_id, recipe_override)
+    return _record_staged_path_and_inspect(
+        staged_path,
+        token,
+        token_dir,
+        leaderboard_id,
+        recipe_override,
+        client_ip=client_ip,
+    )
 
 
 def _score_and_cleanup_sync(payload: ScorePreviewRequest) -> dict[str, Any]:
@@ -1128,7 +1260,8 @@ def _score_and_cleanup_sync(payload: ScorePreviewRequest) -> dict[str, Any]:
 @app.post("/api/preview/inspect")
 async def inspect_preview(request: Request) -> dict[str, Any]:
     """Inspect uploaded or SSRF-checked remote archive and run 531-basin physical sanity checks."""
-    RATE_LIMITER.check_and_record(_client_ip(request))
+    client_ip = _client_ip(request)
+    RATE_LIMITER.check_and_record(client_ip)
     content_type = request.headers.get("content-type", "").lower()
 
     upload_obj: UploadFile | None = None
@@ -1186,11 +1319,23 @@ async def inspect_preview(request: Request) -> dict[str, Any]:
             await asyncio.to_thread(_append_upload_chunk, staged_path, buf, create=first_chunk)
             first_chunk = False
         return await asyncio.to_thread(
-            _record_staged_path_and_inspect, staged_path, token, token_dir, leaderboard_id, recipe_override
+            _record_staged_path_and_inspect,
+            staged_path,
+            token,
+            token_dir,
+            leaderboard_id,
+            recipe_override,
+            client_ip=client_ip,
         )
 
     return await asyncio.to_thread(
-        _resolve_download_and_inspect, archive_url, token, token_dir, leaderboard_id, recipe_override
+        _resolve_download_and_inspect,
+        archive_url,
+        token,
+        token_dir,
+        leaderboard_id,
+        recipe_override,
+        client_ip=client_ip,
     )
 
 

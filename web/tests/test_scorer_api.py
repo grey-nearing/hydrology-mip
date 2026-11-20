@@ -14,6 +14,9 @@ import zipfile
 from pathlib import Path
 from typing import Any, ClassVar, Self
 
+import google.auth
+import google.auth.exceptions
+import google.auth.transport.requests
 import numpy as np
 import pandas as pd
 import pytest
@@ -78,9 +81,14 @@ def isolated_api(
     monkeypatch.setenv("HYDROMIP_QOBS_PATH", str(hermetic_qobs_npz))
     monkeypatch.setenv("HYDROMIP_PREVIEW_DIR", str(preview_dir))
     monkeypatch.setenv("HYDROMIP_TARGETS_CACHE_DIR", str(targets_cache))
+    monkeypatch.delenv("VERTEX_AI_PROJECT", raising=False)
+    monkeypatch.delenv("VERTEX_AI_LOCATION", raising=False)
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("HYDROMIP_MAX_LLM_CALLS_PER_DAY", raising=False)
+    monkeypatch.delenv("HYDROMIP_MAX_LLM_CALLS_PER_IP_HOUR", raising=False)
     scorer_app._CANONICAL_REF = None
     scorer_app.RATE_LIMITER.reset()
+    scorer_app.LLM_BUDGET_LIMITER.reset()
     return TestClient(scorer_app.app)
 
 
@@ -563,3 +571,224 @@ def test_gemini_tier2_mock_and_stuck_report_and_full_http_flow(
     assert sc_data["ensemble_single_entry"] is None
     assert sc_data["entry"]["num_evaluated_basins"] == 531
     assert list(scorer_app.PREVIEW_STORE.root_dir.iterdir()) == []
+
+
+def test_preview_health_and_vertex_ai_iam_path(
+    tmp_path: Path,
+    isolated_api: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    canonical_qobs_bundle: tuple[list[str], list[str], list[str], np.ndarray],
+) -> None:
+    basins, dates, _, qobs = canonical_qobs_bundle
+    qsim = _synthetic_qsim(qobs)
+
+    weird_nc = tmp_path / "vertex_weird_schema.nc"
+    xr.Dataset(
+        data_vars={
+            "custom_q_a": (("station_axis", "calendar_axis"), qsim),
+            "custom_q_b": (("station_axis", "calendar_axis"), qsim * np.float32(0.5)),
+        },
+        coords={"station_axis": np.asarray(basins), "calendar_axis": pd.to_datetime(dates)},
+    ).to_netcdf(weird_nc)
+
+    h0 = isolated_api.get("/api/preview/health")
+    assert h0.status_code == 200
+    h0_data = h0.json()
+    assert h0_data["llm_backend"] == "disabled"
+    assert h0_data["llm_adapter_enabled"] is False
+    assert h0_data["metrics_count"] == len(GAUCH_2023_METRICS)
+    assert h0_data["llm_daily_limit"] == 100
+    assert h0_data["llm_daily_remaining"] == 100
+
+    monkeypatch.setenv("VERTEX_AI_PROJECT", "hydrologymip")
+    monkeypatch.setenv("VERTEX_AI_LOCATION", "us-central1")
+    monkeypatch.setenv("HYDROMIP_LLM_MODEL", "gemini-2.5-flash")
+
+    h1 = isolated_api.get("/api/preview/health")
+    assert h1.status_code == 200
+    h1_data = h1.json()
+    assert h1_data["llm_backend"] == "vertex_ai"
+    assert h1_data["llm_adapter_enabled"] is True
+    assert h1_data["llm_daily_remaining"] == 100
+
+    # ADC credential failure cleanly degrades into stuck_report without crashing
+    meta = ingest.extract_file_metadata(weird_nc)
+    monkeypatch.setattr(
+        google.auth,
+        "default",
+        lambda **_k: (_ for _ in ()).throw(google.auth.exceptions.DefaultCredentialsError("missing adc")),
+    )
+    adc_fail = llm_schema_adapter.infer_recipe_from_metadata(meta, ["Ambiguous variables"])
+    assert adc_fail["status"] == "stuck"
+    assert "missing adc" in adc_fail["stuck_report"]["reason"]
+
+    class _FakeCreds:
+        def __init__(self) -> None:
+            self.token: str | None = None
+
+        def refresh(self, _req: object) -> None:
+            self.token = "test-vertex-iam-token"
+
+    monkeypatch.setattr(google.auth, "default", lambda **_k: (_FakeCreds(), "hydrologymip"))
+    monkeypatch.setattr(google.auth.transport.requests, "Request", lambda: object())
+
+    seen_requests: list[tuple[str, str | None, dict[str, Any]]] = []
+
+    class _MockResp:
+        def __init__(self, payload: dict[str, Any]) -> None:
+            self.status = 200
+            self._body = json.dumps(payload).encode("utf-8")
+
+        def read(self) -> bytes:
+            return self._body
+
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *_a: object) -> None:
+            return None
+
+    def _vertex_urlopen(req: urllib.request.Request, **_k: Any) -> _MockResp:
+        auth_header = req.get_header("Authorization")
+        body = json.loads(req.data.decode("utf-8"))
+        seen_requests.append((req.full_url, auth_header, body))
+        recipe_json = {
+            "cannot_map": False,
+            "missing_or_ambiguous": [],
+            "format": "netcdf",
+            "var": "custom_q_a",
+            "basin_dim": "station_axis",
+            "time_dim": "calendar_axis",
+            "member_dim": None,
+            "confidence": 0.98,
+            "notes": "Mapped Vertex schema.",
+        }
+        return _MockResp(
+            {"candidates": [{"content": {"parts": [{"text": json.dumps(recipe_json)}]}}]}
+        )
+
+    monkeypatch.setattr(urllib.request, "urlopen", _vertex_urlopen)
+
+    with open(weird_nc, "rb") as f:
+        ins_resp = isolated_api.post(
+            "/api/preview/inspect",
+            files={"file": ("vertex_weird_schema.nc", f, "application/x-netcdf")},
+            data={"leaderboard_id": "gauged__single_camels"},
+        )
+    assert ins_resp.status_code == 200, ins_resp.text
+    ins = ins_resp.json()
+    assert ins["recipe_source"] == "llm_tier2"
+    assert ins["schema"]["var"] == "custom_q_a"
+    assert ins["sanity"]["checks_passed"] is True
+    assert len(seen_requests) == 1
+    req_url, req_auth, req_body = seen_requests[0]
+    assert req_url == (
+        "https://us-central1-aiplatform.googleapis.com/v1/"
+        "projects/hydrologymip/locations/us-central1/publishers/google/models/gemini-2.5-flash:generateContent"
+    )
+    assert req_auth == "Bearer test-vertex-iam-token"
+    assert req_body["contents"][0]["role"] == "user"
+    assert req_body["generationConfig"]["responseMimeType"] == "application/json"
+
+    h2 = isolated_api.get("/api/preview/health")
+    assert h2.status_code == 200
+    assert h2.json()["llm_daily_remaining"] == 99
+
+
+def test_llm_budget_limiter_per_ip_hour_and_daily_caps(
+    tmp_path: Path,
+    isolated_api: TestClient,
+    monkeypatch: pytest.MonkeyPatch,
+    canonical_qobs_bundle: tuple[list[str], list[str], list[str], np.ndarray],
+) -> None:
+    basins, dates, _, qobs = canonical_qobs_bundle
+    qsim = _synthetic_qsim(qobs)
+
+    weird_nc = tmp_path / "budget_weird.nc"
+    xr.Dataset(
+        data_vars={
+            "custom_q_x": (("st_ax", "dt_ax"), qsim),
+            "custom_q_y": (("st_ax", "dt_ax"), qsim * np.float32(0.5)),
+        },
+        coords={"st_ax": np.asarray(basins), "dt_ax": pd.to_datetime(dates)},
+    ).to_netcdf(weird_nc)
+
+    monkeypatch.setenv("VERTEX_AI_PROJECT", "hydrologymip")
+    monkeypatch.setenv("HYDROMIP_MAX_LLM_CALLS_PER_IP_HOUR", "2")
+    monkeypatch.setenv("HYDROMIP_MAX_LLM_CALLS_PER_DAY", "3")
+    scorer_app.LLM_BUDGET_LIMITER.reset()
+
+    class _FakeCreds:
+        token = "test-budget-token"
+
+        def refresh(self, _req: object) -> None:
+            return None
+
+    monkeypatch.setattr(google.auth, "default", lambda **_k: (_FakeCreds(), "hydrologymip"))
+    monkeypatch.setattr(google.auth.transport.requests, "Request", lambda: object())
+
+    llm_calls = 0
+
+    class _MockResp:
+        status = 200
+
+        def read(self) -> bytes:
+            recipe_json = {
+                "cannot_map": False,
+                "missing_or_ambiguous": [],
+                "format": "netcdf",
+                "var": "custom_q_x",
+                "basin_dim": "st_ax",
+                "time_dim": "dt_ax",
+                "member_dim": None,
+                "confidence": 0.95,
+                "notes": "Mapped.",
+            }
+            return json.dumps(
+                {"candidates": [{"content": {"parts": [{"text": json.dumps(recipe_json)}]}}]}
+            ).encode("utf-8")
+
+        def __enter__(self) -> Self:
+            return self
+
+        def __exit__(self, *_a: object) -> None:
+            return None
+
+    def _counting_urlopen(*_a: Any, **_k: Any) -> _MockResp:
+        nonlocal llm_calls
+        llm_calls += 1
+        return _MockResp()
+
+    monkeypatch.setattr(urllib.request, "urlopen", _counting_urlopen)
+
+    def _post_inspect(client_ip: str) -> dict[str, Any]:
+        with open(weird_nc, "rb") as f:
+            resp = isolated_api.post(
+                "/api/preview/inspect",
+                headers={"X-Forwarded-For": client_ip},
+                files={"file": ("budget_weird.nc", f, "application/x-netcdf")},
+                data={"leaderboard_id": "gauged__single_camels"},
+            )
+        assert resp.status_code == 200, resp.text
+        return resp.json()
+
+    # IP1 calls 1 & 2 succeed via LLM; call 3 hits per-IP hourly cap (2/hr) without calling Vertex
+    assert _post_inspect("203.0.113.10")["recipe_source"] == "llm_tier2"
+    assert _post_inspect("203.0.113.10")["recipe_source"] == "llm_tier2"
+    assert llm_calls == 2
+
+    capped_ip = _post_inspect("203.0.113.10")
+    assert llm_calls == 2
+    assert capped_ip["stuck_report"] is not None
+    assert "Per-IP hourly" in capped_ip["stuck_report"]["reason"]
+    assert "hydromip package" in capped_ip["stuck_report"]["cli_snippet"]
+
+    # IP2 uses the 3rd global daily call, then IP3 hits global daily cap (3/day)
+    assert _post_inspect("203.0.113.11")["recipe_source"] == "llm_tier2"
+    assert llm_calls == 3
+
+    capped_day = _post_inspect("203.0.113.12")
+    assert llm_calls == 3
+    assert capped_day["stuck_report"] is not None
+    assert "Daily AI schema-helper cap" in capped_day["stuck_report"]["reason"]
+    assert isolated_api.get("/api/preview/health").json()["llm_daily_remaining"] == 0
