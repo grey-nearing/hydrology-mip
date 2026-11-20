@@ -2797,11 +2797,11 @@
         </li>
         <li>
           <strong>Declare every input you used</strong>
-          <span>List all meteorological datasets and any lagged streamflow inputs so your model lands on the right leaderboard. Every entry is scored on the 14 Gauch et al. (2023) metrics (including <code>logNSE</code> and <code>logKGE</code>).</span>
+          <span>List all meteorological datasets and any lagged streamflow inputs so your model lands on the right leaderboard.</span>
         </li>
         <li>
           <strong>Preview privately, then publish</strong>
-          <span>Steps 1 to 3 run locally in your browser so you can check scores before sharing. Permanent publication requires a DOI archive (Zenodo or HydroShare), a code link (or closed-source note), and an automated GitHub check.</span>
+          <span>Upload a local prediction file to check scores privately in your browser without a DOI. Publishing permanently to the public leaderboard requires a Zenodo or HydroShare DOI archive, a code link (or closed-source note), and an automated GitHub check.</span>
         </li>
       `,
       chk1Html: `Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)`,
