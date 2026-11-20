@@ -8,6 +8,8 @@ on:
       - "web/**"
       - "mips/camels_us_daily/leaderboards/**"
       - "mips/camels_us_daily/figures/**"
+      - "mips/camels_us_daily/splits/**"
+      - "mips/camels_us_daily/protocol.json"
   workflow_dispatch:
 
 permissions:

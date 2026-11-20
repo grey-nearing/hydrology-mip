@@ -1489,8 +1489,7 @@ tr.pulse-highlight-row td {
   font-family: var(--font-mono);
   font-size: 0.68rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
   color: var(--color-muted);
   padding: 0.62rem 0.72rem;
   background: var(--color-paper);
@@ -1794,6 +1793,7 @@ tr.pulse-highlight-row td {
 
 .inspector-drawer {
   display: none;
+  scroll-margin-top: 76px;
   background: var(--color-surface);
   border: 1px solid var(--color-rule);
   border-radius: var(--radius-md);
@@ -1892,39 +1892,39 @@ tr.pulse-highlight-row td {
 }
 
 .model-type-pill.type-ml {
-  background: #e6f6ee;
-  border-color: #8fd4b2;
-  color: #115e38;
+  background: #eaf3fc;
+  border-color: #9ec8f0;
+  color: #1e40af;
 }
-.model-type-pill.type-ml .type-dot { background: #15803d; }
+.model-type-pill.type-ml .type-dot { background: #2563eb; }
 
 .model-type-pill.type-hybrid {
   background: #efe9fc;
   border-color: #c0aeeef0;
   color: #4c1d95;
 }
-.model-type-pill.type-hybrid .type-dot { background: #6d28d9; }
+.model-type-pill.type-hybrid .type-dot { background: #7c3aed; }
 
 .model-type-pill.type-conceptual {
-  background: #e6f2fc;
-  border-color: #9ec8f0;
-  color: #1e40af;
+  background: #fdf2e4;
+  border-color: #ebb97e;
+  color: #9a3412;
 }
-.model-type-pill.type-conceptual .type-dot { background: #1d4ed8; }
+.model-type-pill.type-conceptual .type-dot { background: #d97706; }
 
 .model-type-pill.type-process {
-  background: #fdf0df;
-  border-color: #ebb97e;
-  color: #7c2d12;
+  background: #e6f6ee;
+  border-color: #8fd4b2;
+  color: #115e38;
 }
-.model-type-pill.type-process .type-dot { background: #b45309; }
+.model-type-pill.type-process .type-dot { background: #0d9488; }
 
 .model-type-pill.type-statistical {
-  background: #fbe8ef;
-  border-color: #e4a3bc;
-  color: #831843;
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
 }
-.model-type-pill.type-statistical .type-dot { background: #be185d; }
+.model-type-pill.type-statistical .type-dot { background: #64748b; }
 
 /* Color-coded rows in Participating Models table */
 .models-registry-table tbody tr.model-row-colored td:first-child {
@@ -1932,13 +1932,13 @@ tr.pulse-highlight-row td {
 }
 
 .models-registry-table tbody tr.row-type-ml td {
-  background-color: #eaf7f0;
+  background-color: #eaf3fc;
 }
 .models-registry-table tbody tr.row-type-ml:hover td {
-  background-color: #daf0e4;
+  background-color: #daeafa;
 }
 .models-registry-table tbody tr.row-type-ml td:first-child {
-  border-left-color: #15803d;
+  border-left-color: #2563eb;
 }
 
 .models-registry-table tbody tr.row-type-hybrid td {
@@ -1948,37 +1948,37 @@ tr.pulse-highlight-row td {
   background-color: #e5dcf9;
 }
 .models-registry-table tbody tr.row-type-hybrid td:first-child {
-  border-left-color: #6d28d9;
+  border-left-color: #7c3aed;
 }
 
 .models-registry-table tbody tr.row-type-conceptual td {
-  background-color: #eaf3fc;
+  background-color: #fdf2e4;
 }
 .models-registry-table tbody tr.row-type-conceptual:hover td {
-  background-color: #daeafa;
+  background-color: #fae6cc;
 }
 .models-registry-table tbody tr.row-type-conceptual td:first-child {
-  border-left-color: #1d4ed8;
+  border-left-color: #d97706;
 }
 
 .models-registry-table tbody tr.row-type-process td {
-  background-color: #fdf2e4;
+  background-color: #eaf7f0;
 }
 .models-registry-table tbody tr.row-type-process:hover td {
-  background-color: #fae6cc;
+  background-color: #daf0e4;
 }
 .models-registry-table tbody tr.row-type-process td:first-child {
-  border-left-color: #b45309;
+  border-left-color: #0d9488;
 }
 
 .models-registry-table tbody tr.row-type-statistical td {
-  background-color: #fcebf1;
+  background-color: #f1f5f9;
 }
 .models-registry-table tbody tr.row-type-statistical:hover td {
-  background-color: #f8dce6;
+  background-color: #e2e8f0;
 }
 .models-registry-table tbody tr.row-type-statistical td:first-child {
-  border-left-color: #be185d;
+  border-left-color: #64748b;
 }
 
 .participating-boards-list {
@@ -2352,6 +2352,9 @@ tr.pulse-highlight-row td {
   gap: 0.6rem;
   font-family: var(--font-mono);
   font-size: 0.75rem;
+}
+.selected-file-bar[hidden] {
+  display: none;
 }
 
 .schema-override-grid {

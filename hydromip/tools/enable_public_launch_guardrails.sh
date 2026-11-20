@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Turnkey post-cleanup script to activate owner-approval (@grey-nearing) + required
-# `CI Gate` status checks on `main` once `grey-nearing/camels-us-mip` goes public
+# `CI Gate` status checks on `main` once `grey-nearing/hydrology-mip` goes public
 # (or if the owner account is upgraded to GitHub Pro).
 #
 # Usage:
@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-REPO="grey-nearing/camels-us-mip"
+REPO="grey-nearing/hydrology-mip"
 ENFORCE_ADMINS="true"
 
 while [[ $# -gt 0 ]]; do

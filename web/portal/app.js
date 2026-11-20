@@ -13,6 +13,7 @@
     activeSpatialTab: "gauged", // gauged | pub | pur
     activeForcingTab: "single_camels", // single_camels | multi_camels | lagged_streamflow | freeform
     categoryFilter: "",
+    forcingFilter: "",
     searchQuery: "",
     familySearchQuery: "",
     familyTypeFilter: "",
@@ -150,7 +151,7 @@
       return '<span style="color: var(--text-muted);">N/A</span>';
     }
     const n = Number(val);
-    if (n <= -900) return '<span style="color: var(--text-muted);">N/A</span>';
+    if (!Number.isFinite(n)) return '<span style="color: var(--text-muted);">N/A</span>';
     return n.toFixed(digits) + (asterisk ? "*" : "");
   }
 
@@ -405,7 +406,11 @@
       `;
     }
 
-    return `<span class="btn-row-absent" title="Literature table result; no standalone hydrograph archive">&mdash;</span>`;
+    const srcCat = formatSourceCategory(row.category || row.code_provenance);
+    const absentTip = srcCat.startsWith("Literature")
+      ? "Literature table result; no standalone hydrograph archive"
+      : "No external archive URL";
+    return `<span class="btn-row-absent" title="${absentTip}">&mdash;</span>`;
   }
 
   function renderCodebaseButton(row) {
@@ -448,6 +453,7 @@
     if (/archive/i.test(s)) return "Archive";
     if (/re-?run/i.test(s)) return "MIP Re-run";
     if (/contrib/i.test(s)) return "Contribution";
+    if (/lit(?:erature)?\*/i.test(s)) return "Literature*";
     if (/lit/i.test(s)) return "Literature";
     return s;
   }
@@ -455,7 +461,12 @@
   function formatFamilySourceCategories(rawProv) {
     const s = String(rawProv || "").trim();
     const out = [];
-    if (/lit/i.test(s)) out.push("Literature");
+    if (/lit(?:erature)?\*/i.test(s)) {
+      out.push("Literature*");
+      if (/literature(?!\*)/i.test(s)) out.unshift("Literature");
+    } else if (/lit/i.test(s)) {
+      out.push("Literature");
+    }
     if (/re-?run/i.test(s)) out.push("MIP Re-run");
     if (/archive\*/i.test(s)) {
       out.push("Archive*");
@@ -469,7 +480,7 @@
   function isValidMetric(v) {
     if (v === null || v === undefined || v === "") return false;
     const n = Number(v);
-    return !Number.isNaN(n) && n > -900;
+    return !Number.isNaN(n) && Number.isFinite(n);
   }
 
   function ensureFlatGauchMetrics(row) {
@@ -593,7 +604,7 @@
       col: "gauch_alpha_nse",
       label: "\u03b1-NSE",
       title: "Median Alpha-NSE: flow variability ratio \u03c3_sim / \u03c3_obs (ideal = 1)",
-      defaultAsc: false,
+      defaultAsc: true,
       direction: "target",
       target: 1.0,
       idealLabel: "Ideal = 1.00",
@@ -620,7 +631,7 @@
       col: "gauch_beta_kge",
       label: "\u03b2-KGE",
       title: "Median Beta-KGE: mean flow ratio \u03bc_sim / \u03bc_obs (ideal = 1)",
-      defaultAsc: false,
+      defaultAsc: true,
       direction: "target",
       target: 1.0,
       idealLabel: "Ideal = 1.00",
@@ -768,12 +779,26 @@
       color: "#0d9488",
       softBg: "rgba(13, 148, 136, 0.11)",
     },
+    Statistical: {
+      label: "Statistical",
+      shortLabel: "Statistical",
+      color: "#64748b",
+      softBg: "rgba(100, 116, 139, 0.12)",
+    },
   };
 
   function classifyRowParadigm(row) {
     const fid = String(row.family_id || "").toLowerCase();
     const paradigm = String(row.paradigm || "").toLowerCase();
     const name = String(row.model_name || "").toLowerCase();
+    if (
+      fid.includes("naive_lag1") ||
+      fid.includes("persistence") ||
+      name.includes("naive lag-1") ||
+      paradigm.includes("statistical")
+    ) {
+      return "Statistical";
+    }
     if (
       ["dhbv", "\u03b4hbv", "mlp_hbv", "mlp-hbv", "16hbv", "dpl", "hy2dl"].some(
         (t) => fid.includes(t) || name.includes(t)
@@ -951,7 +976,10 @@
       paradigmCounts[paradigm] = (paradigmCounts[paradigm] || 0) + 1;
       const isMip = isMipResultRow(row);
       const optScore = computeMetricOptimalityScore(mc, val);
-      const excludeFrontier = /oracle/i.test(String(row.model_name || ""));
+      const excludeFrontier =
+        /oracle/i.test(String(row.model_name || "")) ||
+        String(row.family_id || "").toLowerCase() === "naive_lag1_persistence" ||
+        paradigm === "Statistical";
       rawPoints.push({
         row,
         entryId: row.entry_id,
@@ -1537,6 +1565,25 @@
         return false;
       }
     }
+    if (STATE.forcingFilter) {
+      const fNorm = String(row.forcing || "")
+        .replace(/\s*\+\s*/g, ", ")
+        .trim()
+        .toLowerCase();
+      const targetNorm = STATE.forcingFilter
+        .replace(/\s*\+\s*/g, ", ")
+        .trim()
+        .toLowerCase();
+      if (targetNorm === "lagged") {
+        if (!fNorm.includes("lagged")) return false;
+      } else if (!targetNorm.includes(",")) {
+        const tokens = fNorm.split(",").map((s) => s.trim());
+        const exact = tokens.some((tok) => tok === targetNorm || tok.startsWith(`${targetNorm} `));
+        if (!exact) return false;
+      } else if (!fNorm.includes(targetNorm)) {
+        return false;
+      }
+    }
     if (STATE.searchQuery) {
       const q = STATE.searchQuery.toLowerCase();
       const hay = [
@@ -1585,8 +1632,18 @@
       if (!validB) return -1;
       const rawA = Number(a[col]);
       const rawB = Number(b[col]);
-      const numA = activeColMeta && activeColMeta.sortAbs ? Math.abs(rawA) : rawA;
-      const numB = activeColMeta && activeColMeta.sortAbs ? Math.abs(rawB) : rawB;
+      const isTargetMetric = activeColMeta && activeColMeta.direction === "target";
+      const targetVal = isTargetMetric && typeof activeColMeta.target === "number" ? activeColMeta.target : 0;
+      const numA = isTargetMetric
+        ? Math.abs(rawA - targetVal)
+        : activeColMeta && activeColMeta.sortAbs
+          ? Math.abs(rawA)
+          : rawA;
+      const numB = isTargetMetric
+        ? Math.abs(rawB - targetVal)
+        : activeColMeta && activeColMeta.sortAbs
+          ? Math.abs(rawB)
+          : rawB;
       if (numA !== numB) {
         return sortSpec.asc ? numA - numB : numB - numA;
       }
@@ -2291,24 +2348,34 @@
         const hucRows = [];
         if (localFoundRow.regional_huc02 && typeof localFoundRow.regional_huc02 === "object") {
           for (const hucKey of Object.keys(localFoundRow.regional_huc02).sort()) {
-            const hd = localFoundRow.regional_huc02[hucKey] || {};
-            hucRows.push({
-              huc_02: hucKey,
-              n_basins: hd.num_basins ?? hd.n_basins ?? 0,
-              median_NSE: hd.median_nse ?? hd.median_NSE ?? null,
-              mean_NSE: hd.mean_nse ?? hd.mean_NSE ?? null,
-              median_KGE: hd.median_kge ?? hd.median_KGE ?? null,
-              n_NSE_le_0: hd.nse_le_zero_count ?? hd.n_NSE_le_0 ?? 0,
-            });
+            const rawHd = localFoundRow.regional_huc02[hucKey];
+            if (typeof rawHd === "number" && Number.isFinite(rawHd)) {
+              hucRows.push({
+                huc_02: hucKey,
+                n_basins: null,
+                median_NSE: rawHd,
+                mean_NSE: null,
+                median_KGE: null,
+                n_NSE_le_0: null,
+              });
+            } else {
+              const hd = rawHd || {};
+              hucRows.push({
+                huc_02: hucKey,
+                n_basins: hd.num_basins ?? hd.n_basins ?? null,
+                median_NSE: hd.median_nse ?? hd.median_NSE ?? null,
+                mean_NSE: hd.mean_nse ?? hd.mean_NSE ?? null,
+                median_KGE: hd.median_kge ?? hd.median_KGE ?? null,
+                n_NSE_le_0: hd.nse_le_zero_count ?? hd.n_NSE_le_0 ?? null,
+              });
+            }
           }
         }
+        const hasEmpCdf = Array.isArray(localFoundRow.per_basin_nse) && localFoundRow.per_basin_nse.length > 0;
         data = {
           entry: localFoundRow,
-          source:
-            Array.isArray(localFoundRow.per_basin_nse) && localFoundRow.per_basin_nse.length > 0
-              ? "empirical_531_basins"
-              : "summary_anchored_distribution",
-          nse_cdf_101: computeLocalQuantiles101(localFoundRow.per_basin_nse || []),
+          source: hasEmpCdf ? "empirical_531_basins" : "unavailable",
+          nse_cdf_101: hasEmpCdf ? computeLocalQuantiles101(localFoundRow.per_basin_nse) : [],
           huc_02_breakdown: hucRows,
         };
       }
@@ -2328,21 +2395,23 @@
         hydroshare_url: entry.hydroshare_url || fam.hydroshare_url || "",
       };
 
+      const nBasins = entry.num_evaluated_basins || 531;
+      const evalPeriod = entry.eval_period || "1989-10-01 to 1999-09-30";
       document.getElementById("insp-badge-leaderboard").textContent = lbDef
         ? formatLeaderboardShortLabel(lbDef)
         : entry.leaderboard_id;
       document.getElementById("insp-badge-source").textContent =
         data.source === "empirical_531_basins"
-          ? "Verified 531-Basin Archive Hydrographs"
-          : "Summary-Anchored 531-Basin Distribution";
+          ? `${nBasins}-Basin Archive Hydrographs`
+          : "Literature Summary Metrics Only";
       document.getElementById("insp-badge-category").textContent = formatSourceCategory(
         entry.category || "Contribution"
       );
       document.getElementById("insp-model-title").textContent = `${entry.model_name} (${entry.forcing})`;
       document.getElementById("insp-model-subtitle").textContent =
-        `Median NSE: ${entry.primary_ranking_nse > -100 ? Number(entry.primary_ranking_nse).toFixed(3) : "N/A"} • ` +
-        `Median KGE: ${entry.med_kge != null ? Number(entry.med_kge).toFixed(3) : "N/A"} • ` +
-        `Evaluated on 531 CAMELS-US basins (1989-10-01 to 1999-09-30)`;
+        `Median NSE: ${isValidMetric(entry.primary_ranking_nse) ? Number(entry.primary_ranking_nse).toFixed(3) : "N/A"} • ` +
+        `Median KGE: ${isValidMetric(entry.med_kge) ? Number(entry.med_kge).toFixed(3) : "N/A"} • ` +
+        `Evaluated on ${nBasins} CAMELS-US basins (${evalPeriod})${entry.asterisk ? " *" : ""}`;
 
       const repoCell = document.getElementById("insp-repo-links");
       if (repoCell) {
@@ -2350,10 +2419,10 @@
           renderDataArchiveButton(enrichedEntry) + renderCodebaseButton(enrichedEntry);
       }
 
-      renderSvgCdfChart(data.nse_cdf_101 || []);
+      renderSvgCdfChart(data.source === "empirical_531_basins" ? (data.nse_cdf_101 || []) : []);
       renderHucBreakdownTable(data.huc_02_breakdown || []);
 
-      drawer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      drawer.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (err) {
       console.error("Failed to inspect entry basins:", err);
     }
@@ -2363,12 +2432,21 @@
     const container = document.getElementById("insp-svg-cdf-container");
     if (!container) return;
 
+    if (!Array.isArray(modelCdf) || modelCdf.length === 0) {
+      container.innerHTML = `
+        <div style="height: 100%; min-height: 200px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 1.25rem; color: var(--color-muted); font-size: 0.85rem; border: 1px dashed var(--color-rule); border-radius: 8px; background: var(--color-paper);">
+          Per-basin empirical hydrograph distribution is not available for Literature-reported entries without archived daily hydrographs.
+        </div>
+      `;
+      return;
+    }
+
     const W = 520;
-    const H = 255;
+    const H = 272;
     const padL = 48;
     const padR = 18;
     const padT = 14;
-    const padB = 34;
+    const padB = 46;
     const plotW = W - padL - padR;
     const plotH = H - padT - padB;
 
@@ -2403,7 +2481,7 @@
       const y = yPos(tick);
       gridHtml += `
         <line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + plotH}" stroke="hsl(210, 18%, 90%)" stroke-width="1" />
-        <text x="${x}" y="${H - 10}" text-anchor="middle" font-size="10.5" font-family="JetBrains Mono" fill="hsl(212, 16%, 42%)">${tick.toFixed(1)}</text>
+        <text x="${x}" y="${H - 24}" text-anchor="middle" font-size="10.5" font-family="JetBrains Mono" fill="hsl(212, 16%, 42%)">${tick.toFixed(1)}</text>
         <line x1="${padL}" y1="${y}" x2="${padL + plotW}" y2="${y}" stroke="hsl(210, 18%, 90%)" stroke-width="1" />
         <text x="${padL - 8}" y="${y + 3.5}" text-anchor="end" font-size="10.5" font-family="JetBrains Mono" fill="hsl(212, 16%, 42%)">${tick.toFixed(1)}</text>
       `;
@@ -2415,11 +2493,11 @@
     const pathModel = buildPath(modelCdf);
 
     container.innerHTML = `
-      <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="531-Basin NSE Cumulative Distribution Function">
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="100%" role="img" aria-label="Basin NSE Cumulative Distribution Function">
         ${gridHtml}
         ${pathModel ? `<path d="${pathModel}" fill="none" stroke="hsl(204, 80%, 36%)" stroke-width="2.8" />` : ""}
         <rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="none" stroke="hsl(210, 18%, 76%)" stroke-width="1" />
-        <text x="${padL + plotW / 2}" y="${H - 1}" text-anchor="middle" font-size="11" font-weight="600" fill="hsl(212, 22%, 28%)">Nash–Sutcliffe Efficiency (NSE, clipped at [0, 1])</text>
+        <text x="${padL + plotW / 2}" y="${H - 5}" text-anchor="middle" font-size="11" font-weight="600" fill="hsl(212, 22%, 28%)">Nash–Sutcliffe Efficiency (NSE, clipped at [0, 1])</text>
       </svg>
     `;
   }
@@ -2453,14 +2531,16 @@
     `;
 
     for (const r of hucRows) {
+      const nBasinsHtml = r.n_basins != null ? esc(r.n_basins) : '<span style="color: var(--text-muted);">N/A</span>';
+      const nZeroHtml = r.n_NSE_le_0 != null ? esc(r.n_NSE_le_0) : '<span style="color: var(--text-muted);">N/A</span>';
       html += `
         <tr>
           <td style="font-family: var(--font-mono); font-weight: 700;">Region ${esc(r.huc_02)}</td>
-          <td class="num-col">${esc(r.n_basins)}</td>
+          <td class="num-col">${nBasinsHtml}</td>
           <td class="num-col" style="font-weight: 700;">${fmtNum(r.median_NSE, 3)}</td>
           <td class="num-col">${fmtNum(r.mean_NSE, 3)}</td>
           <td class="num-col">${fmtNum(r.median_KGE, 3)}</td>
-          <td class="num-col">${esc(r.n_NSE_le_0)}</td>
+          <td class="num-col">${nZeroHtml}</td>
         </tr>
       `;
     }
@@ -2609,6 +2689,8 @@
       for (const fam of filtered) {
         const typeInfo = classifyModelType(fam.paradigm, fam);
         const famAsRow = {
+          category: fam.provenance_category || fam.category || "Archive",
+          code_provenance: fam.provenance_category || "",
           data_archive_url:
             fam.zenodo_url ||
             fam.hydroshare_url ||
@@ -2616,8 +2698,12 @@
           zenodo_doi: fam.zenodo_doi,
           zenodo_url: fam.zenodo_url,
           hydroshare_url: fam.hydroshare_url,
-          code_url: fam.github_url,
-          github_url: fam.github_url,
+          code_url:
+            fam.github_url ||
+            (fam.code_dir ? `https://github.com/grey-nearing/hydrology-mip/tree/main/${fam.code_dir}` : ""),
+          github_url:
+            fam.github_url ||
+            (fam.code_dir ? `https://github.com/grey-nearing/hydrology-mip/tree/main/${fam.code_dir}` : ""),
         };
 
         const coveredSet = new Set(Array.isArray(fam.leaderboards_covered) ? fam.leaderboards_covered : []);
@@ -2770,7 +2856,7 @@
           ],
         },
         {
-          label: "With Lagged Streamflow (Gauged Only)",
+          label: "With Lagged Streamflow",
           options: [
             "Daymet + Lagged Streamflow",
             "Maurer + Lagged Streamflow",
@@ -2873,15 +2959,9 @@
     const sp = spEl ? spEl.value : "gauged";
 
     if (foEl) {
-      const isUngauged = sp === "pub" || sp === "pur";
       foEl.querySelectorAll("option").forEach((opt) => {
-        if (opt.value.toLowerCase().includes("lagged streamflow")) {
-          opt.disabled = isUngauged;
-        }
+        opt.disabled = false;
       });
-      if (isUngauged && foEl.value.toLowerCase().includes("lagged streamflow")) {
-        foEl.value = cfg.defaultForcing;
-      }
     }
 
     const foVal = foEl ? foEl.value : cfg.defaultForcing;
@@ -2997,7 +3077,7 @@
     const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
     const regime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
     return (
-      `pip install git+https://github.com/grey-nearing/camels-us-mip.git\n` +
+      `pip install git+https://github.com/grey-nearing/hydrology-mip.git\n` +
       `hydromip package --input ./your_predictions.nc --output ./camels_submission.zarr.zip \\\n` +
       `  --forcing "${forcing}" --regime ${regime}`
     );
@@ -3590,6 +3670,7 @@
     const lbId = syncContributeTargetLeaderboard();
     const spatialRegime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
     const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
+    const entryId = ((document.getElementById("sub-entry-id") || {}).value || "").trim();
     const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
     const paradigm = ((document.getElementById("sub-paradigm") || {}).value || "Machine learning").trim();
     const category = ((document.getElementById("sub-category") || {}).value || "Contribution").trim();
@@ -3623,6 +3704,7 @@
       spatial_regime: spatialRegime,
       leaderboard_id: lbId,
       model_name: modelName || "Unspecified_Model",
+      entry_id: entryId || null,
       family_id: selectedFamId || null,
       new_family_name: selectedFamId ? null : newFamName || modelName || null,
       category: category,
@@ -3723,23 +3805,23 @@
     const manifest = validateStep4RequiredUrls();
     if (!manifest) return;
     const jsonText = JSON.stringify(manifest, null, 2);
-    const title = encodeURIComponent(
-      `[Model Submission] ${manifest.model_name} (${manifest.leaderboard_id})`
-    );
-    const codeDisplay = manifest.closed_source
-      ? "Closed-Source / Proprietary (no public code URL)"
-      : manifest.code_url || "None";
-    const body = encodeURIComponent(
-      `### Model Submission\n` +
-        `- **Model:** ${manifest.model_name}\n` +
-        `- **Leaderboard:** \`${manifest.leaderboard_id}\`\n` +
-        `- **Archive DOI / URL:** ${manifest.archive_url}\n` +
-        `- **Code Repository:** ${codeDisplay}\n\n` +
-        `### Canonical Submission Manifest\n\`\`\`json\n${jsonText}\n\`\`\`\n`
-    );
+    const params = new URLSearchParams({
+      template: "model_submission.yml",
+      title: `[Model Submission] ${manifest.model_name} (${manifest.leaderboard_id})`,
+      leaderboard_id: manifest.leaderboard_id,
+      model_name: manifest.model_name,
+      entry_id: manifest.entry_id || "",
+      family_id: manifest.family_id || "",
+      forcing: manifest.forcing,
+      category: manifest.category,
+      paradigm: manifest.paradigm,
+      archive_url: manifest.archive_url,
+      code_url: manifest.closed_source ? "Closed-Source" : manifest.code_url || "",
+      citation: manifest.citation || "Community Contribution (2026)",
+      canonical_manifest: jsonText,
+    });
     const issueUrl =
-      `https://github.com/grey-nearing/camels-us-mip/issues/new` +
-      `?template=model_submission.yml&title=${title}&body=${body}`;
+      `https://github.com/grey-nearing/hydrology-mip/issues/new?${params.toString()}`;
     window.open(issueUrl, "_blank", "noopener,noreferrer");
   }
 
@@ -3794,14 +3876,14 @@
       return;
     }
 
-    const okExt = [".nc", ".nc4", ".cdf", ".zarr.zip", ".zip", ".csv", ".parquet", ".pq", ".npz"].some(
+    const okExt = [".nc", ".nc4", ".zarr.zip", ".zip", ".csv", ".tsv", ".parquet", ".npz"].some(
       (ext) => nameLow.endsWith(ext)
     );
     if (!okExt) {
       STATE.uploadedFile = null;
       if (statusEl) {
         statusEl.textContent =
-          "Unsupported file extension. Allowed formats: .nc, .zarr.zip, .csv, .parquet, .npz.";
+          "Unsupported file extension. Allowed formats: .nc, .zarr.zip, .csv, .tsv, .parquet, .npz.";
         statusEl.style.color = "var(--status-danger)";
       }
       return;
@@ -4331,6 +4413,15 @@
       const lbObj = STATE.allLeaderboards.find((b) => b.id === s.leaderboard_id);
       const lbShort = lbObj ? formatLeaderboardShortLabel(lbObj) : s.leaderboard_id;
       const bm = s.basin_metrics || {};
+      const bNse = bm.nse ?? bm.NSE;
+      const bKge = bm.kge ?? bm.KGE;
+      const bLogNse = bm.logNSE ?? bm.log_nse;
+      const bLogKge = bm.logKGE ?? bm.log_kge;
+      const bPearson = bm.pearson_r ?? bm.Pearson_r;
+      const bFhv = bm.fhv ?? bm.FHV;
+      const bFlv = bm.flv ?? bm.FLV;
+      const bRmse = bm.rmse ?? bm.RMSE;
+      const bPeak = bm.peak_timing ?? bm.Peak_Timing;
       html += `
         <tr>
           <td style="font-weight: 600;">
@@ -4341,16 +4432,16 @@
           </td>
           <td><span class="cat-badge">${esc(lbShort)}</span></td>
           <td class="forcing-cell">${esc(s.forcing || "")}</td>
-          <td class="num-col" style="font-weight: 700;">${fmtNum(bm.NSE, 3)}</td>
+          <td class="num-col" style="font-weight: 700;">${fmtNum(bNse, 3)}</td>
           <td class="num-col">${fmtNum(s.primary_ranking_nse, 3)}</td>
-          <td class="num-col">${fmtNum(bm.KGE, 3)}</td>
-          <td class="num-col">${fmtNum(bm.logNSE ?? bm.log_nse, 3)}</td>
-          <td class="num-col">${fmtNum(bm.logKGE ?? bm.log_kge, 3)}</td>
-          <td class="num-col">${fmtNum(bm.Pearson_r, 3)}</td>
-          <td class="num-col">${bm.FHV != null ? `${Number(bm.FHV).toFixed(1)}%` : "&mdash;"}</td>
-          <td class="num-col">${bm.FLV != null ? `${Number(bm.FLV).toFixed(1)}%` : "&mdash;"}</td>
-          <td class="num-col">${fmtNum(bm.RMSE, 2)}</td>
-          <td class="num-col">${bm.Peak_Timing != null ? `${Number(bm.Peak_Timing).toFixed(2)} d` : "&mdash;"}</td>
+          <td class="num-col">${fmtNum(bKge, 3)}</td>
+          <td class="num-col">${fmtNum(bLogNse, 3)}</td>
+          <td class="num-col">${fmtNum(bLogKge, 3)}</td>
+          <td class="num-col">${fmtNum(bPearson, 3)}</td>
+          <td class="num-col">${bFhv != null ? `${Number(bFhv).toFixed(1)}%` : "&mdash;"}</td>
+          <td class="num-col">${bFlv != null ? `${Number(bFlv).toFixed(1)}%` : "&mdash;"}</td>
+          <td class="num-col">${fmtNum(bRmse, 2)}</td>
+          <td class="num-col">${bPeak != null ? `${Number(bPeak).toFixed(2)} d` : "&mdash;"}</td>
         </tr>
       `;
     });
@@ -6267,6 +6358,14 @@
       STATE.categoryFilter = e.target.value;
       renderActiveLeaderboardPanel();
     });
+
+    const filterForcingEl = document.getElementById("filter-forcing-select");
+    if (filterForcingEl) {
+      filterForcingEl.addEventListener("change", (e) => {
+        STATE.forcingFilter = e.target.value;
+        renderActiveLeaderboardPanel();
+      });
+    }
 
     // Table 2 Registry search, type filter & modal
     const famTypeFilter = document.getElementById("family-type-filter");

@@ -22,9 +22,7 @@ jobs:
       issues: write
     if: >-
       !github.event.issue.pull_request &&
-      (contains(github.event.issue.labels.*.name, 'community-submission') ||
-       startsWith(github.event.issue.title, '[Model Submission]') ||
-       startsWith(github.event.issue.title, '[Submission]:'))
+      contains(github.event.issue.labels.*.name, 'community-submission')
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -85,8 +83,17 @@ jobs:
               if cur_key:
                   sections[cur_key] = "\n".join(buf).strip()
 
-              lb_id = sections.get("Target Leaderboard (Table 3–14)", "").strip()
+              lb_id = (
+                  sections.get("Target Leaderboard")
+                  or sections.get("Target Leaderboard (Table 3–14)", "")
+              ).strip()
               model_name = sections.get("Model Name", "").strip()
+              opt_entry_id = sections.get("Entry ID (Optional)", "").strip()
+              opt_family_id = sections.get("Model Family ID (Optional)", "").strip()
+              if opt_entry_id.lower() in ("_no response_", "none", "n/a"):
+                  opt_entry_id = ""
+              if opt_family_id.lower() in ("_no response_", "none", "n/a"):
+                  opt_family_id = ""
               archive_url = sections.get(
                   "Public Hydrograph Archive DOI or HTTPS URL (Zenodo / HydroShare / OSF / Figshare)", ""
               ).strip()
@@ -100,6 +107,8 @@ jobs:
                   "benchmark": "camels_us_daily",
                   "leaderboard_id": lb_id,
                   "model_name": model_name,
+                  "entry_id": opt_entry_id or None,
+                  "family_id": opt_family_id or None,
                   "forcing": sections.get("Meteorological Forcing Product(s)", "Daymet").strip(),
                   "category": sections.get("Submission Category", "Contribution").strip(),
                   "paradigm": sections.get(

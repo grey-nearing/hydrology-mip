@@ -76,6 +76,7 @@ REQUIRED_NEWLY_INCLUDED_MODELS: tuple[str, ...] = (
     "pub__lagged_streamflow__feng2020_di_lstm_pub_nldas_single",
     "pur__lagged_streamflow__feng2020_di_lstm_pur_nldas",
     "pur__lagged_streamflow__feng2020_di_lstm_pur_nldas_single",
+    "gauged__multi_camels__t4_24",
 )
 
 RERUN_PARITY_CHECK_MODELS: tuple[str, ...] = (
@@ -418,8 +419,8 @@ def rebuild_explorer_assets(
                 }
             )
 
-    if len(store_rows) != 60:
-        raise ValueError(f"Expected 60 unique Zarr stores, found {len(store_rows)}.")
+    if not store_rows:
+        raise ValueError("No Zarr stores found in tables_3_to_14.json.")
     if set(store_rows.keys()) != manifest_store_paths:
         raise ValueError(
             f"Leaderboard store paths differ from manifest_index.json: "

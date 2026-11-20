@@ -54,6 +54,7 @@ All Stage-2 runs use the standardized CAMELS-US MIP Split-1 temporal window (`19
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
 | **S1** (`gauged__single_camels`) | `t3_18` | 5-Seed Ensemble | Daymet | `gauged__single_camels/t3_18.zarr` | **0.759** | 0.724 | 0.757 | 15.06 | 1 |
 | **S1** (`gauged__single_camels`) | `t3_19` | Single-Model (5-seed mean) | Daymet | `gauged__single_camels/t3_18.zarr` | **0.754** (`±0.001`) | 0.717 | 0.756 | 15.08 | 2 |
+| **S2** (`gauged__multi_camels`) | `t4_24` | 5-Seed Ensemble | Daymet, Maurer, NLDAS | `gauged__multi_camels/t4_24.zarr` | **0.799** | 0.763 | 0.778 | 13.98 | 2 |
 | **S4** (`pub__single_camels`) | `t7_06` | 5-Seed Ensemble | Daymet | `pub__single_camels/t7_06.zarr` | **0.690** | 0.582 | 0.689 | 20.67 | 24 |
 | **S4** (`pub__single_camels`) | `t7_11` | Single-Model (5-seed mean) | Daymet | `pub__single_camels/t7_06.zarr` | **0.686** (`±0.004`) | 0.561 | 0.681 | 20.74 | 24 |
 | **S7** (`pur__single_camels`) | `t11_04` | 5-Seed Ensemble | Daymet | `pur__single_camels/t11_04.zarr` | **0.650** | 0.292 | 0.640 | 25.04 | 43 |

@@ -1,10 +1,10 @@
 {
   "source_leaderboards_dir": "mips/camels_us_daily/leaderboards",
   "output_figures_dir": "mips/camels_us_daily/figures",
-  "total_leaderboard_entries": 130,
+  "total_leaderboard_entries": 131,
   "mip_study_year": 2026,
   "panel_entry_counts": {
-    "gauged": 83,
+    "gauged": 84,
     "pub": 23,
     "pur": 24
   },
@@ -20,7 +20,7 @@
         0.91
       ],
       "xlim": [
-        2014.4,
+        2016.4,
         2026.8
       ]
     },
@@ -30,7 +30,7 @@
         0.8270000000000001
       ],
       "xlim": [
-        2014.4,
+        2016.4,
         2026.8
       ]
     },
@@ -40,7 +40,7 @@
         0.767
       ],
       "xlim": [
-        2014.4,
+        2016.4,
         2026.8
       ]
     }
@@ -71,13 +71,13 @@
     "gauged": [
       {
         "year": 2017,
-        "nse": 0.654,
-        "model_category": "Conceptual",
+        "nse": 0.307,
+        "model_category": "Process-based",
         "input_regime": "Single CAMELS Forcing",
-        "model_name": "FUSE (902)*",
+        "model_name": "VIC 4.1.2 (CONUS MPR)",
         "leaderboard_id": "gauged__single_camels",
-        "entry_id": "t3_43",
-        "category": "Archive*",
+        "entry_id": "t3_vic_mpr",
+        "category": "Archive",
         "provenance": "literature"
       },
       {

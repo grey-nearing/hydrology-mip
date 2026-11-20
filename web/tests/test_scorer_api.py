@@ -801,3 +801,65 @@ def test_llm_budget_limiter_per_ip_hour_and_daily_caps(
     assert capped_day["stuck_report"] is not None
     assert "Daily AI schema-helper cap" in capped_day["stuck_report"]["reason"]
     assert isolated_api.get("/api/preview/health").json()["llm_daily_remaining"] == 0
+
+
+def test_3d_531_3652_m_npz_ingestion_and_api_preview(
+    tmp_path: Path,
+    isolated_api: TestClient,
+    canonical_qobs_bundle: tuple[list[str], list[str], list[str], np.ndarray],
+) -> None:
+    basins, dates, _, qobs = canonical_qobs_bundle
+    base_sim = _synthetic_qsim(qobs)
+    # Member axis last: shape (531, 3652, 2)
+    members_bm = np.stack([base_sim * 0.95, base_sim * 1.05], axis=-1).astype(np.float32)
+    npz_path = tmp_path / "ensemble_531_3652_2.npz"
+    np.savez(
+        npz_path,
+        qsim=members_bm,
+        basins=np.asarray(basins),
+        dates=np.asarray(dates),
+    )
+
+    with open(npz_path, "rb") as f:
+        inspect_resp = isolated_api.post(
+            "/api/preview/inspect",
+            files={"file": ("ensemble_531_3652_2.npz", f, "application/octet-stream")},
+            data={
+                "leaderboard_id": "gauged__single_camels",
+                "spatial_regime": "gauged",
+                "forcing": "Daymet",
+                "model_name": "Test 3D NPZ Ens",
+            },
+        )
+    assert inspect_resp.status_code == 200, inspect_resp.text
+    inspect_data = inspect_resp.json()
+    assert inspect_data["format"] == "npz"
+    assert inspect_data["recipe_source"] == "deterministic_tier1"
+
+    score_resp = isolated_api.post(
+        "/api/preview/score",
+        json={
+            "preview_token": inspect_data["preview_token"],
+            "recipe": {
+                "var": inspect_data["schema"]["var"],
+                "basin_dim": inspect_data["schema"]["basin_dim"],
+                "time_dim": inspect_data["schema"]["time_dim"],
+                "member_dim": inspect_data["schema"]["member_dim"],
+            },
+            "metadata": {
+                "leaderboard_id": "gauged__single_camels",
+                "spatial_regime": "gauged",
+                "forcing": "Daymet",
+                "model_name": "Test 3D NPZ Ens",
+                "code_url": "https://github.com/example/model",
+                "archive_url": "https://doi.org/10.5281/zenodo.1234567",
+            },
+        },
+    )
+    assert score_resp.status_code == 200, score_resp.text
+    scored = score_resp.json()
+    assert scored["entry"]["is_ensemble"] is True
+    assert scored["entry"]["num_members"] == 2
+    assert set(scored["entry"]["gauch_2023_metrics"].keys()) == set(GAUCH_2023_METRICS)
+    assert scored["ensemble_single_entry"] is not None
+    assert scored["ensemble_single_entry"]["num_members"] == 2

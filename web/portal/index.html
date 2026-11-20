@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=20261120_v1_preview" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261120_v1" />
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -229,16 +229,16 @@
           <h3>Source Categories</h3>
           <dl class="spec-dl">
             <div>
-              <dt>Literature</dt>
-              <dd>Metrics were extracted from prior published literature where experiments used the same splits as a MIP and are directly comparable.</dd>
+              <dt>Literature &amp; Literature*</dt>
+              <dd>Metrics extracted from prior published literature using identical MIP splits (<code>Literature</code>), or marked with <code>*</code> when reporting on a subset or non-standard protocol (<code>Literature*</code>).</dd>
             </div>
             <div>
               <dt>MIP Re-run</dt>
               <dd>Models from prior published literature that were reimplemented and rerun on the standard splits for a MIP.</dd>
             </div>
             <div>
-              <dt>Archive</dt>
-              <dd>Scored from publicly archived model predictions released with prior studies.</dd>
+              <dt>Archive &amp; Archive*</dt>
+              <dd>Scored from publicly archived model predictions released with prior studies (or marked with <code>*</code> when evaluating a subset of benchmark catchments).</dd>
             </div>
             <div>
               <dt>Contribution</dt>
@@ -247,6 +247,10 @@
           </dl>
         </div>
       </div>
+
+      <p style="margin-top: 1.15rem; font-size: 0.86rem; color: var(--color-ink-2);">
+        Want to propose a new benchmark track or discuss protocol standards? Join the <a href="https://github.com/grey-nearing/hydrology-mip/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions &#8599;</a> forum.
+      </p>
 
       <div style="margin-top: 2.25rem;">
         <h3 class="sub-heading" style="margin-bottom: 0.85rem;">MIP Benchmark Specifications</h3>
@@ -422,7 +426,7 @@
             </div>
             <div>
               <dt>Lagged Streamflow</dt>
-              <dd>Ingests lagged observed streamflow or data assimilation alongside meteorological inputs (Gauged only).</dd>
+              <dd>Ingests lagged observed streamflow or data assimilation alongside meteorological inputs (Gauged, 12-Fold PUB, and 18-Fold PUR).</dd>
             </div>
             <div>
               <dt>Freeform</dt>
@@ -550,10 +554,22 @@
 
             <select id="filter-category-select" class="filter-select" aria-label="Filter by Source Category">
               <option value="">All Sources</option>
-              <option value="Literature">Literature</option>
+              <option value="Literature">Literature / Literature*</option>
               <option value="MIP Re-run">MIP Re-run</option>
-              <option value="Archive">Archive</option>
+              <option value="Archive">Archive / Archive*</option>
               <option value="Contribution">Contribution</option>
+            </select>
+
+            <select id="filter-forcing-select" class="filter-select" aria-label="Filter by Forcing Product">
+              <option value="">All Forcings</option>
+              <option value="Daymet">Daymet</option>
+              <option value="Maurer">Maurer</option>
+              <option value="NLDAS">NLDAS</option>
+              <option value="Daymet + Maurer">Daymet + Maurer</option>
+              <option value="Daymet + NLDAS">Daymet + NLDAS</option>
+              <option value="Maurer + NLDAS">Maurer + NLDAS</option>
+              <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
+              <option value="Lagged">Includes Lagged Q</option>
             </select>
           </div>
         </div>
@@ -871,15 +887,15 @@
               </div>
 
               <div class="form-field full-width" style="margin-bottom: 0.9rem;">
-                <label class="field-label" for="sub-file-input">Hydrograph File (<code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.parquet</code>, <code>.npz</code>) &mdash; <code>.pkl</code> rejected for security</label>
+                <label class="field-label" for="sub-file-input">Hydrograph File (<code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.tsv</code>, <code>.parquet</code>, <code>.npz</code>) &mdash; <code>.pkl</code> rejected for security</label>
                 <div class="upload-dropzone" id="sub-dropzone" tabindex="0" role="button" aria-label="Drop or choose prediction file">
                   <div class="dropzone-title">
                     Drag &amp; drop a prediction file here, or <strong style="color: var(--color-accent);">browse files</strong>
                   </div>
                   <div style="font-size: 0.74rem; color: var(--color-muted); margin-top: 0.2rem;">
-                    Accepted: <code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.parquet</code>, <code>.npz</code> (<code>.pkl</code> / pickle files are blocked)
+                    Accepted: <code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.tsv</code>, <code>.parquet</code>, <code>.npz</code> (<code>.pkl</code> / pickle files are blocked)
                   </div>
-                  <input type="file" id="sub-file-input" accept=".nc,.nc4,.cdf,.zip,.csv,.parquet,.pq,.npz" hidden />
+                  <input type="file" id="sub-file-input" accept=".nc,.nc4,.zip,.csv,.tsv,.parquet,.npz" hidden />
                 </div>
                 <div class="selected-file-bar" id="sub-selected-file-bar" hidden>
                   <span id="sub-selected-file-label"></span>
@@ -924,7 +940,7 @@
                       <option value="Maurer + NLDAS">Maurer + NLDAS</option>
                       <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
                     </optgroup>
-                    <optgroup label="With Lagged Streamflow (Gauged Only)">
+                    <optgroup label="With Lagged Streamflow">
                       <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
                       <option value="Maurer + Lagged Streamflow">Maurer + Lagged Streamflow</option>
                       <option value="NLDAS + Lagged Streamflow">NLDAS + Lagged Streamflow</option>
@@ -951,7 +967,13 @@
                     <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
                     <option value="Conceptual">Conceptual</option>
                     <option value="Process-based">Process-based</option>
+                    <option value="Statistical">Statistical</option>
                   </select>
+                </div>
+
+                <div class="form-field">
+                  <label for="sub-entry-id">Entry ID (Optional)</label>
+                  <input type="text" id="sub-entry-id" placeholder="Auto-generated slug if blank" />
                 </div>
 
                 <div class="form-field">
@@ -1152,7 +1174,7 @@
               <div id="step4-pr-guide" class="diagnostic-card" style="border-color: var(--color-rule); background: var(--color-paper); margin-top: 0.85rem;" hidden>
                 <strong>Direct GitHub Pull Request Guide</strong>
                 <ol style="margin: 0.45rem 0 0; padding-left: 1.2rem; font-size: 0.8rem; line-height: 1.55;">
-                  <li>Fork <code>grey-nearing/camels-us-mip</code> and follow <a href="https://github.com/grey-nearing/camels-us-mip/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><code>CONTRIBUTING.md</code> &#8599;</a>.</li>
+                  <li>Fork <code>grey-nearing/hydrology-mip</code> and follow <a href="https://github.com/grey-nearing/hydrology-mip/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><code>CONTRIBUTING.md</code> &#8599;</a>.</li>
                   <li>Place the downloaded manifest JSON in your branch submission directory (or attach it to the automated issue above) and ensure <code>archive_url</code> + <code>code_url</code> resolve cleanly.</li>
                   <li>Open a Pull Request targeting <code>main</code> &mdash; CI verifies schema hygiene, 14 canonical metrics, and regenerates leaderboard figures automatically upon review.</li>
                 </ol>
@@ -1211,7 +1233,7 @@
             </div>
             <div>
               <dt>Lagged Streamflow &amp; Assimilation</dt>
-              <dd>Any model that takes past observed streamflow as input (autoregression, error updating, or data assimilation) must go on the Lagged Streamflow leaderboard (Gauged only), never on an open-loop leaderboard.</dd>
+              <dd>Any model that takes past observed streamflow as input (autoregression, error updating, or data assimilation) must go on the Lagged Streamflow leaderboard (Gauged, 12-Fold PUB, or 18-Fold PUR), never on an open-loop leaderboard.</dd>
             </div>
             <div>
               <dt>External (Freeform) Forcings</dt>
@@ -1229,11 +1251,11 @@
           <dl class="spec-dl">
             <div>
               <dt>Units, Shape &amp; Missing Values</dt>
-              <dd>Submit deterministic daily discharge in <code>mm/day</code> covering all <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a> across all 3,652 days (1989-10-01 to 1999-09-30). Mark missing days as <code>NaN</code>, not <code>0</code> or <code>-999</code>.</dd>
+              <dd>Submit deterministic daily discharge in <code>mm/day</code> covering all <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a> across all 3,652 days (1989-10-01 to 1999-09-30) with zero <code>NaN</code> values on valid observation days (anti-masking rule requires <code>0</code> NaNs and no <code>-999</code> sentinels).</dd>
             </div>
             <div>
               <dt>Supported File Types</dt>
-              <dd>Upload NetCDF (<code>.nc</code>), zipped Zarr (<code>.zarr.zip</code>), Parquet (<code>.parquet</code>), CSV (<code>.csv</code>), or NumPy (<code>.npz</code>) with 8-digit USGS basin IDs and <code>YYYY-MM-DD</code> dates. Pickle files (<code>.pkl</code>) are blocked for security.</dd>
+              <dd>Upload NetCDF (<code>.nc</code>), zipped Zarr (<code>.zarr.zip</code>), CSV/TSV (<code>.csv</code>, <code>.tsv</code>), Parquet (<code>.parquet</code>), or NumPy (<code>.npz</code>) with 8-digit USGS basin IDs and <code>YYYY-MM-DD</code> dates. Pickle files (<code>.pkl</code>) are blocked for security.</dd>
             </div>
             <div>
               <dt>Permanent DOI Archive</dt>
@@ -1270,13 +1292,15 @@
 
       <article class="publication-row">
         <div class="publication-meta">
-          <span class="resource-status">In Preparation</span>
+          <span class="resource-status">Submitted (2026)</span>
           <span>CAMELS-US Benchmark</span>
         </div>
-        <h3 class="publication-title">A CAMELS-US Model Intercomparison Project</h3>
-        <p class="publication-authors">Nearing, G., et al. (<em>in preparation</em>)</p>
+        <h3 class="publication-title">HydrologyMIP: A Rainfall-Runoff Model Intercomparison Project</h3>
+        <p class="publication-authors">Grey S. Nearing, Daniel Klotz, Patrick Ebel, &amp; Martin Gauch</p>
         <p style="margin: 0.45rem 0 0; font-size: 0.84rem; color: var(--color-muted, #5a626a);">
-          Manuscript preprint, benchmark code repository, and open hydrograph archive will be linked here upon release.
+          Source repository: <a href="https://github.com/grey-nearing/hydrology-mip" target="_blank" rel="noopener noreferrer">github.com/grey-nearing/hydrology-mip &#8599;</a> &middot;
+          Master data archive: <a href="https://doi.org/10.5281/zenodo.24383448" target="_blank" rel="noopener noreferrer">10.5281/zenodo.24383448 &#8599;</a> &middot;
+          Propose tracks: <a href="https://github.com/grey-nearing/hydrology-mip/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions &#8599;</a>
         </p>
       </article>
     </section>
@@ -1289,6 +1313,10 @@
     </div>
     <div class="footer-links-inline">
       <a href="mailto:contact@hydrologymip.org">contact@hydrologymip.org</a>
+      <span>&middot;</span>
+      <a href="https://github.com/grey-nearing/hydrology-mip" target="_blank" rel="noopener noreferrer">GitHub &#8599;</a>
+      <span>&middot;</span>
+      <a href="https://github.com/grey-nearing/hydrology-mip/discussions" target="_blank" rel="noopener noreferrer">Discussions &#8599;</a>
       <span>&middot;</span>
       <a href="#contribute" id="footer-link-contribute">Contribute</a>
       <span>&middot;</span>
@@ -1316,6 +1344,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261120_v1_preview"></script>
+  <script src="/static/app.js?v=20261120_v1"></script>
 </body>
 </html>

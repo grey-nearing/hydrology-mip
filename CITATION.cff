@@ -18,7 +18,7 @@ authors:
 license: Apache-2.0
 version: "1.0.0"
 doi: "10.5281/zenodo.24383448"
-repository-code: "https://github.com/grey-nearing/camels-us-mip"
+repository-code: "https://github.com/grey-nearing/hydrology-mip"
 url: "https://hydrologymip.org"
 preferred-citation:
   type: article

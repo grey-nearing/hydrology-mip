@@ -42,15 +42,15 @@ Each `.zarr` directory in `https://data.hydrologymip.org/camels_us_daily/` is an
 
 ---
 
-## 3. Complete Summary of All 60 Active Stage-2 Hydrograph Zarr Stores by License
+## 3. Complete Summary of All 61 Active Stage-2 Hydrograph Zarr Stores by License
 
-Each store below backs at least one row of `mips/camels_us_daily/leaderboards/*.json` (100 Zarr-backed rows in total). The authoritative per-store index, `https://data.hydrologymip.org/camels_us_daily/hydrographs/manifest_index.json`, is generated from those rows with `mip-update-leaderboard --render-hydrograph-manifest <output_path>`.
+Each store below backs at least one row of `mips/camels_us_daily/leaderboards/*.json` (101 Zarr-backed rows in total). The authoritative per-store index, `https://data.hydrologymip.org/camels_us_daily/hydrographs/manifest_index.json`, is generated from those rows with `mip-update-leaderboard --render-hydrograph-manifest <output_path>`.
 
 | License | Store Count | Stores in `https://data.hydrologymip.org/camels_us_daily/hydrographs/` |
 | :--- | :---: | :--- |
-| **`CC-BY-4.0` (First-Party `MIP Re-run` & `Contribution`)** | **40** | `feng2020_di_lstm_nldas.zarr`, `feng2020_di_lstm_pub_nldas.zarr`, `feng2020_di_lstm_pur_nldas.zarr`, `yin2022_rrformer_daymet.zarr`, `hoedt_mclstm_maurer.zarr`, `hoedt_mclstm_3f_avgp.zarr`, `hoedt_mclstm_3f_ens_b.zarr`, `sacsma_daymet.zarr`, `sacsma_3f_ens.zarr`, `sacsma_pub_daymet.zarr`, `sacsma_pub_3f.zarr`, `sacsma_pur_daymet.zarr`, `sacsma_pur_3f.zarr`, `t3_18.zarr`, `t3_21.zarr`, `t3_29.zarr`, `t4_06.zarr`, `poudel_mlp_hbv_daymet_3s.zarr`, `poudel_mlp_hbv_pub_daymet.zarr`, `poudel_mlp_hbv_pur_daymet.zarr`, `k21_lstm_pub_3f.zarr`, `t7_06.zarr`, `t7_10.zarr`, `k21_lstm_pur_3f.zarr`, `k21_lstm_pur_daymet.zarr`, `k21_lstm_pur_maurer.zarr`, `k21_lstm_pur_nldas.zarr`, `t11_04.zarr`, `t11_06.zarr`, `shahriar2026_mamba3_daymet.zarr`, `era_gauged_minimal_guidance.zarr`, `era_gauged_multi_paradigm.zarr`, `era_gauged_physics_guided.zarr`, `era_pub_minimal_guidance.zarr`, `era_pub_physics_guided.zarr`, `era_pur_minimal_guidance.zarr`, `era_pur_physics_guided.zarr`, `naive_lag1_persistence_gauged.zarr`, `naive_lag1_persistence_pub.zarr`, `naive_lag1_persistence_pur.zarr` |
+| **`CC-BY-4.0` (First-Party `MIP Re-run` & `Contribution`)** | **41** | `feng2020_di_lstm_nldas.zarr`, `feng2020_di_lstm_pub_nldas.zarr`, `feng2020_di_lstm_pur_nldas.zarr`, `yin2022_rrformer_daymet.zarr`, `hoedt_mclstm_maurer.zarr`, `hoedt_mclstm_3f_avgp.zarr`, `hoedt_mclstm_3f_ens_b.zarr`, `sacsma_daymet.zarr`, `sacsma_3f_ens.zarr`, `sacsma_pub_daymet.zarr`, `sacsma_pub_3f.zarr`, `sacsma_pur_daymet.zarr`, `sacsma_pur_3f.zarr`, `t3_18.zarr`, `t3_21.zarr`, `t3_29.zarr`, `t4_06.zarr`, `t4_24.zarr`, `poudel_mlp_hbv_daymet_3s.zarr`, `poudel_mlp_hbv_pub_daymet.zarr`, `poudel_mlp_hbv_pur_daymet.zarr`, `k21_lstm_pub_3f.zarr`, `t7_06.zarr`, `t7_10.zarr`, `k21_lstm_pur_3f.zarr`, `k21_lstm_pur_daymet.zarr`, `k21_lstm_pur_maurer.zarr`, `k21_lstm_pur_nldas.zarr`, `t11_04.zarr`, `t11_06.zarr`, `shahriar2026_mamba3_daymet.zarr`, `era_gauged_minimal_guidance.zarr`, `era_gauged_multi_paradigm.zarr`, `era_gauged_physics_guided.zarr`, `era_pub_minimal_guidance.zarr`, `era_pub_physics_guided.zarr`, `era_pur_minimal_guidance.zarr`, `era_pur_physics_guided.zarr`, `naive_lag1_persistence_gauged.zarr`, `naive_lag1_persistence_pub.zarr`, `naive_lag1_persistence_pur.zarr` |
 | **`CC-BY-4.0` (External Author Archives)** | **20** | `t3_02.zarr`, `t3_06.zarr`, `t3_11.zarr`, `t3_15.zarr`, `t3_23.zarr`, `t3_39.zarr`, `t3_41.zarr`, `t3_43.zarr`, `t3_44.zarr`, `t3_45.zarr`, `t3_46.zarr`, `t3_48.zarr`, `t3_52.zarr`, `t4_05.zarr`, `t4_08.zarr`, `t4_09.zarr`, `t4_19.zarr`, `t7_19.zarr`, `t7_22.zarr`, `t7_23.zarr` |
-| **Total Active `CC-BY-4.0` Stage-2 Hydrograph Stores** | **60** | — |
+| **Total Active `CC-BY-4.0` Stage-2 Hydrograph Stores** | **61** | — |
 
 ---
 

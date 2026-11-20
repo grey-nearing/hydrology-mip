@@ -15,8 +15,8 @@ body:
   - type: dropdown
     id: leaderboard_id
     attributes:
-      label: Target Leaderboard (Table 3–14)
-      description: Select the spatial generalization and forcing protocol matching your training setup.
+      label: Target Leaderboard
+      description: Select the spatial generalization and forcing protocol (Supplement Tables S1–S9 + 3 open Freeform tracks).
       options:
         - gauged__single_camels
         - gauged__multi_camels
@@ -42,6 +42,24 @@ body:
       required: true
 
   - type: input
+    id: entry_id
+    attributes:
+      label: Entry ID (Optional)
+      description: Optional stable snake_case leaderboard entry_id (pre-filled automatically by Contribute Step 4; leave blank to auto-generate).
+      placeholder: e.g. my_model_gauged_daymet
+    validations:
+      required: false
+
+  - type: input
+    id: family_id
+    attributes:
+      label: Model Family ID (Optional)
+      description: Optional existing Table 3 family_id (e.g., era_lstm_seeded for Empirical Research Assistance (ERA); leave blank to register a new family).
+      placeholder: e.g. era_lstm_seeded
+    validations:
+      required: false
+
+  - type: input
     id: forcing
     attributes:
       label: Meteorological Forcing Product(s)
@@ -61,11 +79,17 @@ body:
     validations:
       required: true
 
-  - type: input
+  - type: dropdown
     id: paradigm
     attributes:
       label: Model Paradigm / Category
-      placeholder: e.g. Machine learning / Hybrid (ML + Physics) / Conceptual / Process-based
+      options:
+        - Machine learning
+        - Hybrid (ML + Physics)
+        - Conceptual
+        - Process-based
+        - Statistical
+      default: 0
     validations:
       required: true
 

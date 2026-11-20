@@ -3,8 +3,8 @@
 
 """Hardened stateless preview and canonical scoring API for HydrologyMIP.
 
-Designed to move cleanly into ``web/scorer_api/app.py``:
-- Imports and invokes the canonical 12-metric evaluator from ``camels-us-mip``
+Designed to live in ``web/scorer_api/app.py``:
+- Imports and invokes the canonical 14-metric evaluator from ``hydrology-mip``
   (``metrics.evaluator.calculate_model_leaderboard_metrics`` and
   ``hydromip.metrics.deterministic_daily.calculate_all_metrics``) with zero
   duplicated metric formulas.
@@ -419,9 +419,12 @@ PREVIEW_STORE = EphemeralPreviewStore()
 
 
 def _client_ip(request: Request) -> str:
+    cf_ip = request.headers.get("cf-connecting-ip", "").strip()
+    if cf_ip:
+        return cf_ip
     fwd = request.headers.get("x-forwarded-for", "").strip()
     if fwd:
-        return fwd.split(",", 1)[0].strip()
+        return fwd.split(",")[-1].strip()
     if request.client and request.client.host:
         return str(request.client.host)
     return "unknown"

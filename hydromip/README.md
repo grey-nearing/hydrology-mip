@@ -473,7 +473,7 @@ protection of `main` (required `CI Gate` check and code-owner review). It needs 
 | Flag | Default | Meaning |
 | :--- | :--- | :--- |
 | `--enforce-admins true\|false` | `true` | Whether the rules also apply to repository admins. |
-| `--repo owner/name` | `grey-nearing/camels-us-mip` | The GitHub repository to configure. |
+| `--repo owner/name` | `grey-nearing/hydrology-mip` | The GitHub repository to configure. |
 | `-h`, `--help` | — | Print the usage text. |
 
 ## Tests

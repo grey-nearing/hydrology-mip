@@ -30,6 +30,7 @@ import numpy as np
 import pandas as pd
 
 from hydromip.io.doi_resolver import validate_and_fetch_archive_url
+from hydromip.protocol import discover_mips, get_mip
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MIP_DIR = REPO_ROOT / "mips" / "camels_us_daily"
@@ -39,16 +40,15 @@ BASIN_MAP_META_PATH = WORKER_DIR / "basin_map_metadata.json"
 DEFAULT_STAGE_DIR = WORKER_DIR / ".cf_staging"
 CF_SCRIPT_NAME = "hydrologymip-router"
 CANONICAL_HOST = "hydrologymip.org"
+PUBLIC_R2_BASE = "https://data.hydrologymip.org/camels_us_daily"
 
 PRIVATE_URL_MARKERS = (
-    "github.com/grey-nearing/camels-us-mip",
     "gs://camels-us-mip",
     "console.cloud.google.com/storage/browser/camels-us-mip",
     "storage.googleapis.com/camels-us-mip",
 )
 
 PRIVATE_INLINE_PATTERNS = [
-    re.compile(r"https?://github\.com/grey-nearing/camels-us-mip[^\s,;)\"']*"),
     re.compile(r"gs://camels-us-mip[^\s,;)\"']*"),
     re.compile(r"https?://console\.cloud\.google\.com/storage/browser/camels-us-mip[^\s,;)\"']*"),
     re.compile(r"https?://storage\.googleapis\.com/camels-us-mip[^\s,;)\"']*"),
@@ -155,11 +155,25 @@ def scrub_private_inline_text(text: str) -> str:
     return out
 
 
-def sanitize_public_data(obj: Any) -> Any:
-    """Recursively strip pre-release private URLs from public payloads when enabled."""
+def rewrite_gcs_to_r2(obj: Any) -> Any:
+    """Recursively rewrite private ``gs://camels-us-mip`` URIs to the public R2 mirror."""
     if isinstance(obj, dict):
+        return {k: rewrite_gcs_to_r2(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [rewrite_gcs_to_r2(v) for v in obj]
+    if isinstance(obj, str):
+        out = obj.replace("gs://camels-us-mip/", f"{PUBLIC_R2_BASE}/")
+        out = out.replace("gs://camels-us-mip", PUBLIC_R2_BASE)
+        return out
+    return obj
+
+
+def sanitize_public_data(obj: Any) -> Any:
+    """Recursively rewrite GCS URIs to R2 and strip private GCS console URLs."""
+    rewritten = rewrite_gcs_to_r2(obj)
+    if isinstance(rewritten, dict):
         cleaned = {}
-        for k, v in obj.items():
+        for k, v in rewritten.items():
             if isinstance(v, str):
                 if k in URL_FIELDS and is_private_url(v):
                     cleaned[k] = ""
@@ -170,11 +184,11 @@ def sanitize_public_data(obj: Any) -> Any:
             else:
                 cleaned[k] = sanitize_public_data(v)
         return cleaned
-    if isinstance(obj, list):
-        return [sanitize_public_data(item) for item in obj]
-    if isinstance(obj, str) and is_private_url(obj):
-        return scrub_private_inline_text(obj)
-    return obj
+    if isinstance(rewritten, list):
+        return [sanitize_public_data(item) for item in rewritten]
+    if isinstance(rewritten, str) and is_private_url(rewritten):
+        return scrub_private_inline_text(rewritten)
+    return rewritten
 
 
 def _finite_or_none(val: Any) -> float | None:
@@ -332,10 +346,15 @@ def build_portal_json_payloads(
             f"Missing canonical leaderboard files in {lb_dir}: tables_3_to_14.json / table_2_registry.json"
         )
 
-    t3_doc = json.loads(t3_path.read_text(encoding="utf-8"))
-    t2_doc = json.loads(t2_path.read_text(encoding="utf-8"))
+    t3_doc = rewrite_gcs_to_r2(json.loads(t3_path.read_text(encoding="utf-8")))
+    t2_doc = rewrite_gcs_to_r2(json.loads(t2_path.read_text(encoding="utf-8")))
     families_raw = list(t2_doc.get("families") or [])
     families_by_id = {str(f["family_id"]): f for f in families_raw}
+
+    basin_hucs_531: list[str] = []
+    if BASIN_MAP_META_PATH.is_file():
+        bm_meta = json.loads(BASIN_MAP_META_PATH.read_text(encoding="utf-8"))
+        basin_hucs_531 = [str(b.get("huc_02", "")).zfill(2) for b in (bm_meta.get("basins") or [])]
 
     # Deterministic timestamp derived from leaderboard files on disk
     lb_files = sorted(lb_dir.glob("*.json"))
@@ -378,8 +397,8 @@ def build_portal_json_payloads(
             row["paradigm"] = row.get("paradigm") or fam.get("paradigm", "")
             row["citation"] = row.get("citation") or fam.get("citation", "")
             row["paper_url"] = row.get("paper_url") or fam.get("paper_url", "")
-            row["code_url"] = row.get("code_url") or row.get("github_url") or fam.get("github_url", "")
-            row["github_url"] = row["code_url"]
+            row["github_url"] = row.get("github_url") or fam.get("github_url") or row.get("code_url") or ""
+            row["code_url"] = row.get("code_url") or row["github_url"]
             row["data_archive_url"] = (
                 row.get("data_archive_url")
                 or row.get("zenodo_url")
@@ -390,6 +409,39 @@ def build_portal_json_payloads(
             has_hydro = mk in available_qsim_keys
             row["has_hydrograph"] = has_hydro
             _attach_flat_gauch_metrics(row)
+
+            pb_nse = row.get("per_basin_nse")
+            if isinstance(pb_nse, list) and len(pb_nse) == 531 and len(basin_hucs_531) == 531:
+                reg_raw = row.get("regional_huc02")
+                needs_huc_enrich = not isinstance(reg_raw, dict) or any(
+                    not isinstance(v, dict) for v in reg_raw.values()
+                )
+                if needs_huc_enrich:
+                    by_huc: dict[str, list[float]] = {}
+                    for h_code, val in zip(basin_hucs_531, pb_nse):
+                        if h_code and val is not None and np.isfinite(float(val)):
+                            by_huc.setdefault(h_code, []).append(float(val))
+                    existing_reg = reg_raw if isinstance(reg_raw, dict) else {}
+                    enriched_reg: dict[str, dict[str, Any]] = {}
+                    for h_code in sorted(by_huc):
+                        vals = by_huc[h_code]
+                        prev = existing_reg.get(h_code)
+                        prev_med = (
+                            float(prev)
+                            if isinstance(prev, (int, float)) and np.isfinite(float(prev))
+                            else None
+                        )
+                        enriched_reg[h_code] = prev if isinstance(prev, dict) else {
+                            "num_basins": len(vals),
+                            "median_nse": round(
+                                prev_med if prev_med is not None else float(np.median(vals)), 4
+                            ),
+                            "mean_nse": round(float(np.mean(vals)), 4),
+                            "median_kge": None,
+                            "nse_le_zero_count": int(sum(1 for v in vals if v <= 0.0)),
+                        }
+                    row["regional_huc02"] = enriched_reg
+
             rows_out.append(row)
             all_entries.append(row)
 
@@ -715,12 +767,27 @@ def stage_data_and_portal_assets(
         "submissions_email": "submissions@hydrologymip.org",
     }
 
+    repo_for_mips = mip_dir.parent.parent
+    mips_dict = discover_mips(repo_root=repo_for_mips)
+    mips_payload = rewrite_gcs_to_r2(
+        {
+            "default_mip_id": mip_dir.name,
+            "n_mips": len(mips_dict),
+            "mips": [proto.to_summary_dict() for proto in mips_dict.values()],
+        }
+    )
+    mip_camels_payload = rewrite_gcs_to_r2(
+        get_mip(mip_id=mip_dir.name, repo_root=repo_for_mips).to_summary_dict()
+    )
+
     json_assets = {
         "overview.json": overview_obj,
         "leaderboards.json": leaderboards_obj,
         "families.json": families_obj,
         "hydrographs_index.json": hydro_index_obj,
         "protocol.json": protocol_spec,
+        "mips.json": mips_payload,
+        "mip_camels_us_daily_protocol.json": mip_camels_payload,
     }
     asset_map: dict[str, Path] = {}
     for fname, payload in json_assets.items():
@@ -779,6 +846,7 @@ def upload_cf_static_assets(
         headers={
             "Authorization": f"Bearer {api_token}",
             "Content-Type": "application/json",
+            "User-Agent": "HydrologyMIP/1.0",
         },
     )
     with opener.open(req, timeout=60) as resp:
@@ -823,6 +891,7 @@ def upload_cf_static_assets(
             headers={
                 "Authorization": f"Bearer {jwt_token}",
                 "Content-Type": f"multipart/form-data; boundary={boundary}",
+                "User-Agent": "HydrologyMIP/1.0",
             },
         )
         for attempt in range(3):
@@ -1105,8 +1174,8 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 1. Canonical 301 redirect from www.hydrologymip.org and alias domains
-    if (url.hostname !== CANONICAL_HOST) {
+    // 1. Canonical 301 redirect from HTTP and alias domains to https://hydrologymip.org
+    if (url.hostname !== CANONICAL_HOST || url.protocol !== "https:") {
       const target = `https://${CANONICAL_HOST}${url.pathname}${url.search}`;
       return Response.redirect(target, 301);
     }
@@ -1236,6 +1305,8 @@ export default {
       if (ct) fwdHeaders.set("Content-Type", ct);
       const accept = request.headers.get("Accept");
       if (accept) fwdHeaders.set("Accept", accept);
+      const cfIp = request.headers.get("CF-Connecting-IP");
+      if (cfIp) fwdHeaders.set("CF-Connecting-IP", cfIp);
       const rawCookie = request.headers.get("Cookie") || "";
       const gaesaCookie = rawCookie
         .split(";")
@@ -1276,7 +1347,7 @@ export default {
         {
           detail:
             "Direct browser mutations are disabled on the public portal. " +
-            "Please submit models via https://github.com/grey-nearing/camels-us-mip.",
+            "Please submit models via https://github.com/grey-nearing/hydrology-mip.",
         },
         405,
         "no-store"
@@ -1289,6 +1360,9 @@ export default {
       "/api/leaderboards": ["/data_assets/leaderboards.json", "application/json; charset=utf-8"],
       "/api/families": ["/data_assets/families.json", "application/json; charset=utf-8"],
       "/api/hydrographs/index": ["/data_assets/hydrographs_index.json", "application/json; charset=utf-8"],
+      "/api/mips": ["/data_assets/mips.json", "application/json; charset=utf-8"],
+      "/api/mips/camels_us_daily": ["/data_assets/mip_camels_us_daily_protocol.json", "application/json; charset=utf-8"],
+      "/api/mips/camels_us_daily/protocol": ["/data_assets/mip_camels_us_daily_protocol.json", "application/json; charset=utf-8"],
       "/api/template/protocol.json": ["/data_assets/protocol.json", "application/json; charset=utf-8"],
       "/api/splits/pub_12fold_random_splits.json": ["/data_assets/pub_12fold_random_splits.json", "application/json; charset=utf-8"],
       "/api/splits/pur_18fold_huc02_splits.json": ["/data_assets/pur_18fold_huc02_splits.json", "application/json; charset=utf-8"],
@@ -1325,27 +1399,35 @@ export default {
       const ref3fCdf = ref3fRow && Array.isArray(ref3fRow.per_basin_nse) ? computeQuantiles101(ref3fRow.per_basin_nse) : [];
       const ref1fCdf = ref1fRow && Array.isArray(ref1fRow.per_basin_nse) ? computeQuantiles101(ref1fRow.per_basin_nse) : [];
       let nseCdf = [];
-      let source = "summary_anchored_distribution";
+      let source = "unavailable";
       if (Array.isArray(foundRow.per_basin_nse) && foundRow.per_basin_nse.length > 0) {
         nseCdf = computeQuantiles101(foundRow.per_basin_nse);
         source = "empirical_531_basins";
-      } else {
-        const med = typeof foundRow.primary_ranking_nse === "number" ? foundRow.primary_ranking_nse : 0.70;
-        const shift = med - 0.772;
-        nseCdf = ref1fCdf.map((v) => Math.round(Math.min(0.985, v + shift) * 10000) / 10000);
       }
       const hucRows = [];
       if (foundRow.regional_huc02 && typeof foundRow.regional_huc02 === "object") {
         for (const hucKey of Object.keys(foundRow.regional_huc02).sort()) {
-          const hd = foundRow.regional_huc02[hucKey] || {};
-          hucRows.push({
-            huc_02: hucKey,
-            n_basins: hd.num_basins || 0,
-            median_NSE: hd.median_nse ?? null,
-            mean_NSE: hd.mean_nse ?? null,
-            median_KGE: hd.median_kge ?? null,
-            n_NSE_le_0: hd.nse_le_zero_count ?? 0,
-          });
+          const rawHd = foundRow.regional_huc02[hucKey];
+          if (typeof rawHd === "number" && Number.isFinite(rawHd)) {
+            hucRows.push({
+              huc_02: hucKey,
+              n_basins: null,
+              median_NSE: rawHd,
+              mean_NSE: null,
+              median_KGE: null,
+              n_NSE_le_0: null,
+            });
+          } else {
+            const hd = rawHd || {};
+            hucRows.push({
+              huc_02: hucKey,
+              n_basins: hd.num_basins ?? null,
+              median_NSE: hd.median_nse ?? null,
+              mean_NSE: hd.mean_nse ?? null,
+              median_KGE: hd.median_kge ?? null,
+              n_NSE_le_0: hd.nse_le_zero_count ?? null,
+            });
+          }
         }
       }
       return jsonResponse({
@@ -1443,10 +1525,25 @@ export default {
       return jsonResponse({ detail: `API endpoint '${p}' not found.` }, 404, "no-store");
     }
 
-    // 11. Static asset passthrough or SPA fallback
+    // 11. Static asset passthrough or 404 for missing static/asset files; SPA fallback only for extensionless routes
     const staticResp = await env.ASSETS.fetch(request);
     if (staticResp.status !== 404) {
       return withHeaders(staticResp);
+    }
+    const isMissingAssetPath =
+      p.startsWith("/static/") ||
+      p.startsWith("/data_assets/") ||
+      p.startsWith("/hydro_assets/") ||
+      /\.[A-Za-z0-9]{1,8}$/.test(p);
+    if (isMissingAssetPath) {
+      return new Response("Not Found", {
+        status: 404,
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+          "Cache-Control": "no-store",
+          ...SECURITY_HEADERS,
+        },
+      });
     }
     const fallbackIdx = await fetchAsset(env, url.origin, "/index.html");
     return withHeaders(fallbackIdx, {
@@ -1578,7 +1675,11 @@ def main(argv: list[str] | None = None) -> int:
             )
 
     preview_gate = _is_truthy(os.environ.get("HYDROLOGYMIP_PREVIEW_GATE"), default=True)
-    preview_key = os.environ.get("HYDROLOGYMIP_PREVIEW_ACCESS_KEY", "camels-mip-2026").strip() or "camels-mip-2026"
+    preview_key = (
+        (os.environ.get("HYDROLOGYMIP_PREVIEW_ACCESS_KEY", "camels-mip-2026").strip() or "camels-mip-2026")
+        if preview_gate
+        else ""
+    )
     scrub_urls = _is_truthy(os.environ.get("HYDROLOGYMIP_SCRUB_PRIVATE_URLS"), default=True)
     scorer_api_url = (
         os.environ.get("HYDROLOGYMIP_SCORER_API_URL")
@@ -1642,6 +1743,7 @@ def main(argv: list[str] | None = None) -> int:
         headers={
             "Authorization": f"Bearer {api_token}",
             "Content-Type": f"multipart/form-data; boundary={boundary}",
+            "User-Agent": "HydrologyMIP/1.0",
         },
     )
     opener = urllib.request.build_opener(_NonRaisingHTTPErrorProcessor())

@@ -1089,6 +1089,31 @@ def _load_tabular_to_canonical(
     return qsim_out, None, matched_b, matched_d, []
 
 
+def _infer_3d_axis_roles(
+    shape: tuple[int, ...],
+    raw_basins: np.ndarray | None,
+    raw_dates: np.ndarray | None,
+) -> tuple[str, str, str]:
+    b_len = int(len(raw_basins)) if raw_basins is not None else EXPECTED_NUM_BASINS
+    d_len = int(len(raw_dates)) if raw_dates is not None else EXPECTED_NUM_DAYS
+    s0, s1, s2 = (int(shape[0]), int(shape[1]), int(shape[2]))
+    if (s1, s2) == (d_len, b_len) and d_len != b_len:
+        return ("member", "date", "basin")
+    if (s1, s2) == (b_len, d_len):
+        return ("member", "basin", "date")
+    if (s0, s1) == (b_len, d_len):
+        return ("basin", "date", "member")
+    if (s0, s1) == (d_len, b_len):
+        return ("date", "basin", "member")
+    if (s0, s2) == (b_len, d_len):
+        return ("basin", "member", "date")
+    if (s0, s2) == (d_len, b_len):
+        return ("date", "member", "basin")
+    if s1 > s2 and d_len > b_len and s1 == d_len:
+        return ("member", "date", "basin")
+    return ("member", "basin", "date")
+
+
 def _load_npz_to_canonical(
     path: Path,
     recipe: IngestionRecipe,
@@ -1118,9 +1143,7 @@ def _load_npz_to_canonical(
         )
 
     if raw_arr.ndim == 3:
-        roles = ("member", "basin", "date")
-        if raw_arr.shape[1] > raw_arr.shape[2] and raw_dates is not None and raw_arr.shape[1] == len(raw_dates):
-            roles = ("member", "date", "basin")
+        roles = _infer_3d_axis_roles(raw_arr.shape, raw_basins, raw_dates)
     elif raw_arr.ndim == 2:
         roles = ("basin", "date")
         if (
@@ -1141,11 +1164,12 @@ def _load_npz_to_canonical(
         raw_arr, raw_basins, raw_dates, roles, canonical_basins, canonical_dates, recipe, strict=strict
     )
     if members is None and extra_members is not None and extra_members.ndim == 3:
+        extra_roles = _infer_3d_axis_roles(extra_members.shape, raw_basins, raw_dates)
         _, members, _, _, _ = _align_axes_and_slice(
             extra_members,
             raw_basins,
             raw_dates,
-            ("member", roles[0], roles[1]),
+            extra_roles,
             canonical_basins,
             canonical_dates,
             recipe,

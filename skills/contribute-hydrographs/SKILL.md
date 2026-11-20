@@ -97,8 +97,8 @@ nothing.
 
 1. Zip the store: `cd local_bucket/hydrographs/<leaderboard_id> && zip -r mymodel_gauged_daymet.zarr.zip mymodel_gauged_daymet.zarr`.
 2. Deposit the zip on Zenodo under **CC-BY-4.0** and note the DOI.
-3. Open the **Hydrograph Archive Submission** issue form
-   (`.github/ISSUE_TEMPLATE/hydrograph-submission.yml`). Give:
+3. Open the **Community Model Submission** issue form
+   (`.github/ISSUE_TEMPLATE/model_submission.yml`) — or submit via Contribute Step 4 on `https://hydrologymip.org/#contribute`. Give:
    - the DOI, model name, citation, architectural category, and target leaderboard(s);
    - the forcings and the number of ensemble members;
    - the score JSON;

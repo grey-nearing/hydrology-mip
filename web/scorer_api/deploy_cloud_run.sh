@@ -35,6 +35,7 @@ cp "${SCRIPT_DIR}/app.py" "${BUILD_CTX}/web/scorer_api/app.py"
 cp "${SCRIPT_DIR}/requirements.txt" "${BUILD_CTX}/web/scorer_api/requirements.txt"
 
 cp -R "${REPO_ROOT}/mips/camels_us_daily/leaderboards" "${BUILD_CTX}/mips/camels_us_daily/leaderboards"
+cp -R "${REPO_ROOT}/mips/camels_us_daily/figures" "${BUILD_CTX}/mips/camels_us_daily/figures"
 cp -R "${REPO_ROOT}/mips/camels_us_daily/splits" "${BUILD_CTX}/mips/camels_us_daily/splits"
 cp "${REPO_ROOT}/mips/camels_us_daily/protocol.json" "${BUILD_CTX}/mips/camels_us_daily/protocol.json"
 cp "${QOBS_NPZ_PATH}" "${BUILD_CTX}/data/qobs_531.npz"

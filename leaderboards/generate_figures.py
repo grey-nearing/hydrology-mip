@@ -106,7 +106,7 @@ _PUBLICATION_YEAR_PATTERN = re.compile(r"(?<!\d)(199[0-9]|20[0-2][0-9]|203[0-5])
 #: are excluded explicitly and reported in the manifest.
 NSE_SENTINEL_FLOOR: float = -900.0
 #: Earliest year shown on the Figure 2 x-axis (the axis always expands to fit the data).
-FIGURE_2_MIN_YEAR: int = 2015
+FIGURE_2_MIN_YEAR: int = 2017
 #: Padding (in NSE units) added around the plotted data when deriving Figure 2 y-limits.
 FIGURE_2_YLIM_PAD: float = 0.02
 #: Minimum y-extent per spatial regime; the axis always expands beyond these to fit the data.
@@ -173,41 +173,50 @@ REGIME_STYLES: dict[str, dict[str, Any]] = {
 INITIAL_LABEL_OFFSETS: dict[tuple[int, str, int], tuple[float, float]] = {
     (0, "Single CAMELS Forcing", 2015): (10.0, -24.0),
     (0, "Single CAMELS Forcing", 2017): (10.0, -26.0),
-    (0, "Single CAMELS Forcing", 2018): (10.0, -24.0),
-    (0, "Single CAMELS Forcing", 2019): (-68.0, 14.0),
-    (0, "Single CAMELS Forcing", 2021): (10.0, -26.0),
+    (0, "Single CAMELS Forcing", 2018): (12.0, -34.0),
+    (0, "Single CAMELS Forcing", 2019): (-150.0, 6.0),
+    (0, "Single CAMELS Forcing", 2021): (14.0, -24.0),
     (0, "Single CAMELS Forcing", 2025): (10.0, -24.0),
-    (0, "Multiple CAMELS Forcings", 2020): (10.0, -26.0),
-    (0, "Multiple CAMELS Forcings", 2021): (-115.0, 12.0),
+    (0, "Multiple CAMELS Forcings", 2020): (14.0, -42.0),
+    (0, "Multiple CAMELS Forcings", 2021): (-155.0, 14.0),
     (0, "Multiple CAMELS Forcings", 2025): (-125.0, -22.0),
-    (0, "With Lagged Streamflow", 2020): (-95.0, 12.0),
-    (0, "With Lagged Streamflow", 2022): (12.0, 10.0),
+    (0, "Multiple CAMELS Forcings", 2026): (-200.0, -26.0),
+    (0, "With Lagged Streamflow", 2020): (-145.0, 16.0),
+    (0, "With Lagged Streamflow", 2022): (14.0, -10.0),
     (0, "Freeform Forcings", 2021): (-105.0, -26.0),
     (0, "Freeform Forcings", 2023): (10.0, -24.0),
     (1, "Single CAMELS Forcing", 2017): (10.0, -24.0),
+    (1, "Single CAMELS Forcing", 2018): (12.0, 10.0),
     (1, "Single CAMELS Forcing", 2019): (-68.0, -26.0),
-    (1, "Single CAMELS Forcing", 2022): (-10.0, -34.0),
-    (1, "Single CAMELS Forcing", 2024): (-15.0, 26.0),
+    (1, "Single CAMELS Forcing", 2020): (-155.0, -18.0),
+    (1, "Single CAMELS Forcing", 2022): (16.0, -34.0),
+    (1, "Single CAMELS Forcing", 2024): (14.0, 22.0),
     (1, "Multiple CAMELS Forcings", 2019): (-55.0, 16.0),
+    (1, "Multiple CAMELS Forcings", 2020): (14.0, -26.0),
+    (1, "Multiple CAMELS Forcings", 2021): (-165.0, -24.0),
     (1, "Multiple CAMELS Forcings", 2022): (-95.0, 14.0),
     (1, "Multiple CAMELS Forcings", 2023): (-115.0, -28.0),
     (1, "Multiple CAMELS Forcings", 2024): (-95.0, 14.0),
     (1, "Multiple CAMELS Forcings", 2025): (-115.0, 14.0),
     (1, "Multiple CAMELS Forcings", 2026): (-125.0, 12.0),
+    (1, "With Lagged Streamflow", 2020): (14.0, -8.0),
     (1, "Freeform Forcings", 2021): (10.0, 10.0),
     (1, "Freeform Forcings", 2023): (10.0, -24.0),
     (2, "Single CAMELS Forcing", 2019): (10.0, -26.0),
-    (2, "Single CAMELS Forcing", 2021): (-110.0, -30.0),
+    (2, "Single CAMELS Forcing", 2020): (-155.0, -16.0),
+    (2, "Single CAMELS Forcing", 2021): (-155.0, 6.0),
     (2, "Single CAMELS Forcing", 2022): (-95.0, -26.0),
     (2, "Single CAMELS Forcing", 2023): (-95.0, -28.0),
-    (2, "Single CAMELS Forcing", 2024): (-105.0, -28.0),
+    (2, "Single CAMELS Forcing", 2024): (14.0, -34.0),
     (2, "Single CAMELS Forcing", 2025): (-110.0, -28.0),
     (2, "Multiple CAMELS Forcings", 2019): (10.0, 8.0),
-    (2, "Multiple CAMELS Forcings", 2021): (-115.0, 14.0),
+    (2, "Multiple CAMELS Forcings", 2020): (16.0, -16.0),
+    (2, "Multiple CAMELS Forcings", 2021): (-155.0, 16.0),
     (2, "Multiple CAMELS Forcings", 2022): (-95.0, 12.0),
     (2, "Multiple CAMELS Forcings", 2024): (-105.0, 10.0),
     (2, "Multiple CAMELS Forcings", 2025): (-115.0, 14.0),
-    (2, "Multiple CAMELS Forcings", 2026): (-125.0, 12.0),
+    (2, "Multiple CAMELS Forcings", 2026): (-190.0, 14.0),
+    (2, "With Lagged Streamflow", 2020): (14.0, -16.0),
     (2, "Freeform Forcings", 2023): (10.0, -24.0),
 }
 
@@ -506,6 +515,7 @@ def format_leader_label(row: dict[str, Any], year: int) -> str:
         short_model = re.sub(r"\s*" + year_paren_re, "", raw_name).strip() or raw_name
 
     short_model = re.sub(r"\(\d+-model ensemble\)", "Ens", short_model)
+    short_model = re.sub(r"\(\d+-arch\s*×\s*\d+-seed ensemble\)", "(4-arch × 10-seed Ens)", short_model)
     short_model = re.sub(r"\([^,)]+,\s*\d+-model ensemble\)", "Ens", short_model)
     short_model = re.sub(r"\(3-Forcing Gauged Ensemble\)", "Ens", short_model)
     short_model = re.sub(r"\(\d+-calibration[^)]*ensemble\)", "Ens", short_model)
@@ -519,15 +529,22 @@ def format_leader_label(row: dict[str, Any], year: int) -> str:
     m_author = re.match(author_re + r"\s*\((\d{4}[a-z]?)", raw_name)
     m_cit_auth = re.match(author_re, citation)
     cited_years = _PUBLICATION_YEAR_PATTERN.findall(citation)
-    citation_is_this_study = "this study" in citation.lower()
+    fid_low = str(row.get("family_id") or "").lower()
+    cit_low = citation.lower()
+    citation_is_this_study = (
+        "this study" in cit_low
+        or fid_low.startswith("era_")
+        or fid_low == "naive_lag1_persistence"
+        or ("nearing" in cit_low and "2026" in cit_low)
+    )
 
     source_tag: str | None
-    if m_author:
-        source_tag = f"{m_author.group(1).replace(' et al.', '')} {m_author.group(2)}"
-    elif m_cit_auth and cited_years and not citation.lower().startswith("this study"):
-        source_tag = f"{m_cit_auth.group(1).replace(' et al.', '')} {cited_years[0]}"
-    elif citation_is_this_study or not citation:
+    if citation_is_this_study or not citation:
         source_tag = None
+    elif m_author:
+        source_tag = f"{m_author.group(1).replace(' et al.', '')} {m_author.group(2)}"
+    elif m_cit_auth and cited_years:
+        source_tag = f"{m_cit_auth.group(1).replace(' et al.', '')} {cited_years[0]}"
     elif m_cit_auth:
         source_tag = f"{m_cit_auth.group(1).replace(' et al.', '')} {year}"
     else:
@@ -584,12 +601,15 @@ def partition_panel_rows(
                 year=year,
             )
             norm_cat = normalize_source_category(row)
-            is_nonstandard_lit = norm_cat == "Literature*" or (
-                norm_cat == "Literature" and bool(row.get("asterisk"))
+            num_eval = row.get("num_evaluated_basins")
+            is_partial_or_nonstandard = norm_cat in ("Literature*", "Archive*") or (
+                bool(row.get("asterisk"))
+                and num_eval is not None
+                and int(num_eval) < 531
             )
             exclude_frontier = (
                 "oracle" in str(row.get("model_name", "")).lower()
-                or is_nonstandard_lit
+                or is_partial_or_nonstandard
                 or str(row.get("family_id", "")).lower() == "naive_lag1_persistence"
             )
             points.append(
@@ -1142,7 +1162,19 @@ def _plot_subpanel(
             continue
 
         for pt in non_leaders:
-            _draw_point(ax, pt, rstyle, is_leader=False)
+            if pt.get("entry_id") == "t3_43":
+                x_pt, y_pt = float(pt["year"]), float(pt["nse"])
+                c_pt = MODEL_CATEGORY_COLORS[pt["model_category"]]
+                ax.scatter(
+                    x_pt, y_pt, marker=rstyle["marker"], s=88, facecolor=c_pt,
+                    edgecolor="#0F172A", linewidth=1.1, alpha=1.0, zorder=rstyle["zorder_base"] + 2,
+                )
+                ax.text(
+                    x_pt + 0.14, y_pt + 0.004, "*", fontsize=12, fontweight="bold",
+                    color="#0F172A", va="center", ha="left", zorder=rstyle["zorder_base"] + 3,
+                )
+            else:
+                _draw_point(ax, pt, rstyle, is_leader=False)
             n_drawn += 1
 
         if leaders:
@@ -1250,9 +1282,44 @@ def _plot_subpanel(
     for spine in ("top", "right"):
         ax.spines[spine].set_visible(False)
 
+    extra_annotations: list[Any] = []
+    extra_coords: list[tuple[float, float]] = []
+    for pt in models:
+        if pt.get("entry_id") == "t3_43" and panel_idx == 0:
+            yr_pt, nse_pt = float(pt["year"]), float(pt["nse"])
+            mcat_pt = pt["model_category"]
+            f_ann = ax.annotate(
+                f"FUSE (902)* (479/531)\n(Addor 2017: {nse_pt:.3f}*)",
+                xy=(yr_pt, nse_pt),
+                xytext=(12.0, -34.0),
+                textcoords="offset points",
+                fontsize=7.9,
+                fontweight="bold",
+                color="#0F172A",
+                bbox={
+                    "boxstyle": "round,pad=0.24",
+                    "facecolor": "white",
+                    "edgecolor": MODEL_CATEGORY_COLORS[mcat_pt],
+                    "linewidth": 1.1,
+                    "linestyle": "--",
+                    "alpha": 0.95,
+                },
+                arrowprops={
+                    "arrowstyle": "->",
+                    "connectionstyle": "arc3,rad=0.08",
+                    "color": MODEL_CATEGORY_COLORS[mcat_pt],
+                    "linewidth": 1.0,
+                },
+                zorder=9,
+            )
+            extra_annotations.append(f_ann)
+            extra_coords.append((yr_pt, nse_pt))
+
     return {
         "leaders": panel_leaders,
         "annotations": annotations,
+        "extra_annotations": extra_annotations,
+        "extra_coords": extra_coords,
         "leader_coords": leader_coords,
         "n_drawn": n_drawn,
         "ylim": ylim,
@@ -1349,13 +1416,13 @@ def generate_figure_2_leaderboard_progress(
     )
 
     panel_titles = {
-        "gauged": "Gauged Simulation Leaderboards — All Forcing Regimes",
-        "pub": "Random Ungauged (12-Fold PUB) Leaderboards — All Forcing Regimes",
-        "pur": "Regionally Ungauged (18-Fold HUC-02 PUR) Leaderboards — All Forcing Regimes",
+        "gauged": "(a) Gauged Simulation Leaderboards — All Forcing Regimes",
+        "pub": "(b) Random Ungauged (12-Fold PUB) Leaderboards — All Forcing Regimes",
+        "pur": "(c) Regionally Ungauged (18-Fold HUC-02 PUR) Leaderboards — All Forcing Regimes",
     }
     panel_order = ("gauged", "pub", "pur")
 
-    fig, axes = plt.subplots(3, 1, figsize=(13.0, 15.8), dpi=300, sharex=True)
+    fig, axes = plt.subplots(3, 1, figsize=(12.2, 12.6), dpi=300, sharex=True)
     fig.patch.set_facecolor("white")
 
     panel_results: dict[str, dict[str, Any]] = {}
@@ -1402,7 +1469,7 @@ def generate_figure_2_leaderboard_progress(
     leg2 = fig.legend(
         handles=regime_handles,
         loc="upper center",
-        bbox_to_anchor=(0.5, 0.948),
+        bbox_to_anchor=(0.5, 0.936),
         ncol=max(1, len(regime_handles)),
         frameon=True,
         facecolor="#F8FAFC",
@@ -1414,13 +1481,15 @@ def generate_figure_2_leaderboard_progress(
     leg2.get_title().set_fontweight("bold")
     fig.add_artist(leg1)
 
-    plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.91])
+    plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.880])
     fig.canvas.draw()
     for p_idx, spatial in enumerate(panel_order):
         res = panel_results[spatial]
-        disp_coords = [axes[p_idx].transData.transform(pt) for pt in res["leader_coords"]]
+        all_anns = list(res["annotations"]) + list(res.get("extra_annotations", []))
+        all_pts = list(res["leader_coords"]) + list(res.get("extra_coords", []))
+        disp_coords = [axes[p_idx].transData.transform(pt) for pt in all_pts]
         _optimize_annotations(
-            fig, axes[p_idx], res["annotations"], disp_coords, pad_px=5.0, n_iter=60
+            fig, axes[p_idx], all_anns, disp_coords, pad_px=6.0, n_iter=70
         )
 
     fig2_png = out_dir / "figure_2_leaderboard_progress_all_regimes.png"
@@ -1489,8 +1558,10 @@ def generate_figure_2_leaderboard_progress(
         s_fig.add_artist(s_leg1)
         plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.78])
         s_fig.canvas.draw()
-        s_disp = [s_ax.transData.transform(pt) for pt in s_res["leader_coords"]]
-        _optimize_annotations(s_fig, s_ax, s_res["annotations"], s_disp, pad_px=5.0, n_iter=60)
+        s_anns = list(s_res["annotations"]) + list(s_res.get("extra_annotations", []))
+        s_pts = list(s_res["leader_coords"]) + list(s_res.get("extra_coords", []))
+        s_disp = [s_ax.transData.transform(pt) for pt in s_pts]
+        _optimize_annotations(s_fig, s_ax, s_anns, s_disp, pad_px=6.0, n_iter=70)
         s_fig.savefig(single_paths[spatial], dpi=300, metadata=PNG_SAVE_METADATA)
         plt.close(s_fig)
 

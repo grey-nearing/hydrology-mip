@@ -34,7 +34,7 @@ Please read these before you start. The full protocol is in
 ## Set up
 
 ```bash
-git clone https://github.com/<your-fork>/camels-us-mip.git && cd camels-us-mip
+git clone https://github.com/<your-fork>/hydrology-mip.git && cd hydrology-mip
 python -m venv .venv && source .venv/bin/activate        # Python 3.11 or newer
 pip install -e ".[dev]"                                   # CPU only: first `pip install torch --index-url https://download.pytorch.org/whl/cpu`
 ruff check .
@@ -95,8 +95,7 @@ You can also upload a zipped Zarr store or a keyed `.npz` to the **Score** page 
 1. Package your predictions with `models/zarr_writer.py` (see
    `skills/contribute-hydrographs/SKILL.md` for a tested example). Score them locally.
 2. Zip the store and deposit it on Zenodo under CC-BY-4.0.
-3. Open a **Hydrograph Archive Submission** issue with the DOI. The issue form supports open- and
-   closed-source models.
+3. Open a **Community Model Submission** issue with the DOI (or use Contribute Step 4 on `https://hydrologymip.org/#contribute`). The issue form supports open- and closed-source models.
 
 ### C. New MIP
 

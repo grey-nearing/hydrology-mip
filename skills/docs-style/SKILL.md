@@ -54,7 +54,7 @@ All paths are relative to the repository root.
 
 - Use **HydrologyMIP** and <https://hydrologymip.org> in prose. Use `hydromip` only for the Python
   package (`import hydromip`) and for `HYDROMIP_*` environment variables.
-- The repository is `grey-nearing/camels-us-mip`. The active benchmark is `camels_us_daily`.
+- The repository is `grey-nearing/hydrology-mip`. The active benchmark is `camels_us_daily`.
   Regime IDs are `gauged`, `pub_12fold`, and `pur_18huc02`; the PUR folder is
   `splits/pur_18fold/`.
 

@@ -32,7 +32,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng_dhbv10",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng_dhbv10",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -268,7 +268,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng_dhbv10",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng_dhbv10",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -516,7 +516,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/hoedt_mclstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/hoedt_mclstm",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -750,7 +750,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/hoedt_mclstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/hoedt_mclstm",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -998,7 +998,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/poudel_mlp_hbv",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/poudel_mlp_hbv",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -1232,7 +1232,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/poudel_mlp_hbv",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/poudel_mlp_hbv",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -1478,7 +1478,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/rasiya_koya_tft",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/rasiya_koya_tft",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -1710,7 +1710,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -1946,7 +1946,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/song_dhbv11p",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/song_dhbv11p",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -2182,7 +2182,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/song_dhbv11p",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/song_dhbv11p",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -2435,7 +2435,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/hoedt_mclstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/hoedt_mclstm",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr",
       "target_leaderboard_tables": [
         "table_4",
@@ -2674,7 +2674,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/hoedt_mclstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/hoedt_mclstm",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr",
       "target_leaderboard_tables": [
         "table_4",
@@ -2922,7 +2922,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_ens_b.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/hoedt_mclstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/hoedt_mclstm",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_ens_b.zarr",
       "target_leaderboard_tables": [
         "table_4",
@@ -3152,7 +3152,7 @@
         "single_seed_median_nse_per_member": null
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_06.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/li2025_lstm_dhbv_ens",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/li2025_lstm_dhbv_ens",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_06.zarr",
       "target_leaderboard_tables": [
         "table_4",
@@ -3386,7 +3386,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr",
       "target_leaderboard_tables": [
         "table_4",
@@ -3620,7 +3620,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr",
       "target_leaderboard_tables": [
         "table_4",
@@ -3871,7 +3871,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng2020_di_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng2020_di_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
       "target_leaderboard_tables": [
         "table_5",
@@ -4108,7 +4108,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng2020_di_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng2020_di_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
       "target_leaderboard_tables": [
         "table_5",
@@ -4356,7 +4356,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/yin2022_rrformer",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/yin2022_rrformer",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
       "target_leaderboard_tables": [
         "table_5",
@@ -4590,7 +4590,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/yin2022_rrformer",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/yin2022_rrformer",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
       "target_leaderboard_tables": [
         "table_5",
@@ -4840,7 +4840,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng_dhbv10",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng_dhbv10",
       "data_url": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
       "target_leaderboard_tables": [
         "table_7",
@@ -5076,7 +5076,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng_dhbv10",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng_dhbv10",
       "data_url": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
       "target_leaderboard_tables": [
         "table_7",
@@ -5324,7 +5324,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/poudel_mlp_hbv",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/poudel_mlp_hbv",
       "data_url": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
       "target_leaderboard_tables": [
         "table_7",
@@ -5558,7 +5558,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/poudel_mlp_hbv",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/poudel_mlp_hbv",
       "data_url": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
       "target_leaderboard_tables": [
         "table_7",
@@ -5804,7 +5804,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr",
       "target_leaderboard_tables": [
         "table_7",
@@ -6040,7 +6040,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/song_dhbv11p",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/song_dhbv11p",
       "data_url": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
       "target_leaderboard_tables": [
         "table_7",
@@ -6276,7 +6276,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/song_dhbv11p",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/song_dhbv11p",
       "data_url": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
       "target_leaderboard_tables": [
         "table_7",
@@ -6529,7 +6529,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr",
       "target_leaderboard_tables": [
         "table_8",
@@ -6768,7 +6768,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr",
       "target_leaderboard_tables": [
         "table_8",
@@ -7016,7 +7016,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr",
       "target_leaderboard_tables": [
         "table_8",
@@ -7250,7 +7250,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr",
       "target_leaderboard_tables": [
         "table_8",
@@ -7498,7 +7498,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng2020_di_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng2020_di_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
       "target_leaderboard_tables": [
         "table_9",
@@ -7732,7 +7732,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng2020_di_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng2020_di_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
       "target_leaderboard_tables": [
         "table_9",
@@ -7982,7 +7982,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng_dhbv10",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng_dhbv10",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -8218,7 +8218,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng_dhbv10",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng_dhbv10",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -8473,7 +8473,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -8714,7 +8714,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -8969,7 +8969,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -9210,7 +9210,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -9465,7 +9465,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -9706,7 +9706,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -9954,7 +9954,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/poudel_mlp_hbv",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/poudel_mlp_hbv",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -10188,7 +10188,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/poudel_mlp_hbv",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/poudel_mlp_hbv",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -10434,7 +10434,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -10670,7 +10670,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/song_dhbv11p",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/song_dhbv11p",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -10906,7 +10906,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/song_dhbv11p",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/song_dhbv11p",
       "data_url": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
       "target_leaderboard_tables": [
         "table_11",
@@ -11159,7 +11159,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr",
       "target_leaderboard_tables": [
         "table_12",
@@ -11398,7 +11398,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/kratzert_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/kratzert_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr",
       "target_leaderboard_tables": [
         "table_12",
@@ -11646,7 +11646,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr",
       "target_leaderboard_tables": [
         "table_12",
@@ -11880,7 +11880,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "data_url": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr",
       "target_leaderboard_tables": [
         "table_12",
@@ -12128,7 +12128,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng2020_di_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng2020_di_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr",
       "target_leaderboard_tables": [
         "table_13",
@@ -12362,7 +12362,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/feng2020_di_lstm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/feng2020_di_lstm",
       "data_url": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr",
       "target_leaderboard_tables": [
         "table_13",
@@ -12592,8 +12592,8 @@
       "gcs_zarr_uri": "gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_multi_paradigm.zarr",
       "data_archive_url": "https://doi.org/10.5281/zenodo.23641695",
       "zenodo_doi": "10.5281/zenodo.23641695",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_multi_paradigm",
-      "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_newman_cv_winner.ipynb",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_gauged_multi_paradigm",
+      "winner_notebook_url": "https://github.com/grey-nearing/hydrology-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_newman_cv_winner.ipynb",
       "primary_ranking_nse": 0.827,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00",
       "category": "Contribution",
@@ -12621,8 +12621,8 @@
       "gcs_zarr_uri": "gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_physics_guided.zarr",
       "data_archive_url": "https://doi.org/10.5281/zenodo.23639367",
       "zenodo_doi": "10.5281/zenodo.23639367",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_physics_guided",
-      "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_physics_informed_winner.ipynb",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_gauged_physics_guided",
+      "winner_notebook_url": "https://github.com/grey-nearing/hydrology-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_physics_informed_winner.ipynb",
       "primary_ranking_nse": 0.82,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00",
       "category": "Contribution",
@@ -12650,8 +12650,8 @@
       "gcs_zarr_uri": "gs://camels-us-mip/hydrographs/gauged__multi_camels/era_gauged_minimal_guidance.zarr",
       "data_archive_url": "https://doi.org/10.5281/zenodo.23639347",
       "zenodo_doi": "10.5281/zenodo.23639347",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_minimal_guidance",
-      "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_minimal_guidance_winner.ipynb",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_gauged_minimal_guidance",
+      "winner_notebook_url": "https://github.com/grey-nearing/hydrology-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_minimal_guidance_winner.ipynb",
       "primary_ranking_nse": 0.819,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00",
       "category": "Contribution",
@@ -12679,8 +12679,8 @@
       "gcs_zarr_uri": "gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_physics_guided.zarr",
       "data_archive_url": "https://doi.org/10.5281/zenodo.23639402",
       "zenodo_doi": "10.5281/zenodo.23639402",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_physics_guided",
-      "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_physics_informed_winner.ipynb",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pub_physics_guided",
+      "winner_notebook_url": "https://github.com/grey-nearing/hydrology-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_physics_informed_winner.ipynb",
       "primary_ranking_nse": 0.725,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00",
       "category": "Contribution",
@@ -12708,8 +12708,8 @@
       "gcs_zarr_uri": "gs://camels-us-mip/hydrographs/pub__multi_camels/era_pub_minimal_guidance.zarr",
       "data_archive_url": "https://doi.org/10.5281/zenodo.23639387",
       "zenodo_doi": "10.5281/zenodo.23639387",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_minimal_guidance",
-      "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_minimal_guidance_winner.ipynb",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pub_minimal_guidance",
+      "winner_notebook_url": "https://github.com/grey-nearing/hydrology-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_minimal_guidance_winner.ipynb",
       "primary_ranking_nse": 0.72,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00",
       "category": "Contribution",
@@ -12737,8 +12737,8 @@
       "gcs_zarr_uri": "gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_minimal_guidance.zarr",
       "data_archive_url": "https://doi.org/10.5281/zenodo.23639429",
       "zenodo_doi": "10.5281/zenodo.23639429",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_minimal_guidance",
-      "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_minimal_guidance_winner.ipynb",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pur_minimal_guidance",
+      "winner_notebook_url": "https://github.com/grey-nearing/hydrology-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_minimal_guidance_winner.ipynb",
       "primary_ranking_nse": 0.696,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00",
       "category": "Contribution",
@@ -12766,8 +12766,8 @@
       "gcs_zarr_uri": "gs://camels-us-mip/hydrographs/pur__multi_camels/era_pur_physics_guided.zarr",
       "data_archive_url": "https://doi.org/10.5281/zenodo.23639461",
       "zenodo_doi": "10.5281/zenodo.23639461",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_physics_guided",
-      "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_physics_informed_winner.ipynb",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pur_physics_guided",
+      "winner_notebook_url": "https://github.com/grey-nearing/hydrology-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_physics_informed_winner.ipynb",
       "primary_ranking_nse": 0.684,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00",
       "category": "Contribution",
@@ -12811,7 +12811,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/shahriar2026_mamba3_daymet.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/shahriar2026_mamba3",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/shahriar2026_mamba3",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/shahriar2026_mamba3_daymet.zarr",
       "target_leaderboard_tables": [
         "table_3",
@@ -13063,7 +13063,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/naive_lag1_persistence_gauged.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/naive_lag1_persistence",
       "data_url": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/naive_lag1_persistence_gauged.zarr",
       "target_leaderboard_tables": [
         "table_5",
@@ -13295,7 +13295,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/naive_lag1_persistence_pub.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/naive_lag1_persistence",
       "data_url": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/naive_lag1_persistence_pub.zarr",
       "target_leaderboard_tables": [
         "table_9",
@@ -13527,7 +13527,7 @@
         ]
       },
       "hydrograph_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/naive_lag1_persistence_pur.zarr",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/naive_lag1_persistence",
       "data_url": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/naive_lag1_persistence_pur.zarr",
       "target_leaderboard_tables": [
         "table_13",

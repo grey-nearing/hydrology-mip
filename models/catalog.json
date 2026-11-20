@@ -192,7 +192,7 @@
       "model_family": "Conceptual Process-Based",
       "provenance_category": "MIP Re-run",
       "runner_module": "models.newman_sacsma.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/newman_sacsma",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -215,7 +215,7 @@
       "model_family": "ERA-Unguided-Gauged",
       "provenance_category": "Contribution",
       "runner_module": "models.era_gauged_minimal_guidance.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_minimal_guidance",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_gauged_minimal_guidance",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -235,7 +235,7 @@
       "model_family": "ERA-Unguided-PUR",
       "provenance_category": "Contribution",
       "runner_module": "models.era_pur_minimal_guidance.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_minimal_guidance",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pur_minimal_guidance",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -255,7 +255,7 @@
       "model_family": "ERA-Unguided-PUB",
       "provenance_category": "Contribution",
       "runner_module": "models.era_pub_minimal_guidance.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_minimal_guidance",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pub_minimal_guidance",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -275,7 +275,7 @@
       "model_family": "ERA-Physics-Guided-Gauged",
       "provenance_category": "Contribution",
       "runner_module": "models.era_gauged_physics_guided.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_physics_guided",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_gauged_physics_guided",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -295,7 +295,7 @@
       "model_family": "ERA-Physics-Guided-PUB",
       "provenance_category": "Contribution",
       "runner_module": "models.era_pub_physics_guided.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_physics_guided",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pub_physics_guided",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -315,7 +315,7 @@
       "model_family": "ERA-Physics-Guided-PUR",
       "provenance_category": "Contribution",
       "runner_module": "models.era_pur_physics_guided.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_physics_guided",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pur_physics_guided",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -335,7 +335,7 @@
       "model_family": "ERA-Multi-Paradigm-Gauged",
       "provenance_category": "Contribution",
       "runner_module": "models.era_gauged_multi_paradigm.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_multi_paradigm",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_gauged_multi_paradigm",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -377,7 +377,7 @@
       "model_family": "Mamba State Space Model",
       "provenance_category": "MIP Re-run",
       "runner_module": "models.shahriar2026_mamba3.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/shahriar2026_mamba3",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/shahriar2026_mamba3",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],
@@ -422,7 +422,7 @@
       "model_family": "Statistical Lower Benchmark",
       "provenance_category": "Contribution",
       "runner_module": "models.naive_lag1_persistence.runner",
-      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+      "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/naive_lag1_persistence",
       "supported_tasks": [
         "streamflow_daily_deterministic"
       ],

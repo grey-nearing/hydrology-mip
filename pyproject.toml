@@ -38,8 +38,8 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://hydrologymip.org"
-Repository = "https://github.com/grey-nearing/camels-us-mip"
-Issues = "https://github.com/grey-nearing/camels-us-mip/issues"
+Repository = "https://github.com/grey-nearing/hydrology-mip"
+Issues = "https://github.com/grey-nearing/hydrology-mip/issues"
 
 [project.optional-dependencies]
 # Web portal and stateless preview scorer (`web/`).

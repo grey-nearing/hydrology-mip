@@ -14,5 +14,5 @@ Reference:
 ## Stage-2 CAMELS-US MIP Protocol (`gauged__lagged_streamflow`, Table 5)
 - **Zarr Store**: `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr` (`num_members = 3`, `seeds = [601, 602, 603]` per the store's `.zattrs`, trained `1999-10-01` to `2008-09-30`, evaluated `1989-10-01` to `1999-09-30` across 531 basins).
 - **Competing Rows**:
-  - `yin2022_rrformer_daymet` (`Rainfall-Runoff Transformer (RR-Former) (3-model ensemble)`, `is_ensemble: true`, `evaluation_mode: "ensemble"`): Median NSE = `0.802`, Mean NSE = `0.773`, Median KGE = `0.828`.
-  - `yin2022_rrformer_daymet_single` (`Rainfall-Runoff Transformer (RR-Former) (single model)`, `is_ensemble: false`, `evaluation_mode: "single_member_mean"`): Single-Model Median NSE = `0.797 ± 0.003` across all 3 seeds.
+  - `yin2022_rrformer_daymet` (`Rainfall-Runoff Transformer (RR-Former) (3-model ensemble)`, `is_ensemble: true`, `evaluation_mode: "ensemble"`): Median NSE = `0.847`, Mean NSE = `0.822`, Median KGE = `0.862`.
+  - `yin2022_rrformer_daymet_single` (`Rainfall-Runoff Transformer (RR-Former) (single model)`, `is_ensemble: false`, `evaluation_mode: "single_member_mean"`): Single-Model Median NSE = `0.833 ± 0.004` (Mean NSE = `0.807`, Median KGE = `0.859`) across all 3 seeds.

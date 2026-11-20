@@ -25,6 +25,7 @@ COPY web /app/web
 COPY mips/camels_us_daily/protocol.json /app/mips/camels_us_daily/protocol.json
 COPY mips/camels_us_daily/splits /app/mips/camels_us_daily/splits
 COPY mips/camels_us_daily/leaderboards /app/mips/camels_us_daily/leaderboards
+COPY mips/camels_us_daily/figures /app/mips/camels_us_daily/figures
 COPY data/qobs_531.npz /app/data/qobs_531.npz
 
 RUN chown -R hydromip:hydromip /app

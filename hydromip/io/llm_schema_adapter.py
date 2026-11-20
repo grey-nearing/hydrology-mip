@@ -101,7 +101,7 @@ def build_hydromip_package_snippet(
     """Return a copyable CLI snippet for local packaging via ``hydromip package``."""
     safe_name = filename or "your_predictions.nc"
     return (
-        "pip install git+https://github.com/grey-nearing/camels-us-mip.git\n"
+        "pip install git+https://github.com/grey-nearing/hydrology-mip.git\n"
         f"hydromip package --input {safe_name} --output ./camels_submission.zarr.zip \\\n"
         f"  --leaderboard {leaderboard_id}"
     )
