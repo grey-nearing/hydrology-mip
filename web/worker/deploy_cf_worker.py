@@ -19,14 +19,17 @@ import hashlib
 import json
 import os
 import re
+import tarfile
 import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from hydromip.io.doi_resolver import validate_and_fetch_archive_url
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MIP_DIR = REPO_ROOT / "mips" / "camels_us_daily"
@@ -316,6 +319,8 @@ def compute_fast_basin_metrics_matrix(
 def build_portal_json_payloads(
     mip_dir: Path,
     explorer_store_path: Path | None = None,
+    *,
+    stage_dir: Path | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Construct standalone overview, leaderboards, families, and hydrographs index JSONs."""
     lb_dir = mip_dir / "leaderboards"
@@ -341,6 +346,16 @@ def build_portal_json_payloads(
     if explorer_store_path is not None and explorer_store_path.is_file():
         with np.load(explorer_store_path, allow_pickle=False) as d:
             available_qsim_keys = {k[len("qsim__") :] for k in d.files if k.startswith("qsim__")}
+    elif stage_dir is not None:
+        idx_file = stage_dir / "hydro_assets" / "index.json"
+        if idx_file.is_file():
+            idx_doc = json.loads(idx_file.read_text(encoding="utf-8"))
+            available_qsim_keys = {str(k) for k in idx_doc.get("available_qsim_keys", [])}
+        else:
+            sample_basins = sorted((stage_dir / "hydro_assets").glob("basin_*.json"))
+            if sample_basins:
+                sample_doc = json.loads(sample_basins[0].read_text(encoding="utf-8"))
+                available_qsim_keys = {str(k) for k in (sample_doc.get("models") or {}).keys()}
 
     boards_out: list[dict[str, Any]] = []
     matrix_summary: list[dict[str, Any]] = []
@@ -481,21 +496,79 @@ def build_portal_json_payloads(
     return overview_obj, leaderboards_obj, families_obj, hydro_index_obj
 
 
+def _download_and_unpack_prebuilt_hydro_assets(url: str, stage_dir: Path) -> Path:
+    """Safely download and extract prebuilt 531-basin JSON assets (rejecting traversal/symlinks)."""
+    tar_path = stage_dir / "prebuilt_hydro_assets.tar.gz"
+    stage_dir.mkdir(parents=True, exist_ok=True)
+    validate_and_fetch_archive_url(
+        url,
+        dest_path=tar_path,
+        max_bytes=500 * 1024 * 1024,
+        timeout=120,
+        user_agent="HydrologyMIP-Deploy/1.0",
+    )
+    out_dir = (stage_dir / "hydro_assets").resolve()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    stage_resolved = stage_dir.resolve()
+
+    with tarfile.open(tar_path, "r:gz") as tf:
+        members = tf.getmembers()
+        for m in members:
+            if m.issym() or m.islnk() or (not m.isdir() and not m.isreg()):
+                raise ValueError(f"Unsafe tar member rejected in prebuilt hydro assets: {m.name!r}")
+            posix = PurePosixPath(m.name)
+            if posix.is_absolute() or ".." in posix.parts:
+                raise ValueError(f"Tar path traversal rejected: {m.name!r}")
+            rel_parts = posix.parts[1:] if posix.parts and posix.parts[0] == "hydro_assets" else posix.parts
+            if not rel_parts or any(part in ("", ".", "..") for part in rel_parts):
+                continue
+            target = (out_dir / PurePosixPath(*rel_parts)).resolve()
+            if target != out_dir and not target.is_relative_to(out_dir):
+                raise ValueError(f"Tar member escapes hydro_assets root: {m.name!r}")
+            if not target.is_relative_to(stage_resolved):
+                raise ValueError(f"Tar member escapes staging root: {m.name!r}")
+            if m.isdir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            target.parent.mkdir(parents=True, exist_ok=True)
+            src = tf.extractfile(m)
+            if src is None:
+                raise ValueError(f"Failed to read tar member {m.name!r}.")
+            with src, open(target, "wb") as dst:
+                dst.write(src.read())
+
+    if tar_path.is_file():
+        tar_path.unlink()
+    basin_files = list(out_dir.glob("basin_*.json"))
+    if len(basin_files) != 531:
+        raise ValueError(
+            f"Prebuilt hydro assets archive contained {len(basin_files)} basin files; expected 531."
+        )
+    print(f"Unpacked {len(basin_files)} prebuilt basin JSON files into {out_dir}")
+    return out_dir
+
+
 def build_per_basin_static_assets(
     hydro_index: dict[str, Any],
     store_path: Path | None,
     stage_dir: Path,
 ) -> dict[str, Path]:
-    """Generate 531 compact per-basin JSON files when ``store_path`` is provided."""
-    if store_path is None or not store_path.is_file():
-        return {}
-
+    """Generate or reuse 531 compact per-basin JSON files in ``stage_dir/hydro_assets``."""
     out_dir = stage_dir / "hydro_assets"
-    out_dir.mkdir(parents=True, exist_ok=True)
     basins = hydro_index["basins"]
     models = hydro_index["models"]
-
     sample_file = out_dir / f"basin_{basins[0]['basin_id']}.json"
+
+    if store_path is None or not store_path.is_file():
+        if sample_file.exists() and len(list(out_dir.glob("basin_*.json"))) == len(basins):
+            print(f"Using {len(basins)} prebuilt per-basin asset files in {out_dir}")
+            return {
+                f"/hydro_assets/basin_{b['basin_id']}.json": out_dir / f"basin_{b['basin_id']}.json"
+                for b in basins
+            }
+        return {}
+
+    out_dir.mkdir(parents=True, exist_ok=True)
     latest_source_mtime = max(Path(__file__).stat().st_mtime, store_path.stat().st_mtime)
     if (
         sample_file.exists()
@@ -1404,7 +1477,7 @@ def build_static_bundle(
 ) -> tuple[dict[str, Path], dict[str, Any]]:
     """Build all static Worker assets locally directly from ``mips/camels_us_daily/``."""
     overview_obj, leaderboards_obj, families_obj, hydro_index_obj = build_portal_json_payloads(
-        mip_dir, explorer_store_path=explorer_store_path
+        mip_dir, explorer_store_path=explorer_store_path, stage_dir=stage_dir
     )
     if scrub_private_urls:
         overview_obj = sanitize_public_data(overview_obj)
@@ -1457,6 +1530,12 @@ def main(argv: list[str] | None = None) -> int:
         help="Optional path to hydrograph_explorer_store.npz for regenerating 531 basin JSONs.",
     )
     parser.add_argument(
+        "--prebuilt-hydro-assets-url",
+        type=str,
+        default=None,
+        help="HTTPS URL to prebuilt hydro_assets_531.tar.gz cache on R2 when explorer NPZ is absent.",
+    )
+    parser.add_argument(
         "--stage-dir",
         type=Path,
         default=DEFAULT_STAGE_DIR,
@@ -1470,20 +1549,28 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--allow-partial-hydrographs",
         action="store_true",
-        help="Permit deploy without hydrograph_explorer_store.npz (for CI deploys after initial upload).",
+        help="Permit deploy without hydrograph_explorer_store.npz or prebuilt cache.",
     )
     args = parser.parse_args(argv)
 
     env_explorer = os.environ.get("HYDROMIP_EXPLORER_STORE", "").strip()
     explorer_path = args.explorer_store or (Path(env_explorer) if env_explorer else None)
-    if not args.dry_run and not args.allow_partial_hydrographs and (
-        explorer_path is None or not explorer_path.is_file()
-    ):
-        raise FileNotFoundError(
-            "Live Cloudflare asset uploads replace the Workers asset manifest; pass --explorer-store "
-            "<path/to/hydrograph_explorer_store.npz> so the 531 per-basin JSON assets are included, "
-            "or pass --allow-partial-hydrographs explicitly if deploying portal/leaderboard assets only."
-        )
+    prebuilt_url = (
+        args.prebuilt_hydro_assets_url
+        or os.environ.get("HYDROMIP_PREBUILT_HYDRO_ASSETS_URL", "")
+    ).strip()
+
+    has_explorer = explorer_path is not None and explorer_path.is_file()
+    if not args.dry_run and not has_explorer:
+        if prebuilt_url:
+            _download_and_unpack_prebuilt_hydro_assets(prebuilt_url, args.stage_dir)
+        elif not args.allow_partial_hydrographs:
+            raise FileNotFoundError(
+                "Live Cloudflare asset uploads replace the Workers asset manifest; pass "
+                "--explorer-store <path/to/hydrograph_explorer_store.npz> or "
+                "--prebuilt-hydro-assets-url <https://.../hydro_assets_531.tar.gz> so all 531 "
+                "per-basin JSON assets are included."
+            )
 
     preview_gate = _is_truthy(os.environ.get("HYDROLOGYMIP_PREVIEW_GATE"), default=True)
     preview_key = os.environ.get("HYDROLOGYMIP_PREVIEW_ACCESS_KEY", "camels-mip-2026").strip() or "camels-mip-2026"

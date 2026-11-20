@@ -13,8 +13,9 @@ concurrency:
 
 jobs:
   open-submission-pr:
-    name: Create Community Submission PR from Issue
+    name: Score Submission & Create PR from Issue
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: write
       pull-requests: write
@@ -27,17 +28,38 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PR_BOT_TOKEN || secrets.GITHUB_TOKEN }}
 
-      - name: Parse submission manifest & open Pull Request safely
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: pyproject.toml
+
+      - name: Install scoring dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0"
+          python -m pip install -e ".[dev]" "pydantic>=2.7.0"
+
+      - name: Parse manifest, score (14 metrics), update leaderboards/figures, and open PR
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PR_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          HYDROMIP_GCS_ANON: "1"
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
           ISSUE_BODY: ${{ github.event.issue.body }}
+          TARGET_OBSERVATIONS_URI: ${{ vars.CAMELS_OBSERVATIONS_URI || 'https://data.hydrologymip.org/camels_us_daily/observations/newman_eval_targets.zarr' }}
         run: |
           python - <<'PY'
-          import json, os, re, subprocess
+          import json
+          import os
+          import re
+          import subprocess
           from pathlib import Path
+          from hydromip.evaluation.zarr_io import open_zarr_store
 
           body = os.environ.get("ISSUE_BODY") or ""
           json_matches = re.findall(r"```json\s*\n(.*?)\n```", body, flags=re.DOTALL | re.IGNORECASE)
@@ -101,10 +123,15 @@ jobs:
               raise ValueError(f"Unsupported leaderboard_id {lb_id!r}")
 
           model_name = str(manifest["model_name"]).strip()
-          slug = re.sub(r"[^a-z0-9_]+", "_", model_name.lower()).strip("_")[:32] or "model"
           issue_num = int(os.environ["ISSUE_NUMBER"])
           issue_author = os.environ.get("ISSUE_AUTHOR", "").strip()
-          entry_id = f"contrib_{slug}_gh{issue_num}"
+
+          raw_eid = str(manifest.get("entry_id") or "").strip()
+          if raw_eid and ".." not in raw_eid and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", raw_eid):
+              entry_id = raw_eid
+          else:
+              slug = re.sub(r"[^a-z0-9_]+", "_", model_name.lower()).strip("_")[:32] or "model"
+              entry_id = f"contrib_{slug}_gh{issue_num}"
 
           manifest["entry_id"] = entry_id
           manifest["submitted_by_github"] = issue_author
@@ -114,34 +141,85 @@ jobs:
           sub_path.parent.mkdir(parents=True, exist_ok=True)
           sub_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
 
+          local_targets = Path("mips/camels_us_daily/observations/newman_eval_targets.zarr")
+          if not local_targets.exists():
+              local_targets.parent.mkdir(parents=True, exist_ok=True)
+              obs_ds = open_zarr_store(os.environ["TARGET_OBSERVATIONS_URI"])
+              obs_ds.to_zarr(str(local_targets), mode="w", consolidated=True, zarr_format=2)
+
+          summary_path = Path("staging_reports/summary.md")
+          subprocess.run(
+              [
+                  "python",
+                  "-m",
+                  "hydromip.tools.process_submission",
+                  "--manifest",
+                  sub_path.as_posix(),
+                  "--mip-dir",
+                  "mips/camels_us_daily",
+                  "--out-zarr-dir",
+                  "staging_zarr",
+                  "--summary-md",
+                  summary_path.as_posix(),
+                  "--update-figures",
+              ],
+              check=True,
+          )
+          summary_md = summary_path.read_text(encoding="utf-8")
+
           branch = f"submissions/{entry_id}"
           subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
           subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
-          subprocess.run(["git", "checkout", "-b", branch], check=True)
-          subprocess.run(["git", "add", sub_path.as_posix()], check=True)
-          subprocess.run(["git", "commit", "-m", f"feat(submission): register {model_name} for {lb_id} (#{issue_num})"], check=True)
-          subprocess.run(["git", "push", "-u", "origin", branch], check=True)
+          subprocess.run(["git", "checkout", "-B", branch], check=True)
+          subprocess.run(
+              [
+                  "git",
+                  "add",
+                  sub_path.as_posix(),
+                  "mips/camels_us_daily/leaderboards/",
+                  "mips/camels_us_daily/figures/",
+              ],
+              check=True,
+          )
+          subprocess.run(
+              ["git", "commit", "-m", f"feat(submission): score & register {model_name} for {lb_id} (#{issue_num})"],
+              check=True,
+          )
+          subprocess.run(["git", "push", "-u", "--force-with-lease", "origin", branch], check=True)
 
           pr_body = (
               f"Automated submission PR opened from issue #{issue_num} by @{issue_author}.\n\n"
-              f"Closes #{issue_num}\n"
+              f"Closes #{issue_num}\n\n"
+              f"---\n\n{summary_md}"
           )
-          pr_url = subprocess.check_output(
-              [
-                  "gh",
-                  "pr",
-                  "create",
-                  "--base",
-                  "main",
-                  "--head",
-                  branch,
-                  "--title",
-                  f"Community Submission: {model_name} ({lb_id})",
-                  "--body",
-                  pr_body,
-              ],
-              text=True,
-          ).strip()
+          existing_prs = json.loads(
+              subprocess.check_output(
+                  ["gh", "pr", "list", "--head", branch, "--state", "open", "--json", "number,url"],
+                  text=True,
+              )
+          )
+          if existing_prs:
+              pr_num = str(existing_prs[0]["number"])
+              pr_url = existing_prs[0]["url"]
+              subprocess.run(["gh", "pr", "edit", pr_num, "--body", pr_body], check=True)
+          else:
+              pr_url = subprocess.check_output(
+                  [
+                      "gh",
+                      "pr",
+                      "create",
+                      "--base",
+                      "main",
+                      "--head",
+                      branch,
+                      "--title",
+                      f"Community Submission: {model_name} ({lb_id})",
+                      "--body",
+                      pr_body,
+                  ],
+                  text=True,
+              ).strip()
+
           subprocess.run(
               [
                   "gh",
@@ -149,8 +227,17 @@ jobs:
                   "comment",
                   str(issue_num),
                   "--body",
-                  f"Opened automated submission pull request for scoring & review: {pr_url}",
+                  f"Automated scoring succeeded and opened submission pull request for maintainer review: {pr_url}",
               ],
               check=True,
           )
           PY
+
+      - name: Notify contributor on automated failure
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.PR_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue comment "${ISSUE_NUMBER}" --body "Automated submission processing failed — please inspect the workflow logs for schema/DOI or compliance diagnostics: ${RUN_URL}"

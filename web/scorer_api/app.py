@@ -17,17 +17,13 @@ Designed to move cleanly into ``web/scorer_api/app.py``:
 from __future__ import annotations
 
 import asyncio
-import ipaddress
 import json
 import os
 import re
 import shutil
-import socket
 import tempfile
 import threading
 import time
-import urllib.parse
-import urllib.request
 import uuid
 from collections import deque
 from collections.abc import Mapping, Sequence
@@ -47,6 +43,11 @@ from starlette.datastructures import UploadFile
 
 from fastapi.responses import FileResponse, JSONResponse, Response
 
+from hydromip.io.doi_resolver import (
+    resolve_and_download_archive as _shared_resolve_and_download_archive,
+    validate_and_fetch_archive_url,
+    validate_https_target_url as validate_https_target_url,
+)
 from hydromip.io.ingest import (
     EXPECTED_NUM_BASINS,
     EXPECTED_NUM_DAYS,
@@ -86,36 +87,6 @@ ARCHIVE_TIMEOUT_SECONDS: int = 60
 
 TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{8,64}$")
 SAFE_SLUG_RE = re.compile(r"[^a-z0-9_]+")
-
-TRUSTED_EXACT_HOSTS: frozenset[str] = frozenset(
-    {
-        "zenodo.org",
-        "hydroshare.org",
-        "osf.io",
-        "figshare.com",
-        "github.com",
-        "raw.githubusercontent.com",
-        "objects.githubusercontent.com",
-        "huggingface.co",
-        "data.hydrologymip.org",
-    }
-)
-TRUSTED_WILDCARD_SUFFIXES: tuple[str, ...] = (
-    ".zenodo.org",
-    ".hydroshare.org",
-    ".osf.io",
-    ".figshare.com",
-)
-SUPPORTED_ARCHIVE_FILE_EXTS: tuple[str, ...] = (
-    ".zarr.zip",
-    ".nc",
-    ".nc4",
-    ".parquet",
-    ".csv",
-    ".tsv",
-    ".npz",
-    ".zip",
-)
 
 
 def _preview_root_dir() -> Path:
@@ -254,223 +225,15 @@ def get_canonical_reference() -> CanonicalReference:
         return _CANONICAL_REF
 
 
-def is_trusted_archive_host(hostname: str) -> bool:
-    """Return True if ``hostname`` is an explicitly allowlisted public repository host."""
-    host = hostname.strip().lower().rstrip(".")
-    if not host:
-        return False
-    if host in TRUSTED_EXACT_HOSTS:
-        return True
-    return any(host.endswith(suffix) and len(host) > len(suffix) for suffix in TRUSTED_WILDCARD_SUFFIXES)
-
-
-def validate_https_target_url(url: str) -> str:
-    """Enforce HTTPS, trusted archive hostname allowlist, and global-only DNS resolution."""
-    parsed = urllib.parse.urlparse(url.strip())
-    if parsed.scheme.lower() != "https":
-        raise ValueError(f"Only HTTPS archive URLs are permitted (got scheme {parsed.scheme!r}).")
-    if parsed.username or parsed.password:
-        raise ValueError("Archive URLs containing embedded credentials are rejected.")
-    host = (parsed.hostname or "").strip().lower().rstrip(".")
-    if not host:
-        raise ValueError("Archive URL is missing a hostname.")
-
-    # Reject literal non-global IPs immediately before host/DNS checks.
-    if _is_ip_literal(host):
-        ip_obj = ipaddress.ip_address(host)
-        if not ip_obj.is_global:
-            raise ValueError(f"SSRF guard blocked non-global IP literal {host!r}.")
-        raise ValueError(f"Untrusted IP literal host {host!r}; archive must use a trusted domain.")
-
-    if not is_trusted_archive_host(host):
-        raise ValueError(
-            f"Host {host!r} is outside the trusted archive allowlist "
-            "(Zenodo, HydroShare, OSF, Figshare, GitHub, HuggingFace, data.hydrologymip.org)."
-        )
-
-    port = parsed.port or 443
-    addr_infos = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
-    if not addr_infos:
-        raise ValueError(f"DNS lookup returned no addresses for {host!r}.")
-    for info in addr_infos:
-        sockaddr = info[4]
-        ip_str = str(sockaddr[0]).split("%", 1)[0]
-        ip_obj = ipaddress.ip_address(ip_str)
-        if not ip_obj.is_global:
-            raise ValueError(
-                f"SSRF guard blocked non-global resolved IP {ip_str!r} for host {host!r}."
-            )
-    return parsed.geturl()
-
-
-def _is_ip_literal(host: str) -> bool:
-    stripped = host.strip("[]")
-    return bool(
-        re.fullmatch(r"\d+\.\d+\.\d+\.\d+", stripped)
-        or (":" in stripped and re.fullmatch(r"[0-9a-fA-F:]+", stripped))
-    )
-
-
-class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
-    """Disable automatic redirects so every redirect hop undergoes SSRF validation."""
-
-    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> None:
-        return None
-
-
-class _NonRaisingHTTPErrorProcessor(urllib.request.HTTPErrorProcessor):
-    """Return HTTP responses cleanly for manual status and redirect checks."""
-
-    def http_response(self, request: Any, response: Any) -> Any:
-        return response
-
-    https_response = http_response
-
-
-def validate_and_fetch_archive_url(
-    url: str,
-    dest_path: Path | None = None,
-    *,
-    max_bytes: int = MAX_UPLOAD_BYTES,
-    timeout: int = ARCHIVE_TIMEOUT_SECONDS,
-) -> bytes:
-    """Fetch a remote HTTPS resource while re-validating every HTTP redirect hop."""
-    current_url = validate_https_target_url(url)
-    opener = urllib.request.build_opener(_NoRedirectHandler(), _NonRaisingHTTPErrorProcessor())
-
-    for _hop in range(MAX_REDIRECT_HOPS + 1):
-        req = urllib.request.Request(
-            current_url,
-            headers={"User-Agent": "HydrologyMIP-Scorer/1.0"},
-        )
-        with opener.open(req, timeout=timeout) as resp:
-            status = int(getattr(resp, "status", None) or resp.getcode() or 200)
-            if status in (301, 302, 303, 307, 308):
-                location = resp.headers.get("Location", "").strip()
-                if not location:
-                    raise ValueError(f"HTTP {status} redirect without Location header.")
-                next_url = urllib.parse.urljoin(current_url, location)
-                current_url = validate_https_target_url(next_url)
-                continue
-            if status >= 400:
-                raise ValueError(f"Archive download failed with HTTP {status} from {current_url}.")
-
-            content_len = resp.headers.get("Content-Length")
-            if content_len and content_len.isdigit() and int(content_len) > max_bytes:
-                raise ValueError(
-                    f"Remote archive size {int(content_len)} bytes exceeds {max_bytes} byte cap."
-                )
-
-            chunk_size = 1024 * 1024
-            total = 0
-            if dest_path is not None:
-                dest_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(dest_path, "wb") as out_f:
-                    while True:
-                        buf = resp.read(chunk_size)
-                        if not buf:
-                            break
-                        total += len(buf)
-                        if total > max_bytes:
-                            raise ValueError(f"Downloaded archive exceeded {max_bytes} byte limit.")
-                        out_f.write(buf)
-                return b""
-
-            chunks: list[bytes] = []
-            while True:
-                buf = resp.read(chunk_size)
-                if not buf:
-                    break
-                total += len(buf)
-                if total > max_bytes:
-                    raise ValueError(f"Downloaded payload exceeded {max_bytes} byte limit.")
-                chunks.append(buf)
-            return b"".join(chunks)
-
-    raise ValueError(f"Exceeded maximum HTTP redirect limit ({MAX_REDIRECT_HOPS}) fetching archive.")
-
-
-def _archive_file_priority(filename: str) -> int:
-    low = filename.lower()
-    if low.endswith(".zarr.zip"):
-        return 0
-    if low.endswith((".nc", ".nc4")):
-        return 1
-    if low.endswith(".parquet"):
-        return 2
-    if low.endswith((".csv", ".tsv")):
-        return 3
-    if low.endswith(".npz"):
-        return 4
-    if low.endswith(".zip"):
-        return 5
-    return 99
-
-
 def resolve_and_download_archive(raw_archive_url: str, target_dir: Path) -> Path:
-    """Resolve a Zenodo/HydroShare DOI or trusted HTTPS file URL and download safely."""
-    raw = raw_archive_url.strip()
-    if not raw:
-        raise ValueError("archive_url must not be empty.")
-
-    # Normalize bare or doi.org Zenodo & HydroShare DOIs to official REST APIs first.
-    m_zen = re.search(r"(?:10\.5281/zenodo\.|zenodo\.org/records?/)(\d+)", raw, flags=re.IGNORECASE)
-    m_hs = re.search(
-        r"(?:10\.4211/hs\.|hydroshare\.org/resource/)([0-9a-f]{32})",
-        raw,
-        flags=re.IGNORECASE,
+    """Resolve a Zenodo/HydroShare/OSF/Figshare DOI or trusted HTTPS URL and download safely."""
+    return _shared_resolve_and_download_archive(
+        raw_archive_url,
+        target_dir,
+        max_bytes=MAX_UPLOAD_BYTES,
+        allow_file_uri=False,
+        fetch_fn=validate_and_fetch_archive_url,
     )
-
-    if m_zen:
-        rec_id = m_zen.group(1)
-        api_url = f"https://zenodo.org/api/records/{rec_id}"
-        rec_json = json.loads(validate_and_fetch_archive_url(api_url, max_bytes=10 * 1024 * 1024).decode("utf-8"))
-        files = []
-        for entry in rec_json.get("files", []):
-            key = str(entry.get("key") or entry.get("filename") or "")
-            links = entry.get("links") or {}
-            dl_url = str(
-                links.get("content")
-                or links.get("download")
-                or f"https://zenodo.org/records/{rec_id}/files/{urllib.parse.quote(key)}?download=1"
-            )
-            size = int(entry.get("size") or 0)
-            if key and size <= MAX_UPLOAD_BYTES and key.lower().endswith(SUPPORTED_ARCHIVE_FILE_EXTS):
-                files.append((_archive_file_priority(key), key, dl_url))
-        if not files:
-            raise ValueError(f"No supported hydrograph files (<= 250 MiB) found in Zenodo record {rec_id}.")
-        files.sort(key=lambda item: (item[0], item[1]))
-        _, fname, dl_url = files[0]
-        safe_name = Path(fname).name
-        dest = target_dir / safe_name
-        validate_and_fetch_archive_url(dl_url, dest_path=dest)
-        return dest
-
-    if m_hs:
-        hs_id = m_hs.group(1).lower()
-        hs_api = f"https://www.hydroshare.org/hsapi/resource/{hs_id}/files/"
-        hs_json = json.loads(validate_and_fetch_archive_url(hs_api, max_bytes=10 * 1024 * 1024).decode("utf-8"))
-        files = []
-        for entry in hs_json.get("results", []):
-            fname = str(entry.get("file_name") or "")
-            dl_url = str(entry.get("url") or "")
-            size = int(entry.get("size") or 0)
-            if fname and dl_url and size <= MAX_UPLOAD_BYTES and fname.lower().endswith(SUPPORTED_ARCHIVE_FILE_EXTS):
-                files.append((_archive_file_priority(fname), fname, dl_url))
-        if not files:
-            raise ValueError(f"No supported hydrograph files (<= 250 MiB) found in HydroShare resource {hs_id}.")
-        files.sort(key=lambda item: (item[0], item[1]))
-        _, fname, dl_url = files[0]
-        dest = target_dir / Path(fname).name
-        validate_and_fetch_archive_url(dl_url, dest_path=dest)
-        return dest
-
-    validated = validate_https_target_url(raw)
-    url_path = urllib.parse.urlparse(validated).path
-    fname = Path(urllib.parse.unquote(url_path)).name or "submission.nc"
-    dest = target_dir / fname
-    validate_and_fetch_archive_url(validated, dest_path=dest)
-    return dest
 
 
 class SlidingWindowRateLimiter:

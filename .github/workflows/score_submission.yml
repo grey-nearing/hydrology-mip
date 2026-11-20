@@ -16,11 +16,11 @@ on:
         description: "Path to a submission manifest JSON under submissions/"
         required: true
       dry_run:
-        description: "Score without mutating leaderboard JSONs"
+        description: "Validate and score without uploading Zarr stores to R2/GCS"
         required: false
         default: "false"
 
-# Strict read-only default permissions (fork-safe for all pull requests).
+# Strictly read-only default permissions (main is protected; no git push from CI).
 permissions:
   contents: read
 
@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   validate-and-score:
-    name: Process, Score (14 Metrics) & Stage Zarr v2
+    name: Validate, Score (14 Metrics) & Verify Leaderboard Parity
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -58,7 +58,10 @@ jobs:
           MANUAL_FILE: ${{ github.event.inputs.submission_file }}
         run: |
           python - <<'PY' >> "$GITHUB_OUTPUT"
-          import json, os, subprocess
+          import json
+          import os
+          import subprocess
+
           manual = os.environ.get("MANUAL_FILE", "").strip()
           if manual:
               files = [manual]
@@ -83,7 +86,7 @@ jobs:
       - name: Run protocol & AST guardrails
         run: python -m hydromip.tools.ci_guardrails --mode all
 
-      - name: Run process_submission (dry-run on PR) across manifests
+      - name: Score manifests (dry-run) and verify committed leaderboard parity
         if: steps.discover.outputs.has_files == 'true'
         env:
           HYDROMIP_GCS_ANON: "1"
@@ -91,9 +94,12 @@ jobs:
           TARGET_OBSERVATIONS_URI: ${{ vars.CAMELS_OBSERVATIONS_URI || 'https://data.hydrologymip.org/camels_us_daily/observations/newman_eval_targets.zarr' }}
         run: |
           python - <<'PY'
-          import json, os, subprocess
+          import json
+          import os
           from pathlib import Path
           from hydromip.evaluation.zarr_io import open_zarr_store
+          from hydromip.tools.process_submission import process_submission
+          from metrics.evaluator import GAUCH_2023_METRICS
 
           files = json.loads(os.environ["SUBMISSION_FILES"])
           local_targets = Path("mips/camels_us_daily/observations/newman_eval_targets.zarr")
@@ -102,27 +108,42 @@ jobs:
               obs_ds = open_zarr_store(os.environ["TARGET_OBSERVATIONS_URI"])
               obs_ds.to_zarr(str(local_targets), mode="w", consolidated=True, zarr_format=2)
 
+          def _assert_parity(computed: dict, committed: dict, label: str) -> None:
+              assert int(committed.get("pred_nan_when_obs_valid", -1)) == 0, f"{label}: NaN masking violation"
+              for k in ("primary_ranking_nse", "mean_nse", "med_kge", "nse_le_0"):
+                  diff = abs(float(computed[k]) - float(committed[k]))
+                  assert diff <= 1e-4, f"{label}: {k} mismatch computed={computed[k]} vs committed={committed[k]}"
+              for m in GAUCH_2023_METRICS:
+                  c_med = float(computed["gauch_2023_metrics"][m]["median"])
+                  m_med = float(committed["gauch_2023_metrics"][m]["median"])
+                  assert abs(c_med - m_med) <= 1e-4, f"{label}: {m} median mismatch {c_med} vs {m_med}"
+
           combined_md = []
           for idx, manifest_file in enumerate(files):
               md_out = Path("staging_reports") / f"summary_{idx}.md"
-              subprocess.run(
-                  [
-                      "python",
-                      "-m",
-                      "hydromip.tools.process_submission",
-                      "--manifest",
-                      manifest_file,
-                      "--mip-dir",
-                      "mips/camels_us_daily",
-                      "--out-zarr-dir",
-                      "staging_zarr",
-                      "--summary-md",
-                      str(md_out),
-                      "--dry-run",
-                  ],
-                  check=True,
+              res = process_submission(
+                  manifest_path=Path(manifest_file),
+                  mip_dir=Path("mips/camels_us_daily"),
+                  out_zarr_dir=Path("staging_zarr"),
+                  summary_md_path=md_out,
+                  dry_run=True,
               )
               combined_md.append(md_out.read_text(encoding="utf-8"))
+
+              lb_id = res["entry"]["leaderboard_id"]
+              lb_file = Path("mips/camels_us_daily/leaderboards") / f"{lb_id}.json"
+              if lb_file.is_file():
+                  rows = json.loads(lb_file.read_text(encoding="utf-8")).get("rows", [])
+                  by_id = {str(r.get("entry_id")): r for r in rows}
+                  eid = res["entry"]["entry_id"]
+                  if eid in by_id:
+                      _assert_parity(res["entry"], by_id[eid], f"{lb_id}/{eid}")
+                      print(f"Verified committed 14-metric parity for {lb_id}/{eid}")
+                  if res["ensemble_single_entry"] is not None:
+                      seid = res["ensemble_single_entry"]["entry_id"]
+                      if seid in by_id:
+                          _assert_parity(res["ensemble_single_entry"], by_id[seid], f"{lb_id}/{seid}")
+                          print(f"Verified committed 14-metric parity for {lb_id}/{seid}")
 
           Path("staging_reports").mkdir(exist_ok=True)
           Path("staging_reports/combined_pr_summary.md").write_text(
@@ -163,13 +184,13 @@ jobs:
           gh pr comment "${PR_NUMBER}" --body-file downloaded_report/combined_pr_summary.md
 
   publish-on-main:
-    name: Score, Update Leaderboards & Sync Zarr on Main
+    name: Publish Merged Submission Zarr v2 Archive to R2/GCS
     needs: validate-and-score
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      contents: write
+      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -187,7 +208,7 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0"
           python -m pip install -e ".[dev]" "pydantic>=2.7.0"
 
-      - name: Discover manifests and score officially
+      - name: Materialize canonical Zarr v2 from merged manifests (no push to main)
         env:
           HYDROMIP_GCS_ANON: "1"
           BASE_SHA: ${{ github.event.before }}
@@ -196,14 +217,17 @@ jobs:
           TARGET_OBSERVATIONS_URI: ${{ vars.CAMELS_OBSERVATIONS_URI || 'https://data.hydrologymip.org/camels_us_daily/observations/newman_eval_targets.zarr' }}
         run: |
           python - <<'PY'
-          import json, os, subprocess
+          import json
+          import os
           from pathlib import Path
           from hydromip.evaluation.zarr_io import open_zarr_store
+          from hydromip.tools.process_submission import process_submission
 
           manual = os.environ.get("MANUAL_FILE", "").strip()
           if manual:
               files = [manual]
           else:
+              import subprocess
               base = os.environ.get("BASE_SHA", "").strip()
               head = os.environ.get("HEAD_SHA", "HEAD").strip()
               if base and base != "0" * 40:
@@ -226,36 +250,16 @@ jobs:
               obs_ds.to_zarr(str(local_targets), mode="w", consolidated=True, zarr_format=2)
 
           for idx, manifest_file in enumerate(files):
-              subprocess.run(
-                  [
-                      "python",
-                      "-m",
-                      "hydromip.tools.process_submission",
-                      "--manifest",
-                      manifest_file,
-                      "--mip-dir",
-                      "mips/camels_us_daily",
-                      "--out-zarr-dir",
-                      "staging_zarr",
-                      "--summary-md",
-                      f"staging_reports/main_{idx}.md",
-                      "--update-figures",
-                  ],
-                  check=True,
+              process_submission(
+                  manifest_path=Path(manifest_file),
+                  mip_dir=Path("mips/camels_us_daily"),
+                  out_zarr_dir=Path("staging_zarr"),
+                  summary_md_path=Path(f"staging_reports/main_{idx}.md"),
+                  dry_run=True,
               )
           PY
 
-      - name: Commit updated leaderboards & figures
-        run: |
-          git add mips/camels_us_daily/leaderboards/ mips/camels_us_daily/figures/
-          if ! git diff --cached --quiet; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore(leaderboards): score merged community model submission [skip ci]"
-            git push
-          fi
-
-      - name: Upload canonical Zarr v2 archive to cloud storage
+      - name: Upload canonical Zarr v2 & refreshed manifest_index.json to R2/GCS
         env:
           GCS_HYDROGRAPH_BUCKET: ${{ vars.GCS_HYDROGRAPH_BUCKET }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
@@ -269,10 +273,19 @@ jobs:
           if [[ -n "${R2_ENDPOINT:-}" && -n "${R2_BUCKET:-}" && -n "${R2_ACCESS_KEY_ID:-}" && -n "${R2_SECRET_ACCESS_KEY:-}" && -d "staging_zarr/hydrographs" ]]; then
             python -m pip install --quiet botocore
             python - <<'PY'
+          import json
           import os
           from pathlib import Path
           import botocore.session
           from botocore.config import Config
+          from leaderboards.update_leaderboard import build_hydrograph_manifest
+
+          def content_type_for(fp: Path) -> str:
+              name = fp.name
+              suf = fp.suffix.lower()
+              if name in (".zmetadata", ".zattrs", ".zarray", ".zgroup") or suf == ".json":
+                  return "application/json"
+              return "application/octet-stream"
 
           root = Path("staging_zarr/hydrographs")
           client = botocore.session.get_session().create_client(
@@ -293,9 +306,31 @@ jobs:
                   Key=key,
                   Body=fp.read_bytes(),
                   CacheControl="public, max-age=86400",
+                  ContentType=content_type_for(fp),
               )
               uploaded += 1
-          print(f"Uploaded {uploaded} Zarr files to R2 s3://{bucket}/camels_us_daily/hydrographs/")
+
+          raw_manifest = build_hydrograph_manifest(
+              bucket_uri="gs://camels-us-mip",
+              leaderboards_dir=Path("mips/camels_us_daily/leaderboards"),
+          )
+          public_stores = []
+          for s in raw_manifest["stores"]:
+              rel = s["zarr_uri"].removeprefix("gs://camels-us-mip/").rstrip("/")
+              public_stores.append({**s, "zarr_uri": f"https://data.hydrologymip.org/camels_us_daily/{rel}"})
+          public_manifest = {
+              **raw_manifest,
+              "bucket": "https://data.hydrologymip.org/camels_us_daily",
+              "stores": public_stores,
+          }
+          client.put_object(
+              Bucket=bucket,
+              Key="camels_us_daily/hydrographs/manifest_index.json",
+              Body=(json.dumps(public_manifest, indent=2) + "\n").encode("utf-8"),
+              CacheControl="public, max-age=86400",
+              ContentType="application/json",
+          )
+          print(f"Uploaded {uploaded} Zarr files and updated manifest_index.json ({len(public_stores)} stores) in R2 s3://{bucket}/camels_us_daily/hydrographs/")
           PY
           elif [[ -z "${GCS_HYDROGRAPH_BUCKET:-}" ]]; then
             echo "No cloud hydrograph bucket configured; skipping remote Zarr upload."

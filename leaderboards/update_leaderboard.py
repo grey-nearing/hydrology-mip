@@ -270,6 +270,7 @@ def refresh_registry_counts(
     families: list[dict[str, Any]] = registry.get("families", [])
     counts = {str(fam["family_id"]): 0 for fam in families}
     covered: dict[str, list[str]] = {fid: [] for fid in counts}
+    best_nse: dict[str, float | None] = {fid: None for fid in counts}
     for lbid in CANONICAL_LEADERBOARD_IDS:
         lb_path = lb_dir / f"{lbid}.json"
         if not lb_path.is_file():
@@ -280,12 +281,19 @@ def refresh_registry_counts(
                 counts[fid] += 1
                 if lbid not in covered[fid]:
                     covered[fid].append(lbid)
+                nse_v = row.get("primary_ranking_nse")
+                if _is_finite_number(nse_v):
+                    cur_best = best_nse[fid]
+                    if cur_best is None or float(nse_v) > float(cur_best):
+                        best_nse[fid] = float(nse_v)
     before = json.dumps(registry, sort_keys=True)
     for fam in families:
         fid = str(fam["family_id"])
         fam["n_entries"] = counts[fid]
-        if set(fam.get("leaderboards_covered") or []) != set(covered[fid]):
+        if fam.get("leaderboards_covered") != covered[fid]:
             fam["leaderboards_covered"] = covered[fid]
+        if best_nse[fid] is not None:
+            fam["best_nse"] = best_nse[fid]
     for key in REGISTRY_FAMILY_COUNT_KEYS:
         if key in registry or key == "total_families":
             registry[key] = len(families)

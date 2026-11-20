@@ -3,6 +3,19 @@
 
 """Safe multi-format hydrograph ingestion, sanity verification, and schema inference."""
 
+from hydromip.io.doi_resolver import (
+    DEFAULT_MAX_DOWNLOAD_BYTES,
+    SUPPORTED_ARCHIVE_FILE_EXTS,
+    TRUSTED_EXACT_HOSTS,
+    TRUSTED_WILDCARD_SUFFIXES,
+    archive_file_priority,
+    extract_zenodo_doi,
+    is_trusted_archive_host,
+    resolve_and_download_archive,
+    resolve_archive_download_url,
+    validate_and_fetch_archive_url,
+    validate_https_target_url,
+)
 from hydromip.io.ingest import (
     DEFAULT_PREFIX_STRIPS,
     EVAL_END_DATE,
@@ -31,6 +44,7 @@ from hydromip.io.llm_schema_adapter import (
 
 __all__ = [
     "DEFAULT_GEMINI_MODEL",
+    "DEFAULT_MAX_DOWNLOAD_BYTES",
     "DEFAULT_PREFIX_STRIPS",
     "EVAL_END_DATE",
     "EVAL_START_DATE",
@@ -38,17 +52,27 @@ __all__ = [
     "EXPECTED_NUM_DAYS",
     "FORBIDDEN_PICKLE_EXTS",
     "IngestionRecipe",
+    "SUPPORTED_ARCHIVE_FILE_EXTS",
+    "TRUSTED_EXACT_HOSTS",
+    "TRUSTED_WILDCARD_SUFFIXES",
+    "archive_file_priority",
     "build_hydromip_package_snippet",
     "build_stuck_report",
     "detect_file_format",
     "ensure_hydromip_on_path",
     "extract_file_metadata",
+    "extract_zenodo_doi",
     "get_llm_backend_mode",
     "infer_recipe_from_metadata",
     "ingest_hydrograph",
+    "is_trusted_archive_host",
     "normalize_basin_id",
+    "resolve_and_download_archive",
+    "resolve_archive_download_url",
     "resolve_deterministic_recipe",
     "run_physical_sanity_checks",
     "safe_extract_zip",
+    "validate_and_fetch_archive_url",
+    "validate_https_target_url",
     "write_canonical_zarr_v2",
 ]

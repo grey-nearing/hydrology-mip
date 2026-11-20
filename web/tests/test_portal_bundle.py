@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import ast
 import http.server
+import io
 import json
 import shutil
 import socketserver
 import subprocess
+import tarfile
 import threading
 import zipfile
 from pathlib import Path
@@ -183,3 +185,66 @@ def test_http_zarr_io_open_and_missing_raises(tmp_path: Path) -> None:
         open_zarr_store(missing_url)
     srv.shutdown()
     srv.server_close()
+
+
+def test_prebuilt_hydro_assets_unpack_rejects_traversal_and_loads_valid_531(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    evil_tar = tmp_path / "evil.tar.gz"
+    with tarfile.open(evil_tar, "w:gz") as tf:
+        info = tarfile.TarInfo("../../etc/passwd")
+        data = b"pwn"
+        info.size = len(data)
+        tf.addfile(info, io.BytesIO(data))
+
+    monkeypatch.setattr(
+        deploy_cf_worker,
+        "validate_and_fetch_archive_url",
+        lambda _url, dest_path=None, **_k: Path(dest_path).write_bytes(evil_tar.read_bytes()) or b"",
+    )
+    with pytest.raises(ValueError, match="traversal"):
+        deploy_cf_worker._download_and_unpack_prebuilt_hydro_assets(
+            "https://data.hydrologymip.org/camels_us_daily/portal_cache/evil.tar.gz",
+            tmp_path / "stage_evil",
+        )
+
+    basins_531 = [
+        b.strip().zfill(8)
+        for b in (REPO_ROOT / "mips" / "camels_us_daily" / "splits" / "basins_531.txt")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if b.strip()
+    ]
+    good_tar = tmp_path / "good.tar.gz"
+    with tarfile.open(good_tar, "w:gz") as tf:
+        idx_bytes = json.dumps({"available_qsim_keys": ["gauged__single_camels__t3_02"]}).encode("utf-8")
+        ti = tarfile.TarInfo("hydro_assets/index.json")
+        ti.size = len(idx_bytes)
+        tf.addfile(ti, io.BytesIO(idx_bytes))
+        for bid in basins_531:
+            b_bytes = json.dumps({"basin": {"basin_id": bid}, "qobs": [], "forcings": {}, "models": {}}).encode("utf-8")
+            bi = tarfile.TarInfo(f"hydro_assets/basin_{bid}.json")
+            bi.size = len(b_bytes)
+            tf.addfile(bi, io.BytesIO(b_bytes))
+
+    monkeypatch.setattr(
+        deploy_cf_worker,
+        "validate_and_fetch_archive_url",
+        lambda _url, dest_path=None, **_k: Path(dest_path).write_bytes(good_tar.read_bytes()) or b"",
+    )
+    stage_good = tmp_path / "stage_good"
+    deploy_cf_worker._download_and_unpack_prebuilt_hydro_assets(
+        "https://data.hydrologymip.org/camels_us_daily/portal_cache/good.tar.gz",
+        stage_good,
+    )
+    assets, summary = deploy_cf_worker.build_static_bundle(
+        stage_dir=stage_good,
+        explorer_store_path=None,
+        scrub_private_urls=True,
+    )
+    assert summary["basin_assets"] == 531
+    assert "/hydro_assets/basin_01022500.json" in assets
+    lbs_doc = json.loads(assets["/data_assets/leaderboards.json"].read_text(encoding="utf-8"))
+    t3_02 = next(r for lb in lbs_doc["leaderboards"] for r in lb["rows"] if r["entry_id"] == "t3_02")
+    assert t3_02["has_hydrograph"] is True

@@ -36,7 +36,7 @@ jobs:
       - name: Install deployment dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "numpy>=1.26" "pandas>=2.2" "pyyaml>=6.0.1"
+          python -m pip install -e ".[portal]" "pyyaml>=6.0.1"
 
       - name: Dry-run unified Worker & portal asset bundle
         run: |
@@ -51,9 +51,10 @@ jobs:
           HYDROLOGYMIP_PREVIEW_GATE: ${{ vars.HYDROLOGYMIP_PREVIEW_GATE || 'true' }}
           HYDROLOGYMIP_SCRUB_PRIVATE_URLS: ${{ vars.HYDROLOGYMIP_SCRUB_PRIVATE_URLS || 'true' }}
           HYDROMIP_EXPLORER_STORE: ${{ vars.HYDROMIP_EXPLORER_STORE || '' }}
+          HYDROMIP_PREBUILT_HYDRO_ASSETS_URL: ${{ vars.HYDROMIP_PREBUILT_HYDRO_ASSETS_URL || 'https://data.hydrologymip.org/camels_us_daily/portal_cache/hydro_assets_531.tar.gz' }}
         run: |
           if [[ -n "${HYDROMIP_EXPLORER_STORE:-}" && -f "${HYDROMIP_EXPLORER_STORE}" ]]; then
             PYTHONPATH=. python web/worker/deploy_cf_worker.py --explorer-store "${HYDROMIP_EXPLORER_STORE}"
           else
-            PYTHONPATH=. python web/worker/deploy_cf_worker.py --allow-partial-hydrographs
+            PYTHONPATH=. python web/worker/deploy_cf_worker.py --prebuilt-hydro-assets-url "${HYDROMIP_PREBUILT_HYDRO_ASSETS_URL}"
           fi

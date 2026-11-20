@@ -13,13 +13,10 @@ Designed to move cleanly into ``hydromip/tools/process_submission.py``:
 from __future__ import annotations
 
 import argparse
-import ipaddress
+import datetime
 import json
 import re
-import socket
 import tempfile
-import urllib.parse
-import urllib.request
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -32,6 +29,13 @@ from scipy.stats import wilcoxon
 _HERE = Path(__file__).resolve().parent
 
 
+from hydromip.evaluation.zarr_io import validate_store_id
+from hydromip.io.doi_resolver import (
+    DEFAULT_MAX_DOWNLOAD_BYTES,
+    extract_zenodo_doi,
+    resolve_and_download_archive,
+    validate_and_fetch_archive_url,
+)
 from hydromip.io.ingest import (
     EXPECTED_NUM_DAYS,
     ensure_hydromip_on_path,
@@ -44,159 +48,41 @@ from hydromip.io.ingest import (
 
 _REPO_ROOT = ensure_hydromip_on_path()
 
+from leaderboards.generate_figures import (
+    classify_model_category,
+    extract_publication_year,
+)
 from leaderboards.update_leaderboard import (
+    default_code_provenance,
     format_row_metrics_from_evaluator,
     upsert_leaderboard_entry,
 )
 from metrics.evaluator import (
     CANONICAL_LEADERBOARD_IDS,
+    DEFAULT_BUCKET_URI,
     GAUCH_2023_METRICS,
     calculate_model_leaderboard_metrics,
 )
 
-MAX_DOWNLOAD_BYTES: int = 500 * 1024 * 1024  # 500 MiB for CI ingestion
-MAX_REDIRECT_HOPS: int = 5
+MAX_DOWNLOAD_BYTES: int = DEFAULT_MAX_DOWNLOAD_BYTES
 DOWNLOAD_TIMEOUT_SECONDS: int = 120
 SAFE_ID_RE = re.compile(r"[^a-z0-9_]+")
-
-TRUSTED_EXACT_HOSTS: frozenset[str] = frozenset(
-    {
-        "zenodo.org",
-        "hydroshare.org",
-        "osf.io",
-        "figshare.com",
-        "github.com",
-        "raw.githubusercontent.com",
-        "objects.githubusercontent.com",
-        "huggingface.co",
-        "data.hydrologymip.org",
-    }
-)
-TRUSTED_WILDCARD_SUFFIXES: tuple[str, ...] = (
-    ".zenodo.org",
-    ".hydroshare.org",
-    ".osf.io",
-    ".figshare.com",
-)
-SUPPORTED_ARCHIVE_EXTS: tuple[str, ...] = (
-    ".zarr.zip",
-    ".nc",
-    ".nc4",
-    ".parquet",
-    ".csv",
-    ".tsv",
-    ".npz",
-    ".zip",
-)
+ENSEMBLE_SUFFIX_RE = re.compile(r"\s*\(\d+-model ensemble\)\s*$")
 
 
-def _is_trusted_host(hostname: str) -> bool:
-    host = hostname.strip().lower().rstrip(".")
-    if not host:
-        return False
-    if host in TRUSTED_EXACT_HOSTS:
-        return True
-    return any(
-        host.endswith(suffix) and len(host) > len(suffix)
-        for suffix in TRUSTED_WILDCARD_SUFFIXES
+def _fetch_https(
+    url: str,
+    dest_path: Path | None = None,
+    max_bytes: int = MAX_DOWNLOAD_BYTES,
+) -> bytes:
+    """Delegate HTTPS fetches through the shared SSRF-hardened downloader."""
+    return validate_and_fetch_archive_url(
+        url,
+        dest_path=dest_path,
+        max_bytes=max_bytes,
+        timeout=DOWNLOAD_TIMEOUT_SECONDS,
+        user_agent="HydrologyMIP-CI/1.0",
     )
-
-
-def _validate_https_url(url: str) -> str:
-    parsed = urllib.parse.urlparse(url.strip())
-    if parsed.scheme.lower() != "https":
-        raise ValueError(f"Only HTTPS archive URLs are allowed (got {parsed.scheme!r}).")
-    if parsed.username or parsed.password:
-        raise ValueError("Archive URLs containing credentials are rejected.")
-    host = (parsed.hostname or "").strip().lower().rstrip(".")
-    if not host:
-        raise ValueError("Archive URL is missing a hostname.")
-    if not _is_trusted_host(host):
-        raise ValueError(f"Host {host!r} is outside the trusted repository allowlist.")
-    port = parsed.port or 443
-    addr_infos = socket.getaddrinfo(host, port, type=socket.SOCK_STREAM)
-    if not addr_infos:
-        raise ValueError(f"DNS lookup returned no addresses for {host!r}.")
-    for info in addr_infos:
-        ip_str = str(info[4][0]).split("%", 1)[0]
-        if not ipaddress.ip_address(ip_str).is_global:
-            raise ValueError(f"SSRF guard blocked non-global IP {ip_str!r} for host {host!r}.")
-    return parsed.geturl()
-
-
-class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
-    def redirect_request(
-        self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str
-    ) -> None:
-        return None
-
-
-class _NoRaiseHTTPProcessor(urllib.request.HTTPErrorProcessor):
-    def http_response(self, request: Any, response: Any) -> Any:
-        return response
-
-    https_response = http_response
-
-
-def _fetch_https(url: str, dest_path: Path | None = None, max_bytes: int = MAX_DOWNLOAD_BYTES) -> bytes:
-    current_url = _validate_https_url(url)
-    opener = urllib.request.build_opener(_NoRedirectHandler(), _NoRaiseHTTPProcessor())
-    for _ in range(MAX_REDIRECT_HOPS + 1):
-        req = urllib.request.Request(
-            current_url, headers={"User-Agent": "HydrologyMIP-CI/1.0"}
-        )
-        with opener.open(req, timeout=DOWNLOAD_TIMEOUT_SECONDS) as resp:
-            status = int(getattr(resp, "status", None) or resp.getcode() or 200)
-            if status in (301, 302, 303, 307, 308):
-                loc = resp.headers.get("Location", "").strip()
-                if not loc:
-                    raise ValueError(f"HTTP {status} redirect without Location header.")
-                current_url = _validate_https_url(urllib.parse.urljoin(current_url, loc))
-                continue
-            if status >= 400:
-                raise ValueError(f"HTTP {status} downloading archive from {current_url}.")
-            total = 0
-            chunk_size = 1024 * 1024
-            if dest_path is not None:
-                dest_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(dest_path, "wb") as out_f:
-                    while True:
-                        buf = resp.read(chunk_size)
-                        if not buf:
-                            break
-                        total += len(buf)
-                        if total > max_bytes:
-                            raise ValueError(f"Downloaded archive exceeded {max_bytes} byte cap.")
-                        out_f.write(buf)
-                return b""
-            chunks: list[bytes] = []
-            while True:
-                buf = resp.read(chunk_size)
-                if not buf:
-                    break
-                total += len(buf)
-                if total > max_bytes:
-                    raise ValueError(f"Payload exceeded {max_bytes} byte cap.")
-                chunks.append(buf)
-            return b"".join(chunks)
-    raise ValueError("Exceeded maximum HTTP redirect limit fetching archive.")
-
-
-def _file_priority(name: str) -> int:
-    low = name.lower()
-    if low.endswith(".zarr.zip"):
-        return 0
-    if low.endswith((".nc", ".nc4")):
-        return 1
-    if low.endswith(".parquet"):
-        return 2
-    if low.endswith((".csv", ".tsv")):
-        return 3
-    if low.endswith(".npz"):
-        return 4
-    if low.endswith(".zip"):
-        return 5
-    return 99
 
 
 def resolve_archive_to_local_file(
@@ -221,64 +107,13 @@ def resolve_archive_to_local_file(
     if not raw_url:
         raise ValueError("Submission manifest must define 'archive_url' (DOI or HTTPS file URL).")
 
-    parsed = urllib.parse.urlparse(raw_url)
-    if parsed.scheme.lower() == "file":
-        local_p = Path(urllib.parse.unquote(parsed.path))
-        if not local_p.is_file():
-            raise FileNotFoundError(f"Local file:// archive not found: {local_p}")
-        return local_p
-
-    m_zen = re.search(r"(?:10\.5281/zenodo\.|zenodo\.org/records?/)(\d+)", raw_url, flags=re.IGNORECASE)
-    if m_zen:
-        rec_id = m_zen.group(1)
-        rec_json = json.loads(
-            _fetch_https(f"https://zenodo.org/api/records/{rec_id}", max_bytes=10 * 1024 * 1024).decode("utf-8")
-        )
-        cands: list[tuple[int, str, str]] = []
-        for entry in rec_json.get("files", []):
-            key = str(entry.get("key") or entry.get("filename") or "")
-            links = entry.get("links") or {}
-            dl_url = str(
-                links.get("content")
-                or links.get("download")
-                or f"https://zenodo.org/records/{rec_id}/files/{urllib.parse.quote(key)}?download=1"
-            )
-            size = int(entry.get("size") or 0)
-            if key and size <= MAX_DOWNLOAD_BYTES and key.lower().endswith(SUPPORTED_ARCHIVE_EXTS):
-                cands.append((_file_priority(key), key, dl_url))
-        if not cands:
-            raise ValueError(f"No supported hydrograph files found in Zenodo record {rec_id}.")
-        cands.sort(key=lambda item: (item[0], item[1]))
-        dest = work_dir / Path(cands[0][1]).name
-        _fetch_https(cands[0][2], dest_path=dest)
-        return dest
-
-    m_hs = re.search(
-        r"(?:10\.4211/hs\.|hydroshare\.org/resource/)([0-9a-f]{32})", raw_url, flags=re.IGNORECASE
+    return resolve_and_download_archive(
+        raw_url,
+        work_dir,
+        max_bytes=MAX_DOWNLOAD_BYTES,
+        allow_file_uri=True,
+        fetch_fn=_fetch_https,
     )
-    if m_hs:
-        hs_id = m_hs.group(1).lower()
-        hs_json = json.loads(
-            _fetch_https(f"https://www.hydroshare.org/hsapi/resource/{hs_id}/files/", max_bytes=10 * 1024 * 1024).decode("utf-8")
-        )
-        cands = []
-        for entry in hs_json.get("results", []):
-            fname = str(entry.get("file_name") or "")
-            dl_url = str(entry.get("url") or "")
-            size = int(entry.get("size") or 0)
-            if fname and dl_url and size <= MAX_DOWNLOAD_BYTES and fname.lower().endswith(SUPPORTED_ARCHIVE_EXTS):
-                cands.append((_file_priority(fname), fname, dl_url))
-        if not cands:
-            raise ValueError(f"No supported hydrograph files found in HydroShare resource {hs_id}.")
-        cands.sort(key=lambda item: (item[0], item[1]))
-        dest = work_dir / Path(cands[0][1]).name
-        _fetch_https(cands[0][2], dest_path=dest)
-        return dest
-
-    fname = Path(urllib.parse.unquote(parsed.path)).name or "submission.nc"
-    dest = work_dir / fname
-    _fetch_https(raw_url, dest_path=dest)
-    return dest
 
 
 def _load_canonical_targets(
@@ -322,13 +157,19 @@ def _load_canonical_targets(
 
     local_targets = mip_dir / "observations" / "newman_eval_targets.zarr"
     if local_targets.exists():
-        ds = xr.open_zarr(local_targets, consolidated=(local_targets / ".zmetadata").is_file())
-        b_arr = [str(b).zfill(8) for b in ds["basin"].values.tolist()]
-        d_arr = [str(x)[:10] for x in ds["date"].values.tolist()]
-        if "huc_02" in ds.coords:
-            for b_id, h_code in zip(b_arr, ds["huc_02"].values.tolist()):
-                huc_map[b_id] = str(h_code).zfill(2)
-        qobs = np.asarray(ds["qobs"].values, dtype=np.float32)
+        with xr.open_zarr(
+            local_targets, consolidated=(local_targets / ".zmetadata").is_file()
+        ) as ds:
+            b_arr = [str(b).zfill(8) for b in ds["basin"].values.tolist()]
+            d_arr = pd.to_datetime(ds["date"].values).strftime("%Y-%m-%d").tolist()
+            if "huc_02" in ds.coords:
+                for b_id, h_code in zip(b_arr, ds["huc_02"].values.tolist()):
+                    huc_map[b_id] = str(h_code).zfill(2)
+            qobs = np.asarray(ds["qobs"].values, dtype=np.float32)
+        if basins_531 and b_arr != basins_531:
+            idx_map = {b: i for i, b in enumerate(b_arr)}
+            qobs = qobs[[idx_map[b] for b in basins_531], :]
+            b_arr = basins_531
         return b_arr, d_arr, huc_map, qobs
 
     raise FileNotFoundError(
@@ -385,14 +226,25 @@ def _paired_wilcoxon_p(vec_a: Sequence[Any], vec_b: Sequence[Any] | None) -> flo
 
 
 def _derive_entry_id(manifest: Mapping[str, Any], manifest_path: Path) -> str:
-    raw_id = str(manifest.get("entry_id") or "").strip().lower()
-    if not raw_id:
-        model_slug = SAFE_ID_RE.sub("_", str(manifest.get("model_name") or manifest_path.stem).lower()).strip("_")
-        raw_id = f"contrib_{model_slug[:32]}"
-    cleaned = SAFE_ID_RE.sub("_", raw_id).strip("_")
+    explicit = str(manifest.get("entry_id") or "").strip()
+    if explicit:
+        validate_store_id(explicit, "entry_id")
+        return explicit
+    model_slug = SAFE_ID_RE.sub(
+        "_", str(manifest.get("model_name") or manifest_path.stem).lower()
+    ).strip("_")
+    cleaned = f"contrib_{model_slug[:32]}".strip("_")
     if not cleaned or not cleaned[0].isalpha():
         cleaned = f"contrib_{cleaned}"
     return cleaned[:48]
+
+
+def _single_model_display_name(manifest: Mapping[str, Any], model_name: str) -> str:
+    explicit_single = str(manifest.get("single_model_name") or "").strip()
+    if explicit_single:
+        return explicit_single
+    base = ENSEMBLE_SUFFIX_RE.sub("", model_name).strip() or model_name
+    return f"{base} (single model)"
 
 
 def _render_pr_summary_markdown(
@@ -426,6 +278,8 @@ def _render_pr_summary_markdown(
     code_badge = "`Closed-Source` (no public code repository linked)" if is_closed else f"[Public Repository]({entry['code_url']})"
 
     gauch = entry["gauch_2023_metrics"]
+    already_listed = any(str(r.get("entry_id")) == str(entry["entry_id"]) for r in lb_rows)
+    total_count = len(lb_rows) + (1 if dry_run and not already_listed else 0)
     lines = [
         f"### HydrologyMIP Automated Submission Verification (`{lb_id}`)",
         "",
@@ -433,7 +287,7 @@ def _render_pr_summary_markdown(
         f"- **Mode:** {'PR Dry-Run Validation' if dry_run else 'Leaderboard Update Committed'}",
         f"- **Code Provenance:** {code_badge}",
         f"- **Permanent Archive:** {entry.get('data_archive_url') or manifest.get('archive_url')}",
-        f"- **Estimated Rank:** **#{rank}** of {len(lb_rows) + (1 if dry_run else 0)} (`Δ Med NSE vs. {sota_name}`: `{delta_nse}`, Wilcoxon `p = {p_str}`)",
+        f"- **Estimated Rank:** **#{rank}** of {total_count} (`Δ Med NSE vs. {sota_name}`: `{delta_nse}`, Wilcoxon `p = {p_str}`)",
         "",
         "#### Physical Sanity & Protocol Checks",
         f"- **Basin Coverage:** `{sanity['n_basins_matched']}/{sanity['n_basins_expected']}` canonical CAMELS-US basins",
@@ -611,7 +465,16 @@ def process_submission(
         lb_rows = list(json.loads(lb_file.read_text(encoding="utf-8")).get("rows", []))
     sota_row = lb_rows[0] if lb_rows else None
 
-    def _assemble_entry(res_dict: dict[str, Any], target_id: str, label_suffix: str = "") -> dict[str, Any]:
+    canonical_zarr_uri = f"{DEFAULT_BUCKET_URI.rstrip('/')}/hydrographs/{leaderboard_id}/{entry_id}.zarr"
+    zenodo_doi = str(manifest.get("zenodo_doi") or extract_zenodo_doi(archive_url)).strip()
+    zenodo_url = (
+        str(manifest.get("zenodo_url") or (f"https://doi.org/{zenodo_doi}" if zenodo_doi else "")).strip()
+    )
+    paper_url = str(manifest.get("paper_url") or "").strip()
+    winner_nb_url = str(manifest.get("winner_notebook_url") or "").strip()
+    submitted_at = datetime.datetime.now(datetime.UTC).isoformat()
+
+    def _assemble_entry(res_dict: dict[str, Any], target_id: str, display_name: str) -> dict[str, Any]:
         row_metrics = format_row_metrics_from_evaluator(res_dict)
         gauch = row_metrics["gauch_2023_metrics"]
         p_nse = _paired_wilcoxon_p(
@@ -622,17 +485,21 @@ def process_submission(
             res_dict["per_basin"]["KGE"],
             sota_row.get("per_basin_kge") if sota_row else None,
         )
-        family_id = str(manifest.get("family_id") or f"contrib_{entry_id}")
-        family_name = str(manifest.get("new_family_name") or model_name)
-        return {
+        family_id = str(manifest.get("family_id") or f"contrib_{entry_id}").strip()
+        family_name = str(
+            manifest.get("family_name") or manifest.get("new_family_name") or model_name
+        ).strip()
+        category = str(manifest.get("category") or "Contribution").strip()
+        num_mem = int(row_metrics.get("num_members") or 1)
+        row_dict: dict[str, Any] = {
             **row_metrics,
             "entry_id": target_id,
             "leaderboard_id": leaderboard_id,
-            "model_name": f"{model_name}{label_suffix}",
+            "model_name": display_name,
             "family_id": family_id,
             "family_name": family_name,
-            "paradigm": str(manifest.get("paradigm") or "Machine learning"),
-            "category": str(manifest.get("category") or "Contribution"),
+            "paradigm": str(manifest.get("paradigm") or "Machine learning").strip(),
+            "category": category,
             "forcing": forcing,
             "code_url": "" if closed_source else code_url,
             "github_url": "" if closed_source else code_url,
@@ -640,44 +507,130 @@ def process_submission(
             "is_closed_source": closed_source,
             "archive_url": archive_url,
             "data_archive_url": archive_url,
-            "zenodo_doi": archive_url if "10.5281/zenodo." in archive_url else "",
-            "citation": str(manifest.get("citation") or "Community Contribution (2026)"),
+            "zenodo_doi": zenodo_doi,
+            "zenodo_url": zenodo_url,
+            "citation": str(manifest.get("citation") or "Community Contribution (2026)").strip(),
             "mean_kge": float(res_dict["mean_kge"]) if "mean_kge" in res_dict else gauch["KGE"]["mean"],
+            "gauch_nse": gauch["NSE"]["median"],
+            "gauch_kge": gauch["KGE"]["median"],
             "gauch_log_nse": gauch["logNSE"]["median"],
             "gauch_log_kge": gauch["logKGE"]["median"],
+            "gauch_pearson_r": gauch["Pearson-r"]["median"],
+            "gauch_alpha_nse": gauch["Alpha-NSE"]["median"],
+            "gauch_beta_nse": gauch["Beta-NSE"]["median"],
+            "gauch_beta_kge": gauch["Beta-KGE"]["median"],
+            "gauch_mse": gauch["MSE"]["median"],
+            "gauch_rmse": gauch["RMSE"]["median"],
+            "gauch_fhv": gauch["FHV"]["median"],
+            "gauch_fms": gauch["FMS"]["median"],
+            "gauch_flv": gauch["FLV"]["median"],
+            "gauch_peak_timing": gauch["Peak-Timing"]["median"],
             "p_value_vs_sota_nse": p_nse,
             "p_value_vs_sota_kge": p_kge,
-            "zarr_path": f"hydrographs/{leaderboard_id}/{entry_id}.zarr",
+            "asterisk": False,
+            "archive_key": target_id,
+            "zarr_path": canonical_zarr_uri,
+            "eval_period": "1989-10-01 to 1999-09-30",
+            "submitted_at": submitted_at,
         }
+        if num_mem > 1 or bool(row_metrics.get("is_ensemble")):
+            row_dict["seeds"] = str(num_mem)
+        if paper_url:
+            row_dict["paper_url"] = paper_url
+        if winner_nb_url:
+            row_dict["winner_notebook_url"] = winner_nb_url
+        return row_dict
 
-    primary_entry = _assemble_entry(eval_res, entry_id)
+    primary_entry = _assemble_entry(eval_res, entry_id, model_name)
     single_entry = (
-        _assemble_entry(ensemble_single_res, f"{entry_id}_single", " (Single Seed Mean)")
+        _assemble_entry(
+            ensemble_single_res,
+            f"{entry_id}_single",
+            _single_model_display_name(manifest, model_name),
+        )
         if ensemble_single_res is not None
         else None
     )
 
     if not dry_run:
-        family_record = {
-            "family_id": primary_entry["family_id"],
-            "name": primary_entry["family_name"],
-            "category": primary_entry["category"],
-            "provenance_category": primary_entry["category"],
-            "paradigm": primary_entry["paradigm"],
-            "citation": primary_entry["citation"],
-            "github_url": primary_entry["code_url"],
-            "zenodo_doi": primary_entry["zenodo_doi"],
-            "zenodo_url": primary_entry["data_archive_url"],
-            "description": str(manifest.get("notes") or f"Community contribution: {model_name}."),
-        }
+        reg_path = lb_dir / "table_2_registry.json"
+        existing_fams: set[str] = set()
+        if reg_path.is_file():
+            reg_doc = json.loads(reg_path.read_text(encoding="utf-8"))
+            existing_fams = {str(f.get("family_id", "")) for f in reg_doc.get("families", [])}
+
+        family_record: dict[str, Any] | None = None
+        if primary_entry["family_id"] not in existing_fams:
+            row_for_classify = {
+                **primary_entry,
+                "code_provenance": default_code_provenance(primary_entry),
+            }
+            model_cat = classify_model_category(row_for_classify)
+            pub_year = extract_publication_year(row_for_classify)
+            family_record = {
+                "family_id": primary_entry["family_id"],
+                "name": primary_entry["family_name"],
+                "category": model_cat,
+                "model_category": model_cat,
+                "provenance_category": primary_entry["category"],
+                "paradigm": primary_entry["paradigm"],
+                "citation": primary_entry["citation"],
+                "paper_url": paper_url,
+                "github_url": primary_entry["code_url"],
+                "code_dir": "",
+                "zenodo_doi": zenodo_doi,
+                "zenodo_url": zenodo_url or primary_entry["data_archive_url"],
+                "hydroshare_url": archive_url if "hydroshare.org" in archive_url.lower() or "10.4211/hs." in archive_url.lower() else "",
+                "description": str(manifest.get("notes") or f"Community contribution: {model_name}.").strip(),
+                "asterisk": False,
+                "asterisk_reason": None,
+                "n_entries": 0,
+                "leaderboards_covered": [],
+                "best_nse": primary_entry["primary_ranking_nse"],
+                "year": pub_year if pub_year is not None else 2026,
+            }
+
+        spatial_reg, _, forcing_reg = leaderboard_id.partition("__")
+        table_idx = CANONICAL_LEADERBOARD_IDS.index(leaderboard_id) + 3
+        prim_gauch = primary_entry["gauch_2023_metrics"]
         contrib_record = {
             "entry_id": entry_id,
             "leaderboard_id": leaderboard_id,
             "model_name": primary_entry["model_name"],
+            "family_id": primary_entry["family_id"],
+            "family_name": primary_entry["family_name"],
+            "forcing": forcing,
+            "citation": primary_entry["citation"],
+            "gcs_zarr_uri": canonical_zarr_uri,
             "archive_url": archive_url,
+            "data_archive_url": archive_url,
+            "zenodo_doi": zenodo_doi,
             "code_url": primary_entry["code_url"],
             "closed_source": closed_source,
             "manifest_path": str(manifest_path),
+            "primary_ranking_nse": primary_entry["primary_ranking_nse"],
+            "submitted_at": submitted_at,
+            "category": primary_entry["category"],
+            "code_provenance": default_code_provenance(primary_entry),
+            "spatial_regime": spatial_reg,
+            "forcing_regime": forcing_reg,
+            "forcings_used": forcing,
+            "is_ensemble": primary_entry["is_ensemble"],
+            "num_members": primary_entry["num_members"],
+            "has_qsim_members": primary_entry["has_qsim_members"],
+            "hydrograph_path": canonical_zarr_uri,
+            "target_leaderboard_tables": [f"table_{table_idx}", leaderboard_id],
+            "metrics": {
+                "median_nse": round(float(eval_res["median_nse"]), 4),
+                "mean_nse": round(float(eval_res["mean_nse"]), 4),
+                "median_kge": round(float(eval_res["median_kge"]), 4),
+                "median_abs_fhv": round(float(eval_res["median_abs_fhv"]), 2),
+                "nse_le_zero_count": int(eval_res["nse_le_zero_count"]),
+                "single_seed_median_nse_mean": eval_res.get("single_seed_median_nse_mean"),
+                "single_seed_median_nse_std": eval_res.get("single_seed_median_nse_std"),
+                "single_seed_median_nse_per_member": eval_res.get("single_seed_median_nse_per_member"),
+            },
+            "gauch_2023_metrics": prim_gauch,
         }
         primary_entry = upsert_leaderboard_entry(
             leaderboard_id,
@@ -685,7 +638,7 @@ def process_submission(
             leaderboards_dir=lb_dir,
             family_record=family_record,
             contribution_record=contrib_record,
-            update_figures=update_figures,
+            update_figures=(update_figures and single_entry is None),
         )
         if single_entry is not None:
             single_entry = upsert_leaderboard_entry(
@@ -694,7 +647,7 @@ def process_submission(
                 leaderboards_dir=lb_dir,
                 family_record=None,
                 contribution_record=None,
-                update_figures=False,
+                update_figures=update_figures,
             )
 
     summary_md = _render_pr_summary_markdown(
