@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fold execution interface for the ERA Gauged Multi-Paradigm (Newman CV) winning model."""
 
 from __future__ import annotations
@@ -38,6 +41,12 @@ RUNNER_DEFAULTS: dict[str, object] = {
     "fold_id": None,
     "fold_index": None,
 }
+
+# Families trained on the rich (engineered) features with per-basin embeddings ("paradigm A")
+# and on the clean features with alphabetically sorted statics ("paradigm B").  The shipped
+# ensemble uses conv_gru_lstm, film_ealstm, snow_film_grulstm and snow_ealstm.
+_FAMILIES_RICH_INPUT = ("conv_gru_lstm", "film_ealstm", "residual_atrous_gru", "causal_atrous_gru")
+_FAMILIES_CLEAN_INPUT = ("snow_film_grulstm", "snow_ealstm")
 
 
 def _causal_rolling(x: np.ndarray, w: int) -> np.ndarray:
@@ -240,6 +249,10 @@ def train_and_predict_family(
     spinup_days: int = 365,
 ) -> np.ndarray:
     """Train a single model family for one seed and return evaluation target predictions `(n_test_basins, n_eval_target_days)`."""
+    if family not in _FAMILIES_RICH_INPUT + _FAMILIES_CLEAN_INPUT:
+        raise ValueError(
+            f"Unknown family {family!r}; expected one of {_FAMILIES_RICH_INPUT + _FAMILIES_CLEAN_INPUT}"
+        )
     use_amp = device.type == "cuda"
     rng = np.random.default_rng(seed)
     random.seed(seed)
@@ -268,13 +281,16 @@ def train_and_predict_family(
         dtype=np.int64,
     )
     if len(valid_starts_a) == 0:
-        valid_starts_a = np.array([0], dtype=np.int64)
+        raise ValueError(
+            f"No valid training window starts: seq_len={seq_len}, n_train_days={n_train_days}, "
+            f"{int(train_mask_np.sum())} target days."
+        )
 
     train_idx = np.where(train_mask_np)[0]
     t_min_b = max(0, int(train_idx[0]) - seq_len + 32) if len(train_idx) > 0 else 0
     t_max_b = max(t_min_b, int(train_idx[-1]) - seq_len) if len(train_idx) > 0 else 0
 
-    if family in ("conv_gru_lstm", "film_ealstm", "residual_atrous_gru", "causal_atrous_gru"):
+    if family in _FAMILIES_RICH_INPUT:
         x_d_gpu = torch.from_numpy(x_rich_train).to(device)
         x_s_gpu = torch.from_numpy(x_stat_train).to(device)
         x_d_eval_gpu = torch.from_numpy(x_rich_eval).to(device)
@@ -298,11 +314,13 @@ def train_and_predict_family(
                 stat_dim=x_stat_train.shape[-1],
                 num_basins=n_train_basins,
             ).to(device)
-        else:
+        elif family == "causal_atrous_gru":
             model = CausalAtrousGRU(
                 d_in=x_rich_train.shape[-1],
                 d_stat=x_stat_train.shape[-1],
             ).to(device)
+        else:
+            raise ValueError(f"Unknown rich-input family: {family!r}")
 
         ema_model = copy.deepcopy(model)
         ema_decay = 0.992
@@ -360,11 +378,11 @@ def train_and_predict_family(
 
                 if ep >= ema_start_epoch:
                     with torch.no_grad():
-                        for p_ema, p_cur in zip(ema_model.parameters(), model.parameters()):
+                        for p_ema, p_cur in zip(ema_model.parameters(), model.parameters(), strict=True):
                             p_ema.data.mul_(ema_decay).add_(p_cur.data, alpha=1.0 - ema_decay)
                 else:
                     with torch.no_grad():
-                        for p_ema, p_cur in zip(ema_model.parameters(), model.parameters()):
+                        for p_ema, p_cur in zip(ema_model.parameters(), model.parameters(), strict=True):
                             p_ema.data.copy_(p_cur.data)
 
         ema_model.eval()
@@ -377,7 +395,7 @@ def train_and_predict_family(
         full_pred = _infer_cont_and_win(_eval_a, n_test_basins, n_eval_total_days, eval_batch_size)
         return full_pred[:, spinup_days:].astype(np.float32)
 
-    else:
+    elif family in _FAMILIES_CLEAN_INPUT:
         x_d_gpu = torch.from_numpy(x_clean_train).to(device)
         x_s_gpu = torch.from_numpy(x_stat_sorted_train).to(device)
         x_d_eval_gpu = torch.from_numpy(x_clean_eval).to(device)
@@ -387,10 +405,12 @@ def train_and_predict_family(
             model = DualPathwayFiLMGRULSTM(
                 dyn_dim=x_clean_train.shape[-1], stat_dim=x_stat_sorted_train.shape[-1]
             ).to(device)
-        else:
+        elif family == "snow_ealstm":
             model = EntityAwareHydroLSTM(
                 dyn_dim=x_clean_train.shape[-1], stat_dim=x_stat_sorted_train.shape[-1]
             ).to(device)
+        else:
+            raise ValueError(f"Unknown clean-input family: {family!r}")
         optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.1)
         scheduler = torch.optim.lr_scheduler.OneCycleLR(
             optimizer, max_lr=lr, steps_per_epoch=max(1, steps_per_epoch), epochs=max(1, epochs)
@@ -444,6 +464,9 @@ def train_and_predict_family(
 
         full_pred = _infer_cont_and_win(_eval_b, n_test_basins, n_eval_total_days, eval_batch_size)
         return full_pred[:, spinup_days:].astype(np.float32)
+
+    else:
+        raise ValueError(f"Unknown family: {family!r}")
 
 
 def run_fold(
@@ -553,8 +576,18 @@ def run_fold(
     train_mask_np = np.zeros(n_train_days, dtype=bool)
     train_mask_np[spinup_days:] = True
 
+    # The rich-input families learn one embedding per training basin, so this ensemble is only
+    # defined for basins seen in training (gauged regime).  Unseen basins must not borrow
+    # another basin's embedding.
     train_basin_to_idx = {str(b).zfill(8): i for i, b in enumerate(train_basins)}
-    eval_basin_indices = [train_basin_to_idx.get(str(b).zfill(8), 0) for b in test_basins]
+    unseen_basins = [str(b).zfill(8) for b in test_basins if str(b).zfill(8) not in train_basin_to_idx]
+    if unseen_basins:
+        raise ValueError(
+            "era_gauged_multi_paradigm uses per-training-basin embeddings and supports only the "
+            f"gauged spatial regime; {len(unseen_basins)} evaluation basin(s) were not in the "
+            f"training set: {unseen_basins}"
+        )
+    eval_basin_indices = [train_basin_to_idx[str(b).zfill(8)] for b in test_basins]
     all_b_eval = torch.tensor(eval_basin_indices, dtype=torch.long, device=device)
 
     members: list[np.ndarray] = []

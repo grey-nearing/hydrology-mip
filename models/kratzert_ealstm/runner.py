@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fold execution interface for Kratzert et al. (2019) EA-LSTM."""
 
 from __future__ import annotations

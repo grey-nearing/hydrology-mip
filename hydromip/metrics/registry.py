@@ -1,7 +1,7 @@
 # Copyright 2026 HydroMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Pluggable metric-suite registry for multi-MIP HydroMIP evaluation.
+"""Pluggable metric-suite registry for multi-MIP HydrologyMIP evaluation.
 
 Each MIP declares its ``metric_suite`` in ``mips/<mip_id>/protocol.json`` (for example,
 ``gauch_2023_deterministic`` for CAMELS-US and Caravan daily streamflow). Future MIPs
@@ -24,7 +24,7 @@ from hydromip.metrics.deterministic_daily import (
 
 @dataclass(frozen=True)
 class MetricSuiteSpec:
-    """Declarative specification and compute entrypoint for a named HydroMIP metric suite."""
+    """Declarative specification and compute entrypoint for a named HydrologyMIP metric suite."""
 
     suite_id: str
     description: str
@@ -38,14 +38,17 @@ class MetricSuiteSpec:
 GAUCH_2023_DETERMINISTIC_SUITE = MetricSuiteSpec(
     suite_id="gauch_2023_deterministic",
     description=(
-        "12 canonical daily deterministic streamflow metrics from Gauch et al. (2023) "
-        "'In Defense of Metrics' (Water Resources Research)."
+        "14 canonical daily deterministic streamflow metrics from Gauch et al. (2023) "
+        "'In Defense of Metrics' (Water Resources Research), including the log-space "
+        "efficiencies logNSE and logKGE."
     ),
     metric_names=(
         "NSE",
         "MSE",
         "RMSE",
         "KGE",
+        "logNSE",
+        "logKGE",
         "Alpha-NSE",
         "Pearson-r",
         "Beta-KGE",

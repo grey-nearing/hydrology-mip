@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC, Grey Nearing, and the CAMELS-US MIP Contributors
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Fold runner for Shahriar (2026) Mamba-3 Static-Dynamic Adapter.
@@ -78,12 +78,20 @@ def build_shahriar_dynamic_inputs(slice_dict: Mapping[str, np.ndarray]) -> np.nd
     """Assemble `['dayl', 'prcp', 'srad', 'tmean', 'vp']` per forcing product from a CAMELS slice."""
     x_dyn = np.asarray(slice_dict["x_dyn"], dtype=np.float32)
     n_channels = x_dyn.shape[-1]
-    if n_channels % 5 != 0 or "x_aux" not in slice_dict:
-        return x_dyn
+    if n_channels == 0 or n_channels % 5 != 0:
+        raise ValueError(
+            f"x_dyn must hold 5 forcing channels per product "
+            f"(prcp, srad, tmax, tmin, vp); got {n_channels} channels."
+        )
+    if "x_aux" not in slice_dict:
+        raise ValueError("CAMELS slice has no 'x_aux'; 'dayl' cannot be assembled.")
     x_aux = np.asarray(slice_dict["x_aux"], dtype=np.float32)
     n_products = n_channels // 5
-    if x_aux.shape[:2] != x_dyn.shape[:2] or x_aux.shape[-1] < 2 * n_products:
-        return x_dyn
+    if x_aux.ndim != 3 or x_aux.shape[:2] != x_dyn.shape[:2] or x_aux.shape[-1] != 2 * n_products:
+        raise ValueError(
+            f"x_aux shape {x_aux.shape} is incompatible with x_dyn shape {x_dyn.shape}: "
+            f"expected (n_basins, n_days, {2 * n_products}) = (dayl, swe) per product."
+        )
 
     blocks: list[np.ndarray] = []
     for p in range(n_products):
@@ -327,7 +335,10 @@ def run_fold(
                 y_pred_targ = y_pred_full[:, eff_buff:, :]
                 loss = nse_loss_batch(y_pred_targ, y_batch, bstd_t[b_idx], eps=nse_eps)
                 if not torch.isfinite(loss):
-                    continue
+                    raise FloatingPointError(
+                        f"Non-finite training loss {float(loss.detach().item())} at seed={isd}, "
+                        f"epoch={ep + 1}/{epochs}, step={n_steps + 1}/{n_iters}."
+                    )
                 loss.backward()
                 if grad_clip > 0.0:
                     torch.nn.utils.clip_grad_norm_(model.parameters(), grad_clip)
@@ -352,7 +363,6 @@ def run_fold(
 
         pred_norm = np.concatenate(pred_chunks, axis=0).astype(np.float64)
         pred_mm = np.clip(pred_norm * y_std + y_mean, 0.0, None).astype(np.float32)
-        pred_mm = np.nan_to_num(pred_mm, nan=0.0, posinf=0.0, neginf=0.0).astype(np.float32)
         members.append(pred_mm)
 
     qsim_members = np.stack(members, axis=0).astype(np.float32)

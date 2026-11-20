@@ -3,7 +3,7 @@
 In accordance with the CAMELS-US MIP single-citation and single-provenance attribution norms, the coupled US National Weather Service **Snow-17** snow accumulation/ablation model (Anderson, 1973, 2006) and **Sacramento Soil Moisture Accounting (SAC-SMA)** conceptual rainfall-runoff model (Burnash et al., 1973; Burnash, 1995) routed with a Duamel Gamma unit hydrograph is represented by two distinct entries in `leaderboards/table_2_registry.json`:
 
 1. **Entry #1 — `newman_sacsma`: `SAC-SMA + Snow-17 (Basin-Calibrated)` (`Archive*`)**
-   - **Canonical Citation**: Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Littell, J. S., & Nijssen, B. (2017). Benchmarking of a physically based hydrologic model. *Journal of Hydrometeorology*, 18(8), 2215–2225.
+   - **Canonical Citation**: Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Nijssen, B., & Nearing, G. (2017). Benchmarking of a physically based hydrologic model. *Journal of Hydrometeorology*, 18(8), 2215–2225.
    - **Paper URL**: https://doi.org/10.1175/JHM-D-16-0284.1
    - **Official Code / Dataset Repository**: https://github.com/NCAR/camels
    - **Data / Archive DOIs**: `10.5065/D6MW2F4D` (NCAR GDEX CAMELS-US dataset); `10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1` (HydroShare benchmark archive, Kratzert et al., 2019b)
@@ -25,14 +25,22 @@ In accordance with the CAMELS-US MIP single-citation and single-provenance attri
 To avoid licensing restrictions in third-party wrappers (`Upstream-Tech/SACSMA-SNOW17` has no open-source license and NCAR's Fortran driver is `GPL-3.0-only`), `models/newman_sacsma/model.py` implements a 100% first-party, clean-room C++17/OpenMP (`_SACSMA_OMP_CPP`) and NumPy realization directly from the public-domain mathematical equations:
 
 1. **Snow-17 Accumulation & Ablation (10 calibrated parameters: `scf`, `mfmax`, `mfmin`, `uadj`, `si`, `pxtemp`, `nmf`, `tipm`, `mbase`, `plwhc`)**:
-   - Rain/snow partitioning via smooth logistic transition around `pxtemp`, internal snowpack energy deficit tracking via antecedent temperature index (`tipm`, `nmf`), seasonally varying degree-day melt factor (`mfmin`, `mfmax`) above `mbase`, power-law areal snow depletion curve $A_s = \min(1, (\text{SWE}/\text{si})^{0.75})$, rain-on-snow wind enhancement $(1 + 0.1\,\text{uadj}\,P_{\text{rain}})$, and liquid-water holding capacity (`plwhc`).
-2. **SAC-SMA Soil Moisture Accounting (15 calibrated parameters: `uztwm`, `uzfwm`, `lztwm`, `lzfpm`, `lzfsm`, `adimp`, `uzk`, `lzpk`, `lzsk`, `zperc`, `rexp`, `pctim`, `pfree`, `riva`, `side`, with fixed `rserv = 0.30`)**:
+   - Rain/snow partitioning by a hard temperature threshold (precipitation falls as snow, scaled by `scf`, when $T_a \le$ `pxtemp`, and as rain otherwise), internal snowpack energy deficit tracking via antecedent temperature index (`tipm`, `nmf`), seasonally varying degree-day melt factor (`mfmin`, `mfmax`) above `mbase`, power-law areal snow depletion curve $A_s = \max\!\left(0.05, \min(1, (\text{SWE}/\text{si})^{0.75})\right)$ (with $A_s = 1$ when $\text{SWE} \ge \text{si}$), an energy-balance rain-on-snow melt when daily rain exceeds 1.5 mm (radiation + rain advection + a wind term scaled by `uadj` that uses elevation-derived atmospheric pressure, replacing the degree-day melt on those days), and liquid-water holding capacity (`plwhc`).
+2. **SAC-SMA Soil Moisture Accounting (15 calibrated parameters: `uztwm`, `uzfwm`, `lztwm`, `lzfpm`, `lzfsm`, `adimp`, `uzk`, `lzpk`, `lzsk`, `zperc`, `rexp`, `pctim`, `pfree`, `riva`, `side`)**:
    - Six soil-moisture states (`uztwc`, `uzfwc`, `lztwc`, `lzfpc`, `lzfsc`, `adimc`) across permanent impervious (`pctim`), variable additional impervious (`adimp`), and pervious ($1 - \text{pctim} - \text{adimp}$) areas, forced by `1.15 × Hargreaves–Samani (1985)` potential evapotranspiration, nonlinear lower-zone percolation (`zperc`, `rexp`, `pfree`), exponential upper-zone interflow (`uzk`), and primary/supplemental baseflow (`lzpk`, `lzsk`, `side`).
 3. **Duamel Gamma Unit-Hydrograph Routing (2 calibrated parameters: `uh_shape`, `uh_scale`)**:
    - Convolves fast channel inflow (impervious + surface + interflow runoff) with a normalized 15-day discrete Gamma unit hydrograph and adds observable lower-zone baseflow.
 4. **DDS Basin Calibration & 29-D Nearest-Neighbor Donor Transfer (`PUB` / `PUR`)**:
-   - **Gauged**: Each basin's 27 parameters are calibrated independently on `1999-10-01` to `2008-09-30` (`365`-day spinup) using vectorized Dynamically Dimensioned Search (DDS; Tolson & Shoemaker, 2007; `n_iter = 400`, $r = 0.2$, daily RMSE objective).
+   - **Gauged**: Each basin's 27 parameters are calibrated independently on `1999-10-01` to `2008-09-30` (`365`-day spinup) using vectorized Dynamically Dimensioned Search (DDS; Tolson & Shoemaker, 2007; `n_iter = 400`, $r = 0.2$, daily RMSE objective). Each basin's DDS search has its own random generator, `np.random.default_rng([seed, int(basin_id), product_index])`, so calibrated parameters depend only on the basin, its own training data and the seed. They are identical regardless of fold order, of which other basins share the batch, and of the executor (`thread` or `process`).
    - **Ungauged (`12-fold PUB` & `18-fold HUC-02 PUR`)**: Each held-out test basin $j \notin \mathcal{B}_{\text{train}}$ inherits the DDS-calibrated parameter vector of its $k=1$ nearest training donor basin in a 29-dimensional feature space combining scaled coordinates $[0.2\,\text{lat}_{\text{deg}},\, 0.2\,\text{lon}_{\text{deg}}]$ and the 27 z-score standardized static CAMELS catchment attributes (standardized strictly on $\mathcal{B}_{\text{train}}$, with zero test-basin streamflow leakage).
+
+---
+
+## Build Prerequisites
+
+The SAC-SMA + Snow-17 kernel (`_SACSMA_OMP_CPP` in `model.py`) is CPU-only C++ and needs no CUDA toolkit. It is JIT-compiled with `torch.utils.cpp_extension.load_inline` on the first call, which takes a few minutes. The build is cached in `~/.cache/torch_extensions`. Set `TORCH_EXTENSIONS_DIR` to change the cache location, for example to a separate directory for each concurrent process. You need:
+- **C++ compiler:** Linux `g++` with OpenMP. On macOS (Apple clang) the C++ kernel builds without `-fopenmp` and runs single-threaded.
+- **`ninja`:** `pip install ninja`. torch cannot load C++ extensions without it.
 
 ---
 
@@ -46,8 +54,18 @@ To avoid licensing restrictions in third-party wrappers (`Upstream-Tech/SACSMA-S
 
 Verify Stage-1 confirmation via:
 ```bash
-python models/newman_sacsma/reproduce_author_metrics.py --mode verify
+# Print the tracked Stage-1 report
+python -m models.newman_sacsma.reproduce_author_metrics --mode verify
+
+# Re-score the canonical Daymet store sacsma_daymet from GCS (needs GCS read credentials)
+python -m models.newman_sacsma.reproduce_author_metrics --mode verify --verify-gcs
+
+# Re-calibrate and evaluate from scratch
+python -m models.newman_sacsma.reproduce_author_metrics --mode train_and_eval --out outputs/newman_stage1.json
 ```
+
+- The script writes its report to `--out`. The default is `models/newman_sacsma/stage1_author_reproduction_results.local.json`, which is not tracked by git. The tracked `stage1_author_reproduction_results.json` is overwritten only if `--out` points at it explicitly.
+- `--verify-gcs` reads from `gs://camels-us-mip`, which is not public, so it needs GCS read credentials (Application Default Credentials).
 
 ---
 

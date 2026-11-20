@@ -1,0 +1,116 @@
+name: "Hydrograph Archive Submission (Open-Source or Closed-Source)"
+description: "Submit pre-computed (531, 3652) daily streamflow hydrographs for official scoring and leaderboard inclusion (supports both open-source and closed-source models)."
+title: "[Hydrograph Submission]: "
+labels: ["hydrograph-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Submit pre-computed daily streamflow predictions (`qsim` of shape `(531, 3652)` in `mm/day` over `1989-10-01` to `1999-09-30`, plus `qsim_members` of shape `(N, 531, 3652)` for ensembles) packaged with `models.zarr_writer`.
+        **Both open-source and closed-source / operational models are welcome:** closed-source submissions are clearly badged (`is_closed_source: true`) on the leaderboard while still archiving open, verifiable daily hydrographs under `CC-BY-4.0`.
+
+  - type: input
+    id: model_name
+    attributes:
+      label: "Model Display Name"
+      description: "Concise architecture name without author prefix (ensemble suffix `(N-model ensemble)` is formatted automatically when `N >= 2`)."
+      placeholder: "e.g., HydroFoundation-v2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: code_availability
+    attributes:
+      label: "Source Code Availability"
+      options:
+        - "Open-Source (public code repository URL provided below; `is_open_source: true`)"
+        - "Closed-Source / Proprietary / Operational (hydrographs open under CC-BY-4.0; flagged `is_closed_source: true` on leaderboard)"
+    validations:
+      required: true
+
+  - type: input
+    id: code_url
+    attributes:
+      label: "Source Code Repository URL (Required for Open-Source; leave blank if Closed-Source)"
+      placeholder: "https://github.com/org/model-repo"
+    validations:
+      required: false
+
+  - type: input
+    id: archive_url
+    attributes:
+      label: "Public Hydrograph Zarr Archive DOI / URL"
+      description: "Permanent Zenodo, HydroShare, or OSF DOI/URL hosting the consolidated Zarr v2 archive(s) (`.zarr.zip`)."
+      placeholder: "https://doi.org/10.5281/zenodo.XXXXXXX"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: model_category
+    attributes:
+      label: "Architectural Category (Table 2)"
+      options:
+        - "Machine learning"
+        - "Hybrid (ML + Physics)"
+        - "Conceptual"
+        - "Process-based"
+    validations:
+      required: true
+
+  - type: input
+    id: target_mip
+    attributes:
+      label: "Target MIP Identifier"
+      value: "camels_us_daily"
+    validations:
+      required: true
+
+  - type: textarea
+    id: target_leaderboards_and_forcings
+    attributes:
+      label: "Target Leaderboard(s), Forcing Inputs & Ensemble Members"
+      description: "Specify the canonical leaderboard ID(s) (`{gauged,pub,pur}__{single_camels,multi_camels,lagged_streamflow,freeform}`), exact forcing datasets/attributes used, and number of ensemble members `N`."
+      placeholder: |
+        - Leaderboard: gauged__freeform
+        - Forcings: ERA5-Land + Daymet + 27 CAMELS static attributes
+        - Members: N = 5 random seeds (`qsim_members` included in Zarr store; `qsim == mean(qsim_members)`)
+    validations:
+      required: true
+
+  - type: input
+    id: citation
+    attributes:
+      label: "Canonical Citation & Paper / Technical Report URL"
+      placeholder: "e.g., Smith et al. (2026) — https://doi.org/..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: architectural_description
+    attributes:
+      label: "Mathematical & Architectural Description (Table 2 / Registry)"
+      description: "Concise 2–5 sentence technical summary of the model structure, inputs, loss/calibration objective, and training protocol."
+    validations:
+      required: true
+
+  - type: textarea
+    id: local_scoring_json
+    attributes:
+      label: "Local Verification Output (`mip-score-model` or Portal `/api/score`)"
+      description: "Paste the verification output confirming `531` basins, `3,652` days, `pred_nan_when_obs_valid == 0`, and all 14 Gauch et al. (2023) metrics."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: protocol_attestation
+    attributes:
+      label: "Protocol & Data License Attestations"
+      options:
+        - label: "Training, calibration, foundation pretraining (on target gauges), early stopping, and hyperparameter selection used zero target streamflow data from `1989-10-01` to `1999-09-30`."
+          required: true
+        - label: "For `pub` (12-fold) or `pur` (18-fold HUC-02) submissions, held-out test basins/regions were strictly excluded from training, normalization scalers, and donor selection in every fold."
+          required: true
+        - label: "All 531 canonical basins (`mips/camels_us_daily/splits/basins_531.txt`) are present in exact sorted order with `pred_nan_when_obs_valid == 0` in `mm/day`."
+          required: true
+        - label: "I authorize HydrologyMIP to archive and redistribute the submitted daily hydrograph Zarr store(s) and derived metrics under `CC-BY-4.0`."
+          required: true

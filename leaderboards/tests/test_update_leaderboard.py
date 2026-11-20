@@ -15,13 +15,19 @@ import xarray as xr
 from leaderboards import (
     CANONICAL_LEADERBOARD_IDS,
     DEFAULT_LEADERBOARDS_DIR,
+    build_hydrograph_manifest,
     clean_model_name,
     load_all_leaderboards,
     load_leaderboard,
     rank_leaderboard_rows,
     recalculate_all_self_run_models,
+    render_stage1_appendix_csv,
+    render_stage1_appendix_markdown,
+    resolve_row_store_id,
     trigger_submission_from_gcs,
     upsert_leaderboard_entry,
+    validate_stage1_appendix,
+    write_hydrograph_manifest,
 )
 from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from leaderboards.update_leaderboard import main as cli_main
@@ -446,3 +452,275 @@ def test_no_author_or_citation_in_leaderboard_model_names() -> None:
                 f"{lbid}/{row['entry_id']}: missing subtitle citation"
             )
 
+
+
+# --- Repository data invariants (pre-launch audit regression tests) ---------------------
+
+_PARTIAL_CATEGORIES = {"Archive*", "Literature*"}
+
+
+def _repo_rows() -> list[tuple[str, dict]]:
+    return [(lbid, row) for lbid in CANONICAL_LEADERBOARD_IDS for row in load_leaderboard(lbid)["rows"]]
+
+
+@pytest.mark.unit
+def test_repository_leaderboard_metadata_is_consistent() -> None:
+    """Counts, ranks, and top model agree with the rows; no stale `num_entries` field remains."""
+    for lbid in CANONICAL_LEADERBOARD_IDS:
+        lb = load_leaderboard(lbid)
+        rows = lb["rows"]
+        assert "num_entries" not in lb, f"{lbid}: stale num_entries field"
+        assert lb["n_entries"] == len(rows)
+        assert [r["rank"] for r in rows] == list(range(1, len(rows) + 1))
+        assert [r["entry_id"] for r in rank_leaderboard_rows(rows)] == [r["entry_id"] for r in rows]
+        assert len({r["entry_id"] for r in rows}) == len(rows), f"{lbid}: duplicate entry_id"
+        if rows:
+            assert lb["top_model"] == rows[0]["model_name"]
+            assert lb["top_nse"] == rows[0]["primary_ranking_nse"]
+        for row in rows:
+            assert row["leaderboard_id"] == lbid
+            resolve_row_store_id(row, lbid)  # valid ids; zarr_path points into this leaderboard
+
+
+@pytest.mark.unit
+def test_partial_coverage_rows_are_starred_and_unverifiable_claims_are_null() -> None:
+    """Partial basin coverage implies a starred category; rows without a store claim no NaN count."""
+    for lbid, row in _repo_rows():
+        tag = f"{lbid}/{row['entry_id']}"
+        n_basins = row.get("num_evaluated_basins")
+        pred_nan = row.get("pred_nan_when_obs_valid")
+        partial = (isinstance(n_basins, int) and n_basins < 531) or (
+            isinstance(pred_nan, int) and pred_nan > 0
+        )
+        if partial:
+            assert row["category"] in _PARTIAL_CATEGORIES, f"{tag}: partial coverage but {row['category']!r}"
+            assert row["asterisk"] is True and str(row.get("asterisk_reason") or "").strip(), tag
+        if row["category"] in _PARTIAL_CATEGORIES:
+            assert row["asterisk"] is True, tag
+        if str(row["category"]).startswith("Literature") and not row.get("zarr_path"):
+            assert pred_nan is None, f"{tag}: literature row without a hydrograph claims pred_nan={pred_nan}"
+        if row["category"] in ("MIP Re-run", "Contribution"):
+            assert row.get("zarr_path"), f"{tag}: self-run row without a zarr_path"
+            assert pred_nan == 0, f"{tag}: self-run row with pred_nan_when_obs_valid={pred_nan}"
+
+
+@pytest.mark.unit
+def test_registry_counts_and_family_records_match_the_leaderboards() -> None:
+    """`table_2_registry.json` counts equal len(families); every family follows one schema."""
+    registry = json.loads((DEFAULT_LEADERBOARDS_DIR / "table_2_registry.json").read_text(encoding="utf-8"))
+    families = registry["families"]
+    for key in ("total_families", "num_families", "n_families"):
+        assert registry[key] == len(families), key
+    key_sets = {frozenset(f) for f in families}
+    assert len(key_sets) == 1, f"families use {len(key_sets)} different key sets"
+    rows_by_family: dict[str, list[tuple[str, dict]]] = {}
+    for lbid, row in _repo_rows():
+        rows_by_family.setdefault(row["family_id"], []).append((lbid, row))
+    assert set(rows_by_family) == {f["family_id"] for f in families}
+    for fam in families:
+        fam_rows = rows_by_family[fam["family_id"]]
+        assert fam["n_entries"] == len(fam_rows), fam["family_id"]
+        covered = [lb for lb in CANONICAL_LEADERBOARD_IDS if any(lb == x for x, _ in fam_rows)]
+        assert fam["leaderboards_covered"] == covered, fam["family_id"]
+        assert fam["best_nse"] == max(r["primary_ranking_nse"] for _, r in fam_rows), fam["family_id"]
+
+
+@pytest.mark.unit
+def test_stage1_appendix_renderings_match_the_json_source() -> None:
+    """The appendix `.md` and `.csv` are exact renderings of the validated `.json` source."""
+    base = DEFAULT_LEADERBOARDS_DIR / "appendix_stage1_confirmation_runs"
+    payload = json.loads(base.with_suffix(".json").read_text(encoding="utf-8"))
+    validate_stage1_appendix(payload)
+    assert base.with_suffix(".md").read_text(encoding="utf-8") == render_stage1_appendix_markdown(payload)
+    assert base.with_suffix(".csv").read_text(encoding="utf-8") == render_stage1_appendix_csv(payload)
+    families = {row["family_id"] for row in payload["rows"]}
+    assert "shahriar2026_mamba3" in families
+
+    bad = json.loads(json.dumps(payload))
+    kratzert = next(r for r in bad["rows"] if r["model_dir"] == "models/kratzert_lstm")
+    kratzert["status"] = "PASS"
+    with pytest.raises(ValueError, match="implied by its tolerance"):
+        validate_stage1_appendix(bad)
+
+
+@pytest.mark.unit
+def test_resolve_row_store_id_uses_the_explicit_store_without_fallbacks() -> None:
+    """A row is scored from its `zarr_path` store (or its `entry_id`), never a guessed sibling."""
+    lbid = "gauged__single_camels"
+    assert resolve_row_store_id({"entry_id": "t3_02"}, lbid) == "t3_02"
+    assert (
+        resolve_row_store_id(
+            {"entry_id": "t3_19", "zarr_path": f"gs://camels-us-mip/hydrographs/{lbid}/t3_18.zarr"}, lbid
+        )
+        == "t3_18"
+    )
+    with pytest.raises(ValueError, match="expected"):
+        resolve_row_store_id(
+            {"entry_id": "x", "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/x.zarr"}, lbid
+        )
+    with pytest.raises(ValueError, match="not a valid identifier"):
+        resolve_row_store_id({"entry_id": "../observations/newman_eval_targets"}, lbid)
+
+
+@pytest.mark.unit
+def test_recalculation_fails_fast_when_a_self_run_store_is_missing(tmp_path: Path) -> None:
+    """Missing stores are reported together before any scoring (no silent store substitution)."""
+    lb_dir = tmp_path / "leaderboards"
+    lb_dir.mkdir()
+    for lbid in CANONICAL_LEADERBOARD_IDS:
+        src = json.loads((DEFAULT_LEADERBOARDS_DIR / f"{lbid}.json").read_text(encoding="utf-8"))
+        src["rows"] = []
+        src["n_entries"] = 0
+        (lb_dir / f"{lbid}.json").write_text(json.dumps(src), encoding="utf-8")
+    lb_path = lb_dir / "pur__freeform.json"
+    data = json.loads(lb_path.read_text(encoding="utf-8"))
+    data["rows"] = [
+        {"entry_id": "missing_model_a", "model_name": "A", "category": "MIP Re-run"},
+        {"entry_id": "missing_model_b_single", "model_name": "B", "category": "Contribution",
+         "is_ensemble": False, "num_members": 3},
+    ]
+    lb_path.write_text(json.dumps(data), encoding="utf-8")
+    (tmp_path / "bucket" / "hydrographs" / "pur__freeform" / "missing_model_b.zarr").mkdir(parents=True)
+    with pytest.raises(FileNotFoundError) as excinfo:
+        recalculate_all_self_run_models(
+            bucket_uri=str(tmp_path / "bucket"), leaderboards_dir=lb_dir, update_figures=False
+        )
+    message = str(excinfo.value)
+    assert "2 self-run leaderboard row(s) have no Zarr store" in message
+    assert "missing_model_a.zarr" in message and "missing_model_b_single.zarr" in message
+
+
+@pytest.mark.unit
+def test_clean_model_name_never_invents_member_counts() -> None:
+    """The δHBV display name only states a member count that the row actually carries."""
+    assert clean_model_name("Feng-dHBV", is_ensemble=True, num_members=5) == "δHBV 1.0 (5-model ensemble)"
+    assert clean_model_name("Feng-dHBV", is_ensemble=True, num_members=None) == "δHBV 1.0 (ensemble)"
+    assert clean_model_name("Feng-dHBV", is_ensemble=False) == "δHBV 1.0"
+
+
+@pytest.mark.unit
+def test_hydrograph_manifest_lists_exactly_the_stores_backing_leaderboard_rows() -> None:
+    """The bucket manifest is a deterministic function of the rows' `zarr_path` values."""
+    stamp = "2026-01-01T00:00:00Z"
+    manifest = build_hydrograph_manifest(updated_utc=stamp)
+    assert manifest == build_hydrograph_manifest(updated_utc=stamp)
+    assert manifest["bucket"] == "gs://camels-us-mip"
+    uris = [store["zarr_uri"] for store in manifest["stores"]]
+    assert uris == sorted(uris) and len(uris) == len(set(uris))
+    assert manifest["total_hydrograph_stores"] == len(uris)
+
+    expected_rows: set[tuple[str, str, str]] = set()
+    for lb in load_all_leaderboards()["leaderboards"]:
+        for row in lb["rows"]:
+            if str(row.get("zarr_path") or "").strip():
+                expected_rows.add((lb["id"], row["entry_id"], row["zarr_path"]))
+    listed_rows = {
+        (ref["leaderboard_id"], ref["entry_id"], store["zarr_uri"])
+        for store in manifest["stores"]
+        for ref in store["referenced_by_rows"]
+    }
+    assert listed_rows == expected_rows
+    assert manifest["total_zarr_backed_leaderboard_rows"] == len(expected_rows)
+    for store in manifest["stores"]:
+        assert store["zarr_uri"] == (
+            f"gs://camels-us-mip/hydrographs/{store['leaderboard_id']}/{store['store_name']}"
+        )
+        assert all(ref["leaderboard_id"] == store["leaderboard_id"] for ref in store["referenced_by_rows"])
+
+    # The CC-BY-NC Frame et al. (2023) archive rows have no store and are never listed.
+    assert not any(store["store_name"] in {"t3_12.zarr", "t3_28.zarr"} for store in manifest["stores"])
+    for regime in ("gauged", "pub", "pur"):
+        assert (
+            f"gs://camels-us-mip/hydrographs/{regime}__lagged_streamflow/naive_lag1_persistence_{regime}.zarr"
+            in uris
+        )
+
+
+@pytest.mark.unit
+def test_hydrograph_manifest_rejects_stores_outside_the_bucket(tmp_path: Path) -> None:
+    """A row whose `zarr_path` points outside `<bucket>/hydrographs/<leaderboard_id>/` is an error."""
+    lb_dir = tmp_path / "leaderboards"
+    lb_dir.mkdir()
+    for lbid in CANONICAL_LEADERBOARD_IDS:
+        shutil.copy2(DEFAULT_LEADERBOARDS_DIR / f"{lbid}.json", lb_dir / f"{lbid}.json")
+    lb_path = lb_dir / "gauged__single_camels.json"
+    data = json.loads(lb_path.read_text(encoding="utf-8"))
+    row = next(r for r in data["rows"] if str(r.get("zarr_path") or "").strip())
+    row["zarr_path"] = f"gs://another-bucket/hydrographs/gauged__single_camels/{row['entry_id']}.zarr"
+    lb_path.write_text(json.dumps(data), encoding="utf-8")
+    with pytest.raises(ValueError, match="expected 'gs://camels-us-mip/hydrographs/gauged__single_camels/"):
+        build_hydrograph_manifest(leaderboards_dir=lb_dir, updated_utc="2026-01-01T00:00:00Z")
+
+    out = tmp_path / "manifest_index.json"
+    summary = write_hydrograph_manifest(out, updated_utc="2026-01-01T00:00:00Z")
+    written = json.loads(out.read_text(encoding="utf-8"))
+    assert written == build_hydrograph_manifest(updated_utc="2026-01-01T00:00:00Z")
+    assert summary["total_hydrograph_stores"] == written["total_hydrograph_stores"]
+
+
+@pytest.mark.unit
+def test_every_row_reports_the_14_canonical_metrics_in_canonical_order() -> None:
+    """Store-backed rows carry all 14 Gauch et al. (2023) summaries (incl. logNSE / logKGE).
+
+    Rows without a hydrograph store keep only the metrics their source reports, plus explicit
+    `null` log-space metrics, always in the canonical metric order.
+    """
+    from metrics.evaluator import GAUCH_2023_METRICS
+
+    for lb in load_all_leaderboards()["leaderboards"]:
+        for row in lb["rows"]:
+            g = row["gauch_2023_metrics"]
+            where = (lb["id"], row["entry_id"])
+            assert list(g) == [m for m in GAUCH_2023_METRICS if m in g], where
+            assert "logNSE" in g and "logKGE" in g, where
+            if str(row.get("zarr_path") or "").strip():
+                assert list(g) == list(GAUCH_2023_METRICS), where
+                for metric in GAUCH_2023_METRICS:
+                    assert isinstance(g[metric], dict), (where, metric)
+                    assert isinstance(g[metric]["median"], float | int), (where, metric)
+
+    contributions = json.loads(
+        (DEFAULT_LEADERBOARDS_DIR / "contributions_index.json").read_text(encoding="utf-8")
+    )
+    for entry_id, entry in contributions["entries"].items():
+        g = entry.get("gauch_2023_metrics") or {}
+        if g:
+            assert list(g) == list(GAUCH_2023_METRICS), entry_id
+
+
+@pytest.mark.unit
+def test_ingesting_a_row_sets_code_provenance_and_refreshes_registry_counts(tmp_path: Path) -> None:
+    """`upsert_leaderboard_entry` keeps table_2_registry.json consistent for ci_guardrails."""
+    from leaderboards import default_code_provenance, refresh_registry_counts
+
+    lb_dir = tmp_path / "leaderboards"
+    shutil.copytree(DEFAULT_LEADERBOARDS_DIR, lb_dir)
+    assert refresh_registry_counts(lb_dir) is False  # the committed registry is consistent
+
+    registry = json.loads((lb_dir / "table_2_registry.json").read_text(encoding="utf-8"))
+    fam = next(f for f in registry["families"] if f["family_id"] == "naive_lag1_persistence")
+    before = fam["n_entries"]
+    row = upsert_leaderboard_entry(
+        "gauged__single_camels",
+        {
+            "entry_id": "naive_lag1_persistence_extra_test",
+            "model_name": "Naive persistence (test row)",
+            "family_id": "naive_lag1_persistence",
+            "category": "Contribution",
+            "primary_ranking_nse": 0.1,
+        },
+        leaderboards_dir=lb_dir,
+        update_figures=False,
+    )
+    assert row["code_provenance"] == "Our Code"
+    registry = json.loads((lb_dir / "table_2_registry.json").read_text(encoding="utf-8"))
+    fam = next(f for f in registry["families"] if f["family_id"] == "naive_lag1_persistence")
+    assert fam["n_entries"] == before + 1
+    assert "gauged__single_camels" in fam["leaderboards_covered"]
+    for key in ("total_families", "num_families", "n_families"):
+        assert registry[key] == len(registry["families"])
+
+    assert default_code_provenance({"category": "Archive*"}) == "Author Archive"
+    assert default_code_provenance({"category": "Literature", "code_provenance": "X"}) == "X"
+    with pytest.raises(ValueError, match="code_provenance"):
+        default_code_provenance({"entry_id": "e", "category": "Mystery"})

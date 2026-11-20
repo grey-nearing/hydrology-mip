@@ -9,14 +9,21 @@ from __future__ import annotations
 
 import argparse
 import copy
+import csv
 import datetime
+import io
 import json
 import math
 import re
 from pathlib import Path
 from typing import Any
 
-from hydromip.paths import DEFAULT_MIP_ID, REPO_ROOT, resolve_mip_paths
+from hydromip.evaluation.zarr_io import (
+    get_gcs_storage_options,
+    validate_store_id,
+    zarr_store_exists,
+)
+from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from metrics.evaluator import (
     CANONICAL_LEADERBOARD_IDS,
     DEFAULT_BUCKET_URI,
@@ -24,6 +31,113 @@ from metrics.evaluator import (
 )
 
 DEFAULT_LEADERBOARDS_DIR: Path = resolve_mip_paths(DEFAULT_MIP_ID).leaderboards_dir
+
+#: Normalized (lower-case) source categories whose rows were produced by this MIP pipeline.
+SELF_RUN_CATEGORIES: frozenset[str] = frozenset(
+    {
+        "mip re-run",
+        "mip-rerun",
+        "mip rerun",
+        "mip re-run (our code)",
+        "mip re-run (author code)",
+        "adapt (our code)",
+        "contribution",
+        "contributed",
+    }
+)
+#: Normalized author-archive categories; the starred variant declares a partial basin subset.
+ARCHIVE_CATEGORIES: frozenset[str] = frozenset({"archive", "archive*"})
+PARTIAL_ARCHIVE_CATEGORY: str = "archive*"
+_ZARR_PATH_PATTERN: re.Pattern[str] = re.compile(
+    r"/hydrographs/(?P<leaderboard>[^/]+)/(?P<store>[^/]+)\.zarr/?$"
+)
+
+
+def _normalized_category(row: dict[str, Any]) -> str:
+    """Return the lower-cased, stripped `category` of a leaderboard row."""
+    return str(row.get("category", "")).lower().strip()
+
+
+#: Default `code_provenance` for each (normalized) row category, matching the vocabulary
+#: used by every existing leaderboard row. An explicit `code_provenance` always wins.
+CODE_PROVENANCE_BY_CATEGORY: dict[str, str] = {
+    "mip re-run": "Our Code",
+    "contribution": "Our Code",
+    "archive": "Author Archive",
+    "archive*": "Author Archive",
+    "literature": "Published Paper",
+    "literature*": "Published Paper",
+}
+#: Family-count keys of `table_2_registry.json` that must equal `len(families)`.
+REGISTRY_FAMILY_COUNT_KEYS: tuple[str, ...] = ("total_families", "num_families", "n_families")
+
+
+def default_code_provenance(row: dict[str, Any]) -> str:
+    """Return the row's `code_provenance`, or the default for its `category`.
+
+    Raises:
+        ValueError: If the row has no `code_provenance` and its category has no default.
+    """
+    explicit = str(row.get("code_provenance") or "").strip()
+    if explicit:
+        return explicit
+    category = _normalized_category(row)
+    if category not in CODE_PROVENANCE_BY_CATEGORY:
+        raise ValueError(
+            f"Row {row.get('entry_id')!r} has category {row.get('category')!r} and no "
+            f"code_provenance; pass one explicitly (known categories: "
+            f"{sorted(CODE_PROVENANCE_BY_CATEGORY)})."
+        )
+    return CODE_PROVENANCE_BY_CATEGORY[category]
+
+
+def resolve_row_store_id(row: dict[str, Any], leaderboard_id: str) -> str:
+    """Return the Zarr store id holding `row`'s hydrograph, with no fallback chain.
+
+    The store is named by the row's `zarr_path` (`.../hydrographs/<leaderboard_id>/<id>.zarr`)
+    when present, otherwise by its `entry_id`. Both are validated store identifiers.
+
+    Raises:
+        ValueError: If `entry_id` or the `zarr_path` store id is not a valid identifier, or
+            if `zarr_path` does not point into `hydrographs/<leaderboard_id>/`.
+    """
+    entry_id = validate_store_id(str(row.get("entry_id", "")).strip(), "entry_id")
+    zarr_path = str(row.get("zarr_path") or "").strip()
+    if not zarr_path:
+        return entry_id
+    match = _ZARR_PATH_PATTERN.search(zarr_path)
+    if match is None or match["leaderboard"] != leaderboard_id:
+        raise ValueError(
+            f"Row {entry_id!r} on {leaderboard_id!r} has zarr_path {zarr_path!r}; expected "
+            f"'.../hydrographs/{leaderboard_id}/<store_id>.zarr'."
+        )
+    return validate_store_id(match["store"], "zarr_path store id")
+
+
+def _contribution_leaderboard_id(centry: dict[str, Any]) -> str:
+    """Return the leaderboard id of a `contributions_index.json` entry, or "" if it names none.
+
+    Uses the entry's `leaderboard_id` when present, otherwise the single canonical id listed
+    in `target_leaderboard_tables`.
+
+    Raises:
+        ValueError: If `leaderboard_id` is not canonical or the entry names several leaderboards.
+    """
+    declared = str(centry.get("leaderboard_id") or "").strip()
+    if declared:
+        if declared not in CANONICAL_LEADERBOARD_IDS:
+            raise ValueError(
+                f"contributions_index entry {centry.get('entry_id')!r} has non-canonical "
+                f"leaderboard_id {declared!r}."
+            )
+        return declared
+    tables = centry.get("target_leaderboard_tables") or []
+    matches = [str(t) for t in tables if str(t) in CANONICAL_LEADERBOARD_IDS]
+    if len(matches) > 1:
+        raise ValueError(
+            f"contributions_index entry {centry.get('entry_id')!r} names several leaderboards {matches}."
+        )
+    return matches[0] if matches else ""
 
 
 def _read_json_dict(path: Path) -> dict[str, Any]:
@@ -37,10 +151,12 @@ def _read_json_dict(path: Path) -> dict[str, Any]:
 
 
 def _write_json_dict(path: Path, payload: dict[str, Any]) -> None:
-    """Atomically write `payload` to `path` as formatted JSON."""
+    """Atomically write `payload` to `path` as formatted UTF-8 JSON (trailing newline)."""
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_suffix(path.suffix + ".tmp")
-    tmp_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    tmp_path.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
     tmp_path.replace(path)
 
 
@@ -132,6 +248,53 @@ def rank_leaderboard_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return ranked_copy
 
 
+def refresh_registry_counts(
+    leaderboards_dir: str | Path = DEFAULT_LEADERBOARDS_DIR,
+) -> bool:
+    """Recompute the derived counts of `table_2_registry.json` from the leaderboard rows.
+
+    Sets every family's `n_entries` (rows naming that `family_id`) and
+    `leaderboards_covered` (leaderboards holding those rows, in canonical order; an
+    existing list is kept when it already names the same set), and every family-count
+    key (`total_families` / `num_families` / `n_families`) to `len(families)`. Rows with
+    an unregistered `family_id` are left for `ci_guardrails` to report.
+
+    Returns:
+        True if the registry file changed, False if it is absent or already consistent.
+    """
+    lb_dir = Path(leaderboards_dir)
+    reg_path = lb_dir / "table_2_registry.json"
+    if not reg_path.is_file():
+        return False
+    registry = _read_json_dict(reg_path)
+    families: list[dict[str, Any]] = registry.get("families", [])
+    counts = {str(fam["family_id"]): 0 for fam in families}
+    covered: dict[str, list[str]] = {fid: [] for fid in counts}
+    for lbid in CANONICAL_LEADERBOARD_IDS:
+        lb_path = lb_dir / f"{lbid}.json"
+        if not lb_path.is_file():
+            continue
+        for row in _read_json_dict(lb_path).get("rows", []):
+            fid = str(row.get("family_id", ""))
+            if fid in counts:
+                counts[fid] += 1
+                if lbid not in covered[fid]:
+                    covered[fid].append(lbid)
+    before = json.dumps(registry, sort_keys=True)
+    for fam in families:
+        fid = str(fam["family_id"])
+        fam["n_entries"] = counts[fid]
+        if set(fam.get("leaderboards_covered") or []) != set(covered[fid]):
+            fam["leaderboards_covered"] = covered[fid]
+    for key in REGISTRY_FAMILY_COUNT_KEYS:
+        if key in registry or key == "total_families":
+            registry[key] = len(families)
+    if json.dumps(registry, sort_keys=True) == before:
+        return False
+    _write_json_dict(reg_path, registry)
+    return True
+
+
 def load_leaderboard(
     leaderboard_id: str,
     leaderboards_dir: str | Path = DEFAULT_LEADERBOARDS_DIR,
@@ -218,8 +381,9 @@ def clean_model_name(
         return s
     if s == "Feng-dHBV":
         if include_ensemble_suffix and is_ensemble:
-            n = int(num_members) if (num_members is not None and int(num_members) > 1) else 4
-            return f"δHBV 1.0 ({n}-model ensemble)"
+            if num_members is not None and int(num_members) > 1:
+                return f"δHBV 1.0 ({int(num_members)}-model ensemble)"
+            return "δHBV 1.0 (ensemble)"
         return "δHBV 1.0"
     if s in _LEGACY_ERA_NAME_MAP:
         s = _LEGACY_ERA_NAME_MAP[s]
@@ -267,6 +431,7 @@ def upsert_leaderboard_entry(
         )
     if "entry_id" not in entry or not str(entry["entry_id"]).strip():
         raise ValueError("Leaderboard entry must include a non-empty 'entry_id'.")
+    validate_store_id(str(entry["entry_id"]).strip(), "entry_id")
     if "model_name" not in entry or not str(entry["model_name"]).strip():
         raise ValueError("Leaderboard entry must include a non-empty 'model_name'.")
 
@@ -288,6 +453,7 @@ def upsert_leaderboard_entry(
     )
     if inferred_cit and not str(entry_copy.get("citation", "")).strip():
         entry_copy["citation"] = inferred_cit
+    entry_copy["code_provenance"] = default_code_provenance(entry_copy)
     entry_copy["model_category"] = classify_model_category(entry_copy)
     entry_copy["publication_year"] = extract_publication_year(entry_copy)
     entry_copy["model_name"] = clean_model_name(
@@ -339,8 +505,8 @@ def upsert_leaderboard_entry(
             }
         else:
             reg_data.setdefault("families", []).insert(0, copy.deepcopy(family_record))
-        reg_data["total_families"] = len(reg_data["families"])
         _write_json_dict(reg_path, reg_data)
+    refresh_registry_counts(lb_dir)
 
     if contribution_record is not None and (lb_dir / "contributions_index.json").is_file():
         contrib_path = lb_dir / "contributions_index.json"
@@ -449,6 +615,7 @@ def trigger_submission_from_gcs(
     is_ensemble: bool | None = None,
     category: str = "Contribution",
     asterisk: bool = False,
+    code_provenance: str = "",
     family_name: str = "",
     paradigm: str = "Community Contribution",
     citation: str = "Community submission",
@@ -498,10 +665,12 @@ def trigger_submission_from_gcs(
         "family_name": family_name.strip() if family_name.strip() else model_name,
         "paradigm": paradigm,
         "category": category,
+        "code_provenance": code_provenance.strip(),
         "forcing": forcing,
         **format_row_metrics_from_evaluator(metrics_summary),
         "asterisk": bool(asterisk),
         "archive_key": model_id,
+        "zarr_path": zarr_uri,
         "citation": citation,
         "paper_url": paper_url,
         "github_url": code_url,
@@ -530,102 +699,90 @@ def recalculate_all_self_run_models(
     leaderboards_dir: str | Path = DEFAULT_LEADERBOARDS_DIR,
     update_figures: bool = True,
 ) -> dict[str, Any]:
-    """Recalculate all statistics for all self-run models (MIP Re-run and Contribution) from GCS Zarr stores."""
+    """Recalculate all statistics for all self-run models (MIP Re-run and Contribution) from Zarr stores.
+
+    Every row is scored from exactly the store it names (`resolve_row_store_id`); there is
+    no fallback to an `archive_key` or to a sibling (e.g. ensemble) store. Before anything
+    is scored, every required store is checked and a single `FileNotFoundError` lists all
+    missing stores. `allow_partial_archive=True` is used only for rows whose category
+    explicitly declares a partial basin subset (`Archive*`).
+    """
     from leaderboards.generate_figures import generate_all_paper_figures
 
     lb_dir = Path(leaderboards_dir)
     ensure_per_leaderboard_files(lb_dir)
-
-    self_run_categories = {
-        "mip re-run",
-        "mip-rerun",
-        "mip rerun",
-        "mip re-run (our code)",
-        "mip re-run (author code)",
-        "adapt (our code)",
-        "contribution",
-        "contributed",
-    }
-    archive_categories = {
-        "archive",
-        "archive*",
-    }
 
     idx_path = lb_dir / "contributions_index.json"
     idx_data: dict[str, Any] = _read_json_dict(idx_path) if idx_path.is_file() else {"entries": {}}
     ci_entries: dict[str, dict[str, Any]] = idx_data.get("entries", {})
 
     eval_pairs: list[tuple[str, str]] = []
-    seen_pairs: set[tuple[str, str]] = set()
-    archive_pairs: set[tuple[str, str]] = set()
-    pair_store_and_mode: dict[tuple[str, str], tuple[str, str | None]] = {}
-
-    from metrics.evaluator import _get_gcs_storage_options, _zarr_store_exists
+    # (leaderboard_id, entry_id) -> (store_id, evaluation_mode, allow_partial_archive)
+    pair_specs: dict[tuple[str, str], tuple[str, str | None, bool]] = {}
 
     root_uri = bucket_uri.rstrip("/")
-    storage_opts = _get_gcs_storage_options() if root_uri.startswith("gs://") else None
+    storage_opts = get_gcs_storage_options() if root_uri.startswith("gs://") else None
     for lbid in CANONICAL_LEADERBOARD_IDS:
         lb_path = lb_dir / f"{lbid}.json"
-        if lb_path.is_file():
-            data = _read_json_dict(lb_path)
-            for row in data.get("rows", []):
-                cat = str(row.get("category", "")).lower().strip()
-                eid = str(row.get("entry_id", "")).strip()
-                if not eid:
-                    continue
-                should_recalc = False
-                if cat in self_run_categories:
-                    should_recalc = True
-                elif cat in archive_categories:
-                    url = str(row.get("data_archive_url", "")).strip() or str(row.get("zenodo_url", "")).strip()
-                    if url.startswith(f"{root_uri}/hydrographs/"):
-                        should_recalc = True
-                        archive_pairs.add((lbid, eid))
-                if should_recalc:
-                    store_id = eid
-                    direct_uri = f"{root_uri}/hydrographs/{lbid}/{eid}.zarr"
-                    if not _zarr_store_exists(direct_uri, storage_options=storage_opts):
-                        akey = str(row.get("archive_key", "")).strip()
-                        if akey and _zarr_store_exists(
-                            f"{root_uri}/hydrographs/{lbid}/{akey}.zarr",
-                            storage_options=storage_opts,
-                        ):
-                            store_id = akey
-                        elif eid.endswith("_single") and _zarr_store_exists(
-                            f"{root_uri}/hydrographs/{lbid}/{eid.removesuffix('_single')}.zarr",
-                            storage_options=storage_opts,
-                        ):
-                            store_id = eid.removesuffix("_single")
-                    eval_mode: str | None = None
-                    if row.get("is_ensemble") is False and (
-                        int(row.get("num_members") or 1) > 1 or eid.endswith("_single")
-                    ):
-                        eval_mode = "single_member_mean"
-                    pair_store_and_mode[(lbid, eid)] = (store_id, eval_mode)
-                    if (lbid, eid) not in seen_pairs:
-                        seen_pairs.add((lbid, eid))
-                        eval_pairs.append((lbid, eid))
+        if not lb_path.is_file():
+            continue
+        data = _read_json_dict(lb_path)
+        for row in data.get("rows", []):
+            eid = str(row.get("entry_id", "")).strip()
+            if not eid:
+                continue
+            cat = _normalized_category(row)
+            is_self_run = cat in SELF_RUN_CATEGORIES
+            archive_url = (
+                str(row.get("data_archive_url", "")).strip()
+                or str(row.get("zenodo_url", "")).strip()
+            )
+            is_bucket_archive = cat in ARCHIVE_CATEGORIES and archive_url.startswith(
+                f"{root_uri}/hydrographs/"
+            )
+            if not (is_self_run or is_bucket_archive) or (lbid, eid) in pair_specs:
+                continue
+            eval_mode: str | None = None
+            if row.get("is_ensemble") is False and (
+                int(row.get("num_members") or 1) > 1 or eid.endswith("_single")
+            ):
+                eval_mode = "single_member_mean"
+            pair_specs[(lbid, eid)] = (
+                resolve_row_store_id(row, lbid),
+                eval_mode,
+                cat == PARTIAL_ARCHIVE_CATEGORY,
+            )
+            eval_pairs.append((lbid, eid))
 
     for cid, centry in ci_entries.items():
-        if str(centry.get("category", "")).lower().strip() in self_run_categories:
+        if str(centry.get("category", "")).lower().strip() in SELF_RUN_CATEGORIES:
             eid = str(centry.get("entry_id", cid)).strip()
-            target_tables = centry.get("target_leaderboard_tables", [])
-            lbid = (
-                str(target_tables[1])
-                if len(target_tables) >= 2
-                else str(centry.get("leaderboard_id", ""))
-            )
-            if eid and lbid in CANONICAL_LEADERBOARD_IDS and (lbid, eid) not in seen_pairs:
-                seen_pairs.add((lbid, eid))
+            lbid = _contribution_leaderboard_id(centry)
+            if eid and lbid and (lbid, eid) not in pair_specs:
+                pair_specs[(lbid, eid)] = (validate_store_id(eid, "entry_id"), None, False)
                 eval_pairs.append((lbid, eid))
-                pair_store_and_mode.setdefault((lbid, eid), (eid, None))
 
     if not eval_pairs:
         return {"total_recalculated": 0, "reports": []}
 
+    missing_stores = [
+        f"{lbid}/{eid} -> {root_uri}/hydrographs/{lbid}/{pair_specs[(lbid, eid)][0]}.zarr"
+        for lbid, eid in eval_pairs
+        if not zarr_store_exists(
+            f"{root_uri}/hydrographs/{lbid}/{pair_specs[(lbid, eid)][0]}.zarr",
+            storage_options=storage_opts,
+        )
+    ]
+    if missing_stores:
+        raise FileNotFoundError(
+            f"{len(missing_stores)} self-run leaderboard row(s) have no Zarr store; upload the "
+            f"stores (or set each row's zarr_path) before recalculating:\n  "
+            + "\n  ".join(missing_stores)
+        )
+
     results_by_pair: dict[tuple[str, str], dict[str, Any]] = {}
     for idx_pair, (lbid_i, eid_i) in enumerate(eval_pairs, start=1):
-        store_id_i, eval_mode_i = pair_store_and_mode.get((lbid_i, eid_i), (eid_i, None))
+        store_id_i, eval_mode_i, allow_partial_i = pair_specs[(lbid_i, eid_i)]
         print(
             f"[{idx_pair}/{len(eval_pairs)}] Recalculating {eid_i} (store={store_id_i}, mode={eval_mode_i}) on {lbid_i}...",
             flush=True,
@@ -634,7 +791,7 @@ def recalculate_all_self_run_models(
             model_id=store_id_i,
             leaderboard_id=lbid_i,
             bucket_uri=bucket_uri,
-            allow_partial_archive=(lbid_i, eid_i) in archive_pairs,
+            allow_partial_archive=allow_partial_i,
             evaluation_mode=eval_mode_i,
         )
 
@@ -683,6 +840,9 @@ def recalculate_all_self_run_models(
             if ranked_rows and ranked_rows[0].get("primary_ranking_nse") is not None:
                 lb_data["top_model"] = ranked_rows[0]["model_name"]
                 lb_data["top_nse"] = ranked_rows[0]["primary_ranking_nse"]
+            else:
+                lb_data["top_model"] = None
+                lb_data["top_nse"] = None
             _write_json_dict(lb_path, lb_data)
 
     sync_master_tables_from_per_leaderboard_files(lb_dir)
@@ -692,12 +852,7 @@ def recalculate_all_self_run_models(
     if idx_path.is_file():
         for cid, centry in ci_entries.items():
             eid = str(centry.get("entry_id", cid)).strip()
-            target_tables = centry.get("target_leaderboard_tables", [])
-            lbid = (
-                str(target_tables[1])
-                if len(target_tables) >= 2
-                else str(centry.get("leaderboard_id", ""))
-            )
+            lbid = _contribution_leaderboard_id(centry)
             if (lbid, eid) in results_by_pair:
                 rep = results_by_pair[(lbid, eid)]
                 centry["metrics"] = {
@@ -1050,6 +1205,7 @@ def remove_leaderboard_entry(
             _write_json_dict(idx_path, idx_data)
 
     sync_master_tables_from_per_leaderboard_files(lb_dir)
+    refresh_registry_counts(lb_dir)
     if update_figures:
         from leaderboards.generate_figures import generate_all_paper_figures
 
@@ -1066,20 +1222,20 @@ def reconcile_archived_rows(
     """Re-score every leaderboard row whose hydrograph store exists in the bucket.
 
     Literature rows (`Literature` / `Archive*`) were seeded with author-reported numbers.
-    Where the archived hydrograph `<bucket_uri>/hydrographs/<leaderboard_id>/<entry_id>.zarr`
-    exists, this function scores it with `metrics.evaluator.calculate_model_leaderboard_metrics`
-    and reports the discrepancy against the row. With `apply=False` (default) nothing is
-    modified; with `apply=True` every such row is rewritten from the evaluator (the previous
-    value is preserved under `author_reported_median_nse`) and re-ranked. A store that fails
-    validation (e.g. an ensemble `qsim` that is not the member mean) raises immediately; fix
-    or remove the store rather than skipping it.
+    Where the archived hydrograph store named by the row (`resolve_row_store_id`) exists,
+    this function scores it with `metrics.evaluator.calculate_model_leaderboard_metrics`
+    (single-seed rows that point at a multi-member store use `single_member_mean`; `Archive*`
+    rows allow whole-basin exclusion only) and reports the discrepancy against the row.
+    With `apply=False` (default) nothing is modified; with `apply=True` every such row is
+    rewritten from the evaluator (the previous value is preserved under
+    `author_reported_median_nse`) and re-ranked. A store that fails validation (e.g. an
+    ensemble `qsim` that is not the member mean) raises immediately; fix or remove the store
+    rather than skipping it.
     """
-    from metrics.evaluator import _get_gcs_storage_options, _zarr_store_exists
-
     lb_dir = Path(leaderboards_dir)
     ensure_per_leaderboard_files(lb_dir)
     root_uri = bucket_uri.rstrip("/")
-    storage_options = _get_gcs_storage_options() if root_uri.startswith("gs://") else None
+    storage_options = get_gcs_storage_options() if root_uri.startswith("gs://") else None
 
     compared: list[dict[str, Any]] = []
     missing: list[dict[str, Any]] = []
@@ -1088,38 +1244,38 @@ def reconcile_archived_rows(
         lb_data = _read_json_dict(lb_path)
         rows = list(lb_data.get("rows", []))
         modified = False
-        self_run_categories = {
-            "mip re-run",
-            "mip-rerun",
-            "mip rerun",
-            "contribution",
-            "contributed",
-        }
-        archive_categories = {
-            "archive",
-        }
         for idx, row in enumerate(rows):
             eid = str(row.get("entry_id", "")).strip()
-            cat = str(row.get("category", "")).lower().strip()
-            store_uri = f"{root_uri}/hydrographs/{lbid}/{eid}.zarr"
+            cat = _normalized_category(row)
+            store_id = resolve_row_store_id(row, lbid)
+            store_uri = f"{root_uri}/hydrographs/{lbid}/{store_id}.zarr"
 
-            is_self_run = cat in self_run_categories
+            is_self_run = cat in SELF_RUN_CATEGORIES
             is_backed_archive = False
-            if cat in archive_categories:
+            if cat in ARCHIVE_CATEGORIES:
                 url = str(row.get("data_archive_url", "")).strip() or str(row.get("zenodo_url", "")).strip()
                 if url.startswith(f"{root_uri}/hydrographs/"):
                     is_backed_archive = True
 
-            if not _zarr_store_exists(store_uri, storage_options=storage_options):
+            if not zarr_store_exists(store_uri, storage_options=storage_options):
                 if is_self_run or is_backed_archive:
                     raise FileNotFoundError(
                         f"Missing required Zarr store {store_uri} for {lbid}/{eid} (category {cat})."
                     )
                 missing.append({"leaderboard_id": lbid, "entry_id": eid, "category": row.get("category")})
                 continue
-            print(f"Reconciling {lbid}/{eid} ...", flush=True)
+            eval_mode: str | None = None
+            if row.get("is_ensemble") is False and (
+                int(row.get("num_members") or 1) > 1 or eid.endswith("_single")
+            ):
+                eval_mode = "single_member_mean"
+            print(f"Reconciling {lbid}/{eid} (store={store_id}, mode={eval_mode}) ...", flush=True)
             ms = calculate_model_leaderboard_metrics(
-                model_id=eid, leaderboard_id=lbid, bucket_uri=root_uri
+                model_id=store_id,
+                leaderboard_id=lbid,
+                bucket_uri=root_uri,
+                allow_partial_archive=cat == PARTIAL_ARCHIVE_CATEGORY,
+                evaluation_mode=eval_mode,
             )
             row_nse = _primary_nse(row)
             record = {
@@ -1161,6 +1317,9 @@ def reconcile_archived_rows(
             if ranked_rows and ranked_rows[0].get("primary_ranking_nse") is not None:
                 lb_data["top_model"] = ranked_rows[0]["model_name"]
                 lb_data["top_nse"] = ranked_rows[0]["primary_ranking_nse"]
+            else:
+                lb_data["top_model"] = None
+                lb_data["top_nse"] = None
             _write_json_dict(lb_path, lb_data)
 
     if apply:
@@ -1177,6 +1336,249 @@ def reconcile_archived_rows(
         "num_missing_store": len(missing),
         "compared": compared,
         "missing_store": missing,
+    }
+
+
+# --- Stage-1 author-protocol confirmation appendix (JSON is the single source) -------------
+
+STAGE1_APPENDIX_BASENAME: str = "appendix_stage1_confirmation_runs"
+STAGE1_STATUS_PASS: str = "PASS"
+STAGE1_STATUS_PARTIAL: str = "PARTIAL"
+#: Row fields written to the CSV rendering, in order (all fields of the JSON rows).
+STAGE1_APPENDIX_CSV_COLUMNS: tuple[str, ...] = (
+    "family_id",
+    "model_dir",
+    "model_name",
+    "citation",
+    "paper_url",
+    "author_split_protocol",
+    "forcing",
+    "num_basins",
+    "num_seeds",
+    "author_published_med_nse",
+    "author_published_single_med_nse",
+    "stage1_reproduced_med_nse",
+    "stage1_reproduced_single_med_nse",
+    "delta_med_nse",
+    "tolerance_abs_delta_med_nse",
+    "status",
+    "status_reason",
+    "zarr_path",
+    "data_archive_url",
+    "zenodo_url",
+    "notes",
+)
+
+
+def stage1_expected_status(row: dict[str, Any]) -> str:
+    """Return the status implied by a Stage-1 appendix row's tolerance.
+
+    A row with a numeric `tolerance_abs_delta_med_nse` is `PASS` when
+    `|delta_med_nse| <= tolerance` and `PARTIAL` otherwise. A row without a recorded
+    tolerance keeps the status reported by its model's `stage1_author_reproduction_results.json`.
+    """
+    tolerance = row.get("tolerance_abs_delta_med_nse")
+    if tolerance is None:
+        return str(row["status"])
+    return (
+        STAGE1_STATUS_PASS
+        if abs(float(row["delta_med_nse"])) <= float(tolerance) + 1e-12
+        else STAGE1_STATUS_PARTIAL
+    )
+
+
+def validate_stage1_appendix(payload: dict[str, Any]) -> None:
+    """Validate the Stage-1 appendix JSON (row count, required fields, delta, and status)."""
+    rows = payload.get("rows")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("Stage-1 appendix must contain a non-empty 'rows' list.")
+    if payload.get("n_rows") != len(rows):
+        raise ValueError(f"Stage-1 appendix n_rows={payload.get('n_rows')} != {len(rows)} rows.")
+    for row in rows:
+        missing = [c for c in STAGE1_APPENDIX_CSV_COLUMNS if c not in row]
+        if missing:
+            raise KeyError(f"Stage-1 appendix row {row.get('model_dir')!r} is missing {missing}.")
+        delta = round(float(row["stage1_reproduced_med_nse"]) - float(row["author_published_med_nse"]), 4)
+        if abs(delta - float(row["delta_med_nse"])) > 6e-4:
+            raise ValueError(
+                f"Stage-1 appendix row {row['model_dir']!r}: delta_med_nse={row['delta_med_nse']} "
+                f"but reproduced - published = {delta}."
+            )
+        expected = stage1_expected_status(row)
+        if row["status"] != expected:
+            raise ValueError(
+                f"Stage-1 appendix row {row['model_dir']!r}: status {row['status']!r} != "
+                f"{expected!r} implied by its tolerance."
+            )
+        if row["status"] != STAGE1_STATUS_PASS and not str(row.get("status_reason") or "").strip():
+            raise ValueError(
+                f"Stage-1 appendix row {row['model_dir']!r} has status {row['status']!r} "
+                "but no status_reason."
+            )
+
+
+def _md_cell(value: Any) -> str:
+    return str(value).replace("|", "\\|").replace("\n", " ")
+
+
+def render_stage1_appendix_markdown(payload: dict[str, Any]) -> str:
+    """Render the Stage-1 appendix Markdown table from its JSON payload."""
+    lines = [
+        "# Appendix: Stage-1 Author-Protocol Confirmation Runs",
+        "",
+        f"*Generated: {payload['generated_at']}*",
+        "",
+        "| Family ID | Model | Citation | Author Protocol | Forcing | Basins | Seeds | "
+        "Published Med NSE | Reproduced Med NSE | $\\Delta$ NSE | Tolerance | Status |",
+        "| :--- | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |",
+    ]
+    notes: list[str] = []
+    for row in payload["rows"]:
+        tolerance = row["tolerance_abs_delta_med_nse"]
+        tol_cell = f"±{float(tolerance):.3f}" if tolerance is not None else "—"
+        status = str(row["status"])
+        status_cell = f"**{status}**" if status == STAGE1_STATUS_PASS else f"**{status}**†"
+        if status != STAGE1_STATUS_PASS:
+            notes.append(f"† `{row['family_id']}`: {_md_cell(row['status_reason'])}")
+        lines.append(
+            f"| `{row['family_id']}` | {_md_cell(row['model_name'])} | {_md_cell(row['citation'])} | "
+            f"{_md_cell(row['author_split_protocol'])} | {_md_cell(row['forcing'])} | "
+            f"{row['num_basins']} | {row['num_seeds']} | "
+            f"{float(row['author_published_med_nse']):.3f} | "
+            f"{float(row['stage1_reproduced_med_nse']):.3f} | "
+            f"{float(row['delta_med_nse']):+.3f} | {tol_cell} | {status_cell} |"
+        )
+    if notes:
+        lines.append("")
+        lines.extend(notes)
+    return "\n".join(lines) + "\n"
+
+
+def render_stage1_appendix_csv(payload: dict[str, Any]) -> str:
+    """Render the Stage-1 appendix CSV (one row per JSON row, all JSON fields) from its payload."""
+    buffer = io.StringIO()
+    writer = csv.DictWriter(
+        buffer, fieldnames=list(STAGE1_APPENDIX_CSV_COLUMNS), lineterminator="\n"
+    )
+    writer.writeheader()
+    for row in payload["rows"]:
+        writer.writerow({c: "" if row[c] is None else row[c] for c in STAGE1_APPENDIX_CSV_COLUMNS})
+    return buffer.getvalue()
+
+
+def write_stage1_appendix(leaderboards_dir: str | Path = DEFAULT_LEADERBOARDS_DIR) -> dict[str, Any]:
+    """Validate `<basename>.json` and regenerate `<basename>.md` and `<basename>.csv` from it."""
+    lb_dir = Path(leaderboards_dir)
+    payload = _read_json_dict(lb_dir / f"{STAGE1_APPENDIX_BASENAME}.json")
+    validate_stage1_appendix(payload)
+    (lb_dir / f"{STAGE1_APPENDIX_BASENAME}.md").write_text(
+        render_stage1_appendix_markdown(payload), encoding="utf-8"
+    )
+    (lb_dir / f"{STAGE1_APPENDIX_BASENAME}.csv").write_text(
+        render_stage1_appendix_csv(payload), encoding="utf-8"
+    )
+    return {"n_rows": payload["n_rows"], "generated_at": payload["generated_at"]}
+
+
+# --- Stage-2 hydrograph store manifest (a pure function of the leaderboard rows) ----------
+
+#: Object name of the manifest under `<bucket_uri>/hydrographs/`.
+HYDROGRAPH_MANIFEST_NAME: str = "manifest_index.json"
+#: Row fields copied into each store's `referenced_by_rows` list, in order.
+HYDROGRAPH_MANIFEST_ROW_FIELDS: tuple[str, ...] = (
+    "leaderboard_id",
+    "entry_id",
+    "rank",
+    "model_name",
+    "family_id",
+    "category",
+    "is_ensemble",
+)
+
+
+def build_hydrograph_manifest(
+    bucket_uri: str = DEFAULT_BUCKET_URI,
+    leaderboards_dir: str | Path = DEFAULT_LEADERBOARDS_DIR,
+    updated_utc: str | None = None,
+) -> dict[str, Any]:
+    """Build `<bucket_uri>/hydrographs/manifest_index.json` from the leaderboard rows.
+
+    Every row with a non-empty `zarr_path` must name
+    `<bucket_uri>/hydrographs/<the row's leaderboard_id>/<store_id>.zarr`. Each store is listed
+    once (sorted by URI) with the rows it backs, in leaderboard (rank) order. Rows without a
+    store are not listed, and stores that no row references are never listed.
+
+    Args:
+        bucket_uri: Bucket root the `zarr_path` values must point into.
+        leaderboards_dir: Directory holding the per-leaderboard JSON files.
+        updated_utc: Timestamp to record (`YYYY-MM-DDTHH:MM:SSZ`); defaults to now.
+
+    Raises:
+        ValueError: If a `zarr_path` points outside `<bucket_uri>/hydrographs/<leaderboard_id>/`
+            or names an invalid store identifier.
+    """
+    bucket = bucket_uri.rstrip("/")
+    stores: dict[str, dict[str, Any]] = {}
+    for lb in load_all_leaderboards(leaderboards_dir)["leaderboards"]:
+        lbid = str(lb["id"])
+        for row in lb.get("rows", []):
+            zarr_path = str(row.get("zarr_path") or "").strip().rstrip("/")
+            if not zarr_path:
+                continue
+            store_id = resolve_row_store_id(row, lbid)
+            expected = f"{bucket}/hydrographs/{lbid}/{store_id}.zarr"
+            if zarr_path != expected:
+                raise ValueError(
+                    f"Row {row.get('entry_id')!r} on {lbid!r} has zarr_path {zarr_path!r}; "
+                    f"expected {expected!r}."
+                )
+            store = stores.setdefault(
+                expected,
+                {
+                    "zarr_uri": expected,
+                    "leaderboard_id": lbid,
+                    "store_name": f"{store_id}.zarr",
+                    "referenced_by_rows": [],
+                },
+            )
+            entry = {field: row.get(field) for field in HYDROGRAPH_MANIFEST_ROW_FIELDS}
+            entry["leaderboard_id"] = lbid
+            store["referenced_by_rows"].append(entry)
+    ordered = [stores[uri] for uri in sorted(stores)]
+    timestamp = (
+        updated_utc
+        if updated_utc is not None
+        else datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
+    return {
+        "bucket": bucket,
+        "updated_utc": timestamp,
+        "total_hydrograph_stores": len(ordered),
+        "total_zarr_backed_leaderboard_rows": sum(len(s["referenced_by_rows"]) for s in ordered),
+        "stores": ordered,
+    }
+
+
+def write_hydrograph_manifest(
+    output_path: str | Path,
+    bucket_uri: str = DEFAULT_BUCKET_URI,
+    leaderboards_dir: str | Path = DEFAULT_LEADERBOARDS_DIR,
+    updated_utc: str | None = None,
+) -> dict[str, Any]:
+    """Write the manifest from `build_hydrograph_manifest` to a local `output_path`.
+
+    Publishing it (for example `gcloud storage cp <output_path>
+    <bucket_uri>/hydrographs/manifest_index.json`) is a separate, explicit maintainer step.
+    """
+    manifest = build_hydrograph_manifest(
+        bucket_uri=bucket_uri, leaderboards_dir=leaderboards_dir, updated_utc=updated_utc
+    )
+    _write_json_dict(Path(output_path), manifest)
+    return {
+        "output_path": str(output_path),
+        "total_hydrograph_stores": manifest["total_hydrograph_stores"],
+        "total_zarr_backed_leaderboard_rows": manifest["total_zarr_backed_leaderboard_rows"],
+        "updated_utc": manifest["updated_utc"],
     }
 
 
@@ -1216,9 +1618,29 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help="With --reconcile-archived: write the evaluator numbers into the leaderboards.",
     )
     parser.add_argument(
+        "--render-stage1-appendix",
+        action="store_true",
+        help=(
+            "Validate appendix_stage1_confirmation_runs.json and regenerate its .md and .csv "
+            "renderings from it (the JSON is the single source)."
+        ),
+    )
+    parser.add_argument(
+        "--render-hydrograph-manifest",
+        metavar="OUTPUT_PATH",
+        default=None,
+        help=(
+            "Write the hydrographs/manifest_index.json for --bucket-uri, derived from the "
+            "leaderboard rows' zarr_path values, to the local OUTPUT_PATH (never uploads)."
+        ),
+    )
+    parser.add_argument(
         "--output-json",
         default=None,
-        help="Optional path to save the JSON report of --reconcile-archived / --normalize-legacy-rows.",
+        help=(
+            "Optional path to save the JSON report of --recalculate-all-self-run / "
+            "--reconcile-archived / --normalize-legacy-rows (always printed to stdout)."
+        ),
     )
     parser.add_argument("--model-id", help="Model Zarr store ID.")
     parser.add_argument(
@@ -1244,6 +1666,14 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default="Contribution",
         help="Provenance category label (default: 'Contribution').",
     )
+    parser.add_argument(
+        "--code-provenance",
+        default="",
+        help=(
+            "Row code_provenance label (default: derived from --category, e.g. "
+            "'Our Code' for Contribution / MIP Re-run rows)."
+        ),
+    )
     parser.add_argument("--citation", default="Community submission", help="Citation string.")
     parser.add_argument("--code-url", default="", help="Open-source code repository URL.")
     parser.add_argument("--data-archive-url", default="", help="Data archive URL or Zarr URI.")
@@ -1268,6 +1698,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
+    if args.mip != DEFAULT_MIP_ID:
+        parser.error(
+            f"--mip {args.mip!r} is not supported: the leaderboard pipeline implements the "
+            f"{DEFAULT_MIP_ID!r} protocol only."
+        )
     leaderboards_dir = (
         Path(args.leaderboards_dir)
         if args.leaderboards_dir is not None
@@ -1282,6 +1717,18 @@ def main(argv: list[str] | None = None) -> int:
             out_path.write_text(text, encoding="utf-8")
         print(text)
 
+    if args.render_stage1_appendix:
+        _emit(write_stage1_appendix(leaderboards_dir=leaderboards_dir))
+        return 0
+    if args.render_hydrograph_manifest:
+        _emit(
+            write_hydrograph_manifest(
+                args.render_hydrograph_manifest,
+                bucket_uri=args.bucket_uri,
+                leaderboards_dir=leaderboards_dir,
+            )
+        )
+        return 0
     if args.normalize_legacy_rows:
         _emit(normalize_legacy_leaderboards(leaderboards_dir=leaderboards_dir))
         return 0
@@ -1295,13 +1742,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
     if args.recalculate_all_self_run:
-        result = recalculate_all_self_run_models(
-            bucket_uri=args.bucket_uri,
-            leaderboards_dir=leaderboards_dir,
+        _emit(
+            recalculate_all_self_run_models(
+                bucket_uri=args.bucket_uri,
+                leaderboards_dir=leaderboards_dir,
+            )
         )
-        report_path = Path(REPO_ROOT) / "benchmarks" / "recalculated_self_run_models_report.json"
-        report_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        print(f"Recalculation complete. Report saved to {report_path}")
         return 0
     missing = [
         name
@@ -1324,6 +1770,7 @@ def main(argv: list[str] | None = None) -> int:
         forcing=args.forcing,
         is_ensemble=args.is_ensemble,
         category=args.category,
+        code_provenance=args.code_provenance,
         citation=args.citation,
         code_url=args.code_url,
         data_archive_url=args.data_archive_url,

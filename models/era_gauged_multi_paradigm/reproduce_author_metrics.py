@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 reproduction script for ERA-Multi-Paradigm-Gauged (category iv).
 
 Contributed by this study via the Evolving Research Agent (ERA) tree search strictly on the
@@ -12,6 +15,12 @@ from pathlib import Path
 from metrics.metrics import calculate_all_metrics
 from models.era_gauged_multi_paradigm.runner import run_fold
 from models.kratzert_lstm.reproduction import SPLITS_DIR, build_arg_parser, run_cli
+from models.zarr_writer import (
+    CANONICAL_EVAL_END,
+    CANONICAL_EVAL_START,
+    CANONICAL_TRAIN_END,
+    CANONICAL_TRAIN_START,
+)
 
 MODEL_KEY = "era_gauged_multi_paradigm"
 MODEL_NAME = "ERA-Multi-Paradigm-Gauged"
@@ -19,8 +28,8 @@ MODEL_DIR = Path(__file__).resolve().parent
 
 AUTHOR_PROTOCOL = {
     "basins_file": SPLITS_DIR / "basins_531.json",
-    "train_period": ("1999-10-01", "2008-09-30"),
-    "eval_period": ("1989-10-01", "1999-09-30"),
+    "train_period": (CANONICAL_TRAIN_START, CANONICAL_TRAIN_END),
+    "eval_period": (CANONICAL_EVAL_START, CANONICAL_EVAL_END),
     "forcings": ["daymet", "maurer", "nldas"],
     "seeds": (100, 101, 102, 103, 104, 105, 106, 107, 108, 109),
 }

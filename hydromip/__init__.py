@@ -1,7 +1,7 @@
 # Copyright 2026 HydroMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""HydroMIP — Shared Multi-MIP Core Framework.
+"""HydrologyMIP — Shared Multi-MIP Core Framework.
 
 Provides MIP-agnostic protocol discovery (``mips/*/protocol.json``), canonical path
 resolution, cross-validation anti-leakage hygiene verification, pluggable metric suites,

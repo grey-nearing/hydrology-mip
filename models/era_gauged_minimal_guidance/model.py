@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """ERA Gauged Minimal Guidance winning architecture (Node 73 — EntityAwareLSTM)."""
 
 from __future__ import annotations

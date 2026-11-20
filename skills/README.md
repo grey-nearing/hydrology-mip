@@ -1,16 +1,51 @@
-# Project Agent Skills (`skills/`)
+# Agent Skills (`skills/`)
 
-This directory contains project-level skill guides for AI coding assistants working on `camels-us-mip` (the CAMELS-US Model Intercomparison Project & `hydromip.org`):
+This folder is the second documentation layer of HydrologyMIP. It holds step-by-step skills for AI
+coding agents (and for humans who like checklists). The first layer, for humans, is the root
+[README.md](../README.md), [CONTRIBUTING.md](../CONTRIBUTING.md), and the package and MIP READMEs.
+Agents load the always-on rules in [AGENTS.md](../AGENTS.md) first.
 
-| Skill | File | Purpose |
+## How agents find these skills
+
+Each skill is a folder with a `SKILL.md` that starts with YAML frontmatter (`name`, `description`).
+This follows the open Agent Skills format.
+
+| Tool | Reads rules from | Finds skills in |
 | :--- | :--- | :--- |
-| **`repo-organization`** | [`skills/repo-organization.md`](./repo-organization.md) | Multi-MIP repository layout (`hydromip/`, `mips/<mip_id>/`, `models/`, `metrics/`, `leaderboards/`, `frontend/`, `benchmarks/`), centralized model execution via `models/run_model.py`, standalone cloud-only scoring via `metrics/`, and packaging/CI synchronization. |
-| **`algorithm-rules-and-norms`** | [`skills/algorithm-rules-and-norms.md`](./algorithm-rules-and-norms.md) | Non-negotiable algorithmic rules and data-integrity norms: missing data in $\implies$ `NaN` out, zero `try`/`except` blocks that mask errors, zero fallback/backup data loading paths, strict cloud-only metric calculation from `gs://camels-us-mip/`, centralized split/date injection via `models/run_model.py`, and zero data leakage. |
-| **`testing`** | [`skills/testing.md`](./testing.md) | Co-located `<package>/tests/` layout, native-resolution 531-basin $\times$ 3,652-day synthetic testing (never monkeypatch basin counts or test windows to toy dimensions), strict mocking only at external GCS/network boundaries, and required data-integrity regression coverage. |
-| **`documentation`** | [`skills/documentation.md`](./documentation.md) | Core rules (document only what exists and how to use it without exposing design history or internal coding rules; target a concise, high-school reading level for non-experts and ESL readers) and documentation architecture (`README.md` and package `README.md`s). |
-| **`gcs-bucket-organization`** | [`skills/gcs-bucket-organization.md`](./gcs-bucket-organization.md) | Directory hierarchy, Zarr dataset schemas, and Python/CLI access patterns for the private bucket `gs://camels-us-mip/` (`splits/`, `observations/`, and `hydrographs/`). |
-| **`data-structures`** | [`skills/data-structures.md`](./data-structures.md) | Canonical reference for all data structures, unified Zarr coordinate philosophy (`basin`, `date`, `huc_02`, `member`), dimensions, dtypes, chunking, canonical PUB (12-fold) and PUR (18-fold) split schemas, CAMELS-US forcing/attribute tensors, and ERA evaluation masks. |
-| **`pr-review`** | [`skills/pr-review.md`](./pr-review.md) | End-to-end PR review checklist and standards: zero phantom/fake/masked/imputed data, zero `try`/`except` error swallowing, zero fallback paths, mathematical & autograd gradient rigor, centralized split & evaluation hygiene, non-trivial test & mock audits, OO design & redundancy checks, strict avoidance of review-based scope creep, Python readability, and documentation compliance. |
-| **`benchmarking`** | [`skills/benchmarking.md`](./benchmarking.md) | End-to-end canonical benchmarking protocol across repository components (`metrics/`, `models/`, `era_experiments/`), enforcing strict anti-masking / anti-imputation / zero-fallback invariants, mandatory lower-tail (`[Min, P1, P5, P10, P25, P50]`) & failure-rate (`NSE <= 0` and `pred_nan_when_obs_valid`) reporting, and CLI runbooks. |
-| **`model-compliance-and-leaderboard-norms`** | [`skills/model-compliance-and-leaderboard-norms.md`](./model-compliance-and-leaderboard-norms.md) | Authoritative rules and compliance norms for model organization, single-citation attribution, single-provenance classification (`Archive`, `Archive*`, `Literature`, `Literature*`, `MIP Re-run (Our Code)`, `MIP Re-run (Author Code)`, `Contribution`), Literature-first priority on Newman splits, competing Ensemble vs. Single-Model rows (scored across all $N$ seeds), Stage-1 author-protocol confirmation runs, 12-leaderboard routing, and clean-slate leaderboard JSON replacement. |
-| **`community-contribution`** | [`skills/community-contribution.md`](./community-contribution.md) | End-to-end protocol and engineering workflow for contributing a community hydrological model (`Contribution`) or a benchmark re-run (`MIP Re-run`): adherence to the Four Rules of Responsible Benchmarking, `models/<model_name>/` integration (`run_fold`), Zarr v2 packaging (`models/zarr_writer.py`), cloud scoring (`mip-score-model`), automated leaderboard & figure updates (`mip-update-leaderboard`), and manuscript synchronization. |
+| Claude Code | `CLAUDE.md` (imports `AGENTS.md`) | `.claude/skills/` (symlink to `skills/`) |
+| OpenAI Codex | `AGENTS.md` | `.agents/skills/` (symlink to `skills/`) |
+| Gemini CLI | `GEMINI.md` (imports `AGENTS.md`) | `.agents/skills/` |
+| GitHub Copilot, Cursor | `AGENTS.md` | `.agents/skills/` or `.claude/skills/` |
+| Other tools | `AGENTS.md` | open the paths listed in `AGENTS.md` |
+
+On Windows, git needs symlink support (`core.symlinks=true`). Without it, open the files directly
+from `skills/`.
+
+## Skills
+
+| Skill | Audience | Use it to |
+| :--- | :--- | :--- |
+| [repo-structure](repo-structure/SKILL.md) | everyone | find where things live and which files never to edit |
+| [protocol-guardrails](protocol-guardrails/SKILL.md) | everyone | follow the benchmark protocol, anti-leakage rules, and data-integrity rules |
+| [contribute-model](contribute-model/SKILL.md) | contributors | add a runnable model under `models/<name>/`, run it, and score it locally |
+| [contribute-hydrographs](contribute-hydrographs/SKILL.md) | contributors | package hydrographs from external code and submit them |
+| [contribute-mip](contribute-mip/SKILL.md) | contributors | add a new benchmark under `mips/<mip_id>/` |
+| [leaderboard-norms](leaderboard-norms/SKILL.md) | contributors, reviewers | label provenance, citations, ensembles, and leaderboard routing |
+| [data-schemas](data-schemas/SKILL.md) | everyone | look up store, split, leaderboard, registry, and output schemas |
+| [testing](testing/SKILL.md) | everyone | write and run tests that CI accepts |
+| [docs-style](docs-style/SKILL.md) | everyone | write docs and skills that follow the two-layer rules |
+| [pr-review](pr-review/SKILL.md) | reviewers, contributors | review a PR, or check your own before opening it |
+| [maintainer-gcs-bucket](maintainer-gcs-bucket/SKILL.md) | maintainers only | manage the private archive bucket safely |
+| [maintainer-ingest-submission](maintainer-ingest-submission/SKILL.md) | maintainers only | turn an accepted submission into leaderboard rows |
+| [maintainer-audit](maintainer-audit/SKILL.md) | maintainers only | audit models and leaderboards, and prepare releases |
+
+## Adding or changing a skill
+
+Follow [docs-style](docs-style/SKILL.md):
+
+1. Create one folder per skill, and make `name` equal to the folder name.
+2. Write a `description` that says when to use the skill.
+3. Set `metadata.audience`.
+4. Update this table and the table in `AGENTS.md` in the same PR.
+
+`python -m hydromip.tools.ci_guardrails --mode all` checks the layout.

@@ -3,7 +3,7 @@
 
 """MIP-agnostic cross-validation split loading and strict anti-leakage hygiene verification.
 
-Shared across all HydroMIP benchmarks (CAMELS-US, Caravan, probabilistic, soil moisture,
+Shared across all HydrologyMIP benchmarks (CAMELS-US, Caravan, probabilistic, soil moisture,
 floods, forecasting). Enforces:
 
 1. Every fold's ``train_entities`` and ``test_entities`` are strictly disjoint.
@@ -43,10 +43,22 @@ def validate_cv_folds(
     require_disjoint_train_test: bool = True,
     require_exact_test_partition: bool = True,
     entity_to_group: Mapping[str, str | int] | None = None,
+    require_train_test_union_equals_cohort: bool = False,
+    require_single_test_group: bool = False,
 ) -> None:
-    """Assert strict cross-validation hygiene invariants across ``folds``."""
+    """Assert strict cross-validation hygiene invariants across ``folds``.
+
+    Optional stricter invariants:
+
+    * ``require_train_test_union_equals_cohort``: every fold's train and test entities
+      together cover the whole canonical cohort (no entity silently dropped from a fold).
+    * ``require_single_test_group`` (needs ``entity_to_group``): every fold's test set is
+      exactly one group (leave-one-group-out, e.g. leave-one-HUC02-region-out PUR).
+    """
     if not folds:
         raise ValueError("Cross-validation folds list must be non-empty.")
+    if require_single_test_group and entity_to_group is None:
+        raise ValueError("require_single_test_group=True requires entity_to_group.")
 
     canonical_list = list(canonical_entities)
     canonical_set = set(canonical_list)
@@ -55,10 +67,14 @@ def validate_cv_folds(
 
     seen_test: list[str] = []
     seen_fold_ids: set[str] = set()
+    seen_fold_indices: set[int] = set()
     for fold in folds:
         if fold.fold_id in seen_fold_ids:
             raise ValueError(f"Duplicate fold_id {fold.fold_id!r}.")
         seen_fold_ids.add(fold.fold_id)
+        if fold.fold_index in seen_fold_indices:
+            raise ValueError(f"Duplicate fold_index {fold.fold_index} (fold {fold.fold_id!r}).")
+        seen_fold_indices.add(fold.fold_index)
 
         train_set = set(fold.train_entities)
         test_set = set(fold.test_entities)
@@ -105,6 +121,19 @@ def validate_cv_folds(
                     f"Group separation violation in fold {fold.fold_id!r}: "
                     f"{len(shared_groups)} shared groups between train and test (e.g. {sample})."
                 )
+            if require_single_test_group and len(test_groups) != 1:
+                raise ValueError(
+                    f"Fold {fold.fold_id!r} must hold out exactly one group; its test set spans "
+                    f"{len(test_groups)} groups ({sorted(str(g) for g in test_groups)[:5]})."
+                )
+
+        if require_train_test_union_equals_cohort:
+            uncovered = sorted(canonical_set - (train_set | test_set))
+            if uncovered:
+                raise ValueError(
+                    f"Fold {fold.fold_id!r} train + test do not cover the canonical cohort: "
+                    f"{len(uncovered)} entities missing (e.g. {uncovered[:5]})."
+                )
 
         seen_test.extend(fold.test_entities)
 
@@ -127,8 +156,14 @@ def load_cv_splits_json(
     require_disjoint_train_test: bool = True,
     require_exact_test_partition: bool = True,
     entity_to_group: Mapping[str, str | int] | None = None,
+    require_train_test_union_equals_cohort: bool = False,
+    require_single_test_group: bool = False,
 ) -> list[CvFold]:
-    """Load a canonical HydroMIP split JSON file and verify all CV hygiene invariants."""
+    """Load a canonical HydrologyMIP split JSON file and verify all CV hygiene invariants.
+
+    Folds are ordered by fold id. A fold's ``fold_index`` is taken from the file when it
+    declares one (and must then be unique); otherwise it is the fold's sorted position.
+    """
     p = Path(split_json_path)
     if not p.is_file():
         raise FileNotFoundError(f"Split JSON file not found: {p}")
@@ -155,10 +190,11 @@ def load_cv_splits_json(
                 f"Fold {fold_id!r} in {p} must specify 'train_basins'/'test_basins' "
                 "or 'train_entities'/'test_entities'."
             )
+        fold_index = int(fold_data["fold_index"]) if "fold_index" in fold_data else idx
         folds.append(
             CvFold(
                 fold_id=str(fold_id),
-                fold_index=idx,
+                fold_index=fold_index,
                 train_entities=tuple(str(x).strip() for x in train_raw),
                 test_entities=tuple(str(x).strip() for x in test_raw),
             )
@@ -170,5 +206,7 @@ def load_cv_splits_json(
         require_disjoint_train_test=require_disjoint_train_test,
         require_exact_test_partition=require_exact_test_partition,
         entity_to_group=entity_to_group,
+        require_train_test_union_equals_cohort=require_train_test_union_equals_cohort,
+        require_single_test_group=require_single_test_group,
     )
     return folds

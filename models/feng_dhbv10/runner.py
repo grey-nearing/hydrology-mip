@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-2 and Stage-1 Fold Runner for Feng et al. (2022, 2023) dHBV 1.0."""
 
 from __future__ import annotations
@@ -102,7 +105,10 @@ def run_fold(
                 else None
             ),
         )
-        assert preds.shape == (len(test_basins), n_target_days)
+        if preds.shape != (len(test_basins), n_target_days):
+            raise ValueError(
+                f"Predictions have shape {preds.shape}, expected {(len(test_basins), n_target_days)}."
+            )
         seed_preds.append(preds.astype(np.float32))
 
     if len(seed_preds) == 1:

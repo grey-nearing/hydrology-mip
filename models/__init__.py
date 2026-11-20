@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """CAMELS-US Model Intercomparison Project (MIP) model registry, runner, shared loader, and Zarr writer."""
 
 from models.camels_data import (

@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fold runner for Feng, Fang & Shen (2020, WRR) Data-Integration LSTM (`DI(1)`)."""
 
 from __future__ import annotations

@@ -1,0 +1,65 @@
+# Build context for Docker builds run from the repository root (HydrologyMIP web portal image).
+# The portal image needs only `hydromip/`, `mips/` (protocol, splits, leaderboards,
+# figures), `metrics/`, `leaderboards/`, and `frontend/`; everything else is excluded.
+
+# --- VCS, CI, and local tooling ---
+.git
+.gitignore
+.github
+.dockerignore
+.gcloudignore
+.idea
+.vscode
+.DS_Store
+
+# --- Python caches and build artifacts ---
+**/__pycache__
+**/*.py[cod]
+**/*.egg-info
+.eggs
+build
+dist
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.hypothesis
+.tox
+.nox
+.coverage
+.coverage.*
+coverage.xml
+htmlcov
+
+# --- Virtual environments and secrets ---
+.venv
+venv
+.env
+.env.*
+.envrc
+
+# --- Large data bundles, hydrographs, checkpoints, and uploads ---
+mips/*/data/*.npz
+mips/*/data/*.npy
+**/*.npz
+**/*.npy
+**/*.zarr
+**/*.zarr.zip
+**/*.zip
+**/*.pt
+**/*.pth
+**/*.ckpt
+**/*.safetensors
+hydrographs
+submissions
+outputs
+local_bucket
+**/*.local.json
+
+# --- Not needed by the portal image ---
+models
+skills
+mips/*/era_experiments
+**/tests
+**/.ipynb_checkpoints
+*.log
+*.tmp

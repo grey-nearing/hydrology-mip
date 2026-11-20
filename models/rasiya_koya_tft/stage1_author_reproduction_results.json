@@ -4,7 +4,7 @@
   "model_name": "Rasiya Koya et al. (2023) Temporal Fusion Transformer",
   "provenance": "Trained in-process via models.rasiya_koya_tft.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
   "protocol": {
-    "basins_source": "splits/basins_531.json",
+    "basins_source": "mips/camels_us_daily/splits/basins_531.json",
     "n_basins": 531,
     "train_period": [
       "1999-10-01",
@@ -26,7 +26,7 @@
   "published": {
     "single_median_nse": 0.725,
     "ensemble_median_nse": null,
-    "source": "leaderboards/gauged__single_camels.json entry t3_21 (NeuralHydrology TFT, Maurer, single model); architecture after Rasiya Koya & Roy (2024), Journal of Hydrology"
+    "source": "mips/camels_us_daily/leaderboards/gauged__single_camels.json entry t3_21 (NeuralHydrology TFT, Maurer, single model); architecture after Rasiya Koya & Roy (2024), Journal of Hydrology"
   },
   "reference_used": "single",
   "published_median_nse": 0.725,

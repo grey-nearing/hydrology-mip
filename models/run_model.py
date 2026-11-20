@@ -1,7 +1,11 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Centralized deployment runner for the CAMELS-US Model Intercomparison Project (MIP).
 
-This is the single entrypoint in `models/` that loads the canonical basin list (`splits/basins_531.txt`),
-the canonical fold files (`splits/pub_12fold_random_splits.json`, `splits/pur_18fold_huc02_splits.json`),
+This is the single entrypoint in `models/` that loads the canonical basin list
+(`mips/<mip>/splits/basins_531.txt`), the canonical fold files (`pub_12fold_random_splits.json`,
+`pur_18fold_huc02_splits.json` in the same directory),
 and the canonical training/evaluation windows (`1999-10-01`..`2008-09-30` and `1989-10-01`..`1999-09-30`),
 orchestrates fold execution (`gauged`, 12-fold `pub_12fold`, or 18-fold `pur_18huc02`) **once per random
 seed**, stitches the out-of-fold predictions of every seed across all 531 basins, and writes one
@@ -11,6 +15,11 @@ consolidated Zarr v2 hydrograph store (`qsim` = seed mean, `qsim_members` = per-
 Model runner contract (`models/<model>/runner.py::run_fold`): called with ``seeds=(one_seed,)`` and must
 return a float32 array of shape ``(len(test_basins), n_eval_days)`` in mm/day with rows ordered exactly
 like ``test_basins``; a ``(1, len(test_basins), n_eval_days)`` array is also accepted.
+
+Every registered model declares the forcing regimes and spatial protocols it may be run under
+(``ModelRegistryEntry.allowed_forcing_regimes`` / ``allowed_spatial_regimes``). Models that read
+observed discharge of the test basins as an input are only allowed on ``lagged_streamflow``
+leaderboards, and models with per-basin embeddings only in the ``gauged`` regime.
 """
 
 from __future__ import annotations
@@ -82,6 +91,8 @@ class ModelRegistryEntry:
     provenance_category: str
     runner_module: str
     code_url: str
+    allowed_forcing_regimes: tuple[str, ...]
+    allowed_spatial_regimes: tuple[str, ...]
     default_seeds: tuple[int, ...] = (123,)
     default_kwargs: dict[str, object] = field(default_factory=dict)
 
@@ -94,6 +105,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.kratzert_lstm.runner",
         code_url="https://github.com/neuralhydrology/neuralhydrology",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=tuple(range(101, 111)),
     ),
     "kratzert_ealstm": ModelRegistryEntry(
@@ -103,6 +116,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.kratzert_ealstm.runner",
         code_url="https://github.com/neuralhydrology/neuralhydrology",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=tuple(range(201, 209)),
     ),
     "hoedt_mclstm": ModelRegistryEntry(
@@ -112,6 +127,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.hoedt_mclstm.runner",
         code_url="https://github.com/ml-jku/mc-lstm",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=tuple(range(301, 311)),
     ),
     "rasiya_koya_tft": ModelRegistryEntry(
@@ -121,6 +138,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.rasiya_koya_tft.runner",
         code_url="https://github.com/sinanrk/TFT_hydrology",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(123,),
     ),
     "poudel_mlp_hbv": ModelRegistryEntry(
@@ -130,15 +149,19 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.poudel_mlp_hbv.runner",
         code_url="https://github.com/snpoudel/diff-hydro",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(101, 102, 103),
     ),
     "feng_dhbv10": ModelRegistryEntry(
         key="feng_dhbv10",
-        model_name="δHBV 1.0 (Static Parameters)",
+        model_name="δHBV 1.0",
         model_family="Differentiable Process-Based",
         provenance_category="MIP Re-run",
         runner_module="models.feng_dhbv10.runner",
         code_url="https://github.com/mhpi/hydroDL",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(111, 222, 333, 444, 555),
     ),
     "song_dhbv11p": ModelRegistryEntry(
@@ -148,6 +171,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.song_dhbv11p.runner",
         code_url="https://github.com/mhpi/generic_deltamodel",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(111, 222, 333, 444, 555),
     ),
     "li2025_lstm_dhbv_ens": ModelRegistryEntry(
@@ -157,6 +182,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.li2025_lstm_dhbv_ens.runner",
         code_url="https://github.com/mhpi/generic_deltamodel",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(101, 102, 103, 104, 105),
     ),
     "newman_sacsma": ModelRegistryEntry(
@@ -166,6 +193,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.newman_sacsma.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+        allowed_forcing_regimes=("single_camels",),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(123,),
     ),
     "era_gauged_minimal_guidance": ModelRegistryEntry(
@@ -175,6 +204,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.era_gauged_minimal_guidance.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_minimal_guidance",
+        allowed_forcing_regimes=("multi_camels",),
+        allowed_spatial_regimes=("gauged",),
         default_seeds=(42, 88, 2024, 101, 102, 103, 104, 105, 106, 107),
     ),
     "era_pur_minimal_guidance": ModelRegistryEntry(
@@ -184,6 +215,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.era_pur_minimal_guidance.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_minimal_guidance",
+        allowed_forcing_regimes=("multi_camels",),
+        allowed_spatial_regimes=("pur_18huc02",),
         default_seeds=(42, 43, 44, 45, 46, 47, 48, 49, 50, 51),
     ),
     "era_pub_minimal_guidance": ModelRegistryEntry(
@@ -193,6 +226,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.era_pub_minimal_guidance.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_minimal_guidance",
+        allowed_forcing_regimes=("multi_camels",),
+        allowed_spatial_regimes=("pub_12fold",),
         default_seeds=(42, 43, 44, 45, 46, 47, 48, 49, 50, 51),
     ),
     "era_gauged_physics_guided": ModelRegistryEntry(
@@ -202,6 +237,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.era_gauged_physics_guided.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_physics_guided",
+        allowed_forcing_regimes=("multi_camels",),
+        allowed_spatial_regimes=("gauged",),
         default_seeds=(100, 101, 102, 103, 104, 105, 106, 107, 108, 109),
     ),
     "era_pub_physics_guided": ModelRegistryEntry(
@@ -211,6 +248,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.era_pub_physics_guided.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_physics_guided",
+        allowed_forcing_regimes=("multi_camels",),
+        allowed_spatial_regimes=("pub_12fold",),
         default_seeds=(100, 101, 102, 103, 104, 105, 106, 107, 108, 109),
     ),
     "era_pur_physics_guided": ModelRegistryEntry(
@@ -220,6 +259,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.era_pur_physics_guided.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_physics_guided",
+        allowed_forcing_regimes=("multi_camels",),
+        allowed_spatial_regimes=("pur_18huc02",),
         default_seeds=(100, 101, 102, 103, 104, 105, 106, 107, 108, 109),
     ),
     "era_gauged_multi_paradigm": ModelRegistryEntry(
@@ -229,6 +270,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.era_gauged_multi_paradigm.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_multi_paradigm",
+        allowed_forcing_regimes=("multi_camels",),
+        allowed_spatial_regimes=("gauged",),
         default_seeds=(100, 101, 102, 103, 104, 105, 106, 107, 108, 109),
     ),
     "feng2020_di_lstm": ModelRegistryEntry(
@@ -238,6 +281,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.feng2020_di_lstm.runner",
         code_url="https://github.com/mhpi/hydroDL",
+        allowed_forcing_regimes=("lagged_streamflow",),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(101, 102, 103, 104, 105, 106),
     ),
     "shahriar2026_mamba3": ModelRegistryEntry(
@@ -246,7 +291,9 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         model_family="Mamba State Space Model",
         provenance_category="MIP Re-run",
         runner_module="models.shahriar2026_mamba3.runner",
-        code_url="https://doi.org/10.5281/zenodo.23087719",
+        code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/shahriar2026_mamba3",
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(111111,),
     ),
     "yin2022_rrformer": ModelRegistryEntry(
@@ -256,6 +303,8 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.yin2022_rrformer.runner",
         code_url="https://github.com/iThronne/RR-Former",
+        allowed_forcing_regimes=("lagged_streamflow",),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(601, 602, 603),
     ),
     "naive_lag1_persistence": ModelRegistryEntry(
@@ -265,7 +314,10 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="Contribution",
         runner_module="models.naive_lag1_persistence.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+        allowed_forcing_regimes=("lagged_streamflow",),
+        allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(0,),
+        default_kwargs={"cold_start_value": 0.0},
     ),
 }
 
@@ -276,7 +328,7 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
 
 
 def load_canonical_basins(splits_dir: str | Path = DEFAULT_SPLITS_DIR) -> list[str]:
-    """Load and validate the 531 canonical sorted 8-digit USGS basin IDs from `splits/basins_531.txt`."""
+    """Load and validate the 531 canonical sorted 8-digit USGS basin IDs from `<splits_dir>/basins_531.txt`."""
     splits_path = Path(splits_dir)
     txt_path = splits_path / "basins_531.txt"
     if not txt_path.is_file():
@@ -552,6 +604,71 @@ def _git_commit(repo_root: Path = REPO_ROOT) -> str | None:
     return proc.stdout.strip() or None
 
 
+def _git_dirty(repo_root: Path = REPO_ROOT) -> bool | None:
+    """Return True when tracked files differ from HEAD, or None when git metadata is unavailable."""
+    if not (repo_root / ".git").exists():
+        return None
+    proc = subprocess.run(
+        ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=no"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        return None
+    return bool(proc.stdout.strip())
+
+
+def validate_model_regimes(entry: ModelRegistryEntry, spatial_regime: str, forcing_regime: str) -> None:
+    """Raise unless `entry` is registered for this spatial protocol and forcing regime.
+
+    This is an anti-leakage guardrail: models that read observed test-basin discharge are only
+    valid on ``lagged_streamflow`` leaderboards, and models with per-basin embeddings only in the
+    ``gauged`` regime.
+    """
+    if spatial_regime not in entry.allowed_spatial_regimes:
+        raise ValueError(
+            f"Model {entry.key!r} is not registered for spatial_regime {spatial_regime!r}; "
+            f"allowed: {entry.allowed_spatial_regimes}."
+        )
+    if forcing_regime not in entry.allowed_forcing_regimes:
+        raise ValueError(
+            f"Model {entry.key!r} is not registered for forcing_regime {forcing_regime!r}; "
+            f"allowed: {entry.allowed_forcing_regimes}. Lagged-streamflow models need "
+            "--forcing-regime lagged_streamflow."
+        )
+
+
+def default_output_uri(leaderboard_id: str, model_id: str, output_root: str | Path = "outputs") -> Path:
+    """Local default store path ``<output_root>/<leaderboard_id>/<model_id>.zarr`` (never the shared bucket)."""
+    return Path(output_root) / leaderboard_id / f"{model_id}.zarr"
+
+
+def preflight_output_target(target_uri: str) -> None:
+    """Fail fast, before any training, when the output store cannot be written.
+
+    Local targets: the parent directory is created and must be writable. ``gs://`` targets: a small
+    probe object is written next to the store and deleted again, so credential or permission errors
+    surface immediately instead of after hours of training.
+    """
+    if target_uri.startswith("gs://"):
+        import uuid
+
+        import fsspec
+
+        fs = fsspec.filesystem("gs")
+        probe = f"{target_uri.rstrip('/')}.write_probe_{uuid.uuid4().hex}"
+        fs.pipe(probe, b"")
+        fs.rm(probe)
+        return
+    if "://" in target_uri:
+        raise ValueError(f"Unsupported output URI scheme in {target_uri!r}; use a local path or gs://.")
+    parent = Path(target_uri).resolve().parent
+    parent.mkdir(parents=True, exist_ok=True)
+    if not os.access(parent, os.W_OK):
+        raise PermissionError(f"Output directory {parent} is not writable.")
+
+
 def _limit_worker_threads(n_threads: int) -> None:
     """Process-pool initializer: cap BLAS/OpenMP/torch threads so N workers share the CPU cleanly."""
     for var in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
@@ -629,11 +746,18 @@ def run_model_experiment(
     (``executor="thread"``; reproducible only if the runner uses seed-local RNGs) or with separate
     processes (``executor="process"``; each worker is capped to ``threads_per_worker`` BLAS/torch
     threads, which is the right choice for GIL-bound per-basin calibrations).
+
+    The model must be registered for ``spatial_regime`` and the resolved forcing regime
+    (``validate_model_regimes``). Without ``output_zarr`` the store is written locally to
+    ``outputs/<leaderboard_id>/<model_id>.zarr``; the target is checked for write access before any
+    fold runs. The canonical bucket URI is still recorded in the ``archive_url``/``data_url`` attrs.
     """
     entry = resolve_model_entry(model_name)
     norm_forcings = normalize_forcing_names(forcings)
     resolved_forcing_regime = resolve_forcing_regime_for_run(norm_forcings, forcing_regime)
     validate_periods(tuple(train_period), tuple(eval_period))
+    if spatial_regime not in VALID_SPATIAL_REGIMES:
+        raise ValueError(f"Invalid spatial_regime {spatial_regime!r}; must be one of {VALID_SPATIAL_REGIMES}.")
     if executor not in ("thread", "process"):
         raise ValueError(f"executor must be 'thread' or 'process', got {executor!r}.")
     if executor == "process" and fold_runner is not None:
@@ -652,6 +776,20 @@ def run_model_experiment(
     merged_kwargs: dict[str, object] = dict(entry.default_kwargs)
     if runner_kwargs is not None:
         merged_kwargs.update(runner_kwargs)
+
+    validate_model_regimes(entry, spatial_regime, resolved_forcing_regime)
+    leaderboard_id, table_id = resolve_leaderboard_and_table_id(
+        spatial_regime=spatial_regime,
+        forcing_regime=resolved_forcing_regime,
+    )
+    resolved_model_id = (
+        model_id
+        if model_id is not None
+        else default_model_id(entry, merged_kwargs, spatial_regime, resolved_forcing_regime)
+    )
+    default_gcs_url = default_store_uri(leaderboard_id, resolved_model_id)
+    target_uri = str(output_zarr) if output_zarr is not None else str(default_output_uri(leaderboard_id, resolved_model_id))
+    preflight_output_target(target_uri)
 
     active_runner = fold_runner if fold_runner is not None else load_model_fold_runner(entry)
 
@@ -708,23 +846,12 @@ def run_model_experiment(
         seed_results, canonical_basins, resolved_seeds, expected_days=EXPECTED_NUM_DAYS
     )
 
-    leaderboard_id, table_id = resolve_leaderboard_and_table_id(
-        spatial_regime=spatial_regime,
-        forcing_regime=resolved_forcing_regime,
-    )
-    resolved_model_id = (
-        model_id
-        if model_id is not None
-        else default_model_id(entry, merged_kwargs, spatial_regime, resolved_forcing_regime)
-    )
-    default_gcs_url = default_store_uri(leaderboard_id, resolved_model_id)
-    target_uri = str(output_zarr) if output_zarr is not None else default_gcs_url
-
     provenance_attrs = run_provenance_attrs(
         seeds=resolved_seeds,
         fold_ids=[f.fold_id for f in folds],
         runner_kwargs=merged_kwargs,
         git_commit=_git_commit(),
+        git_dirty=_git_dirty(),
         data_source=str(data_dir),
     )
 
@@ -763,7 +890,7 @@ def run_model_experiment(
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Centralized HydroMIP model runner enforcing canonical splits and anti-leakage CV hygiene."
+        description="Centralized HydrologyMIP model runner enforcing canonical splits and anti-leakage CV hygiene."
     )
     parser.add_argument(
         "--mip",
@@ -813,7 +940,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
         "--output-zarr",
         type=str,
         default=None,
-        help="Target Zarr path or gs:// URI (defaults to gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr).",
+        help="Target Zarr path or gs:// URI (default: local ./outputs/<leaderboard_id>/<model_id>.zarr). "
+        "Writable access is checked before training starts.",
     )
     parser.add_argument(
         "--model-id", type=str, default=None, help="Optional explicit entry/model id for attrs and store name."

@@ -1,33 +1,74 @@
-# CAMELS-US MIP Canonical Splits
+# CAMELS-US Daily Splits (`mips/camels_us_daily/splits/`)
 
-This directory contains the basin lists, time periods, and spatial cross-validation folds for the CAMELS-US Model Intercomparison Project (MIP).
+This folder holds the basin lists, the time periods, and the spatial cross-validation folds of
+the CAMELS-US Daily MIP. These files define the benchmark. **Never change them.** Model code never
+reads them: `models/run_model.py` reads them and passes the basins and periods to each model.
 
-## Time Periods
+## Files
 
-All models evaluated in the standard protocol use the Newman et al. (2017) and Kratzert et al. (2019b) split:
+| File | Content |
+| :--- | :--- |
+| `basins_531.txt`, `basins_531.json` | The 531 benchmark basins (8-digit USGS gauge IDs, Newman et al., 2017), sorted. |
+| `basins_671.txt`, `basins_671.json` | All 671 CAMELS-US basins. |
+| `basins_447_kratzert2019b.txt`, `basins_447_kratzert2019b.json` | The 447-basin subset of Kratzert et al. (2019b), where all benchmark process models of that study have complete simulations. |
+| `splits_and_regimes.json` | Machine-readable protocol facts: periods, units, regime descriptions, the map `basin_to_huc02` from each of the 531 basins to its two-digit USGS region, and the test basins of every fold (`pub_12fold_test_basins`, `pur_18huc02_test_basins`). |
+| `pub_12fold_random_splits.json` | The 12 PUB folds (regime `pub_12fold`). |
+| `pub_12fold/fold_{00..11}_{train,test}.txt` | The same 12 PUB folds as plain-text basin lists. |
+| `pur_18fold_huc02_splits.json` | The 18 PUR folds (regime `pur_18huc02`). |
+| `pur_18fold/huc_{01..18}_{train,test}.txt` | The same 18 PUR folds as plain-text basin lists. |
 
-- **Training / Calibration Period**: `1999-10-01` to `2008-09-30` (9 water years; 3,288 days). Models that use a 1-year spin-up or lookback window start on `1998-10-01`.
-- **Evaluation / Testing Period**: `1989-10-01` to `1999-09-30` (10 water years; 3,652 days). Models that use a 1-year spin-up or lookback window start on `1988-10-01`.
+The PUR regime ID is `pur_18huc02`. Use it in `protocol.json`, on the command line
+(`--spatial-regime pur_18huc02`), and in stores. The PUR file and folder keep the older name
+`pur_18fold`. Both names mean the same 18 folds.
 
-## Basin Lists
+## Time periods
 
-- `basins_531.txt` and `basins_531.json`: The 531 USGS 8-digit gauge IDs from Newman et al. (2017), sorted in ascending order.
-- `basins_447_kratzert2019b.txt` and `basins_447_kratzert2019b.json`: The 447-basin subset from Kratzert et al. (2019b) where all benchmark process models have complete simulations.
-- `splits_and_regimes.json`: Machine-readable protocol metadata, including time windows, spatial regime definitions, and the mapping from each of the 531 gauges to its 2-digit USGS hydrologic region (`huc_02`).
+All regimes use the periods of Newman et al. (2017) and Kratzert et al. (2019b):
 
-## Spatial Cross-Validation Regimes
+- **Training period:** 1999-10-01 to 2008-09-30 (water years 2000 to 2008; 3,288 days). With a
+  one-year spin-up, model inputs start on 1998-10-01.
+- **Evaluation period:** 1989-10-01 to 1999-09-30 (water years 1990 to 1999; 3,652 days). With a
+  one-year spin-up, model inputs start on 1988-10-01.
 
-1. **Gauged (`gauged`)**: Train on all 531 basins during the training period (`1999-10-01` to `2008-09-30`) and evaluate on all 531 basins during the testing period (`1989-10-01` to `1999-09-30`).
-2. **Prediction in Ungauged Basins (`pub_12fold`)**: 12-fold random cross-validation across the 531 basins (`random_state=42`). Each fold holds out 44 or 45 test basins and trains on the remaining 486 or 487 basins. Out-of-sample test predictions from all 12 folds are combined into a single 531-basin array on the testing period (`1989-10-01` to `1999-09-30`).
-   - `pub_12fold_random_splits.json`: Complete fold definitions in JSON format.
-   - `pub_12fold/fold_{00..11}_train.txt` and `pub_12fold/fold_{00..11}_test.txt`: Plain-text lists of training and testing gauge IDs for each fold.
-3. **Prediction in Ungauged Regions (`pur_18fold`)**: 18-fold leave-one-region-out cross-validation across the 18 USGS 2-digit hydrologic regions (`huc_02` codes `01` through `18`). Each fold holds out all basins in one `huc_02` region for testing and trains on all basins in the remaining 17 regions. Out-of-sample test predictions from all 18 folds are combined into a single 531-basin array on the testing period (`1989-10-01` to `1999-09-30`).
-   - `pur_18fold_huc02_splits.json`: Complete regional fold definitions in JSON format.
-   - `pur_18fold/huc_{01..18}_train.txt` and `pur_18fold/huc_{01..18}_test.txt`: Plain-text lists of training and testing gauge IDs for each regional fold.
+## Spatial regimes
 
-## 12-Fold Random PUB Summary
+1. **Gauged (`gauged`).** Train on all 531 basins in the training period. Predict all 531 basins in
+   the evaluation period. There is no split file.
+2. **Prediction in ungauged basins (`pub_12fold`).** A random 12-fold split of the 531 basins
+   (`random_state=42`). Each fold tests 44 or 45 basins and trains on the other 486 or 487. The
+   test predictions of all 12 folds are joined into one 531-basin hydrograph for the evaluation
+   period.
+3. **Prediction in ungauged regions (`pur_18huc02`).** An 18-fold split by the 18 two-digit USGS
+   hydrologic regions (`huc_02` codes `01` to `18`). Each fold tests all basins of one region and
+   trains on the basins of the other 17 regions. The test predictions of all 18 folds are joined
+   into one 531-basin hydrograph for the evaluation period.
 
-| Fold | Train Basins | Test Basins | First 5 Test Basins |
+In every PUB and PUR fold, the training and test basins do not overlap, together they cover all
+531 basins, and every basin is tested in exactly one fold. In PUR, no region appears in both the
+training and the test set of a fold. `models/run_model.py` and `mips/camels_us_daily/adapter.py`
+check all of this before they use the folds.
+
+## Split file format
+
+Both split JSON files have a `folds` object. Each fold has these keys:
+
+| Key | Meaning |
+| :--- | :--- |
+| `fold_index` | The position of the fold, starting at 0. |
+| `n_train`, `n_test` | The number of training and test basins. |
+| `train_basins`, `test_basins` | The basin IDs. |
+| `train_indices`, `test_indices` | The positions of those basins in `basins_531.txt`. |
+| `huc_02` | PUR only: the held-out region. |
+
+The fold IDs are `fold_00` to `fold_11` (PUB) and `huc_01` to `huc_18` (PUR). The files also
+record how they were made (`construction`) and the periods. `pub_12fold_random_splits.json` also
+holds two reference blocks, `kratzert2019a_wrr_multiseed_test_basins` and
+`huc_stratified_12fold_seed20260410`. They are not benchmark folds; the runner and the adapter
+read only `folds`.
+
+## 12-fold random PUB folds
+
+| Fold | Train basins | Test basins | First 5 test basins |
 | :--- | :---: | :---: | :--- |
 | `fold_00` | 486 | 45 | `01047000, 01057000, 01123000, 01134500, 01415000` |
 | `fold_01` | 486 | 45 | `01022500, 01137500, 01170100, 01333000, 01435000` |
@@ -42,9 +83,9 @@ All models evaluated in the standard protocol use the Newman et al. (2017) and K
 | `fold_10` | 487 | 44 | `01031500, 01139800, 01439500, 01543500, 01547700` |
 | `fold_11` | 487 | 44 | `01187300, 01195100, 01543000, 01544500, 01557500` |
 
-## 18-Fold Leave-One-HUC02-Out PUR Summary
+## 18-fold leave-one-region-out PUR folds (`pur_18huc02`)
 
-| Fold | HUC-02 | Train Basins | Test Basins | First 5 Test Basins |
+| Fold | HUC-02 | Train basins | Test basins | First 5 test basins |
 | :--- | :---: | :---: | :---: | :--- |
 | `huc_01` | `01` | 508 | 23 | `01022500, 01031500, 01047000, 01052500, 01054200` |
 | `huc_02` | `02` | 462 | 69 | `01333000, 01350000, 01350080, 01350140, 01365000` |
@@ -64,3 +105,19 @@ All models evaluated in the standard protocol use the Newman et al. (2017) and K
 | `huc_16` | `16` | 526 | 5 | `10234500, 10244950, 10336645, 10336660, 10343500` |
 | `huc_17` | `17` | 459 | 72 | `12010000, 12013500, 12020000, 12025700, 12035000` |
 | `huc_18` | `18` | 505 | 26 | `10259000, 11124500, 11141280, 11143000, 11148900` |
+
+## Load the folds in Python
+
+```python
+from mips.camels_us_daily import load_splits_for_regime
+
+for regime in ("gauged", "pub_12fold", "pur_18huc02"):
+    folds = load_splits_for_regime(regime)
+    print(regime, len(folds), len(folds[0].test_entities))
+# gauged 1 531
+# pub_12fold 12 45
+# pur_18huc02 18 23
+```
+
+`load_splits_for_regime` checks every fold before it returns it (see
+[`../README.md`](../README.md#how-to-take-part)).

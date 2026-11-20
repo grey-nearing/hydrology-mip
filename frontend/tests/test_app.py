@@ -371,12 +371,14 @@ def test_score_valid_zarr_and_npz_hydrographs(mip_env: dict) -> None:
     assert len(res_zarr["scoring"]["huc_02_breakdown"]) == 18
     assert len(res_zarr["scoring"]["per_basin"]) == 531
 
-    # Verify all 12 Gauch et al. (2023) metrics are present in gauch_2023_medians and per_basin
+    # Verify all 14 Gauch et al. (2023) metrics are present in gauch_2023_medians and per_basin
     expected_gauch_metrics = {
         "NSE",
         "MSE",
         "RMSE",
         "KGE",
+        "logNSE",
+        "logKGE",
         "Alpha-NSE",
         "Pearson-r",
         "Beta-KGE",
@@ -392,6 +394,8 @@ def test_score_valid_zarr_and_npz_hydrographs(mip_env: dict) -> None:
     assert gauch_medians["MSE"] == pytest.approx(0.0, abs=1e-4)
     assert gauch_medians["RMSE"] == pytest.approx(0.0, abs=1e-4)
     assert gauch_medians["KGE"] == pytest.approx(1.0, abs=1e-4)
+    assert gauch_medians["logNSE"] == pytest.approx(1.0, abs=1e-4)
+    assert gauch_medians["logKGE"] == pytest.approx(1.0, abs=1e-4)
     assert gauch_medians["Alpha-NSE"] == pytest.approx(1.0, abs=1e-4)
     assert gauch_medians["Pearson-r"] == pytest.approx(1.0, abs=1e-4)
     assert gauch_medians["Beta-KGE"] == pytest.approx(1.0, abs=1e-4)

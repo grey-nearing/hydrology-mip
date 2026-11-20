@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 Author Metric Reproduction Script: Poudel & Steinschneider (2026) MLP+16HBV.
 
 Paper:
@@ -37,19 +40,29 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
-
-from metrics.metrics import calculate_all_metrics  # noqa: E402
-from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice  # noqa: E402
-from models.poudel_mlp_hbv.runner import run_fold  # noqa: E402
-from models.run_model import load_canonical_basins  # noqa: E402
+from metrics.metrics import calculate_all_metrics
+from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice
+from models.poudel_mlp_hbv.runner import run_fold
+from models.run_model import load_canonical_basins
 
 PUBLISHED_GAUGED_MEDIAN_NSE = 0.710
 PUBLISHED_PUB_MEDIAN_NSE = 0.630
 PUBLISHED_PUB_REFERENCE_NSE = 0.670
 TOLERANCE_NSE = 0.030
+
+MODEL_DIR = Path(__file__).resolve().parent
+# Tracked, committed Stage-1 record. Only rewritten when --out explicitly points here.
+TRACKED_RESULTS_PATH = MODEL_DIR / "stage1_author_reproduction_results.json"
+# Default output for new runs: untracked, so reproducing never mutates the committed record.
+DEFAULT_OUT_PATH = MODEL_DIR / "stage1_author_reproduction_results.local.json"
+
+# Poudel & Steinschneider (2026) Split-2C author protocol windows.
+SPLIT2C_TRAIN = ("1990-01-01", "2005-12-31")
+SPLIT2C_EVAL = ("1980-01-01", "1989-12-31")
+# Training keeps the runner's 730-day spin-up (1988-01-02 .. 1989-12-31). The evaluation window starts
+# on the first day of the CAMELS bundle (1980-01-01), so no forcing exists before it: evaluate with
+# no prepended spin-up instead of reaching back to 1978-01-02 and failing the bundle coverage check.
+SPLIT2C_EVAL_SPINUP_DAYS = 0
 
 
 def _evaluate_predictions(
@@ -86,9 +99,9 @@ def _evaluate_predictions(
             attrs={"basin_id": b},
         )
         res = calculate_all_metrics(da_obs, da_sim, resolution="1D", datetime_coord="date")
-        nse_val = float(res.get("NSE", np.nan))
-        kge_val = float(res.get("KGE", np.nan))
-        fhv_val = float(res.get("FHV", np.nan))
+        nse_val = float(res["NSE"])
+        kge_val = float(res["KGE"])
+        fhv_val = float(res["FHV"])
         if np.isfinite(nse_val):
             nses.append(nse_val)
         if np.isfinite(kge_val):
@@ -132,19 +145,25 @@ def main() -> None:
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--n-batches-per-epoch", type=int, default=None)
     parser.add_argument("--seeds", type=int, nargs="+", default=[0])
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=DEFAULT_OUT_PATH,
+        help="Where to write a newly computed report (default: untracked *.local.json). The tracked "
+        "stage1_author_reproduction_results.json is only overwritten if --out points at it.",
+    )
     args = parser.parse_args()
 
-    out_path = Path(__file__).resolve().parent / "stage1_author_reproduction_results.json"
 
     if args.mode == "verify":
-        if not out_path.is_file():
-            raise FileNotFoundError(f"Missing reproduction report: {out_path}")
-        report = json.loads(out_path.read_text(encoding="utf-8"))
+        if not TRACKED_RESULTS_PATH.is_file():
+            raise FileNotFoundError(f"Missing reproduction report: {TRACKED_RESULTS_PATH}")
+        report = json.loads(TRACKED_RESULTS_PATH.read_text(encoding="utf-8"))
     else:
         basins_531 = load_canonical_basins()
         train_basins, pub_basins = _split2c_basins(basins_531)
-        train_period = ("1990-01-01", "2005-12-31")
-        eval_period = ("1980-01-01", "1989-12-31")
+        train_period = SPLIT2C_TRAIN
+        eval_period = SPLIT2C_EVAL
 
         extra_kw = {}
         if args.n_batches_per_epoch is not None:
@@ -159,6 +178,7 @@ def main() -> None:
             data_dir=args.data_dir,
             seeds=tuple(args.seeds),
             epochs=args.epochs,
+            eval_spinup_days=SPLIT2C_EVAL_SPINUP_DAYS,
             **extra_kw,
         )
         eval_slice = load_camels_slice(
@@ -217,6 +237,7 @@ def main() -> None:
                 "epochs": int(args.epochs),
                 "n_batches_per_epoch": args.n_batches_per_epoch,
                 "seeds": list(args.seeds),
+                "eval_spinup_days": SPLIT2C_EVAL_SPINUP_DAYS,
             },
             "verification_source": "from_scratch_split2c_train_and_eval",
             "published_median_nse": PUBLISHED_GAUGED_MEDIAN_NSE,
@@ -242,10 +263,10 @@ def main() -> None:
             ),
             "status": status,
         }
-        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report, indent=2))
-    if report.get("status") != "PASS":
+    if report["status"] != "PASS":
         sys.exit(1)
 
 

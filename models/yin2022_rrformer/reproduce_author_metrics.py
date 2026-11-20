@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 author-protocol reproduction for Yin et al. (2022, J. Hydrol.) RR-Former.
 
 Trains the 3-seed RR-Former (global pretraining + per-basin fine-tuning with
@@ -8,6 +11,9 @@ evaluate 1995-10-01..2010-09-30) and scores the hydrograph with
 
     python -m models.yin2022_rrformer.reproduce_author_metrics --data-dir /path/to/camels --mode verify
     python -m models.yin2022_rrformer.reproduce_author_metrics --smoke
+    python -m models.yin2022_rrformer.reproduce_author_metrics --write-tracked  # regenerate the tracked JSON
+
+Full runs write `stage1_author_reproduction_results.local.json` (untracked) unless `--write-tracked`.
 """
 
 from __future__ import annotations

@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """ERA Gauged Multi-Paradigm (Newman CV) model package."""
 
 from models.era_gauged_multi_paradigm.model import (

@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Hermetic Stage-1 (author-protocol) reproduction harness for the NeuralHydrology-family models.
 
 Every `models/<model>/reproduce_author_metrics.py` in this family delegates to `run_reproduction`:
@@ -28,6 +31,10 @@ from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice
 
 SPLITS_DIR: Path = resolve_mip_paths(DEFAULT_MIP_ID).splits_dir
 RESULTS_FILENAME: str = "stage1_author_reproduction_results.json"
+# Default target of a full (non-smoke) run: a sibling of the tracked JSON that is never
+# committed, so a re-run cannot silently overwrite the published Stage-1 record.  Pass
+# `--write-tracked` to (deliberately) regenerate `RESULTS_FILENAME`.
+LOCAL_RESULTS_FILENAME: str = "stage1_author_reproduction_results.local.json"
 SMOKE_RESULTS_FILENAME: str = "stage1_smoke_results.json"
 HYDROGRAPH_FILENAME: str = "stage1_author_reproduction_hydrograph.npz"
 
@@ -219,11 +226,13 @@ def run_reproduction(
     )
 
     def _rel_path_str(p: str | Path) -> str:
+        # Never record absolute (machine-specific) paths: repo-relative inside the repo,
+        # otherwise only the file name.
         resolved = Path(p).resolve()
         repo_resolved = REPO_ROOT.resolve()
         if resolved.is_relative_to(repo_resolved):
-            return str(resolved.relative_to(repo_resolved))
-        return str(p)
+            return resolved.relative_to(repo_resolved).as_posix()
+        return resolved.name
 
     results: dict[str, object] = {
         "status": status,
@@ -297,6 +306,12 @@ def build_arg_parser(
     parser.add_argument("--device", type=str, default=None, help="torch device (default: cuda if available).")
     parser.add_argument("--output-dir", type=Path, default=None, help="Where to write results (default: model dir).")
     parser.add_argument(
+        "--write-tracked",
+        action="store_true",
+        help=f"Write the tracked {RESULTS_FILENAME} instead of the untracked default "
+        f"{LOCAL_RESULTS_FILENAME}. Use only when deliberately regenerating the published Stage-1 record.",
+    )
+    parser.add_argument(
         "--smoke",
         action="store_true",
         help="Pipeline check only: first --smoke-basins basins, 1 epoch, 2 batches, tiny hidden size; "
@@ -343,7 +358,7 @@ def run_cli(
 ) -> int:
     """Shared `main` body: resolve the protocol, run the reproduction, and return an exit code."""
     basins = load_basin_list(args.basins_file)
-    runner_kwargs: dict[str, object] = parse_runner_kwarg_items(getattr(args, "runner_kwarg", []) or [])
+    runner_kwargs: dict[str, object] = parse_runner_kwarg_items(args.runner_kwarg)
     if args.epochs is not None:
         runner_kwargs["epochs"] = int(args.epochs)
     if args.device is not None:
@@ -358,7 +373,7 @@ def run_cli(
         results_filename = SMOKE_RESULTS_FILENAME
     else:
         output_dir = args.output_dir if args.output_dir is not None else model_dir
-        results_filename = RESULTS_FILENAME
+        results_filename = RESULTS_FILENAME if args.write_tracked else LOCAL_RESULTS_FILENAME
 
     results = run_reproduction(
         model_key=model_key,

@@ -14,21 +14,22 @@
 ---
 
 ## 2. Model Architecture & Hydrological Formulation
-$\delta\text{HBV 1.0}$ (`DifferentiableHBV10` in `models/feng_dhbv10/model.py`) couples a regional single-layer cuDNN LSTM parameter network (`hidden_size = 256`, initial forget-gate bias `+3.0`, Zoneout-style dropout `dr = 0.5` on the linear output readout head) with $N_{\text{mul}} = 16$ parallel sub-basin conceptual HBV rainfall-runoff buckets routed through a shared 15-day Gamma unit hydrograph (`uh_day = 15`):
+$\delta\text{HBV 1.0}$ (network `StandaloneDHBV(version="1_0")` in `models/_dhbv_common/core.py`, trained by `DHBV10Trainer` in `models/feng_dhbv10/model.py`) couples a regional parameter network (a `Linear + ReLU` input layer feeding a single-layer 256-unit LSTM with DropConnect weight dropout `dr = 0.5` on the input and recurrent weights, followed by a linear readout) with $N_{\text{mul}} = 16$ parallel sub-basin conceptual HBV rainfall-runoff buckets routed through a shared 15-day Gamma unit hydrograph (`routing_len = 15`):
 
 1. **LSTM Parameterization Head**:
-   - **Inputs**: Log-transformed precipitation $\ln(P_t + 0.01)$ alongside meteorological forcing series (`prcp`, `tmean`, `dayl`, `srad`, `vp`, plus Hargreaves `pet` when available) concatenated with 27 standardized static catchment attributes at every daily timestep.
-   - **Static HBV Bucket Parameters** ($11 \times 16 = 176$, extracted after the 365-day warm-up period and held time-invariant across the active horizon):
-     - Degree-day snow routine: `TT` $\in [-3.0, 5.0]\;^\circ\text{C}$, `CFMAX` $\in [0.5, 10.0]\;\text{mm}\;^\circ\text{C}^{-1}\;\text{d}^{-1}$, `CFR` $\in [0.0, 0.1]$, `CWH` $\in [0.0, 0.2]$.
+   - **Inputs**: All raw CAMELS forcing channels of each forcing product (`prcp`, `srad`, `tmax`, `tmin`, `vp`), with every precipitation channel transformed as $\log_{10}(\sqrt{P_t} + 0.1)$, plus the derived daily mean temperature (`Tmean`) and Hargreaves (1985) `PET`. There is no `dayl` channel. These are z-scored with training-basin, post-spinup statistics and concatenated with the 27 standardized static catchment attributes at every daily timestep.
+   - **Static HBV Bucket Parameters** ($11 \times 16 = 176$, read from the LSTM output at the **last timestep** of the input sequence and held time-invariant across the simulation; see the note below):
+     - Degree-day snow routine: `TT` $\in [-2.5, 2.5]\;^\circ\text{C}$, `CFMAX` $\in [0.5, 10.0]\;\text{mm}\;^\circ\text{C}^{-1}\;\text{d}^{-1}$, `CFR` $\in [0.0, 0.1]$, `CWH` $\in [0.0, 0.2]$.
      - Soil moisture routine: `FC` $\in [50, 1000]\;\text{mm}$, `LP` $\in [0.2, 1.0]$.
      - Upper & lower response reservoirs: `K0` $\in [0.05, 0.9]\;\text{d}^{-1}$, `K1` $\in [0.01, 0.5]\;\text{d}^{-1}$, `K2` $\in [0.001, 0.2]\;\text{d}^{-1}$, `PERC` $\in [0.0, 10.0]\;\text{mm}\,\text{d}^{-1}$, `UZL` $\in [0.0, 100.0]\;\text{mm}$.
-   - **Dynamic Time-Varying HBV Parameters** ($2 \times 16 = 32$, predicted at every daily timestep $t$):
+   - **Dynamic Time-Varying HBV Parameters** ($2 \times 16 = 32$, `dynamic_params = ["parBETA", "parBETAET"]`, predicted at every daily timestep $t$):
      - Soil moisture runoff nonlinearity exponent `BETA` ($\beta_t \in [1.0, 6.0]$).
-     - Evapotranspiration shape exponent `BETAET` ($\gamma_t \in [0.3, 5.0]$), modifying potential evapotranspiration demand via $\text{ET}_t = \text{PET}_t \cdot (S_{\text{sm}, t} / \text{FC})^{\gamma_t} \cdot \min\!\left((S_{\text{sm}, t} / (\text{FC} \cdot \text{LP}))^2, 1.0\right)$.
-   - **Shared Routing Parameters** ($2$, static per basin):
-     - Gamma unit hydrograph shape $\alpha_{\text{ro}} \in [1.0, 3.5]$ and scale $\theta_{\text{ro}} \in [0.5, 6.5]$, discretized over a 15-day causal impulse response kernel via numerical quadrature.
+     - Evapotranspiration shape exponent `BETAET` ($\gamma_t \in [0.3, 5.0]$), modifying potential evapotranspiration demand via $\text{ET}_t = \min\!\left(S_{\text{sm}, t},\; \text{PET}_t \cdot \min\!\left((S_{\text{sm}, t} / (\text{FC} \cdot \text{LP}))^{\gamma_t}, 1.0\right)\right)$.
+   - **Shared Routing Parameters** ($2$, static per basin, also read from the last LSTM timestep):
+     - Gamma unit hydrograph parameters $a \in [0, 2.9]$ and $b \in [0, 6.5]$ (`route_bounds`), discretized over a 15-day causal impulse response kernel via numerical quadrature.
+   - **Note on static parameters (faithful to Feng et al., 2022):** The static HBV and routing parameters are taken from the LSTM output at the final timestep of whatever sequence the network sees (`StandaloneDHBV._descale_phy` and `forward` in `models/_dhbv_common/core.py`). They are therefore non-causal within a sequence and depend on its length: training uses warm-up + `rho`-day windows, whereas evaluation feeds the full spinup + test sequence. This matches the upstream MHPI implementation.
 2. **Training Objective (`RmseCombLoss`)**:
-   - Trained end-to-end with Adadelta (`lr = 1.0`, `rho = 0.95`, `eps = 1e-6`), 365-day warm-up + 365-day active sequence (`rho = 365`), `batch_size = 100`, and combined linear/log-sqrt RMSE loss ($\alpha = 0.25$):
+   - Trained end-to-end with Adadelta (`lr = 1.0`, `rho = 0.9`, `eps = 1e-6`; the optimizer settings are hardcoded in `DHBV10Trainer.fit_and_predict`, so the runner's `lr` argument is currently ignored), 365-day warm-up + 365-day active sequence (`rho = 365`), `batch_size = 100`, and combined linear/log-sqrt RMSE loss ($\alpha = 0.25$):
      $$\mathcal{L} = 0.75\,\text{RMSE}(Q, \hat{Q}) + 0.25\,\text{RMSE}\!\left(\log_{10}(\sqrt{Q + 10^{-6}} + 0.1),\; \log_{10}(\sqrt{\hat{Q} + 10^{-6}} + 0.1)\right)$$
 
 ---
@@ -67,7 +68,21 @@ Under the standardized CAMELS-US MIP protocol (`1999-10-01` to `2008-09-30` trai
 
 ---
 
-## 5. Verification Command
+## 5. Build Prerequisites
+The shared dHBV core (`models/_dhbv_common/core.py`, also used by `song_dhbv11p`) contains C++/OpenMP (CPU) and CUDA (GPU) kernels. They are JIT-compiled with `torch.utils.cpp_extension.load_inline` on the first call, which takes a few minutes. The build is cached in `~/.cache/torch_extensions`. Set `TORCH_EXTENSIONS_DIR` to change the cache location, for example to a separate directory for each concurrent process. You need:
+- **C++ compiler:** Linux `g++` with OpenMP. On macOS (Apple clang) the C++ kernels build without `-fopenmp` and run single-threaded.
+- **`ninja`:** `pip install ninja`. torch cannot load C++ extensions without it.
+- **GPU only:** an `nvcc` whose version matches `torch.version.cuda`, with `CUDA_HOME` pointing at that toolkit.
+
+---
+
+## 6. Reproduction Commands
 ```bash
-python models/feng_dhbv10/reproduce_author_metrics.py --mode verify
+# Print the tracked Stage-1 report
+python -m models.feng_dhbv10.reproduce_author_metrics --mode verify
+
+# Re-train and evaluate on Split-3 from scratch
+python -m models.feng_dhbv10.reproduce_author_metrics --mode train_and_eval --out outputs/feng_stage1.json
 ```
+- `--mode train_and_eval` writes to `--out`. The default is `models/feng_dhbv10/stage1_author_reproduction_results.local.json`, which is not tracked by git. The tracked `stage1_author_reproduction_results.json` is overwritten only if `--out` points at it explicitly.
+- The Split-3 run uses 274 spinup days, because the data bundle starts on `1980-01-01` and training starts on `1980-10-01`.

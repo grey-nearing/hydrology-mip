@@ -1,32 +1,40 @@
-CAMELS-US Model Intercomparison Project (camels-us-mip)
-Copyright 2025-2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+HydrologyMIP — Multi-MIP Hydrological Model Intercomparison Platform (camels-us-mip)
+Copyright 2025-2026 Google LLC, Grey Nearing, Daniel Klotz, and the HydrologyMIP Contributors
 
 This product includes software developed at Google LLC and by the
-contributors to the CAMELS-US Model Intercomparison Project
+contributors to HydrologyMIP (https://hydrologymip.org) and its first registered
+benchmark, the CAMELS-US Daily Streamflow Model Intercomparison Project
 (https://github.com/grey-nearing/camels-us-mip).
 
 1. Software & Source Code (Apache-2.0):
-   All software and source code in this repository—including `metrics/`,
-   `models/` (all 18 first-party and independent model implementations),
-   `era_experiments/`, `leaderboards/*.py`, `figures/*.py`, `frontend/`,
-   and `benchmarks/`—is licensed under the Apache License, Version 2.0
-   (see `LICENSE`). Portions derived from permissively licensed third-party
+   All software and source code in this repository—including the shared core
+   (`hydromip/`), the per-MIP adapters (`mips/*/adapter.py`), `metrics/`,
+   `models/` (all 20 model implementations and the shared
+   `models/_dhbv_common/` dHBV core), the ERA notebooks in
+   `mips/camels_us_daily/era_experiments/`, `leaderboards/*.py`, `frontend/`,
+   and `benchmarks/`—is licensed under the Apache License, Version 2.0 (see
+   `LICENSE`). Portions derived from permissively licensed third-party
    open-source software (`BSD-3-Clause`, `MIT`, `Apache-2.0`) carry the
    required copyright notices and license texts in `THIRD_PARTY_NOTICES.md`.
+   `models/shahriar2026_mamba3/mamba3.py` is Copyright Google LLC and licensed
+   under the Apache License, Version 2.0.
 
 2. First-Party Datasets, Splits, Leaderboard Tables, Figures, & MIP Re-Run /
    Contribution Hydrographs (CC-BY-4.0):
    All first-party non-software research artifacts in this repository
-   (`splits/`, `leaderboards/*.json`, `leaderboards/*.csv`, `figures/*.pdf`,
-   `figures/*.png`) and all first-party simulated hydrograph Zarr stores
-   (`MIP Re-run`, `Contribution`, and `stage1_author_reproductions`) hosted
-   in the companion cloud archive `gs://camels-us-mip/` are licensed under
-   the Creative Commons Attribution 4.0 International License (CC-BY-4.0,
+   (`mips/camels_us_daily/protocol.json`, `mips/camels_us_daily/splits/`,
+   `mips/camels_us_daily/leaderboards/*.json`, `*.csv`, and `*.md`, and
+   `mips/camels_us_daily/figures/*.pdf`, `*.png`, and `*.json`) and all
+   first-party simulated hydrograph Zarr stores (`MIP Re-run`, `Contribution`,
+   and `stage1_author_reproductions`) hosted in the companion cloud archive
+   `gs://camels-us-mip/` are licensed under the Creative Commons Attribution
+   4.0 International License (CC-BY-4.0,
    https://creativecommons.org/licenses/by/4.0/).
 
 3. External Author-Archived Hydrographs in `gs://camels-us-mip/`:
    Third-party hydrograph archives re-hosted in `gs://camels-us-mip/` retain
-   their original upstream licenses (`CC-BY-4.0`, U.S. Government Public Domain
-   17 U.S.C. § 105, `CC-BY-NC-4.0` for Frame et al. 2023, and `GPL-3.0-only`
-   for Knoben et al. 2020 MARRMoT if hosted); see `DATA_LICENSE.md` and
+   their original upstream licenses (`CC-BY-4.0`; USGS observations are U.S.
+   Government Public Domain, 17 U.S.C. § 105). The Frame et al. (2022, 2023)
+   MC-LSTM hydrographs (`CC-BY-NC-4.0`) are not redistributed; they are
+   available from HydroShare. See `DATA_LICENSE.md` and
    `THIRD_PARTY_NOTICES.md` for per-store attribution and terms.

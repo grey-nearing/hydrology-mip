@@ -1,4 +1,7 @@
-"""Feng et al. (2022) Differentiable HBV 1.0 (dHBV 1.0) static-parameter rainfall-runoff model."""
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+"""Feng et al. (2022) Differentiable HBV 1.0 (dHBV 1.0) rainfall-runoff model (dynamic parBETA, parBETAET)."""
 
 from models.feng_dhbv10.model import (
     CudnnLstm,

@@ -456,7 +456,7 @@ def _empirical_cdf_101(values: np.ndarray) -> list[float]:
 
 
 def _attach_flat_gauch_metrics(row: dict[str, Any]) -> None:
-    """Attach flat numeric fields for all 12 Gauch et al. (2023) metrics so every column is sortable."""
+    """Attach flat numeric fields for all 14 Gauch et al. (2023) metrics so every column is sortable."""
     gauch = row.get("gauch_2023_metrics")
     g = gauch if isinstance(gauch, dict) else {}
 
@@ -486,6 +486,8 @@ def _attach_flat_gauch_metrics(row: dict[str, Any]) -> None:
     if _finite_or_none(row.get("med_kge")) is None and kge_med is not None:
         row["med_kge"] = kge_med
 
+    row["gauch_log_nse"] = _gmed("logNSE")
+    row["gauch_log_kge"] = _gmed("logKGE")
     row["gauch_pearson_r"] = _gmed("Pearson-r")
     row["gauch_alpha_nse"] = _gmed("Alpha-NSE")
     row["gauch_beta_nse"] = _gmed("Beta-NSE")
@@ -1117,7 +1119,7 @@ def _compute_matrix_metrics(
     qsim: np.ndarray,
     dates_np: np.ndarray | None = None,
 ) -> dict[str, np.ndarray]:
-    """Compute all 12 Gauch et al. (2023) hydrological metrics per basin via `metrics/metrics.py`.
+    """Compute all 14 Gauch et al. (2023) hydrological metrics per basin via `metrics/metrics.py`.
 
     Mirrors `metrics.evaluator.calculate_model_leaderboard_metrics` exactly: float64 inputs,
     predictions scored as submitted (negative values are NOT clipped), observations masked to
@@ -1402,6 +1404,8 @@ def score_hydrograph_predictions(parsed: ParsedHydrograph, eval_targets: dict[st
             "MSE": _clean_float(ens_per_basin["MSE"][idx]),
             "RMSE": _clean_float(ens_per_basin["RMSE"][idx]),
             "KGE": _clean_float(ens_per_basin["KGE"][idx]),
+            "logNSE": _clean_float(ens_per_basin["logNSE"][idx]),
+            "logKGE": _clean_float(ens_per_basin["logKGE"][idx]),
             "Alpha-NSE": _clean_float(ens_per_basin["Alpha-NSE"][idx]),
             "Pearson-r": _clean_float(ens_per_basin["Pearson-r"][idx]),
             "Beta-KGE": _clean_float(ens_per_basin["Beta-KGE"][idx]),

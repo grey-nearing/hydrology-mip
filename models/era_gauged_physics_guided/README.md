@@ -14,6 +14,7 @@
 - **Differentiable Snowpack Module (`DifferentiableSnowPack`):** TorchScript causal scan computing basin-conditioned degree-day melt factor (`mf`) and rain/snow temperature threshold (`tc`) to output continuous snow water equivalent and liquid water delivery.
 - **Sequence Backbone:** 256-unit Entity-Aware LSTM over 30 dynamic meteorological/rolling features plus snowpack liquid-water delivery, conditioned on 27 CAMELS static attributes plus learned per-basin ID embeddings.
 - **Training & Inference:** AdamW with OneCycleLR on `365`-day spin-up + Newman training window (`1999-10-01` to `2008-09-30`); continuous evaluation rollout clipped at `0.0 mm/day`.
+- **Train vs. inference protocol:** training samples random `365`-day windows (`seq_len = 365`), but inference runs **one stateful pass** over the 365-day spin-up plus the full 3,652-day evaluation decade (about 4,017 days), discarding the first 365 predicted days. Predictions are therefore not windowed sequence-to-one outputs.
 
 ## Benchmark Performance (531 Newman Basins, Water Years 1990–1999)
 | Metric | 10-Seed Ensemble (`era_gauged_physics_guided`) | Single-Seed Realization (`era_gauged_physics_guided_single`) |

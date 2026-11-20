@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 author-protocol reproduction for Kratzert et al. (2019) EA-LSTM.
 
 Trains the EA-LSTM in-process with `models.kratzert_ealstm.runner.run_fold` on the Newman 531
@@ -8,6 +11,9 @@ precomputed is read.
 
     python -m models.kratzert_ealstm.reproduce_author_metrics --data-dir /path/to/camels --mode verify
     python -m models.kratzert_ealstm.reproduce_author_metrics --smoke      # pipeline check only
+    python -m models.kratzert_ealstm.reproduce_author_metrics --write-tracked  # regenerate the tracked JSON
+
+Full runs write `stage1_author_reproduction_results.local.json` (untracked) unless `--write-tracked`.
 """
 
 from __future__ import annotations
@@ -17,6 +23,12 @@ from pathlib import Path
 from metrics.metrics import calculate_all_metrics
 from models.kratzert_ealstm.runner import run_fold
 from models.kratzert_lstm.reproduction import SPLITS_DIR, build_arg_parser, run_cli
+from models.zarr_writer import (
+    CANONICAL_EVAL_END,
+    CANONICAL_EVAL_START,
+    CANONICAL_TRAIN_END,
+    CANONICAL_TRAIN_START,
+)
 
 MODEL_KEY = "kratzert_ealstm"
 MODEL_NAME = "Kratzert et al. (2019) EA-LSTM"
@@ -24,8 +36,8 @@ MODEL_DIR = Path(__file__).resolve().parent
 
 AUTHOR_PROTOCOL = {
     "basins_file": SPLITS_DIR / "basins_531.json",
-    "train_period": ("1999-10-01", "2008-09-30"),
-    "eval_period": ("1989-10-01", "1999-09-30"),
+    "train_period": (CANONICAL_TRAIN_START, CANONICAL_TRAIN_END),
+    "eval_period": (CANONICAL_EVAL_START, CANONICAL_EVAL_END),
     "forcings": ["maurer"],
     "seeds": (201, 202, 203),
 }
@@ -35,7 +47,7 @@ AUTHOR_PROTOCOL = {
 PUBLISHED_SINGLE_MEDIAN_NSE = 0.712
 PUBLISHED_ENSEMBLE_MEDIAN_NSE = 0.741
 PUBLISHED_SOURCE = (
-    "Kratzert et al. (2019), HESS 23, 5089-5110, Table 2; leaderboards/gauged__single_camels.json "
+    "Kratzert et al. (2019), HESS 23, 5089-5110, Table 2; mips/camels_us_daily/leaderboards/gauged__single_camels.json "
     "entries t3_23 (ensemble) and t3_38 (single)"
 )
 TOLERANCE = 0.04

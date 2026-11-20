@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-2 and Stage-1 Fold Runner for Poudel & Steinschneider (2026) MLP + 16-HBV."""
 
 from __future__ import annotations
@@ -25,6 +28,7 @@ def run_fold(
     fold_id: str = "gauged",
     fold_index: int = 0,
     spinup_days: int = 730,
+    eval_spinup_days: int | None = None,
     epochs: int = 20,
     batch_size: int = 128,
     rho: int = 365,
@@ -38,6 +42,9 @@ def run_fold(
     **kwargs: object,
 ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
     """Train Poudel & Steinschneider (2026) MLP + 16-HBV on train_basins and predict test_basins.
+
+    ``eval_spinup_days`` is the number of forcing days prepended to ``eval_period`` (defaults to
+    ``spinup_days``). Set it to 0 when ``eval_period`` starts on the first day of the data bundle.
 
     Returns:
         Float32 array of shape (len(test_basins), n_target_days) in mm/day,
@@ -64,7 +71,7 @@ def run_fold(
         period=eval_period,
         forcings=forcings,
         data_dir=data_dir,
-        spinup_days=spinup_days,
+        spinup_days=spinup_days if eval_spinup_days is None else int(eval_spinup_days),
         require_valid_targets=False,
     )
 
@@ -108,7 +115,10 @@ def run_fold(
                 else None
             ),
         )
-        assert preds.shape == (len(test_basins), n_target_days)
+        if preds.shape != (len(test_basins), n_target_days):
+            raise ValueError(
+                f"Predictions have shape {preds.shape}, expected {(len(test_basins), n_target_days)}."
+            )
         seed_preds.append(preds.astype(np.float32))
 
     members = np.stack(seed_preds, axis=0).astype(np.float32)

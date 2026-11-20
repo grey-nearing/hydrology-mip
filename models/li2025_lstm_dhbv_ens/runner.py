@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fold execution interface for the Li et al. (2025) (LSTM + dHBV 1.1p) Multi-Model Ensemble."""
 
 from __future__ import annotations

@@ -7,7 +7,6 @@ The single source of truth lives in ``hydromip.metrics.deterministic_daily`` so 
 daily streamflow MIPs share the exact same metric definitions without duplication.
 """
 
-from hydromip.metrics.deterministic_daily import *  # noqa: F401, F403
 from hydromip.metrics.deterministic_daily import (
     AllNaNError,
     alpha_nse,
@@ -22,6 +21,8 @@ from hydromip.metrics.deterministic_daily import (
     get_frequency_factor,
     infer_datetime_coord,
     kge,
+    log_kge,
+    log_nse,
     mean_peak_timing,
     mse,
     nse,
@@ -43,6 +44,8 @@ __all__ = [
     "get_frequency_factor",
     "infer_datetime_coord",
     "kge",
+    "log_kge",
+    "log_nse",
     "mean_peak_timing",
     "mse",
     "nse",

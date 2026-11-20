@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Shared training/inference utilities for the NeuralHydrology-family MIP models.
 
 Used by `KratzertLSTMTrainer` (CudaLSTM, EA-LSTM, sMTS-LSTM, TFT) and `MCLSTMTrainer`.

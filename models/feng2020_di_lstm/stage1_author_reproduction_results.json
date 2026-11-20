@@ -4,7 +4,7 @@
   "model_name": "Feng et al. (2020) DI(1) Lagged-Discharge LSTM",
   "provenance": "Trained in-process via models.feng2020_di_lstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
   "protocol": {
-    "basins_source": "splits/basins_671.json",
+    "basins_source": "mips/camels_us_daily/splits/basins_671.json",
     "n_basins": 671,
     "train_period": [
       "1985-10-01",

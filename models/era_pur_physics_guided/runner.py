@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fold execution interface for the ERA Physics-Guided PUR winning model (Node 206 — PURPhysicsModel)."""
 
 from __future__ import annotations
@@ -249,7 +252,8 @@ def run_fold(
         model_params = list(model.parameters())
         rng = np.random.RandomState(s + fold_index)
 
-        # Sample fixed pool of 400 sequences per basin per seed (exact Node 206 protocol)
+        # Sample a fixed pool of up to `samples_per_basin` sequences per basin per seed (default 128;
+        # the Node 206 notebook used 400), drawn once without replacement and reshuffled each epoch.
         sb_list: list[np.ndarray] = []
         st_list: list[np.ndarray] = []
         for b, valid_t in valid_by_basin:

@@ -1,7 +1,7 @@
 # Copyright 2026 HydroMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Canonical repository and per-MIP path resolution for the multi-MIP HydroMIP monorepo.
+"""Canonical repository and per-MIP path resolution for the multi-MIP HydrologyMIP monorepo.
 
 Every MIP lives in its own self-contained subdirectory under ``mips/<mip_id>/`` with:
 
@@ -17,6 +17,7 @@ Zero ``try``/``except`` blocks. All path checks validate existence explicitly.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -24,6 +25,11 @@ DEFAULT_MIP_ID: str = "camels_us_daily"
 REPO_ROOT: Path = Path(__file__).resolve().parents[1]
 MIPS_DIR: Path = REPO_ROOT / "mips"
 MODELS_DIR: Path = REPO_ROOT / "models"
+
+#: Canonical per-MIP subdirectory names (the only names `resolve_mip_subdir` accepts).
+MIP_SUBDIRS: tuple[str, ...] = ("splits", "leaderboards", "figures", "data", "era_experiments")
+#: A MIP identifier is a single path component: alphanumerics, ``_`` and ``-`` only.
+MIP_ID_PATTERN: re.Pattern[str] = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}")
 
 
 @dataclass(frozen=True)
@@ -38,6 +44,16 @@ class MipPaths:
     figures_dir: Path
     data_dir: Path
     era_experiments_dir: Path
+
+
+def validate_mip_id(mip_id: str) -> str:
+    """Return the stripped ``mip_id`` if it is a valid single path component, else raise."""
+    clean_id = str(mip_id).strip()
+    if MIP_ID_PATTERN.fullmatch(clean_id) is None:
+        raise ValueError(
+            f"Invalid mip_id: {mip_id!r} (expected ^[A-Za-z0-9][A-Za-z0-9_-]{{0,63}}$)."
+        )
+    return clean_id
 
 
 def get_repo_root(repo_root: str | Path | None = None) -> Path:
@@ -56,9 +72,7 @@ def resolve_mip_paths(
     Does not require every optional directory (such as ``era_experiments/``) to exist,
     so both existing and newly scaffolded MIPs can resolve their canonical layout.
     """
-    clean_id = str(mip_id).strip()
-    if not clean_id or "/" in clean_id or "\\" in clean_id or clean_id in (".", ".."):
-        raise ValueError(f"Invalid mip_id: {mip_id!r}")
+    clean_id = validate_mip_id(mip_id)
     root = get_repo_root(repo_root)
     mip_root = root / "mips" / clean_id
     return MipPaths(
@@ -79,23 +93,44 @@ def resolve_mip_subdir(
     mip_id: str = DEFAULT_MIP_ID,
     marker_filename: str | None = None,
 ) -> Path:
-    """Resolve ``subdir`` (e.g. ``leaderboards``, ``splits``, ``figures``, ``data``) under ``data_root``.
+    """Resolve ``subdir`` (``leaderboards``, ``splits``, ``figures``, ...) under ``data_root``.
 
-    Supports both:
-    1. Multi-MIP monorepo layout: ``<data_root>/mips/<mip_id>/<subdir>``
-    2. Isolated test-fixture / flat layout: ``<data_root>/<subdir>`` (or ``<data_root>`` itself
-       when ``marker_filename`` is directly inside ``<data_root>``).
+    The layout is decided deterministically by ``data_root`` itself; there is no fallback
+    from one layout to the other:
+
+    1. Monorepo layout: if ``<data_root>/mips/`` exists (always true for a repository
+       checkout or a deployed copy of it), the result is ``<data_root>/mips/<mip_id>/<subdir>``.
+    2. Flat override layout: otherwise ``data_root`` is an override data directory for a
+       single MIP (for example an isolated test fixture) and the result is
+       ``<data_root>/<subdir>``. The flat layout is never applied to the repository root,
+       so a missing per-MIP directory can never resolve to a code package such as the
+       repository's ``leaderboards/`` Python package.
+
+    Raises:
+        ValueError: If ``mip_id`` or ``subdir`` is not a canonical identifier.
+        FileNotFoundError: If the resolved directory, or ``marker_filename`` inside it,
+            does not exist.
     """
+    clean_id = validate_mip_id(mip_id)
+    if subdir not in MIP_SUBDIRS:
+        raise ValueError(f"Unknown MIP subdirectory {subdir!r}; expected one of {MIP_SUBDIRS}.")
     root = Path(data_root).resolve()
-    nested = root / "mips" / mip_id / subdir
-    if nested.exists():
-        return nested
-    flat = root / subdir
-    if flat.exists():
-        return flat
-    if marker_filename is not None and (root / marker_filename).exists():
-        return root
-    raise FileNotFoundError(
-        f"MIP subdirectory '{subdir}' for mip_id={mip_id!r} not found under {root} "
-        f"(checked {nested} and {flat})."
-    )
+    if (root / "mips").is_dir():
+        candidate = root / "mips" / clean_id / subdir
+    elif root == REPO_ROOT.resolve():
+        raise FileNotFoundError(
+            f"Repository root {root} has no mips/ directory; refusing to resolve '{subdir}' "
+            "against the repository root (it would alias a code package)."
+        )
+    else:
+        candidate = root / subdir
+    if not candidate.is_dir():
+        raise FileNotFoundError(
+            f"MIP subdirectory '{subdir}' for mip_id={clean_id!r} not found: {candidate}"
+        )
+    if marker_filename is not None and not (candidate / marker_filename).is_file():
+        raise FileNotFoundError(
+            f"Required file '{marker_filename}' not found in {candidate} "
+            f"(mip_id={clean_id!r}, subdir='{subdir}')."
+        )
+    return candidate

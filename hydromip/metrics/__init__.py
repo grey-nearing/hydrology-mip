@@ -1,7 +1,7 @@
 # Copyright 2026 HydroMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
-"""Shared pluggable metric suites for HydroMIP."""
+"""Shared pluggable metric suites for HydrologyMIP."""
 
 from hydromip.metrics.deterministic_daily import (
     AllNaNError,
@@ -17,6 +17,8 @@ from hydromip.metrics.deterministic_daily import (
     get_frequency_factor,
     infer_datetime_coord,
     kge,
+    log_kge,
+    log_nse,
     mean_peak_timing,
     mse,
     nse,
@@ -50,6 +52,8 @@ __all__ = [
     "get_metric_suite",
     "infer_datetime_coord",
     "kge",
+    "log_kge",
+    "log_nse",
     "list_metric_suites",
     "mean_peak_timing",
     "mse",

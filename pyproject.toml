@@ -1,40 +1,61 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
+requires = ["setuptools>=77.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "camels-us-mip"
 version = "1.0.0"
-description = "HydroMIP — Multi-MIP Hydrological Model Intercomparison Platform (Shared Core, Model Zoo, Cloud Zarr Metrics Pipeline, Web Portal, and Registered MIPs starting with CAMELS-US Daily)"
+description = "HydrologyMIP — Multi-MIP Hydrological Model Intercomparison Platform (Shared Core, Model Zoo, Cloud Zarr Metrics Pipeline, Web Portal, and Registered MIPs starting with CAMELS-US Daily)"
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
 authors = [
     { name = "Grey S. Nearing" },
     { name = "Daniel Klotz" },
     { name = "Patrick Ebel" },
     { name = "Martin Gauch" },
-    { name = "HydroMIP Contributors" },
+    { name = "HydrologyMIP Contributors" },
 ]
-requires-python = ">=3.10"
+# zarr 3 (zarr.config, FsspecStore) requires Python >= 3.11.
+requires-python = ">=3.11"
+# Core: everything needed by `hydromip`, `mips`, `metrics`, `leaderboards`, and `benchmarks`.
 dependencies = [
-    "fastapi>=0.110.0",
-    "gcsfs>=2024.2.0",
-    "matplotlib>=3.8.0",
-    "numpy>=1.26.0",
-    "pandas>=2.2.0",
-    "python-multipart>=0.0.9",
-    "scipy>=1.12.0",
-    "torch>=2.2.0",
-    "uvicorn>=0.27.0",
-    "xarray>=2024.2.0",
-    "zarr>=2.17.0",
+    "dask>=2024.2",
+    "fsspec>=2024.2",
+    "gcsfs>=2024.2",
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "scipy>=1.12",
+    "xarray>=2024.10",
+    "zarr>=3.0,<4",
 ]
 
+[project.urls]
+Homepage = "https://hydrologymip.org"
+Repository = "https://github.com/grey-nearing/camels-us-mip"
+Issues = "https://github.com/grey-nearing/camels-us-mip/issues"
+
 [project.optional-dependencies]
+# Web portal (currently `frontend/backend/app.py`).
+portal = [
+    "fastapi>=0.110",
+    "pydantic>=2.0",
+    "python-multipart>=0.0.9",
+    "uvicorn>=0.27",
+]
+# Model zoo training/inference (`models/`), including JIT-compiled C++/CUDA extensions.
+models = [
+    "ninja>=1.11",
+    "torch>=2.2",
+]
 dev = [
-    "httpx>=0.27.0",
-    "pytest>=8.0.0",
-    "ruff>=0.4.0",
+    "camels-us-mip[portal,models]",
+    "httpx>=0.27",
+    "pytest>=8.0",
+    "pytest-xdist>=3.5",
+    "pyyaml>=6.0.1",
+    "ruff>=0.4",
 ]
 
 [project.scripts]
@@ -45,9 +66,33 @@ mip-generate-figures = "leaderboards.generate_figures:main"
 benchmark-mip-metrics = "benchmarks.metrics_pipeline:main"
 
 [tool.setuptools.packages.find]
+# Patterns that match no directory (for example `frontend*` once the legacy portal is
+# retired) are simply skipped, so removing a top-level package never breaks the build.
 include = ["hydromip*", "mips*", "leaderboards*", "metrics*", "models*", "frontend*", "benchmarks*"]
+exclude = ["*.tests", "*.tests.*", "tests", "tests.*"]
+
+# Non-Python assets that the installed packages resolve at runtime (protocol, splits,
+# leaderboards, figures, model catalog, and portal static files). Large data bundles
+# (`mips/*/data/*.npz`) are intentionally never packaged. Entries for packages that are not
+# present (e.g. `frontend`) are ignored.
+[tool.setuptools.package-data]
+"mips.camels_us_daily" = [
+    "protocol.json",
+    "splits/*.json",
+    "splits/*.txt",
+    "splits/*/*.txt",
+    "leaderboards/*.json",
+    "leaderboards/*.csv",
+    "leaderboards/*.md",
+    "figures/*.png",
+    "figures/*.pdf",
+    "figures/*.json",
+]
+"models" = ["catalog.json"]
+"frontend" = ["static/*", "static/assets/*"]
 
 [tool.pytest.ini_options]
+addopts = "--strict-markers"
 testpaths = [
     "hydromip/tests",
     "leaderboards/tests",
@@ -61,6 +106,9 @@ markers = [
     "unit: Fast hermetic unit test at native (531, 3652) resolution",
     "integration: Multi-component integration test",
     "e2e: End-to-end pipeline verification test",
+    "slow: Long-running test (deselect with -m 'not slow')",
+    "gpu: Requires a CUDA-capable GPU",
+    "gcs: Requires live Google Cloud Storage credentials and network access",
 ]
 
 [tool.ruff]
@@ -73,4 +121,3 @@ ignore = ["E501", "E741", "E402"]
 
 [tool.ruff.lint.per-file-ignores]
 "mips/*/era_experiments/*.ipynb" = ["F401"]
-

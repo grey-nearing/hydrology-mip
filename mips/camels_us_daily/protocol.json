@@ -91,7 +91,7 @@
       "forcing_regime": "single_camels",
       "title": "Gauged Simulation — Single CAMELS Forcing",
       "table_number": 3,
-      "section": "4.1"
+      "section": "4.1.1"
     },
     {
       "id": "gauged__multi_camels",
@@ -99,7 +99,7 @@
       "forcing_regime": "multi_camels",
       "title": "Gauged Simulation — Multiple CAMELS Forcings",
       "table_number": 4,
-      "section": "4.1"
+      "section": "4.1.2"
     },
     {
       "id": "gauged__lagged_streamflow",
@@ -107,7 +107,7 @@
       "forcing_regime": "lagged_streamflow",
       "title": "Gauged Simulation — With Lagged Streamflow",
       "table_number": 5,
-      "section": "4.1"
+      "section": "4.1.3"
     },
     {
       "id": "gauged__freeform",
@@ -115,71 +115,71 @@
       "forcing_regime": "freeform",
       "title": "Gauged Simulation — Freeform Forcings",
       "table_number": 6,
-      "section": "4.1"
+      "section": "4.1.4"
     },
     {
       "id": "pub__single_camels",
-      "spatial_regime": "pub",
+      "spatial_regime": "pub_12fold",
       "forcing_regime": "single_camels",
       "title": "12-Fold Random PUB — Single CAMELS Forcing",
       "table_number": 7,
-      "section": "4.2"
+      "section": "4.2.1"
     },
     {
       "id": "pub__multi_camels",
-      "spatial_regime": "pub",
+      "spatial_regime": "pub_12fold",
       "forcing_regime": "multi_camels",
       "title": "12-Fold Random PUB — Multiple CAMELS Forcings",
       "table_number": 8,
-      "section": "4.2"
+      "section": "4.2.2"
     },
     {
       "id": "pub__lagged_streamflow",
-      "spatial_regime": "pub",
+      "spatial_regime": "pub_12fold",
       "forcing_regime": "lagged_streamflow",
       "title": "12-Fold Random PUB — With Lagged Streamflow",
       "table_number": 9,
-      "section": "4.2"
+      "section": "4.2.3"
     },
     {
       "id": "pub__freeform",
-      "spatial_regime": "pub",
+      "spatial_regime": "pub_12fold",
       "forcing_regime": "freeform",
       "title": "12-Fold Random PUB — Freeform Forcings",
       "table_number": 10,
-      "section": "4.2"
+      "section": "4.2.4"
     },
     {
       "id": "pur__single_camels",
-      "spatial_regime": "pur",
+      "spatial_regime": "pur_18huc02",
       "forcing_regime": "single_camels",
       "title": "18-Fold HUC-02 PUR — Single CAMELS Forcing",
       "table_number": 11,
-      "section": "4.3"
+      "section": "4.3.1"
     },
     {
       "id": "pur__multi_camels",
-      "spatial_regime": "pur",
+      "spatial_regime": "pur_18huc02",
       "forcing_regime": "multi_camels",
       "title": "18-Fold HUC-02 PUR — Multiple CAMELS Forcings",
       "table_number": 12,
-      "section": "4.3"
+      "section": "4.3.2"
     },
     {
       "id": "pur__lagged_streamflow",
-      "spatial_regime": "pur",
+      "spatial_regime": "pur_18huc02",
       "forcing_regime": "lagged_streamflow",
       "title": "18-Fold HUC-02 PUR — With Lagged Streamflow",
       "table_number": 13,
-      "section": "4.3"
+      "section": "4.3.3"
     },
     {
       "id": "pur__freeform",
-      "spatial_regime": "pur",
+      "spatial_regime": "pur_18huc02",
       "forcing_regime": "freeform",
       "title": "18-Fold HUC-02 PUR — Freeform Forcings",
       "table_number": 14,
-      "section": "4.3"
+      "section": "4.3.4"
     }
   ],
   "storage": {
@@ -188,12 +188,23 @@
     "hydrographs_prefix": "gs://camels-us-mip/hydrographs",
     "zenodo_release_doi": "10.5281/zenodo.24383448"
   },
-  "paths": {
-    "splits": "splits",
-    "leaderboards": "leaderboards",
-    "figures": "figures",
-    "data": "data",
-    "era_experiments": "era_experiments"
-  },
-  "citation": "Nearing, G. S., Klotz, D., & Ebel, P. (2026). HydroMIP: A CAMELS-US Model Intercomparison Project. Hydrology and Earth System Sciences (submitted)."
+  "authors": [
+    {
+      "name": "Nearing, Grey S.",
+      "affiliation": "Google Research, Zurich, Switzerland"
+    },
+    {
+      "name": "Klotz, Daniel",
+      "affiliation": "Google Research, Zurich, Switzerland; Interdisciplinary Transformation University Austria (IT:U), Linz, Austria"
+    },
+    {
+      "name": "Ebel, Patrick",
+      "affiliation": "Google Research, Zurich, Switzerland"
+    },
+    {
+      "name": "Gauch, Martin",
+      "affiliation": "Google Research, Zurich, Switzerland"
+    }
+  ],
+  "citation": "Nearing, G. S., Klotz, D., Ebel, P., & Gauch, M. (2026). HydrologyMIP: A Rainfall-Runoff Model Intercomparison Project. Hydrology and Earth System Sciences (submitted)."
 }

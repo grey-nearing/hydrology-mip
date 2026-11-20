@@ -18,7 +18,7 @@
 
 ## Model Architecture
 
-Li et al. (2025) introduced a multi-structure, multi-forcing, multi-seed ensemble combining two distinct regional deep-learning/differentiable hydrological model paradigms across thethree standard CAMELS-US meteorological forcing products (Daymet, Maurer, and NLDAS):
+Li et al. (2025) introduced a multi-structure, multi-forcing, multi-seed ensemble combining two distinct regional deep-learning/differentiable hydrological model paradigms across the three standard CAMELS-US meteorological forcing products (Daymet, Maurer, and NLDAS):
 
 1. **Pure Data-Driven Regional LSTM ($\widehat{Q}_{\text{LSTM}}$):** Entity-aware / multi-forcing regional LSTM models trained on CAMELS-US basins (`kratzert2021_lstm_archive` / `kratzert_lstm`).
 2. **Differentiable Process-Based Model ($\widehat{Q}_{\delta\text{HBV 1.1p}}$):** The dynamic-parameter differentiable HBV 1.1p ($\delta\text{MG}$) architecture of Song et al. (2024) (`models/song_dhbv11p`), where a 256-unit DropConnect LSTM parameter estimation network outputs 14 static HBV parameters per sub-grid bucket ($N_{\text{mul}} = 16$), 2 Gamma unit hydrograph routing parameters, and 3 daily time-varying parameters ($\beta_t, K_{0,t}, \gamma_t$) routed through an explicit differentiable HBV snow, soil moisture, capillary rise ($C$), two-zone groundwater, and 15-day Gamma unit hydrograph core.
@@ -57,12 +57,25 @@ An additional 20-member seed-level ensemble store (`t4_03.zarr`, stacking 10 LST
 
 ---
 
+## Build Prerequisites
+
+The $\delta\text{HBV 1.1p}$ component uses the shared dHBV core (`models/_dhbv_common/core.py`), which contains C++/OpenMP (CPU) and CUDA (GPU) kernels. They are JIT-compiled with `torch.utils.cpp_extension.load_inline` on the first call, which takes a few minutes. The build is cached in `~/.cache/torch_extensions`. Set `TORCH_EXTENSIONS_DIR` to change the cache location, for example to a separate directory for each concurrent process. You need:
+- **C++ compiler:** Linux `g++` with OpenMP. On macOS (Apple clang) the C++ kernels build without `-fopenmp` and run single-threaded.
+- **`ninja`:** `pip install ninja`. torch cannot load C++ extensions without it.
+- **GPU only:** an `nvcc` whose version matches `torch.version.cuda`, with `CUDA_HOME` pointing at that toolkit.
+
+---
+
 ## Reproducing Results
 
 ```bash
-# Verify Stage-1 author reproduction report
-python3 models/li2025_lstm_dhbv_ens/reproduce_author_metrics.py --mode verify
+# Print the tracked Stage-1 author reproduction report
+python -m models.li2025_lstm_dhbv_ens.reproduce_author_metrics --mode verify
 
-# Re-score the Stage-2 multi-model ensemble Zarr store t4_06 directly from GCS
-python3 models/li2025_lstm_dhbv_ens/reproduce_author_metrics.py --mode verify --verify-gcs
+# Re-score the Stage-2 multi-model ensemble Zarr store t4_06 from GCS (needs GCS read credentials)
+python -m models.li2025_lstm_dhbv_ens.reproduce_author_metrics --mode verify --verify-gcs
 ```
+
+- `--verify-gcs` and `--mode evaluate_stage2` read from `gs://camels-us-mip`, which is not public, so they need GCS read credentials (Application Default Credentials).
+- `--upload` (formerly `--write-gcs`) rebuilds `t4_06.zarr` from `t4_05.zarr` and `t4_24.zarr` and writes it back to the bucket before scoring. It is opt-in and maintainer-only, because it needs GCS write access.
+- Any report the script writes goes to `--out`. The default is `models/li2025_lstm_dhbv_ens/stage1_author_reproduction_results.local.json`, which is not tracked by git. The tracked `stage1_author_reproduction_results.json` is overwritten only if `--out` points at it explicitly.

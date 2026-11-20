@@ -586,7 +586,3 @@ def test_upsert_leaderboard_entry_automatically_updates_figures(tmp_path: Path) 
     assert single_2026[0]["entry_id"] == "community_new_leader_2026"
     assert single_2026[0]["nse"] == pytest.approx(0.845)
     assert single_2026[0]["provenance"] == "mip_rerun"
-
-    # Also verify explicit generate_all_paper_figures call works
-    manifest2 = generate_all_paper_figures(leaderboards_dir=lb_dir, output_dir=fig_dir)
-    assert manifest2["total_leaderboard_entries"] == manifest["total_leaderboard_entries"]

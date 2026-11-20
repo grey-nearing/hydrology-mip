@@ -1,60 +1,151 @@
-# CAMELS-US MIP Manuscript Figures (`figures/`)
+# CAMELS-US Daily Figures (`mips/camels_us_daily/figures/`)
 
-All manuscript figures in this directory are generated **directly from the live leaderboard JSON files** in [`../leaderboards/`](../leaderboards/) via [`../leaderboards/generate_figures.py`](../leaderboards/generate_figures.py) (or the thin wrapper [`figures/generate_figures.py`](generate_figures.py)) and are automatically regenerated on every community submission and leaderboard update.
+The figures in this folder are drawn from the leaderboard JSON files in
+[`../leaderboards/`](../leaderboards/README.md) by
+[`leaderboards/generate_figures.py`](../../../leaderboards/generate_figures.py). They are generated
+files. Do not edit them by hand. The maintainer tools that change a leaderboard also draw the
+figures again (see [When the figures are drawn again](#when-the-figures-are-drawn-again)).
 
-## Generated Figures
+## Files
 
-| File | Manuscript Reference | Source JSON Files |
+| File | Content | Data source |
 | :--- | :--- | :--- |
-| `figure_1_water_year_coverage.png` / `.pdf` | **Figure 1.** Streamflow Observation Completeness by Water Year Across the 531 CAMELS-US Benchmark Basins (Water Years 1981–2014). | `leaderboards/<leaderboard_id>.json` → `protocol.water_year_completeness` (mirrored in `leaderboards/tables_3_to_14.json`) |
-| `figure_2_leaderboard_progress_all_regimes.png` / `.pdf` | **Figure 2.** 3-subpanel CAMELS-531 Leaderboard Progress Over Time (2015–2026) across (a) Gauged Simulation, (b) 12-Fold Random PUB, and (c) 18-Fold HUC-02 PUR. | `leaderboards/gauged__*.json`, `leaderboards/pub__*.json`, `leaderboards/pur__*.json` |
-| `figure_2a_leaderboard_progress_gauged.png` | **Figure 2a.** Standalone Gauged CAMELS-531 Leaderboard Progress Over Time (Tables 3–6). | `leaderboards/gauged__*.json` |
-| `figure_2b_leaderboard_progress_pub.png` | **Figure 2b.** Standalone Random Ungauged (12-Fold PUB) Leaderboard Progress Over Time (Tables 7–10). | `leaderboards/pub__*.json` |
-| `figure_2c_leaderboard_progress_pur.png` | **Figure 2c.** Standalone Regionally Ungauged (18-Fold HUC-02 PUR) Leaderboard Progress Over Time (Tables 11–14). | `leaderboards/pur__*.json` |
-| `figures_manifest.json` | Machine-readable manifest: plotted entry counts, excluded rows (with reasons), per-panel axis limits, active frontier leaders per regime (with source category and provenance), and output paths. | `leaderboards/*.json` |
+| `figure_1_water_year_coverage.png`, `.pdf` | **Figure 1.** How complete the streamflow records of the 531 basins are in each water year. | `protocol.water_year_completeness` in the leaderboard JSON files |
+| `figure_2_leaderboard_progress_all_regimes.png`, `.pdf` | **Figure 2.** Leaderboard progress over time in three panels: (a) gauged, (b) 12-fold PUB, (c) 18-fold HUC-02 PUR. | All 12 leaderboard files |
+| `figure_2a_leaderboard_progress_gauged.png` | Panel (a) alone: gauged (Tables 3 to 6). | `gauged__*.json` |
+| `figure_2b_leaderboard_progress_pub.png` | Panel (b) alone: PUB (Tables 7 to 10). | `pub__*.json` |
+| `figure_2c_leaderboard_progress_pur.png` | Panel (c) alone: PUR (Tables 11 to 14). | `pur__*.json` |
+| `figure_<leaderboard_id>.png` (12 files) | Progress over time for one leaderboard. A leaderboard without rows shows a "No entries yet" message. | `<leaderboard_id>.json` |
+| `figures_manifest.json` | A machine-readable record of the last drawing (see below). | All of the above |
 
-## Figure 1: Water-Year Completeness Comes Only From the Protocol Block
+## Figure 1: water-year completeness
 
-Figure 1 is drawn **exclusively** from `protocol["water_year_completeness"]` in the leaderboard JSON protocol block (keys `n_basins`, `water_years`, `basins_with_100pct_complete`, `basins_with_any_valid_data`, `mean_daily_coverage_fraction`, plus the optional `newman_eval_water_years` / `newman_train_water_years` shading windows). There is **no hard-coded fallback series** in the generator: a missing or malformed block raises `ValueError` with a message naming the offending key.
+Figure 1 uses only the `water_year_completeness` block inside the `protocol` block of the
+leaderboard files. That block has these keys:
 
-The block can be recomputed from the canonical observation store (`gs://camels-us-mip/observations/newman_eval_targets.zarr`, variables `qobs_all` of shape `(531, n_days)` and `date_all`) with:
+| Key | Meaning |
+| :--- | :--- |
+| `n_basins` | The number of basins (531). |
+| `water_years` | The water years shown, in increasing order. |
+| `basins_with_100pct_complete` | For each water year, the number of basins with no missing day. |
+| `basins_with_any_valid_data` | For each water year, the number of basins with at least one valid day. |
+| `mean_daily_coverage_fraction` | For each water year, the mean over basins of the fraction of valid days. |
+| `newman_eval_water_years`, `newman_train_water_years` | Optional. The shaded evaluation and training windows. Defaults: 1990–1999 and 2000–2008. |
+
+A water year `Y` runs from 1 October of year `Y-1` to 30 September of year `Y`. There is no
+built-in fallback: if the block is missing or broken, drawing stops with a `ValueError` that names
+the bad key.
+
+To compute the block again, pass a `(basins, days)` streamflow array and its dates to
+`compute_water_year_completeness`. The committed block covers water years 1981 to 2014. It comes
+from the 531 benchmark basins in the input bundle (see [`../data/README.md`](../data/README.md)):
 
 ```python
-from leaderboards.generate_figures import compute_water_year_completeness
+import numpy as np
 
-block = compute_water_year_completeness(qobs_all, date_all)
-# -> {"n_basins": 531, "water_years": [...], "basins_with_100pct_complete": [...],
-#     "basins_with_any_valid_data": [...], "mean_daily_coverage_fraction": [...],
-#     "newman_eval_water_years": [1990, 1999], "newman_train_water_years": [2000, 2008],
-#     "partial_water_years_excluded": [...]}
+from leaderboards.generate_figures import compute_water_year_completeness
+from mips.camels_us_daily import load_canonical_basins
+
+basins = load_canonical_basins()
+with np.load("mips/camels_us_daily/data/camels_671_1980_2014.npz", allow_pickle=False) as bundle:
+    row = {b: i for i, b in enumerate(bundle["basins"].tolist())}
+    qobs = bundle["qobs"][[row[b] for b in basins]]
+    dates = bundle["dates"].astype("datetime64[D]")
+
+block = compute_water_year_completeness(qobs, dates)
+print(block["n_basins"], block["water_years"][0], block["water_years"][-1])  # 531 1981 2014
 ```
 
-Definitions (water year `Y` = 1 Oct `Y-1` – 30 Sep `Y`): a basin is *100 % complete* in a water year when it has no missing (NaN / non-finite) day in it; it has *any valid data* when it has at least one valid day; `mean_daily_coverage_fraction` is the mean over basins of the fraction of valid days. Water years whose full calendar is not covered by `date_all` are dropped by default (`include_partial_water_years=False`) because their completeness cannot be assessed.
+The observation targets store (`newman_eval_targets.zarr`, variables `qobs_all` and `date_all`)
+also works, but it ends in 2008, so its block stops at water year 2008.
 
-## Figure 2: Every Scored Row Is Plotted by Original Publication Year
+`compute_water_year_completeness(qobs_all, dates_all, *, include_partial_water_years=False, ...)`
+drops water years that the dates do not fully cover, because their completeness is unknown. It
+lists them in `partial_water_years_excluded`.
 
-- **No cropping.** Axis limits are derived from the data: the y-range of each panel is the union of a per-panel minimum extent (gauged 0.42–0.91, PUB 0.40–0.80, PUR 0.30–0.76) and `[min NSE − 0.02, max NSE + 0.02]` of the plotted rows; the x-range likewise expands beyond 2015–2026 when needed. Every leaderboard row with a finite primary NSE is therefore drawn, and the generator raises if it ever draws fewer points than it was given.
-- **Explicit exclusions.** Rows without a usable NSE (`primary_ranking_nse` / `ens_med_nse` / `single_med_nse` all null, non-numeric, non-finite, or a legacy `-999` sentinel) are skipped explicitly and listed in `figures_manifest.json → excluded_rows[<spatial_regime>]` with `entry_id`, `leaderboard_id`, `model_name` and a `reason`. `panel_entry_counts` are the numbers of points actually drawn.
-- **Provenance and publication year.** `Literature`, `Archive`, and `Archive*` results are plotted at the year of the cited paper with **filled** markers. `MIP Re-run` results are also plotted at the year of the original published paper with **hollow** markers (so credit goes to the original authors while transparently indicating that the run was re-executed on standard MIP splits). `Contribution` models from this study or subsequent community submissions are plotted at the year of their submission or `2026` with **hollow** markers. A row with no 1990–2035 year in `publication_year`, `model_name` or `citation` makes the generator raise `ValueError` naming the entry; there is no silent default year.
-- The step-line frontier of each input-forcing regime is still the running maximum of the median NSE over publication years (rows containing "oracle" are excluded from the frontier but still plotted).
+## Figure 2: leaderboard progress
 
-## Automatic Triggering on Community Commits & Submissions
+Each point is one leaderboard row. The x-axis is a year, and the y-axis is the median NSE of the
+row over the basins. The marker shape shows the forcing regime, and the color shows the
+architecture group (`model_category`).
 
-1. **In the Python Submission Pipeline (`leaderboards/update_leaderboard.py`)**:
-   Calling `upsert_leaderboard_entry(...)`, `trigger_submission_from_gcs(...)`, or `recalculate_all_self_run_models(...)` automatically calls `generate_all_paper_figures(...)` so that `figures/*.png` and `figures/*.pdf` are updated immediately whenever a new model is scored or added.
-2. **In Git / GitHub Actions (`.github/workflows/update_leaderboards_and_figures.yml` & `leaderboards/on_community_commit.sh`)**:
-   Every push or pull request touching `leaderboards/**` or `submissions/**` (as well as the local git `pre-commit` hook installed via `bash leaderboards/on_community_commit.sh --install-hook`) runs `python -m leaderboards.generate_figures` and commits the updated figures directly in `figures/`.
-   The script uses `${PYTHON_BIN:-$(command -v python3)}` as its interpreter (no machine-specific paths) and fails with a clear message if that interpreter cannot `import leaderboards`; set `PYTHON_BIN=/path/to/python` to pick an environment with the project dependencies installed.
+- **Every row with a finite NSE is drawn.** The axes grow to fit all points; no point is cut off.
+  The y-axis of each panel covers at least these ranges: gauged 0.42–0.91, PUB 0.40–0.80, and
+  PUR 0.30–0.76. The x-axis covers at least 2015–2026.
+- **Rows without a usable NSE are skipped and listed.** A row is skipped when
+  `primary_ranking_nse`, `ens_med_nse`, and `single_med_nse` are all missing, not numbers, not
+  finite, or the old `-999` placeholder. Skipped rows appear in `figures_manifest.json` under
+  `excluded_rows`, with a reason.
+- **Year of each point.** `Literature`, `Literature*`, `Archive`, and `Archive*` rows use the year
+  of the cited paper and have filled markers. `MIP Re-run` rows use the year of the original paper
+  of the model and have hollow markers. `Contribution` rows use the year of their submission
+  (`submitted_at`), or 2026 when there is none, and have hollow markers. A literature row without
+  any year between 1990 and 2035 stops the drawing with a `ValueError`.
+- **Frontier line.** For each forcing regime, a step line connects the best NSE so far over time.
+  Rows whose model name contains "oracle", `Literature*` rows (and `Literature` rows with an
+  asterisk), and the persistence benchmark `naive_lag1_persistence` are drawn but never set the
+  frontier.
 
-## Manual CLI Usage
+## `figures_manifest.json`
+
+| Key | Meaning |
+| :--- | :--- |
+| `source_leaderboards_dir`, `output_figures_dir` | The folders used, relative to the repository root. |
+| `total_leaderboard_entries` | The number of rows over all 12 leaderboards. CI checks that it matches the leaderboard files. |
+| `mip_study_year` | The year used for new contributions (2026). |
+| `panel_entry_counts` | The number of points drawn in each Figure 2 panel. |
+| `excluded_rows` | The skipped rows of each panel, with the reason. |
+| `panel_axis_limits` | The x- and y-limits of each panel. |
+| `figure_1_source` | Always `protocol.water_year_completeness`. |
+| `figures` | The path of every figure file. CI checks that each one exists. |
+| `frontier_leaders` | For each panel, the rows on the frontier line, with year, NSE, and provenance. |
+
+## When the figures are drawn again
+
+- **By the Python tools (maintainers).** `trigger_submission_from_gcs`, `upsert_leaderboard_entry`,
+  `remove_leaderboard_entry`, `recalculate_all_self_run_models`, `normalize_legacy_leaderboards`,
+  and `reconcile_archived_rows` (with `apply=True`) call `generate_all_paper_figures`. The
+  `mip-update-leaderboard` command uses these functions.
+- **By the git pre-commit hook (optional).** Install it with
+  `bash leaderboards/on_community_commit.sh --install-hook`. When a commit changes files in
+  `mips/<mip_id>/leaderboards/`, `mips/<mip_id>/protocol.json`, or `leaderboards/`, the hook runs
+  `leaderboards/on_community_commit.sh`. Then it adds the new `tables_3_to_14.json` and `figures/`
+  to the commit.
+- **By GitHub Actions.** The workflow **Regenerate Leaderboard Bundle and Figures**
+  ([`.github/workflows/update_leaderboards_and_figures.yml`](../../../.github/workflows/update_leaderboards_and_figures.yml))
+  runs only when a maintainer starts it by hand. It runs `leaderboards/on_community_commit.sh` and
+  the tests. If any file changed, it opens a pull request. It never pushes to `main` directly.
+
+`on_community_commit.sh` uses `PYTHON_BIN` as its Python interpreter (default: the first `python3`
+on `PATH`). That interpreter must be able to import `hydromip` and `leaderboards`. Set `MIP_ID`
+to process only one MIP. Details are in [`leaderboards/README.md`](../../../leaderboards/README.md).
+
+## Draw the figures yourself
 
 ```bash
-python -m leaderboards.generate_figures            # regenerate into figures/
-python -m leaderboards.generate_figures --leaderboards-dir leaderboards --output-dir /tmp/mip_figures
-# or:
+# Redraw the figures in this folder
 mip-generate-figures
+
+# Draw the figures of a copied leaderboard folder into another folder
+mip-generate-figures --leaderboards-dir ./lb_copy/leaderboards --output-dir ./lb_copy/figures
 ```
+
+| Flag | Default | Meaning |
+| :--- | :--- | :--- |
+| `--mip MIP` | `camels_us_daily` | Registered MIP. Only `camels_us_daily` is supported. |
+| `--leaderboards-dir PATH` | `mips/camels_us_daily/leaderboards` | Folder with the leaderboard JSON files. |
+| `--output-dir PATH` | `mips/camels_us_daily/figures` | Folder for the figures. With `--leaderboards-dir` but no `--output-dir`, the figures go to a `figures/` folder next to the leaderboard folder. |
+| `-h`, `--help` | — | Show the help text. |
+
+`python -m leaderboards.generate_figures` is the same command.
 
 ## Tests
 
-`leaderboards/tests/test_generate_figures.py` regenerates all figures from a copy of the committed leaderboards into a temporary directory and asserts that `panel_entry_counts` equals the number of rows with a finite NSE per spatial regime, that `excluded_rows` lists exactly the rows without one, that every plotted row lies inside the recorded axis limits, that no MIP-produced frontier leader is dated before 2026, that the hard-coded Figure-1 series is gone (a protocol without `water_year_completeness` raises), and it unit-tests `compute_water_year_completeness`, `extract_publication_year`, `format_leader_label` and `resolve_primary_nse`.
+```bash
+pytest leaderboards/tests/test_generate_figures.py
+```
+
+The tests draw all figures from the leaderboards into a temporary folder. They check that the
+number of points equals the number of rows with a finite NSE, that the skipped rows are listed,
+that Figure 1 fails without its protocol block, and that the committed figures match
+`figures_manifest.json`.

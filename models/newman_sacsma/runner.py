@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-2 and Stage-1 Fold Runner for Nearing et al. (2020) & Newman et al. (2017) Snow-17 + SAC-SMA."""
 
 from __future__ import annotations
@@ -26,9 +29,13 @@ def run_fold(
     spinup_days: int = 365,
     n_iter: int = 400,
     k_donors: int = 1,
+    backend: str = "cpp",
     **kwargs: object,
 ) -> np.ndarray:
     """Calibrate Snow-17 + SAC-SMA on train_basins and predict test_basins.
+
+    ``backend`` selects the simulator used for calibration and prediction: ``"cpp"`` (batched
+    C++ kernel, OpenMP where available) or ``"numpy"`` (pure-NumPy reference implementation).
 
     Returns:
         Float32 array of shape (len(test_basins), n_target_days) in mm/day.
@@ -36,7 +43,7 @@ def run_fold(
     del fold_id, fold_index
     if "warmup_days" in kwargs:
         spinup_days = int(kwargs["warmup_days"])  # type: ignore[arg-type]
-    if "epochs" in kwargs and "n_iter" not in kwargs:
+    if "epochs" in kwargs:
         n_iter = max(10, int(kwargs["epochs"]) * 10)  # type: ignore[arg-type]
 
     train_slice = load_camels_slice(
@@ -68,6 +75,7 @@ def run_fold(
             n_iter=n_iter,
             seed=int(seed),
             k_donors=k_donors,
+            backend=backend,
         )
         preds = calibrator.fit_and_predict(
             train_basins=list(train_basins),
@@ -88,7 +96,10 @@ def run_fold(
             lon_test=test_slice["lon"],
             elev_test=test_slice["elev"],
         )
-        assert preds.shape == (len(test_basins), n_target_days)
+        if preds.shape != (len(test_basins), n_target_days):
+            raise ValueError(
+                f"Predictions have shape {preds.shape}, expected {(len(test_basins), n_target_days)}."
+            )
         seed_preds.append(preds.astype(np.float32))
 
     if len(seed_preds) == 1:

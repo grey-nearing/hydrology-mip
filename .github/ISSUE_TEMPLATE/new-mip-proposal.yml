@@ -1,0 +1,58 @@
+name: "New MIP Proposal (mips/<mip_id>/)"
+description: "Propose adding a new self-contained hydrological Model Intercomparison Project plugin under mips/<mip_id>/."
+title: "[New MIP Proposal]: "
+labels: ["new-mip"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        HydrologyMIP (`https://hydrologymip.org`) is designed as an extensible multi-MIP monorepo: each benchmark lives as an additive plugin under `mips/<mip_id>/` (`protocol.json`, `adapter.py`, `splits/`, `leaderboards/`, `figures/`) sharing the `hydromip/` core, `models/` zoo, and web portal.
+        Please open a proposal issue here to align on splits, metrics, and cloud storage before submitting a full implementation PR.
+
+  - type: input
+    id: mip_id
+    attributes:
+      label: "Proposed `mip_id` & Benchmark Title"
+      placeholder: "e.g., caravan_global_daily — Caravan Global Daily Streamflow MIP"
+    validations:
+      required: true
+
+  - type: input
+    id: task_and_variable
+    attributes:
+      label: "Task Type, Target Variable & Units"
+      placeholder: "e.g., streamflow_daily_probabilistic (`qobs`, mm/day) or soil_moisture_daily (`sm`, m3/m3)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: dataset_and_license
+    attributes:
+      label: "Source Dataset(s), Entity Count & Open Data License"
+      description: "Provide permanent DOIs/URLs for observations, forcings, and attributes, total number of entities (basins/stations/reaches), and redistribution license."
+    validations:
+      required: true
+
+  - type: textarea
+    id: splits_and_anti_leakage
+    attributes:
+      label: "Temporal Windows, Spatial Regimes & Anti-Leakage Design"
+      description: "Define exact training/calibration vs. blind evaluation periods, spatial cross-validation folds (e.g., gauged, random k-fold PUB, regional/continental PUR), and spin-up masking rules."
+    validations:
+      required: true
+
+  - type: textarea
+    id: metric_suite
+    attributes:
+      label: "Metric Suite & Primary Ranking Metric"
+      description: "Does this MIP reuse `gauch_2023_deterministic` or register a new `MetricSuiteSpec` in `hydromip/metrics/` (e.g., CRPS, PIT uniformity, CSI/IoU, ubRMSE, lead-time skill)?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: baseline_models
+    attributes:
+      label: "Initial Baseline Models & Archive Seeding Plan"
+      description: "Which existing models in `models/catalog.json` or published archives will seed the initial leaderboards?"
+    validations:
+      required: false

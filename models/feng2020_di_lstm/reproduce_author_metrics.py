@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 author-protocol reproduction for Feng, Fang & Shen (2020, WRR) `DI(1)` LSTM.
 
 Trains the 6-seed Feng et al. (2020) `DI(1)` Data-Integration Lagged-Discharge LSTM
@@ -8,6 +11,9 @@ and scores the resulting hydrographs with `metrics.metrics.calculate_all_metrics
 
     python -m models.feng2020_di_lstm.reproduce_author_metrics --data-dir /path/to/camels --mode verify
     python -m models.feng2020_di_lstm.reproduce_author_metrics --smoke
+    python -m models.feng2020_di_lstm.reproduce_author_metrics --write-tracked  # regenerate the tracked JSON
+
+Full runs write `stage1_author_reproduction_results.local.json` (untracked) unless `--write-tracked`.
 """
 
 from __future__ import annotations

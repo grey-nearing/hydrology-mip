@@ -50,6 +50,15 @@ _DEFAULT_MIP_PATHS = resolve_mip_paths(DEFAULT_MIP_ID)
 DEFAULT_LEADERBOARDS_DIR: Path = _DEFAULT_MIP_PATHS.leaderboards_dir
 DEFAULT_FIGURES_DIR: Path = _DEFAULT_MIP_PATHS.figures_dir
 
+#: Strip version- and time-dependent metadata so regenerated figures are byte-reproducible
+#: (no `Software` tEXt chunk in PNGs; no `Creator`/`Producer`/`CreationDate` in PDFs).
+PNG_SAVE_METADATA: dict[str, str | None] = {"Software": None}
+PDF_SAVE_METADATA: dict[str, str | None] = {
+    "Creator": None,
+    "Producer": None,
+    "CreationDate": None,
+}
+
 #: Year of the CAMELS-US MIP study itself ("this study"). "Contribution" entries
 #: without a prior Series-1 paper are dated at this year (or their `submitted_at` year).
 MIP_STUDY_YEAR: int = 2026
@@ -1056,8 +1065,8 @@ def generate_figure_1_water_year_coverage(
 
     png_path = out_dir / "figure_1_water_year_coverage.png"
     pdf_path = out_dir / "figure_1_water_year_coverage.pdf"
-    fig.savefig(png_path, dpi=300)
-    fig.savefig(pdf_path)
+    fig.savefig(png_path, dpi=300, metadata=PNG_SAVE_METADATA)
+    fig.savefig(pdf_path, metadata=PDF_SAVE_METADATA)
     plt.close(fig)
     return {"png": png_path, "pdf": pdf_path}
 
@@ -1413,8 +1422,8 @@ def generate_figure_2_leaderboard_progress(
 
     fig2_png = out_dir / "figure_2_leaderboard_progress_all_regimes.png"
     fig2_pdf = out_dir / "figure_2_leaderboard_progress_all_regimes.pdf"
-    fig.savefig(fig2_png, dpi=300)
-    fig.savefig(fig2_pdf)
+    fig.savefig(fig2_png, dpi=300, metadata=PNG_SAVE_METADATA)
+    fig.savefig(fig2_pdf, metadata=PDF_SAVE_METADATA)
     plt.close(fig)
 
     # Also render standalone single-panel figures (2a, 2b, 2c)
@@ -1479,7 +1488,7 @@ def generate_figure_2_leaderboard_progress(
         s_fig.canvas.draw()
         s_disp = [s_ax.transData.transform(pt) for pt in s_res["leader_coords"]]
         _optimize_annotations(s_fig, s_ax, s_res["annotations"], s_disp, pad_px=5.0, n_iter=60)
-        s_fig.savefig(single_paths[spatial], dpi=300)
+        s_fig.savefig(single_paths[spatial], dpi=300, metadata=PNG_SAVE_METADATA)
         plt.close(s_fig)
 
     # Also render per-table figures (`figure_<leaderboard_id>.png`) for the 10 valid leaderboards.
@@ -1592,7 +1601,7 @@ def generate_figure_2_leaderboard_progress(
                 },
             )
             plt.tight_layout()
-        t_fig.savefig(out_path, dpi=220)
+        t_fig.savefig(out_path, dpi=220, metadata=PNG_SAVE_METADATA)
         plt.close(t_fig)
 
     return {
@@ -1726,6 +1735,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
+    if args.mip != DEFAULT_MIP_ID:
+        parser.error(
+            f"--mip {args.mip!r} is not supported: the paper figures implement the "
+            f"{DEFAULT_MIP_ID!r} leaderboard layout only."
+        )
     mip_paths = resolve_mip_paths(args.mip)
     leaderboards_dir = (
         Path(args.leaderboards_dir)

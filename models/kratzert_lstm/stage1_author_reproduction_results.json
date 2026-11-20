@@ -4,7 +4,7 @@
   "model_name": "Kratzert et al. (2019, 2021) CudaLSTM",
   "provenance": "Trained in-process via models.kratzert_lstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; stored in gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr.",
   "protocol": {
-    "basins_source": "splits/basins_531.json",
+    "basins_source": "mips/camels_us_daily/splits/basins_531.json",
     "n_basins": 531,
     "train_period": [
       "1999-10-01",
@@ -28,7 +28,7 @@
   "published": {
     "single_median_nse": 0.744,
     "ensemble_median_nse": 0.772,
-    "source": "Kratzert et al. (2021), HESS 25, 2685-2706, Table 1 & Table A2; Zenodo 10.5281/zenodo.4670268 and leaderboards/gauged__single_camels.json entry t3_02 (10-model ensemble 0.772, single model 0.744)"
+    "source": "Kratzert et al. (2021), HESS 25, 2685-2706, Table 1 & Table A2; Zenodo 10.5281/zenodo.4670268 and mips/camels_us_daily/leaderboards/gauged__single_camels.json entry t3_02 (10-model ensemble 0.772, single model 0.744)"
   },
   "reference_used": "single",
   "published_median_nse": 0.744,

@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Song et al. (2024) Differentiable HBV 1.1p (dHBV 1.1p) dynamic-parameter rainfall-runoff model."""
 
 from models.song_dhbv11p.model import DHBV11pTrainer, StandaloneDHBV11p

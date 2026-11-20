@@ -1,9 +1,12 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 Author Metric Reproduction Script: Nearing et al. (2020) & Newman et al. (2017) SAC-SMA + Snow-17.
 
 Canonical References:
   - Entry #1 (`newman_sacsma`, Archive*):
-    Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Littell, J. S., &
-    Nijssen, B. (2017). Benchmarking of a physically based hydrologic model.
+    Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Nijssen, B., &
+    Nearing, G. (2017). Benchmarking of a physically based hydrologic model.
     Journal of Hydrometeorology, 18(8), 2215-2225.
     DOI: https://doi.org/10.1175/JHM-D-16-0284.1
     GitHub: https://github.com/NCAR/camels
@@ -39,15 +42,23 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+from metrics.evaluator import calculate_model_leaderboard_metrics
+from metrics.metrics import calculate_all_metrics
+from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice
+from models.newman_sacsma.runner import run_fold
+from models.run_model import load_canonical_basins
+from models.zarr_writer import (
+    CANONICAL_EVAL_END,
+    CANONICAL_EVAL_START,
+    CANONICAL_TRAIN_END,
+    CANONICAL_TRAIN_START,
+)
 
-from metrics.evaluator import calculate_model_leaderboard_metrics  # noqa: E402
-from metrics.metrics import calculate_all_metrics  # noqa: E402
-from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice  # noqa: E402
-from models.newman_sacsma.runner import run_fold  # noqa: E402
-from models.run_model import load_canonical_basins  # noqa: E402
+MODEL_DIR = Path(__file__).resolve().parent
+# Tracked, committed Stage-1 record. Only rewritten when --out explicitly points here.
+TRACKED_RESULTS_PATH = MODEL_DIR / "stage1_author_reproduction_results.json"
+# Default output for new runs: untracked, so reproducing never mutates the committed record.
+DEFAULT_OUT_PATH = MODEL_DIR / "stage1_author_reproduction_results.local.json"
 
 
 def _evaluate_predictions(
@@ -84,9 +95,9 @@ def _evaluate_predictions(
             attrs={"basin_id": b},
         )
         res = calculate_all_metrics(da_obs, da_sim, resolution="1D", datetime_coord="date")
-        nse_val = float(res.get("NSE", np.nan))
-        kge_val = float(res.get("KGE", np.nan))
-        fhv_val = float(res.get("FHV", np.nan))
+        nse_val = float(res["NSE"])
+        kge_val = float(res["KGE"])
+        fhv_val = float(res["FHV"])
         if np.isfinite(nse_val):
             nses.append(nse_val)
         if np.isfinite(kge_val):
@@ -123,9 +134,15 @@ def main() -> None:
     parser.add_argument("--data-dir", type=Path, default=DEFAULT_DATA_DIR)
     parser.add_argument("--n-iter", type=int, default=400)
     parser.add_argument("--seeds", type=int, nargs="+", default=[123])
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=DEFAULT_OUT_PATH,
+        help="Where to write a newly computed report (default: untracked *.local.json). The tracked "
+        "stage1_author_reproduction_results.json is only overwritten if --out points at it.",
+    )
     args = parser.parse_args()
 
-    out_path = Path(__file__).resolve().parent / "stage1_author_reproduction_results.json"
     published_median_nse = 0.670
     tolerance = 0.03
 
@@ -164,20 +181,20 @@ def main() -> None:
                 "delta_median_nse": round(delta, 4),
                 "tolerance": tolerance,
                 "num_evaluated_basins": int(metrics_out["num_evaluated_basins"]),
-                "pred_nan_when_obs_valid": 0,
+                "pred_nan_when_obs_valid": int(metrics_out["pred_nan_when_obs_valid"]),
                 "status": status,
                 "stage1_gcs_zarr_uri": f"{args.bucket_uri}/stage1_author_reproductions/newman_sacsma.zarr",
                 "stage1_gcs_results_uri": f"{args.bucket_uri}/stage1_author_reproductions/newman_sacsma_results.json",
             }
-            out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+            args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         else:
-            if not out_path.is_file():
-                raise FileNotFoundError(f"Missing reproduction report: {out_path}")
-            report = json.loads(out_path.read_text(encoding="utf-8"))
+            if not TRACKED_RESULTS_PATH.is_file():
+                raise FileNotFoundError(f"Missing reproduction report: {TRACKED_RESULTS_PATH}")
+            report = json.loads(TRACKED_RESULTS_PATH.read_text(encoding="utf-8"))
     else:
         basins = load_canonical_basins()
-        train_period = ("1999-10-01", "2008-09-30")
-        eval_period = ("1989-10-01", "1999-09-30")
+        train_period = (CANONICAL_TRAIN_START, CANONICAL_TRAIN_END)
+        eval_period = (CANONICAL_EVAL_START, CANONICAL_EVAL_END)
         qsim = run_fold(
             train_basins=basins,
             test_basins=basins,
@@ -236,10 +253,10 @@ def main() -> None:
             "pred_nan_when_obs_valid": int(metrics_out["pred_nan_when_obs_valid"]),
             "status": status,
         }
-        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report, indent=2))
-    if report.get("status") != "PASS":
+    if report["status"] != "PASS":
         sys.exit(1)
 
 

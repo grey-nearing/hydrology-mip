@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 reproduction for the Rasiya Koya et al. (2023) Temporal Fusion Transformer.
 
 Trains the TFT in-process with `models.rasiya_koya_tft.runner.run_fold` on the Newman 531 basins
@@ -7,6 +10,9 @@ MIP TFT re-run) and scores the hydrograph with the Gauch et al. (2023) metric su
 
     python -m models.rasiya_koya_tft.reproduce_author_metrics --data-dir /path/to/camels --mode verify
     python -m models.rasiya_koya_tft.reproduce_author_metrics --smoke      # pipeline check only
+    python -m models.rasiya_koya_tft.reproduce_author_metrics --write-tracked  # regenerate the tracked JSON
+
+Full runs write `stage1_author_reproduction_results.local.json` (untracked) unless `--write-tracked`.
 """
 
 from __future__ import annotations
@@ -16,6 +22,12 @@ from pathlib import Path
 from metrics.metrics import calculate_all_metrics
 from models.kratzert_lstm.reproduction import SPLITS_DIR, build_arg_parser, run_cli
 from models.rasiya_koya_tft.runner import run_fold
+from models.zarr_writer import (
+    CANONICAL_EVAL_END,
+    CANONICAL_EVAL_START,
+    CANONICAL_TRAIN_END,
+    CANONICAL_TRAIN_START,
+)
 
 MODEL_KEY = "rasiya_koya_tft"
 MODEL_NAME = "Rasiya Koya et al. (2023) Temporal Fusion Transformer"
@@ -23,8 +35,8 @@ MODEL_DIR = Path(__file__).resolve().parent
 
 AUTHOR_PROTOCOL = {
     "basins_file": SPLITS_DIR / "basins_531.json",
-    "train_period": ("1999-10-01", "2008-09-30"),
-    "eval_period": ("1989-10-01", "1999-09-30"),
+    "train_period": (CANONICAL_TRAIN_START, CANONICAL_TRAIN_END),
+    "eval_period": (CANONICAL_EVAL_START, CANONICAL_EVAL_END),
     "forcings": ["maurer"],
     "seeds": (123,),
 }
@@ -35,7 +47,7 @@ AUTHOR_PROTOCOL = {
 PUBLISHED_SINGLE_MEDIAN_NSE = 0.725
 PUBLISHED_ENSEMBLE_MEDIAN_NSE = None
 PUBLISHED_SOURCE = (
-    "leaderboards/gauged__single_camels.json entry t3_21 (NeuralHydrology TFT, Maurer, single model); "
+    "mips/camels_us_daily/leaderboards/gauged__single_camels.json entry t3_21 (NeuralHydrology TFT, Maurer, single model); "
     "architecture after Rasiya Koya & Roy (2024), Journal of Hydrology"
 )
 TOLERANCE = 0.03

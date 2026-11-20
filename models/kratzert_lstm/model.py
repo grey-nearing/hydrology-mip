@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0 AND BSD-3-Clause
 #
 # The basin-averaged NSE* loss and step learning-rate schedule follow
@@ -280,47 +280,6 @@ class KratzertLSTMTrainer:
             pairs.shape[0], self.batch_size, self.n_batches_per_epoch, targ_len=targ_len
         )
         stat_dim = xs_tr_norm.shape[1]
-
-        if len(seeds) >= 1 and self.device.type == "cuda" and model_cls is CudaLSTM and self.epochs > 0:
-            from models.kratzert_lstm.cuda_multiseed import (
-                fit_and_predict_multiseed_cuda,
-                get_multiseed_cuda_ext,
-            )
-
-            ext = get_multiseed_cuda_ext()
-            if ext is not None:
-                models: list[nn.Module] = []
-                rngs: list[np.random.RandomState] = []
-                for seed in seeds:
-                    torch.manual_seed(int(seed))
-                    rngs.append(np.random.RandomState(int(seed)))
-                    models.append(self._build_model(model_cls, dyn_dim, stat_dim))
-                return fit_and_predict_multiseed_cuda(
-                    ext=ext,
-                    models=models,
-                    rngs=rngs,
-                    xd_tr_t=xd_tr_t,
-                    xs_tr_t=xs_tr_t,
-                    y_tr_t=y_tr_t,
-                    w_tr_t=w_tr_t,
-                    xd_te_t=xd_te_t,
-                    xs_te_t=xs_te_t,
-                    pairs_t=pairs_t,
-                    n_batches=n_batches,
-                    batch_size=self.batch_size,
-                    seq_len=self.seq_len,
-                    hidden_size=self.hidden_size,
-                    dropout=self.dropout,
-                    epochs=self.epochs,
-                    lr_schedule=self.lr_schedule,
-                    clip_grad_norm=self.clip_grad_norm,
-                    y_mean=y_mean,
-                    y_std=y_std,
-                    spinup_days_test=spinup_days_test,
-                    n_target_days=n_target_days,
-                    eval_batch_size=self.eval_batch_size,
-                    device=self.device,
-                )
 
         member_preds: list[np.ndarray] = []
         for seed in seeds:

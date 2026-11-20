@@ -1,0 +1,229 @@
+name: PR Review Gate
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - review_requested
+  workflow_run:
+    workflows:
+      - "CI"
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-review-gate-${{ github.event.pull_request.number || github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+
+jobs:
+  gate-review-on-ci:
+    name: Gate Owner Review Request on Green CI
+    runs-on: ubuntu-latest
+    # Never interfere with PRs authored by the repository owner.
+    if: >-
+      (github.event_name == 'pull_request_target' && github.event.pull_request.user.login != 'grey-nearing') ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.event == 'pull_request')
+    permissions:
+      contents: write        # Required by GitHub GraphQL for convertPullRequestToDraft / markPullRequestReadyForReview
+      pull-requests: write
+      issues: write
+      checks: read
+    steps:
+      # SECURITY INVARIANT: NEVER add `actions/checkout` to this job.
+      - name: Enforce CI Gate before requesting @grey-nearing review
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const OWNER = context.repo.owner;
+            const REPO = context.repo.repo;
+            const OWNER_LOGIN = "grey-nearing";
+            const REQUIRED_CHECK_NAME = "CI Gate";
+            const COMMENT_TAG = "<!-- hydromip-ci-review-gate -->";
+            const AUTO_PROMOTE_TAG = "<!-- auto-drafted-awaiting-ci -->";
+
+            async function getCiGateStatus(sha) {
+              const { data } = await github.rest.checks.listForRef({
+                owner: OWNER,
+                repo: REPO,
+                ref: sha,
+                per_page: 100,
+              });
+              const gateRuns = data.check_runs.filter((cr) => cr.name === REQUIRED_CHECK_NAME);
+              if (gateRuns.length === 0) {
+                return { state: "pending", url: null };
+              }
+              gateRuns.sort((a, b) => b.id - a.id);
+              const latest = gateRuns[0];
+              if (latest.status !== "completed") {
+                return { state: "pending", url: latest.html_url };
+              }
+              return {
+                state: latest.conclusion === "success" ? "success" : "failure",
+                conclusion: latest.conclusion,
+                url: latest.html_url,
+              };
+            }
+
+            async function upsertStickyComment(prNumber, body) {
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: OWNER,
+                repo: REPO,
+                issue_number: prNumber,
+                per_page: 100,
+              });
+              const existing = comments.find((c) => c.body && c.body.includes(COMMENT_TAG));
+              if (existing) {
+                await github.rest.issues.updateComment({
+                  owner: OWNER,
+                  repo: REPO,
+                  comment_id: existing.id,
+                  body,
+                });
+                return existing;
+              }
+              const created = await github.rest.issues.createComment({
+                owner: OWNER,
+                repo: REPO,
+                issue_number: prNumber,
+                body,
+              });
+              return created.data;
+            }
+
+            async function getStickyComment(prNumber) {
+              const comments = await github.paginate(github.rest.issues.listComments, {
+                owner: OWNER,
+                repo: REPO,
+                issue_number: prNumber,
+                per_page: 100,
+              });
+              return comments.find((c) => c.body && c.body.includes(COMMENT_TAG)) || null;
+            }
+
+            async function holdInDraftAndClearOwnerReview(pr, reasonMarkdown, autoPromoteWhenGreen) {
+              const requested = (pr.requested_reviewers || []).map((r) => r.login);
+              if (requested.includes(OWNER_LOGIN)) {
+                await github.rest.pulls.removeRequestedReviewers({
+                  owner: OWNER,
+                  repo: REPO,
+                  pull_number: pr.number,
+                  reviewers: [OWNER_LOGIN],
+                });
+              }
+              if (!pr.draft) {
+                await github.graphql(
+                  `mutation($id: ID!) {
+                    convertPullRequestToDraft(input: {pullRequestId: $id}) {
+                      pullRequest { isDraft }
+                    }
+                  }`,
+                  { id: pr.node_id }
+                );
+              }
+              const marker = autoPromoteWhenGreen ? `\n${AUTO_PROMOTE_TAG}` : "";
+              await upsertStickyComment(
+                pr.number,
+                `${COMMENT_TAG}${marker}\n### HydrologyMIP Automated CI Review Gate\n\n${reasonMarkdown}`
+              );
+            }
+
+            if (context.eventName === "pull_request_target") {
+              const { data: pr } = await github.rest.pulls.get({
+                owner: OWNER,
+                repo: REPO,
+                pull_number: context.payload.pull_request.number,
+              });
+              if (pr.state !== "open" || pr.user.login === OWNER_LOGIN) return;
+              if (pr.draft && context.payload.action !== "review_requested") return;
+
+              const gate = await getCiGateStatus(pr.head.sha);
+              if (gate.state === "success") return;
+
+              const shortSha = pr.head.sha.slice(0, 7);
+              if (gate.state === "pending") {
+                await holdInDraftAndClearOwnerReview(
+                  pr,
+                  `Thank you for contributing to **HydrologyMIP**! Automated protocol & test checks (\`CI Gate\`) are currently running on commit \`${shortSha}\`.\n\n` +
+                    `- This PR is temporarily held in **Draft** while CI runs so \`@${OWNER_LOGIN}\` is only notified once all checks pass.\n` +
+                    `- **No action needed right now:** as soon as \`CI Gate\` succeeds on \`${shortSha}\`, this PR will automatically be marked **Ready for review**.`,
+                  true
+                );
+              } else {
+                const link = gate.url ? `[View failed CI Gate run](${gate.url})` : "Check the Actions tab";
+                await holdInDraftAndClearOwnerReview(
+                  pr,
+                  `\`CI Gate\` has not passed on commit \`${shortSha}\` (${link}).\n\n` +
+                    `- Maintainer review requests are blocked until all linter, AST guardrail, registry, packaging, and unit test checks pass.\n` +
+                    `- Please push a fix to this branch; once \`CI Gate\` is green, mark this PR **Ready for review** to notify \`@${OWNER_LOGIN}\`.`,
+                  false
+                );
+              }
+              return;
+            }
+
+            if (context.eventName === "workflow_run") {
+              const wr = context.payload.workflow_run;
+              // Match by head_sha because workflow_run.pull_requests is [] for fork PRs.
+              const openPrs = await github.paginate(github.rest.pulls.list, {
+                owner: OWNER,
+                repo: REPO,
+                state: "open",
+                per_page: 100,
+              });
+              const matching = openPrs.filter(
+                (p) => p.head.sha === wr.head_sha && p.user.login !== OWNER_LOGIN
+              );
+
+              for (const summaryPr of matching) {
+                const { data: pr } = await github.rest.pulls.get({
+                  owner: OWNER,
+                  repo: REPO,
+                  pull_number: summaryPr.number,
+                });
+                const shortSha = pr.head.sha.slice(0, 7);
+
+                if (wr.conclusion === "success") {
+                  const sticky = await getStickyComment(pr.number);
+                  const shouldAutoPromote = sticky && sticky.body.includes(AUTO_PROMOTE_TAG);
+                  if (pr.draft && shouldAutoPromote) {
+                    await github.graphql(
+                      `mutation($id: ID!) {
+                        markPullRequestReadyForReview(input: {pullRequestId: $id}) {
+                          pullRequest { isDraft }
+                        }
+                      }`,
+                      { id: pr.node_id }
+                    );
+                    await github.rest.pulls.requestReviewers({
+                      owner: OWNER,
+                      repo: REPO,
+                      pull_number: pr.number,
+                      reviewers: [OWNER_LOGIN],
+                    });
+                  }
+                  if (sticky) {
+                    await upsertStickyComment(
+                      pr.number,
+                      `${COMMENT_TAG}\n### HydrologyMIP Automated CI Review Gate\n\n` +
+                        `All \`CI Gate\` checks **passed** on commit \`${shortSha}\` ([workflow run](${wr.html_url})). ` +
+                        (shouldAutoPromote || !pr.draft
+                          ? `This PR is **Ready for review** and \`@${OWNER_LOGIN}\` has been requested.`
+                          : `Whenever you are ready for maintainer review, click **Ready for review** to notify \`@${OWNER_LOGIN}\`.`)
+                    );
+                  }
+                } else {
+                  await holdInDraftAndClearOwnerReview(
+                    pr,
+                    `\`CI\` finished with status **\`${wr.conclusion}\`** on commit \`${shortSha}\` ([view logs](${wr.html_url})).\n\n` +
+                      `- This PR has been placed in **Draft** and review requests were cleared until CI is green.\n` +
+                      `- Run \`ruff check .\`, \`python -m hydromip.tools.ci_guardrails --mode all\`, and \`pytest\` locally, push a fix, and mark **Ready for review** once \`CI Gate\` passes.`,
+                    false
+                  );
+                }
+              }
+            }

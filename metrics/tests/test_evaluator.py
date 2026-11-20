@@ -27,6 +27,8 @@ from metrics import (
     get_available_metrics,
     get_frequency_factor,
     infer_datetime_coord,
+    log_kge,
+    log_nse,
 )
 from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from metrics.cli import main as cli_main
@@ -152,11 +154,15 @@ def _build_synthetic_qobs(basins: np.ndarray) -> np.ndarray:
 
 
 @pytest.mark.unit
-def test_gauch_2023_all_12_metrics_and_utilities() -> None:
-    """Verify all 12 Gauch et al. (2023) metrics and helper functions in `metrics/metrics.py`."""
+def test_gauch_2023_all_14_metrics_and_utilities() -> None:
+    """Verify all 14 Gauch et al. (2023) metrics and helper functions in `metrics/metrics.py`."""
     available = get_available_metrics()
     assert tuple(available) == GAUCH_2023_METRICS
-    assert len(available) == 12
+    assert len(available) == 14
+    assert GAUCH_2023_METRICS == (
+        "NSE", "MSE", "RMSE", "KGE", "logNSE", "logKGE", "Alpha-NSE", "Pearson-r",
+        "Beta-KGE", "Beta-NSE", "FHV", "FMS", "FLV", "Peak-Timing",
+    )
 
     dates = _canonical_dates()
     t = np.linspace(0.0, 20.0 * np.pi, NUM_EVAL_DAYS, dtype=np.float64)
@@ -179,6 +185,19 @@ def test_gauch_2023_all_12_metrics_and_utilities() -> None:
     assert all_m["Pearson-r"] == pytest.approx(1.0, abs=1e-5)
     assert all_m["FHV"] == pytest.approx(10.0, abs=1e-4)
     assert all_m["Peak-Timing"] == pytest.approx(0.0, abs=1e-5)
+    # A 10% multiplicative bias is a constant shift of log(1.1) in log space.
+    log_obs = np.log(obs_vals + 1e-5)
+    log_sim = np.log(sim_vals + 1e-5)
+    expected_log_nse = 1.0 - np.sum((log_sim - log_obs) ** 2) / np.sum(
+        (log_obs - log_obs.mean()) ** 2
+    )
+    assert all_m["logNSE"] == pytest.approx(expected_log_nse, abs=1e-12)
+    expected_log_kge = 1.0 - np.sqrt(
+        (np.corrcoef(log_obs, log_sim)[0, 1] - 1.0) ** 2
+        + (log_sim.std() / log_obs.std() - 1.0) ** 2
+        + (log_sim.mean() / log_obs.mean() - 1.0) ** 2
+    )
+    assert all_m["logKGE"] == pytest.approx(expected_log_kge, abs=1e-10)
 
     subset_m = calculate_metrics(obs_da, sim_da, ["nse", "kge"])
     assert set(subset_m.keys()) == {"NSE", "KGE"}
@@ -969,7 +988,7 @@ def test_cli_entrypoint_writes_output_json(
 
 @pytest.mark.unit
 def test_single_member_mean_evaluation_mode(tmp_path: Path) -> None:
-    """Verify evaluation_mode='single_member_mean' averages all 12 Gauch metrics across all N members."""
+    """Verify evaluation_mode='single_member_mean' averages all 14 Gauch metrics across all N members."""
     basins, huc_02 = _load_canonical_basins_and_huc02()
     dates = _canonical_dates()
     qobs = _build_synthetic_qobs(basins)
@@ -1019,5 +1038,58 @@ def test_single_member_mean_evaluation_mode(tmp_path: Path) -> None:
         res_ens["single_seed_median_nse_std"], abs=1e-4
     )
     assert "median_std" in res_single_mean["gauch_2023_metrics"]["NSE"]
+    assert tuple(res_single_mean["gauch_2023_metrics"]) == GAUCH_2023_METRICS
+    for metric in GAUCH_2023_METRICS:
+        assert "median_std" in res_single_mean["gauch_2023_metrics"][metric]
+    assert res_single_mean["median_log_nse"] == res_single_mean["gauch_2023_metrics"]["logNSE"]["median"]
+    assert res_single_mean["median_log_kge"] == res_single_mean["gauch_2023_metrics"]["logKGE"]["median"]
     assert res_single_mean["median_nse"] < res_ens["median_nse"]
 
+
+
+@pytest.mark.unit
+def test_log_nse_and_log_kge_follow_the_canonical_definition() -> None:
+    """logNSE / logKGE are NSE / KGE of log(max(Q, 0) + 1e-5) on jointly valid days."""
+    dates = _canonical_dates()
+    rng = np.random.default_rng(7)
+    obs_vals = np.exp(rng.normal(0.0, 1.0, NUM_EVAL_DAYS))
+    obs_vals[:20] = 0.0  # zero-flow days stay finite through the 1e-5 offset
+    obs_vals[20] = -0.25  # negative values are clipped to zero before the log
+    sim_vals = obs_vals * np.exp(rng.normal(0.0, 0.4, NUM_EVAL_DAYS))
+    sim_vals[5] = -1.0
+    obs_vals[100:110] = np.nan
+    sim_vals[200:205] = np.nan
+    obs_da = xr.DataArray(obs_vals, coords={"date": dates}, dims=("date",))
+    sim_da = xr.DataArray(sim_vals, coords={"date": dates}, dims=("date",))
+
+    valid = ~np.isnan(obs_vals) & ~np.isnan(sim_vals)
+    lo = np.log(np.maximum(obs_vals[valid], 0.0) + 1e-5)
+    ls = np.log(np.maximum(sim_vals[valid], 0.0) + 1e-5)
+    expected_nse = 1.0 - np.sum((ls - lo) ** 2) / np.sum((lo - lo.mean()) ** 2)
+    expected_kge = 1.0 - np.sqrt(
+        (np.corrcoef(lo, ls)[0, 1] - 1.0) ** 2
+        + (ls.std() / lo.std() - 1.0) ** 2
+        + (ls.mean() / lo.mean() - 1.0) ** 2
+    )
+    assert log_nse(obs_da, sim_da) == pytest.approx(expected_nse, abs=1e-12)
+    assert log_kge(obs_da, sim_da) == pytest.approx(expected_kge, abs=1e-10)
+
+    selected = calculate_metrics(obs_da, sim_da, ["lognse", "LOGKGE"])
+    assert selected == {"logNSE": log_nse(obs_da, sim_da), "logKGE": log_kge(obs_da, sim_da)}
+
+    # Perfect predictions are optimal (1.0); both metrics are higher-is-better.
+    assert log_nse(obs_da, obs_da) == pytest.approx(1.0, abs=1e-12)
+    assert log_kge(obs_da, obs_da) == pytest.approx(1.0, abs=1e-12)
+
+    # Undefined cases return NaN: fewer than two valid days, constant observations, and
+    # (for logKGE) constant simulations.
+    one_day = xr.DataArray(np.array([1.0, np.nan, np.nan]), dims=("date",))
+    assert np.isnan(log_nse(one_day, one_day))
+    assert np.isnan(log_kge(one_day, one_day))
+    constant = xr.DataArray(np.full(50, 0.3), dims=("date",))
+    varying = xr.DataArray(np.linspace(0.1, 1.0, 50), dims=("date",))
+    assert np.isnan(log_nse(constant, varying))
+    assert np.isnan(log_kge(constant, varying))
+    all_zero_sim = xr.DataArray(np.zeros(50), dims=("date",))
+    assert np.isfinite(log_nse(varying, all_zero_sim))
+    assert np.isnan(log_kge(varying, all_zero_sim))

@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Independent first-party CUDA C++ and PyTorch implementation of the 16-bucket
@@ -13,15 +13,20 @@ References:
   state-of-the-art hydrologic prediction accuracy. Water Resources Research,
   58(10), e2022WR032404.
 - Song, Y., Bindas, T., Shen, C., Ji, H., Knoben, W. J. M., Lonzarich, L., et al.
-  (2024). High-resolution national-scale water modeling is enhanced by
+  (2025). High-resolution national-scale water modeling is enhanced by
   multiscale differentiable physics-informed machine learning. Water Resources
   Research, 61(4), e2024WR038928.
+
+Shared by ``models.feng_dhbv10`` (dHBV 1.0) and ``models.song_dhbv11p`` (dHBV 1.1p).
+The CPU path always runs the C++ kernel (``get_hbv_cpu``); OpenMP is enabled
+where the compiler supports it (``-fopenmp`` is skipped on macOS / Apple clang,
+in which case the ``#pragma omp`` loops run serially with identical results).
 """
 
 from __future__ import annotations
 
 import math
-import os
+import sys
 from typing import Dict, List, Optional, Tuple
 
 import torch
@@ -29,9 +34,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn import Parameter
 from torch.utils.cpp_extension import load_inline
-
-if os.path.isdir("/usr/local/cuda-12.9/bin"):
-    os.environ["PATH"] = "/usr/local/cuda-12.9/bin:" + os.environ.get("PATH", "")
 
 CUDA_SOURCE = r"""
 #include <torch/extension.h>
@@ -709,7 +711,6 @@ std::vector<torch::Tensor> hbv_backward_cuda(
 
 _HBV_CPU_OMP_CPP = r"""
 #include <torch/extension.h>
-#include <omp.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -1198,6 +1199,15 @@ _hbv_cuda_mod = None
 _hbv_cpu_mod = None
 
 
+def openmp_flags() -> list[str]:
+    """Return the OpenMP compiler/linker flags for this platform.
+
+    Apple clang does not accept ``-fopenmp``; without it the ``#pragma omp`` loops are
+    ignored and the kernels run serially with identical numerics.
+    """
+    return [] if sys.platform == "darwin" else ["-fopenmp"]
+
+
 def get_hbv_cuda():
     """Compile or return cached inline CUDA HBV extension."""
     global _hbv_cuda_mod
@@ -1218,18 +1228,18 @@ def get_hbv_cpu():
     global _hbv_cpu_mod
     if _hbv_cpu_mod is None:
         _hbv_cpu_mod = load_inline(
-            name="test_hbv_cpu_full_v1",
+            name="dhbv_cpu_omp_v1",
             cpp_sources=_HBV_CPU_OMP_CPP,
             functions=["hbv_forward_cpu", "hbv_backward_cpu"],
-            extra_cflags=["-O3", "-fopenmp"],
-            extra_ldflags=["-fopenmp"],
+            extra_cflags=["-O3", *openmp_flags()],
+            extra_ldflags=openmp_flags(),
             verbose=False,
         )
     return _hbv_cpu_mod
 
 
 class HbvCoreFunction(torch.autograd.Function):
-    """Custom CUDA autograd function for multi-bucket differentiable HBV."""
+    """Autograd function for multi-bucket differentiable HBV (CUDA kernel or C++ CPU kernel)."""
 
     @staticmethod
     def forward(
@@ -1446,111 +1456,6 @@ class HbvCoreFunction(torch.autograd.Function):
         )
 
 
-def _hbv_cpu_forward(
-    Pm: torch.Tensor,
-    Tm: torch.Tensor,
-    PETm: torch.Tensor,
-    init_states: torch.Tensor,
-    pdict: Dict[str, torch.Tensor],
-    nearzero: float,
-    has_capillary: bool,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Differentiable CPU fallback matching the exact CUDA kernel equations."""
-    T_steps = Pm.shape[0]
-    sp = init_states[0]
-    mw = init_states[1]
-    sm = init_states[2]
-    suz = init_states[3]
-    slz = init_states[4]
-
-    q0_list: List[torch.Tensor] = []
-    q1_list: List[torch.Tensor] = []
-    q2_list: List[torch.Tensor] = []
-
-    for t in range(T_steps):
-        P = Pm[t]
-        Tt = Tm[t]
-        PETt = PETm[t]
-
-        BETA = pdict["parBETA"][t]
-        FC = pdict["parFC"][t]
-        K0 = pdict["parK0"][t]
-        K1 = pdict["parK1"][t]
-        K2 = pdict["parK2"][t]
-        LP = pdict["parLP"][t]
-        PERC_p = pdict["parPERC"][t]
-        UZL = pdict["parUZL"][t]
-        TT = pdict["parTT"][t]
-        CFMAX = pdict["parCFMAX"][t]
-        CFR = pdict["parCFR"][t]
-        CWH = pdict["parCWH"][t]
-        BETAET = pdict["parBETAET"][t]
-
-        rain = torch.where(Tt >= TT, P, torch.zeros_like(P))
-        snow = torch.where(Tt < TT, P, torch.zeros_like(P))
-
-        sp1 = sp + snow
-        melt = torch.minimum(F.relu(CFMAX * (Tt - TT)), sp1)
-        mw1 = mw + melt
-        sp2 = sp1 - melt
-        refrz = torch.minimum(F.relu(CFR * CFMAX * (TT - Tt)), mw1)
-        sp3 = sp2 + refrz
-        mw2 = mw1 - refrz
-        tosoil = F.relu(mw2 - CWH * sp3)
-        mw3 = mw2 - tosoil
-
-        infil = rain + tosoil
-        wet_raw = torch.clamp(sm / FC, min=nearzero).pow(BETA)
-        wet = torch.clamp(wet_raw, min=0.0, max=1.0)
-        recharge = infil * wet
-        sm1 = sm + infil - recharge
-        excess = F.relu(sm1 - FC)
-        sm2 = sm1 - excess
-        evapf_raw = torch.clamp(sm2 / (LP * FC), min=nearzero).pow(BETAET)
-        evapf = torch.clamp(evapf_raw, min=0.0, max=1.0)
-        et_act = torch.minimum(sm2, PETt * evapf)
-        sm3 = torch.clamp(sm2 - et_act, min=nearzero)
-
-        if has_capillary:
-            C = pdict["parC"][t]
-            sm3_clamped = torch.clamp(sm3 / FC, max=1.0)
-            cap_raw = C * slz * (1.0 - sm3_clamped)
-            cap = torch.minimum(slz, cap_raw)
-            sm4 = torch.clamp(sm3 + cap, min=nearzero)
-            slz1 = torch.clamp(slz - cap, min=nearzero)
-        else:
-            sm4 = sm3
-            slz1 = slz
-
-        suz1 = suz + recharge + excess
-        perc = torch.minimum(suz1, PERC_p)
-        suz2 = suz1 - perc
-        suz_ex = F.relu(suz2 - UZL)
-        q0 = K0 * suz_ex
-        suz3 = suz2 - q0
-        q1 = K1 * suz3
-        suz4 = suz3 - q1
-        slz2 = slz1 + perc
-        q2 = K2 * slz2
-        slz3 = slz2 - q2
-
-        q0_list.append(q0)
-        q1_list.append(q1)
-        q2_list.append(q2)
-
-        sp = sp3
-        mw = mw3
-        sm = sm4
-        suz = suz4
-        slz = slz3
-
-    Q0_out = torch.stack(q0_list, dim=0)
-    Q1_out = torch.stack(q1_list, dim=0)
-    Q2_out = torch.stack(q2_list, dim=0)
-    final_states = torch.stack([sp, mw, sm, suz, slz], dim=0)
-    return Q0_out, Q1_out, Q2_out, final_states
-
-
 def uh_gamma_fast(route_a: torch.Tensor, route_b: torch.Tensor, lenF: int = 15) -> torch.Tensor:
     """Evaluate a normalized discrete Gamma unit-hydrograph impulse response at midpoint lags."""
     shape = F.relu(route_a).unsqueeze(0).unsqueeze(-1) + 0.1
@@ -1576,23 +1481,6 @@ def uh_conv_fast(x: torch.Tensor, UH: torch.Tensor) -> torch.Tensor:
     flipped_kernel = torch.flip(UH.reshape(n_basins, 1, kernel_len), dims=[2])
     routed = F.conv1d(padded, flipped_kernel, groups=n_basins)
     return routed.reshape(n_basins, 1, n_steps)
-
-
-class DropMask(torch.autograd.Function):
-    """Differentiable multiplicative weight mask helper."""
-
-    @staticmethod
-    def forward(ctx, weight: torch.Tensor, mask: torch.Tensor, training: bool = False):
-        ctx.training = bool(training)
-        ctx.save_for_backward(mask if ctx.training else torch.empty(0, device=weight.device))
-        return weight * mask if ctx.training else weight
-
-    @staticmethod
-    def backward(ctx, grad_output: torch.Tensor):
-        if ctx.training:
-            (mask,) = ctx.saved_tensors
-            return grad_output * mask, None, None
-        return grad_output, None, None
 
 
 class CudnnLstm(nn.Module):
@@ -1759,39 +1647,30 @@ class StandaloneDHBV(nn.Module):
             PETm = PET.unsqueeze(2).expand(-1, -1, self.nmul).contiguous()
             parC = pdict["parC"] if self.has_capillary else torch.zeros_like(pdict["parBETA"])
 
-        if x_phy.is_cuda or get_hbv_cpu():
-            Q0_sim, Q1_sim, Q2_sim, final_states = HbvCoreFunction.apply(
-                Pm,
-                Tm,
-                PETm,
-                init_states,
-                pdict["parBETA"],
-                pdict["parFC"],
-                pdict["parK0"],
-                pdict["parK1"],
-                pdict["parK2"],
-                pdict["parLP"],
-                pdict["parPERC"],
-                pdict["parUZL"],
-                pdict["parTT"],
-                pdict["parCFMAX"],
-                pdict["parCFR"],
-                pdict["parCWH"],
-                pdict["parBETAET"],
-                parC,
-                float(self.nearzero),
-                bool(self.has_capillary),
-            )
-        else:
-            Q0_sim, Q1_sim, Q2_sim, final_states = _hbv_cpu_forward(
-                Pm,
-                Tm,
-                PETm,
-                init_states,
-                pdict,
-                float(self.nearzero),
-                bool(self.has_capillary),
-            )
+        # HbvCoreFunction dispatches on device: CUDA kernel for CUDA tensors, the C++ CPU
+        # kernel (OpenMP where available) otherwise.
+        Q0_sim, Q1_sim, Q2_sim, final_states = HbvCoreFunction.apply(
+            Pm,
+            Tm,
+            PETm,
+            init_states,
+            pdict["parBETA"],
+            pdict["parFC"],
+            pdict["parK0"],
+            pdict["parK1"],
+            pdict["parK2"],
+            pdict["parLP"],
+            pdict["parPERC"],
+            pdict["parUZL"],
+            pdict["parTT"],
+            pdict["parCFMAX"],
+            pdict["parCFR"],
+            pdict["parCWH"],
+            pdict["parBETAET"],
+            parC,
+            float(self.nearzero),
+            bool(self.has_capillary),
+        )
 
         if not do_routing:
             return None, final_states
@@ -1845,7 +1724,8 @@ class StandaloneDHBV(nn.Module):
                 route_b,
                 do_routing=True,
             )
-            assert qs is not None
+            if qs is None:
+                raise RuntimeError("_run_pbm returned no routed discharge with do_routing=True.")
             return qs
 
         pdict_sim = self._descale_phy(phy_params, dy_list=self.dynamic_params)
@@ -1857,7 +1737,8 @@ class StandaloneDHBV(nn.Module):
             route_b,
             do_routing=True,
         )
-        assert qs is not None
+        if qs is None:
+            raise RuntimeError("_run_pbm returned no routed discharge with do_routing=True.")
         return qs[self.warmup :] if T_tot > self.warmup else qs
 
 

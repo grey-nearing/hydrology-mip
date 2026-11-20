@@ -21,10 +21,11 @@
 
 """Evaluation metrics for observed and simulated discharge time series.
 
-Implements the 12 canonical hydrological evaluation metrics from Gauch et al. (2023)
+Implements the 14 canonical hydrological evaluation metrics from Gauch et al. (2023)
 ("In Defense of Metrics: Metrics Sufficiently Encode Typical Human Preferences
 Regarding Hydrological Model Performance", Water Resources Research) and
-NeuralHydrology (Kratzert et al., 2022).
+NeuralHydrology (Kratzert et al., 2022), including the log-space efficiencies
+`logNSE` and `logKGE` (NSE and KGE of ``log(max(Q, 0) + 1e-5)``).
 """
 
 from __future__ import annotations
@@ -48,6 +49,9 @@ _MIN_SAMPLES_FOR_CORRELATION = 2
 _NUM_KGE_WEIGHTS = 3
 # The FLV needs at least two low-flow values; a single value sums to zero.
 _MIN_LOW_FLOW_SAMPLES = 2
+# Offset added to (non-negative) discharge before taking logarithms for logNSE / logKGE,
+# so zero-flow days stay finite: log(max(Q, 0) + 1e-5).
+LOG_FLOW_EPSILON = 1e-5
 
 # Pandas 2.2+ uses 'YE', 'ME', 'QE' for year/month/quarter-end offset aliases.
 _PANDAS_MAJOR_MINOR = tuple(
@@ -493,6 +497,81 @@ def kge(
     return float(1 - np.sqrt(float(value)))
 
 
+def _log_flows(obs: DataArray, sim: DataArray) -> tuple[DataArray, DataArray] | None:
+    """Return ``log(max(Q, 0) + LOG_FLOW_EPSILON)`` of the jointly valid obs/sim days.
+
+    Returns None when the log-space efficiencies are undefined: fewer than two valid days,
+    or log-observations that are all identical (zero variance, checked exactly so that a
+    floating-point mean can never turn a constant series into a tiny non-zero denominator).
+    """
+    _validate_inputs(obs, sim)
+    obs_v, sim_v = _mask_valid_arrays(obs, sim)
+    obs_log = np.log(np.maximum(np.asarray(obs_v, dtype=np.float64), 0.0) + LOG_FLOW_EPSILON)
+    sim_log = np.log(np.maximum(np.asarray(sim_v, dtype=np.float64), 0.0) + LOG_FLOW_EPSILON)
+    if obs_log.size < _MIN_SAMPLES_FOR_CORRELATION or bool(np.all(obs_log == obs_log[0])):
+        return None
+    return DataArray(obs_log), DataArray(sim_log)
+
+
+def log_nse(obs: DataArray, sim: DataArray) -> float:
+    r"""Calculate the Nash-Sutcliffe Efficiency of log-transformed discharge.
+
+    .. math::
+        \text{logNSE} = \text{NSE}\left(\log(\max(Q_o, 0) + \epsilon),
+        \log(\max(Q_m, 0) + \epsilon)\right), \quad \epsilon = 10^{-5},
+
+    computed on the days where both observations and simulations are valid. Like the
+    NSE it is higher-is-better with optimum 1 and range :math:`(-\infty, 1]`; it
+    emphasizes low-flow performance.
+
+    Args:
+        obs: Observed time series.
+        sim: Simulated time series.
+
+    Returns:
+        logNSE, or NaN with fewer than two valid days or a constant log-observation series.
+    """
+    log_flows = _log_flows(obs, sim)
+    if log_flows is None:
+        return np.nan
+    return nse(*log_flows)
+
+
+def log_kge(
+    obs: DataArray,
+    sim: DataArray,
+    weights: list[float] | None = None,
+) -> float:
+    r"""Calculate the Kling-Gupta Efficiency of log-transformed discharge.
+
+    .. math::
+        \text{logKGE} = \text{KGE}\left(\log(\max(Q_o, 0) + \epsilon),
+        \log(\max(Q_m, 0) + \epsilon)\right), \quad \epsilon = 10^{-5},
+
+    computed on the days where both observations and simulations are valid
+    (higher-is-better, optimum 1, range :math:`(-\infty, 1]`).
+
+    Args:
+        obs: Observed time series.
+        sim: Simulated time series.
+        weights: Weighting factors of the 3 KGE parts (see `kge`).
+
+    Returns:
+        logKGE, or NaN with fewer than two valid days, a constant log-observation series,
+        a zero standard deviation of the log-simulations, or a zero mean of the
+        log-transformed observations.
+    """
+    log_flows = _log_flows(obs, sim)
+    if log_flows is None:
+        return np.nan
+    obs_log, sim_log = log_flows
+    sim_log_vals = np.asarray(sim_log.values)
+    if bool(np.all(sim_log_vals == sim_log_vals[0])):
+        # Constant log-simulations: zero variance, so the correlation (and KGE) is undefined.
+        return np.nan
+    return kge(obs_log, sim_log, weights=weights)
+
+
 def pearsonr(obs: DataArray, sim: DataArray) -> float:
     """Calculate pearson correlation coefficient (using scipy.stats.pearsonr).
 
@@ -855,12 +934,15 @@ def mean_peak_timing(
     return float(np.mean(timing_errors)) if len(timing_errors) > 0 else np.nan
 
 
-# Keep discovery, explicit selection, and the all-metrics path in sync.
+# Keep discovery, explicit selection, and the all-metrics path in sync. The insertion
+# order is the canonical 14-metric order used by every HydrologyMIP output.
 _METRIC_FUNCTIONS: dict[str, Callable[..., float]] = {
     'NSE': nse,
     'MSE': mse,
     'RMSE': rmse,
     'KGE': kge,
+    'logNSE': log_nse,
+    'logKGE': log_kge,
     'Alpha-NSE': alpha_nse,
     'Pearson-r': pearsonr,
     'Beta-KGE': beta_kge,

@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """ERA PUR Minimal Guidance winning architecture (Node 135 — DualFiLMLSTM)."""
 
 from __future__ import annotations

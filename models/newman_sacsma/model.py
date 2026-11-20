@@ -1,11 +1,14 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Nearing et al. (2020) & Newman et al. (2017) Snow-17 + SAC-SMA + Duamel UH Model.
 
 References:
 - Nearing, G., Sampson, A., Kratzert, F., & Frame, J. (2020). Post-Processing a
   Conceptual Rainfall-Runoff Model with an LSTM. EarthArXiv Preprint,
   https://doi.org/10.31223/osf.io/53te4 (https://github.com/Upstream-Tech/SACSMA-SNOW17).
-- Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Nearing, G., &
-  Nijssen, B. (2017). Benchmarking of a physically based hydrologic model.
+- Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Nijssen, B., &
+  Nearing, G. (2017). Benchmarking of a physically based hydrologic model.
   Journal of Hydrometeorology, 18(8), 2215-2225,
   https://doi.org/10.1175/JHM-D-16-0284.1 (https://github.com/NCAR/camels).
 - Newman, A. J., Clark, M. P., Sampson, K., Wood, A., Hay, L. E., Bock, A.,
@@ -21,16 +24,15 @@ References:
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple
+import hashlib
+import sys
+from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
 
-from models.poudel_mlp_hbv.model import _derive_physical_p_t_pet
-
 _SACSMA_OMP_CPP = r"""
 #include <torch/extension.h>
-#include <omp.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -273,7 +275,27 @@ torch::Tensor simulate_sacsma_batch_cpu(
 """
 
 _SACSMA_OMP_EXT = None
+# Pure memo of calibrated parameter vectors; see SacSmaCalibratorAndDonorTransfer._calibration_cache_key.
 _BASIN_CALIBRATION_CACHE: dict[tuple, np.ndarray] = {}
+
+# Simulator backends: the batched C++ kernel (OpenMP where available) or the NumPy reference.
+SIMULATOR_BACKENDS: Tuple[str, ...] = ("cpp", "numpy")
+# Basins with fewer valid training observations keep the mid-range parameter vector.
+MIN_VALID_CALIBRATION_DAYS: int = 10
+# Each basin's DDS random numbers are drawn from its own generator in blocks of this many steps.
+DDS_DRAW_BLOCK_STEPS: int = 64
+
+
+def _openmp_flags() -> List[str]:
+    """Return ``-fopenmp`` except on macOS (Apple clang), where the kernel builds serially."""
+    return [] if sys.platform == "darwin" else ["-fopenmp"]
+
+
+def _require_finite(name: str, arr: np.ndarray) -> None:
+    """Raise if `arr` contains NaN/Inf (``camels_data`` guarantees gap-free forcings and attributes)."""
+    n_bad = int(np.size(arr) - np.count_nonzero(np.isfinite(arr)))
+    if n_bad > 0:
+        raise ValueError(f"{name} contains {n_bad} non-finite values; inputs must be gap-free.")
 
 
 def _get_sacsma_omp_ext():
@@ -283,11 +305,11 @@ def _get_sacsma_omp_ext():
     from torch.utils.cpp_extension import load_inline
 
     _SACSMA_OMP_EXT = load_inline(
-        name="test_sacsma_omp_v1",
+        name="sacsma_omp_v1",
         cpp_sources=_SACSMA_OMP_CPP,
         functions=["simulate_sacsma_batch_cpu"],
-        extra_cflags=["-O3", "-fopenmp"],
-        extra_ldflags=["-fopenmp"],
+        extra_cflags=["-O3", *_openmp_flags()],
+        extra_ldflags=_openmp_flags(),
         verbose=False,
     )
     return _SACSMA_OMP_EXT
@@ -323,15 +345,18 @@ def _derive_sacsma_p_t_pet(
     lat_deg: Optional[np.ndarray] = None,
     doy: Optional[np.ndarray] = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Derive daily (P, Tmean, PET) for Snow-17 + SAC-SMA."""
-    if lat_deg is not None and doy is not None and len(doy) == x_dyn.shape[1] and x_dyn.shape[2] >= 4:
-        prcp = np.nan_to_num(np.maximum(0.0, x_dyn[:, :, 0]), nan=0.0).astype(np.float32)
-        tmax = np.nan_to_num(x_dyn[:, :, 2], nan=0.0).astype(np.float32)
-        tmin = np.nan_to_num(x_dyn[:, :, 3], nan=0.0).astype(np.float32)
-        tmean = 0.5 * (tmax + tmin)
-        pet = compute_hargreaves_pet(tmax, tmin, lat_deg, doy) * 1.15
-        return prcp, tmean.astype(np.float32), pet.astype(np.float32)
-    return _derive_physical_p_t_pet(x_dyn, lat_deg=lat_deg, doy=doy)
+    """Derive daily (P, Tmean, PET) for Snow-17 + SAC-SMA from one 5-channel forcing block."""
+    if lat_deg is None or doy is None or len(doy) != x_dyn.shape[1]:
+        raise ValueError("lat_deg and a doy array matching the time axis are required for Hargreaves PET.")
+    if x_dyn.shape[2] != 5:
+        raise ValueError(f"Expected one 5-channel forcing block, got {x_dyn.shape[2]} channels.")
+    _require_finite("x_dyn", x_dyn)
+    prcp = np.maximum(0.0, x_dyn[:, :, 0]).astype(np.float32)
+    tmax = x_dyn[:, :, 2].astype(np.float32)
+    tmin = x_dyn[:, :, 3].astype(np.float32)
+    tmean = 0.5 * (tmax + tmin)
+    pet = compute_hargreaves_pet(tmax, tmin, lat_deg, doy) * 1.15
+    return prcp, tmean.astype(np.float32), pet.astype(np.float32)
 
 SACSMA_BOUNDS: Dict[str, Tuple[float, float]] = {
     "uztwm": (1.0, 150.0),
@@ -655,7 +680,16 @@ class SacSmaSnow17Simulator:
 
 
 class SacSmaCalibratorAndDonorTransfer:
-    """Per-basin DDS calibrator with spatial + attribute donor transfer for PUB/PUR."""
+    """Per-basin DDS calibrator with spatial + attribute donor transfer for PUB/PUR.
+
+    Calibration of a basin is a pure function of (basin id, its own training data, seed,
+    ``n_iter``, ``r_dds``, backend): every basin draws its DDS random numbers from its own
+    generator ``np.random.default_rng([seed, int(basin_id), product_index])``, so the result
+    does not depend on which other basins are calibrated in the same call, on fold order, or
+    on the executor. ``_BASIN_CALIBRATION_CACHE`` is therefore a pure memo keyed on a content
+    hash of the basin's inputs (forcing series, day-of-year axis, masked training discharge,
+    elevation) plus every calibration setting.
+    """
 
     def __init__(
         self,
@@ -663,71 +697,144 @@ class SacSmaCalibratorAndDonorTransfer:
         seed: int = 42,
         r_dds: float = 0.2,
         k_donors: int = 1,
+        backend: str = "cpp",
     ) -> None:
+        if backend not in SIMULATOR_BACKENDS:
+            raise ValueError(f"backend must be one of {SIMULATOR_BACKENDS}, got {backend!r}.")
         self.n_iter = n_iter
         self.seed = seed
         self.r_dds = r_dds
         self.k_donors = k_donors
+        self.backend = backend
         self.bounds = np.asarray(list(SACSMA_BOUNDS.values()), dtype=np.float64)
 
-    def _dds_calibrate_single_basin(
+    def _make_batch_simulator(
         self,
-        p_b: np.ndarray,
-        t_b: np.ndarray,
-        pet_b: np.ndarray,
+        prcp: np.ndarray,
+        tmean: np.ndarray,
+        pet: np.ndarray,
         doy: np.ndarray,
+        elev: np.ndarray,
+    ) -> Callable[[np.ndarray], np.ndarray]:
+        """Return ``simulate(params[N, 27]) -> q[N, T]`` for N basins on the selected backend."""
+        if self.backend == "cpp":
+            ext = _get_sacsma_omp_ext()
+            p_t = torch.from_numpy(np.ascontiguousarray(prcp, dtype=np.float64))
+            t_t = torch.from_numpy(np.ascontiguousarray(tmean, dtype=np.float64))
+            pet_t = torch.from_numpy(np.ascontiguousarray(pet, dtype=np.float64))
+            doy_t = torch.from_numpy(np.ascontiguousarray(doy, dtype=np.float64))
+            elev_t = torch.from_numpy(np.ascontiguousarray(elev, dtype=np.float64))
+
+            def simulate_cpp(params: np.ndarray) -> np.ndarray:
+                par_t = torch.from_numpy(np.ascontiguousarray(params, dtype=np.float64))
+                return ext.simulate_sacsma_batch_cpu(p_t, t_t, pet_t, doy_t, par_t, elev_t).numpy()
+
+            return simulate_cpp
+
+        def simulate_numpy(params: np.ndarray) -> np.ndarray:
+            return np.stack(
+                [
+                    SacSmaSnow17Simulator.simulate(
+                        prcp[k], tmean[k], pet[k], doy, params[k], elev_m=float(elev[k])
+                    )
+                    for k in range(params.shape[0])
+                ],
+                axis=0,
+            )
+
+        return simulate_numpy
+
+    def _dds_calibrate_batch(
+        self,
+        simulate: Callable[[np.ndarray], np.ndarray],
         y_eval: np.ndarray,
-        valid_mask: np.ndarray,
-        spinup_days: int,
-        elev_m: float,
-        rng: np.random.Generator,
+        valid: np.ndarray,
+        rngs: List[np.random.Generator],
     ) -> np.ndarray:
-        """Run Tolson & Shoemaker (2007) Dynamically Dimensioned Search (DDS) on one basin."""
+        """Run Tolson & Shoemaker (2007) Dynamically Dimensioned Search independently per basin.
+
+        Args:
+            simulate: maps candidate parameters ``[N, 27]`` to post-spinup discharge ``[N, T]``.
+            y_eval: post-spinup observed discharge ``[N, T]`` (NaN where missing).
+            valid: boolean mask of usable observations ``[N, T]``.
+            rngs: one generator per basin; basin ``k`` only ever reads ``rngs[k]``.
+
+        Basins with fewer than ``MIN_VALID_CALIBRATION_DAYS`` observations keep the mid-range
+        parameter vector.
+        """
         lo = self.bounds[:, 0]
         hi = self.bounds[:, 1]
         span = hi - lo
+        n_u = y_eval.shape[0]
         n_params = len(lo)
-
-        best_x = lo + 0.5 * span
-        q_init = SacSmaSnow17Simulator.simulate(
-            p_b, t_b, pet_b, doy, best_x, elev_m=elev_m
-        )[spinup_days:]
-        best_rmse = float(np.sqrt(np.mean((q_init[valid_mask] - y_eval[valid_mask]) ** 2)))
-
         n_steps = max(1, int(self.n_iter))
-        n_init = min(max(2, n_steps // 5), 10)
+        n_init = min(max(2, n_steps // 10), 25)
+        log_n = np.log(float(max(2, n_steps)))
 
-        for step in range(1, n_steps + 1):
-            if step <= n_init:
-                cand = lo + rng.random(n_params) * span
-            else:
-                prob = 1.0 - np.log(float(step)) / np.log(float(max(2, n_steps)))
-                mask_p = rng.random(n_params) < max(1.0 / n_params, prob)
-                if not np.any(mask_p):
-                    mask_p[int(rng.integers(0, n_params))] = True
-                cand = best_x.copy()
-                perturb = rng.normal(0.0, self.r_dds, size=n_params) * span
-                for j in np.where(mask_p)[0]:
-                    val = cand[j] + perturb[j]
-                    if val < lo[j]:
-                        val = lo[j] + (lo[j] - val)
-                        if val > hi[j]:
-                            val = lo[j]
-                    elif val > hi[j]:
-                        val = hi[j] - (val - hi[j])
-                        if val < lo[j]:
-                            val = hi[j]
-                    cand[j] = val
+        n_valid = np.sum(valid, axis=1)
+        valid_counts = np.maximum(1, n_valid)
+        calibratable = n_valid >= MIN_VALID_CALIBRATION_DAYS
+        y_zero = np.where(valid, y_eval, 0.0)
 
-            q_sim = SacSmaSnow17Simulator.simulate(
-                p_b, t_b, pet_b, doy, cand, elev_m=elev_m
-            )[spinup_days:]
-            rmse = float(np.sqrt(np.mean((q_sim[valid_mask] - y_eval[valid_mask]) ** 2)))
-            if rmse <= best_rmse:
-                best_rmse = rmse
-                best_x = cand
+        def rmse_of(q_sim: np.ndarray) -> np.ndarray:
+            diff = np.where(valid, q_sim - y_zero, 0.0)
+            return np.sqrt(np.sum(diff**2, axis=1) / valid_counts)
 
+        best_x = np.tile(lo + 0.5 * span, (n_u, 1))
+        best_rmse = rmse_of(simulate(best_x))
+        for blk_start in range(1, n_steps + 1, DDS_DRAW_BLOCK_STEPS):
+            blk = min(DDS_DRAW_BLOCK_STEPS, n_steps - blk_start + 1)
+            u_draw = np.empty((n_u, blk, n_params), dtype=np.float64)
+            pick_draw = np.empty((n_u, blk), dtype=np.float64)
+            z_draw = np.empty((n_u, blk, n_params), dtype=np.float64)
+            for k, rng in enumerate(rngs):
+                u_draw[k] = rng.random((blk, n_params))
+                pick_draw[k] = rng.random(blk)
+                z_draw[k] = rng.standard_normal((blk, n_params))
+            for off in range(blk):
+                step = blk_start + off
+                if step <= n_init:
+                    cand = lo[None, :] + u_draw[:, off] * span[None, :]
+                else:
+                    prob = max(1.0 / n_params, 1.0 - np.log(float(step)) / log_n)
+                    mask_p = u_draw[:, off] < prob
+                    rows = np.flatnonzero(~np.any(mask_p, axis=1))
+                    cols = np.minimum((pick_draw[rows, off] * n_params).astype(np.int64), n_params - 1)
+                    mask_p[rows, cols] = True
+                    perturb = z_draw[:, off] * self.r_dds * span[None, :]
+                    cand_p = best_x + np.where(mask_p, perturb, 0.0)
+                    cand_p = np.where(cand_p < lo[None, :], lo[None, :] + (lo[None, :] - cand_p), cand_p)
+                    cand_p = np.where(cand_p > hi[None, :], hi[None, :] - (cand_p - hi[None, :]), cand_p)
+                    cand = np.clip(cand_p, lo[None, :], hi[None, :])
+                rmse = rmse_of(simulate(cand))
+                improved = (rmse <= best_rmse) & calibratable
+                best_rmse = np.where(improved, rmse, best_rmse)
+                best_x = np.where(improved[:, None], cand, best_x)
         return best_x
+
+    def _calibration_cache_key(
+        self,
+        basin_id: str,
+        product_index: int,
+        eff_spinup: int,
+        arrays: Tuple[np.ndarray, ...],
+    ) -> tuple:
+        """Content-addressed memo key: identical inputs and settings imply identical parameters."""
+        digest = hashlib.sha256()
+        for arr in arrays:
+            a = np.ascontiguousarray(arr)
+            digest.update(f"{a.dtype.str}{a.shape}".encode())
+            digest.update(a.tobytes())
+        return (
+            basin_id,
+            int(product_index),
+            int(self.seed),
+            int(self.n_iter),
+            float(self.r_dds),
+            int(eff_spinup),
+            self.backend,
+            digest.hexdigest(),
+        )
 
     def fit_and_predict(
         self,
@@ -758,75 +865,76 @@ class SacSmaCalibratorAndDonorTransfer:
         Supports multi-forcing (3f) by calibrating and simulating each forcing product
         independently and averaging the resulting hydrographs.
         """
+        for name, arr in (
+            ("lat_train", lat_train),
+            ("lon_train", lon_train),
+            ("elev_train", elev_train),
+            ("lat_test", lat_test),
+            ("lon_test", lon_test),
+            ("elev_test", elev_test),
+        ):
+            if arr is None:
+                raise ValueError(f"{name} is required (camels_data always provides it).")
+        _require_finite("x_stat_train", x_stat_train)
+        _require_finite("x_stat_test", x_stat_test)
         n_train, t_train, d_dim = x_dyn_train.shape
         n_test, t_test, _ = x_dyn_test.shape
+        if d_dim < 5 or d_dim % 5 != 0:
+            raise ValueError(f"Expected 5 channels per forcing product, got {d_dim} channels.")
         eff_spinup = spinup_days if t_train > spinup_days else 0
+        elev_tr_arr = np.asarray(elev_train, dtype=np.float64)
+        elev_te_arr = np.asarray(elev_test, dtype=np.float64)
 
         # Mask pre-train_start warmup observations so they can never leak into calibration
         y_train_clean = y_obs_train.astype(np.float32, copy=True)
         if eff_spinup > 0:
             y_train_clean[:, :eff_spinup] = np.nan
 
-        n_products = max(1, d_dim // 5) if (d_dim >= 5 and d_dim % 5 == 0) else 1
+        n_products = d_dim // 5
 
         # Standardize static attributes strictly on train_basins for donor similarity
-        xs_mean = np.nanmean(x_stat_train, axis=0, keepdims=True)
-        xs_std = np.nanstd(x_stat_train, axis=0, keepdims=True) + 1e-6
-        xs_tr_norm = np.nan_to_num((x_stat_train - xs_mean) / xs_std, nan=0.0)
-        xs_te_norm = np.nan_to_num((x_stat_test - xs_mean) / xs_std, nan=0.0)
+        xs_mean = np.mean(x_stat_train, axis=0, keepdims=True)
+        xs_std = np.std(x_stat_train, axis=0, keepdims=True) + 1e-6
+        xs_tr_norm = (x_stat_train - xs_mean) / xs_std
+        xs_te_norm = (x_stat_test - xs_mean) / xs_std
 
-        if lat_train is not None and lon_train is not None and lat_test is not None and lon_test is not None:
-            coord_tr = np.stack([lat_train / 10.0, lon_train / 10.0], axis=1)
-            coord_te = np.stack([lat_test / 10.0, lon_test / 10.0], axis=1)
-            feat_tr = np.concatenate([coord_tr * 2.0, xs_tr_norm], axis=1)
-            feat_te = np.concatenate([coord_te * 2.0, xs_te_norm], axis=1)
-        else:
-            feat_tr = xs_tr_norm
-            feat_te = xs_te_norm
+        coord_tr = np.stack([lat_train / 10.0, lon_train / 10.0], axis=1)
+        coord_te = np.stack([lat_test / 10.0, lon_test / 10.0], axis=1)
+        feat_tr = np.concatenate([coord_tr * 2.0, xs_tr_norm], axis=1)
+        feat_te = np.concatenate([coord_te * 2.0, xs_te_norm], axis=1)
 
-        train_basin_to_idx = {str(b).zfill(8): idx for idx, b in enumerate(train_basins)}
-        lo = self.bounds[:, 0]
-        hi = self.bounds[:, 1]
-        mid_params = lo + 0.5 * (hi - lo)
+        train_ids = [str(b).zfill(8) for b in train_basins]
+        test_ids = [str(b).zfill(8) for b in test_basins]
+        train_basin_to_idx = {b: idx for idx, b in enumerate(train_ids)}
+
+        # Donor indices depend only on static features, not on the forcing product.
+        k = min(max(1, self.k_donors), n_train)
+        donor_indices = np.zeros((n_test, k), dtype=np.int64)
+        for j, tb in enumerate(test_ids):
+            if tb in train_basin_to_idx:
+                donor_indices[j, :] = train_basin_to_idx[tb]
+            else:
+                dists = np.linalg.norm(feat_tr - feat_te[j : j + 1], axis=1)
+                donor_indices[j, :] = np.argsort(dists)[:k]
+        all_gauged = all(tb in train_basin_to_idx for tb in test_ids)
+        eff_k = 1 if all_gauged else k
 
         product_preds: List[np.ndarray] = []
         for p_idx in range(n_products):
-            if d_dim >= 5 * (p_idx + 1):
-                xd_tr_p = x_dyn_train[:, :, 5 * p_idx : 5 * (p_idx + 1)]
-                xd_te_p = x_dyn_test[:, :, 5 * p_idx : 5 * (p_idx + 1)]
-            else:
-                xd_tr_p = x_dyn_train
-                xd_te_p = x_dyn_test
+            xd_tr_p = x_dyn_train[:, :, 5 * p_idx : 5 * (p_idx + 1)]
+            xd_te_p = x_dyn_test[:, :, 5 * p_idx : 5 * (p_idx + 1)]
+            p_tr, t_tr, pet_tr = _derive_sacsma_p_t_pet(xd_tr_p, lat_deg=lat_train, doy=train_doy)
+            p_te, t_te, pet_te = _derive_sacsma_p_t_pet(xd_te_p, lat_deg=lat_test, doy=test_doy)
 
-            p_tr, t_tr, pet_tr = _derive_sacsma_p_t_pet(
-                xd_tr_p, lat_deg=lat_train, doy=train_doy
-            )
-            p_te, t_te, pet_te = _derive_sacsma_p_t_pet(
-                xd_te_p, lat_deg=lat_test, doy=test_doy
-            )
-
-            calibrated_params = np.zeros((n_train, len(lo)), dtype=np.float64)
-            ext = _get_sacsma_omp_ext()
-            elev_tr_arr = (
-                np.asarray(elev_train, dtype=np.float64)
-                if elev_train is not None
-                else np.full(n_train, 500.0, dtype=np.float64)
-            )
+            calibrated_params = np.zeros((n_train, self.bounds.shape[0]), dtype=np.float64)
             cache_keys = []
             uncal_idx = []
-            for i, b in enumerate(train_basins):
-                b_norm = str(b).zfill(8)
-                ck = (
-                    b_norm,
-                    round(float(p_tr[i, 0]), 4),
-                    round(float(p_tr[i, -1]), 4),
-                    round(float(np.nanmean(y_train_clean[i, eff_spinup:])), 5)
-                    if np.any(~np.isnan(y_train_clean[i, eff_spinup:]))
-                    else -999.0,
-                    int(t_train),
-                    int(eff_spinup),
-                    int(self.seed + p_idx * 997),
-                    int(self.n_iter),
+            for i, b_id in enumerate(train_ids):
+                ck = self._calibration_cache_key(
+                    b_id,
+                    p_idx,
+                    eff_spinup,
+                    (p_tr[i], t_tr[i], pet_tr[i], train_doy, y_train_clean[i], elev_tr_arr[i : i + 1]),
                 )
                 cache_keys.append(ck)
                 if ck in _BASIN_CALIBRATION_CACHE:
@@ -834,151 +942,32 @@ class SacSmaCalibratorAndDonorTransfer:
                 else:
                     uncal_idx.append(i)
 
-            if ext and len(uncal_idx) >= 1 and n_train >= 4:
+            if uncal_idx:
                 u_idx = np.asarray(uncal_idx, dtype=np.int64)
-                n_u = len(u_idx)
-                span = hi - lo
-                n_params = len(lo)
-                n_steps = max(1, int(self.n_iter))
-                n_init = min(max(2, n_steps // 10), 25)
-                p_tr_t = torch.from_numpy(p_tr[u_idx].astype(np.float64)).contiguous()
-                t_tr_t = torch.from_numpy(t_tr[u_idx].astype(np.float64)).contiguous()
-                pet_tr_t = torch.from_numpy(pet_tr[u_idx].astype(np.float64)).contiguous()
-                doy_tr_t = torch.from_numpy(train_doy.astype(np.float64)).contiguous()
-                elev_tr_t = torch.from_numpy(elev_tr_arr[u_idx]).contiguous()
-
+                simulate_train = self._make_batch_simulator(
+                    p_tr[u_idx], t_tr[u_idx], pet_tr[u_idx], train_doy, elev_tr_arr[u_idx]
+                )
                 y_eval_all = y_train_clean[u_idx, eff_spinup:]
-                valid_all = ~np.isnan(y_eval_all) & (y_eval_all >= 0.0)
-                valid_counts = np.maximum(1, np.sum(valid_all, axis=1))
-                y_zero = np.where(valid_all, y_eval_all, 0.0)
-
-                best_x = np.tile(mid_params, (n_u, 1))
-                q_init = ext.simulate_sacsma_batch_cpu(
-                    p_tr_t, t_tr_t, pet_tr_t, doy_tr_t,
-                    torch.from_numpy(best_x).contiguous(), elev_tr_t
-                ).numpy()[:, eff_spinup:]
-                diff_init = np.where(valid_all, q_init - y_zero, 0.0)
-                best_rmse = np.sqrt(np.sum(diff_init ** 2, axis=1) / valid_counts)
-
-                rng = np.random.default_rng(self.seed + p_idx * 997)
-                for step in range(1, n_steps + 1):
-                    if step <= n_init:
-                        cand = lo[None, :] + rng.random((n_u, n_params)) * span[None, :]
-                    else:
-                        prob = 1.0 - np.log(float(step)) / np.log(float(max(2, n_steps)))
-                        mask_p = rng.random((n_u, n_params)) < max(1.0 / n_params, prob)
-                        none_m = ~np.any(mask_p, axis=1)
-                        if np.any(none_m):
-                            rand_j = rng.integers(0, n_params, size=int(np.sum(none_m)))
-                            mask_p[np.where(none_m)[0], rand_j] = True
-                        cand = best_x.copy()
-                        perturb = rng.normal(0.0, self.r_dds, size=(n_u, n_params)) * span[None, :]
-                        cand_p = cand + np.where(mask_p, perturb, 0.0)
-                        below = cand_p < lo[None, :]
-                        cand_p = np.where(below, lo[None, :] + (lo[None, :] - cand_p), cand_p)
-                        above = cand_p > hi[None, :]
-                        cand_p = np.where(above, hi[None, :] - (cand_p - hi[None, :]), cand_p)
-                        cand = np.clip(cand_p, lo[None, :], hi[None, :])
-
-                    q_sim = ext.simulate_sacsma_batch_cpu(
-                        p_tr_t, t_tr_t, pet_tr_t, doy_tr_t,
-                        torch.from_numpy(cand).contiguous(), elev_tr_t
-                    ).numpy()[:, eff_spinup:]
-                    diff = np.where(valid_all, q_sim - y_zero, 0.0)
-                    rmse = np.sqrt(np.sum(diff ** 2, axis=1) / valid_counts)
-                    improved = (rmse <= best_rmse) & (np.sum(valid_all, axis=1) >= 10)
-                    best_rmse = np.where(improved, rmse, best_rmse)
-                    best_x = np.where(improved[:, None], cand, best_x)
+                best_x = self._dds_calibrate_batch(
+                    simulate=lambda params, sim=simulate_train: sim(params)[:, eff_spinup:],
+                    y_eval=y_eval_all,
+                    valid=~np.isnan(y_eval_all) & (y_eval_all >= 0.0),
+                    rngs=[
+                        np.random.default_rng([int(self.seed), int(train_ids[i]), int(p_idx)])
+                        for i in uncal_idx
+                    ],
+                )
                 for local_k, orig_i in enumerate(uncal_idx):
                     calibrated_params[orig_i] = best_x[local_k]
                     _BASIN_CALIBRATION_CACHE[cache_keys[orig_i]] = best_x[local_k].copy()
-            elif len(uncal_idx) >= 1:
-                for i in uncal_idx:
-                    y_eval = y_train_clean[i, eff_spinup:]
-                    valid = ~np.isnan(y_eval) & (y_eval >= 0.0)
-                    if int(np.sum(valid)) < 10:
-                        calibrated_params[i] = mid_params
-                        continue
-                    elev_i = float(elev_train[i]) if elev_train is not None else 500.0
-                    rng = np.random.default_rng(self.seed + i * 997 + p_idx * 31)
-                    calibrated_params[i] = self._dds_calibrate_single_basin(
-                        p_tr[i],
-                        t_tr[i],
-                        pet_tr[i],
-                        train_doy,
-                        y_eval,
-                        valid,
-                        eff_spinup,
-                        elev_i,
-                        rng,
-                    )
-                    _BASIN_CALIBRATION_CACHE[cache_keys[i]] = calibrated_params[i].copy()
 
-            preds_p = np.zeros((n_test, t_test - eval_start_idx), dtype=np.float32)
-            if ext and n_test >= 4:
-                k = min(max(1, self.k_donors), n_train)
-                donor_indices = np.zeros((n_test, k), dtype=np.int64)
-                for j, tb in enumerate(test_basins):
-                    tb_norm = str(tb).zfill(8)
-                    if tb_norm in train_basin_to_idx:
-                        donor_indices[j, :] = train_basin_to_idx[tb_norm]
-                    else:
-                        dists = np.linalg.norm(feat_tr - feat_te[j : j + 1], axis=1)
-                        donor_indices[j, :] = np.argsort(dists)[:k]
-                elev_te_arr = (
-                    np.asarray(elev_test, dtype=np.float64)
-                    if elev_test is not None
-                    else np.full(n_test, 500.0, dtype=np.float64)
-                )
-                p_te_t = torch.from_numpy(p_te.astype(np.float64)).contiguous()
-                t_te_t = torch.from_numpy(t_te.astype(np.float64)).contiguous()
-                pet_te_t = torch.from_numpy(pet_te.astype(np.float64)).contiguous()
-                doy_te_t = torch.from_numpy(test_doy.astype(np.float64)).contiguous()
-                elev_te_t = torch.from_numpy(elev_te_arr).contiguous()
-
-                donor_acc = np.zeros((n_test, t_test - eval_start_idx), dtype=np.float64)
-                all_gauged = all(str(tb).zfill(8) in train_basin_to_idx for tb in test_basins)
-                eff_k = 1 if all_gauged else k
-                for rank_d in range(eff_k):
-                    test_params = calibrated_params[donor_indices[:, rank_d]]
-                    q_te_all = ext.simulate_sacsma_batch_cpu(
-                        p_te_t,
-                        t_te_t,
-                        pet_te_t,
-                        doy_te_t,
-                        torch.from_numpy(np.ascontiguousarray(test_params)).contiguous(),
-                        elev_te_t,
-                    ).numpy()
-                    donor_acc += q_te_all[:, eval_start_idx:]
-                preds_p = (donor_acc / float(eff_k)).astype(np.float32)
-            else:
-                for j, tb in enumerate(test_basins):
-                    tb_norm = str(tb).zfill(8)
-                    elev_j = float(elev_test[j]) if elev_test is not None else 500.0
-                    if tb_norm in train_basin_to_idx:
-                        p_vec = calibrated_params[train_basin_to_idx[tb_norm]]
-                        q_full = SacSmaSnow17Simulator.simulate(
-                            p_te[j], t_te[j], pet_te[j], test_doy, p_vec, elev_m=elev_j
-                        )
-                        preds_p[j] = q_full[eval_start_idx:]
-                    else:
-                        dists = np.linalg.norm(feat_tr - feat_te[j : j + 1], axis=1)
-                        k = min(max(1, self.k_donors), n_train)
-                        nearest_idx = np.argsort(dists)[:k]
-                        donor_q = np.zeros(t_test - eval_start_idx, dtype=np.float64)
-                        for d_idx in nearest_idx:
-                            q_d = SacSmaSnow17Simulator.simulate(
-                                p_te[j],
-                                t_te[j],
-                                pet_te[j],
-                                test_doy,
-                                calibrated_params[int(d_idx)],
-                                elev_m=elev_j,
-                            )
-                            donor_q += q_d[eval_start_idx:]
-                        preds_p[j] = (donor_q / float(k)).astype(np.float32)
-
-            product_preds.append(np.nan_to_num(preds_p, nan=0.0))
+            simulate_test = self._make_batch_simulator(p_te, t_te, pet_te, test_doy, elev_te_arr)
+            donor_acc = np.zeros((n_test, t_test - eval_start_idx), dtype=np.float64)
+            for rank_d in range(eff_k):
+                q_te_all = simulate_test(calibrated_params[donor_indices[:, rank_d]])
+                donor_acc += q_te_all[:, eval_start_idx:]
+            # NaN/Inf propagate so run_model's non-finite guard rejects a broken simulation.
+            product_preds.append((donor_acc / float(eff_k)).astype(np.float32))
 
         if len(product_preds) == 1:
             return product_preds[0]

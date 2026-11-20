@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Yin et al. (2022, J. Hydrol.) RR-Former encoder-decoder Transformer model."""
 
 from models.yin2022_rrformer.model import RRFormer, RRFormerTrainer

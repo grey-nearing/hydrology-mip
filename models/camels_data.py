@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Shared CAMELS-US forcing, static-attribute, and discharge loader for all MIP model runners.
 
 Design rules (see `skills/algorithm-rules-and-norms.md`):
@@ -12,6 +15,9 @@ Design rules (see `skills/algorithm-rules-and-norms.md`):
 * Missing data in -> error out: non-finite forcings or attributes in the requested window raise
   `ValueError`; missing basins, files, or coordinates raise `FileNotFoundError` / `KeyError` /
   `ValueError`. Nothing is imputed and no silent defaults (latitude, area, ...) exist.
+* Auxiliary channels (`dayl(s)`, `swe(mm)`) are returned as `x_aux` only when the source provides
+  them. The canonical bundle stores them for Daymet only, so Maurer/NLDAS requests reuse the Daymet
+  block; the per-product source is recorded in `aux_sources`. They are never synthesized.
 * Zero `try`/`except` blocks.
 
 Three on-disk layouts are supported, resolved in this order by `resolve_data_source`:
@@ -25,11 +31,12 @@ Three on-disk layouts are supported, resolved in this order by `resolve_data_sou
 3. **Per-basin NetCDF layout** (`time_series/<basin>.nc` + `attributes/camels_*.txt`), e.g. as produced
    by neuralhydrology's CAMELS-US preprocessing.
 
-Command line::
+Command line (run from the repository root)::
 
-    python -m models.camels_data build --raw-dir /path/to/camels_v1p2 --out data/camels_671_1980_2014.npz
+    python -m models.camels_data build --raw-dir /path/to/camels_v1p2 \
+        --out mips/camels_us_daily/data/camels_671_1980_2014.npz
     python -m models.camels_data convert-legacy --legacy-npz old.npz --attributes-dir ... --out ...
-    python -m models.camels_data validate --bundle data/camels_671_1980_2014.npz [--raw-dir ...]
+    python -m models.camels_data validate --bundle mips/camels_us_daily/data/camels_671_1980_2014.npz [--raw-dir ...]
 """
 
 from __future__ import annotations
@@ -642,15 +649,11 @@ def load_bundle_slice(
         out[f"forcing_{prod}"] = np.asarray(
             _bundle_array(p, f"forcing_{prod}")[np.ix_(b_idx, t_idx)], dtype=np.float32
         )
-        aux_key = (
-            f"aux_{prod}"
-            if f"aux_{prod}" in bundle_keys
-            else ("aux_daymet" if "aux_daymet" in bundle_keys else None)
-        )
-        if aux_key is not None:
-            out[f"aux_{prod}"] = np.asarray(
-                _bundle_array(p, aux_key)[np.ix_(b_idx, t_idx)], dtype=np.float32
-            )
+    # Auxiliary blocks are passed through under their true keys; `_finalize_slice` decides (and
+    # records in `aux_sources`) which block each product uses.
+    for aux_key in sorted({f"aux_{prod}" for prod in prods} | {"aux_daymet"}):
+        if aux_key in bundle_keys:
+            out[aux_key] = np.asarray(_bundle_array(p, aux_key)[np.ix_(b_idx, t_idx)], dtype=np.float32)
     return out
 
 
@@ -788,24 +791,38 @@ def _finalize_slice(
         feature_names.extend(PRODUCT_FORCING_COLUMNS[p])
     x_dyn = np.ascontiguousarray(np.concatenate(parts, axis=-1), dtype=np.float32)
 
+    # Auxiliary channels (`dayl(s)`, `swe(mm)` from the CAMELS forcing files). The canonical bundle
+    # stores them for Daymet only (`aux_daymet`), so every product reuses the Daymet block there and
+    # `aux_sources` records which block was used per product. Day length is astronomical and nearly
+    # product-independent; the `swe(mm)` column of the canonical bundle is identically zero. Layouts
+    # without any auxiliary block (e.g. NetCDF) return no `x_aux` at all: nothing is synthesized, so
+    # a model that needs these channels fails loudly with a KeyError.
     aux_parts: list[np.ndarray] = []
     aux_feature_names: list[str] = []
-    doy = full_dates.dayofyear.to_numpy(dtype=np.float32)[None, :]
-    lat_rad = np.deg2rad(np.asarray(raw["gauge_lat"], dtype=np.float32))[:, None]
+    aux_sources: list[str] = []
     for p in prods:
         if f"aux_{p}" in raw:
-            aux_arr = np.asarray(raw[f"aux_{p}"], dtype=np.float32)
+            aux_key = f"aux_{p}"
         elif "aux_daymet" in raw:
-            aux_arr = np.asarray(raw["aux_daymet"], dtype=np.float32)
+            aux_key = "aux_daymet"
         else:
-            decl = 0.409 * np.sin(2.0 * np.pi * (doy - 81.0) / 365.25)
-            cos_omega = np.clip(-np.tan(lat_rad) * np.tan(decl), -1.0, 1.0)
-            dayl_s = (2.0 * np.arccos(cos_omega) / np.pi * 43200.0).astype(np.float32)
-            swe_mm = np.zeros_like(dayl_s, dtype=np.float32)
-            aux_arr = np.stack([dayl_s, swe_mm], axis=-1)
+            aux_parts = []
+            break
+        aux_arr = np.asarray(raw[aux_key], dtype=np.float32)
+        if aux_arr.shape != (n_b, n_t, len(AUX_VARIABLES)):
+            raise ValueError(f"{source_desc}: {aux_key} has shape {aux_arr.shape}, expected {(n_b, n_t, 2)}.")
+        if not np.all(np.isfinite(aux_arr)):
+            raise ValueError(f"{source_desc}: {aux_key} contains non-finite values in the requested window.")
         aux_parts.append(aux_arr)
         aux_feature_names.extend([f"{v}_{p}" for v in AUX_VARIABLES])
-    x_aux = np.ascontiguousarray(np.concatenate(aux_parts, axis=-1), dtype=np.float32)
+        aux_sources.append(aux_key.removeprefix("aux_"))
+    aux_out: dict[str, np.ndarray] = {}
+    if aux_parts:
+        aux_out = {
+            "x_aux": np.ascontiguousarray(np.concatenate(aux_parts, axis=-1), dtype=np.float32),
+            "aux_feature_names": np.asarray(aux_feature_names, dtype=str),
+            "aux_sources": np.asarray(aux_sources, dtype=str),
+        }
 
     x_stat = np.asarray(raw["static_attributes"], dtype=np.float32)
     if x_stat.shape != (n_b, len(STATIC_ATTRIBUTE_NAMES_27)):
@@ -848,7 +865,7 @@ def _finalize_slice(
 
     return {
         "x_dyn": x_dyn,
-        "x_aux": x_aux,
+        **aux_out,
         "x_stat": x_stat,
         "qobs": qobs,
         "target_qobs": target_qobs,
@@ -864,7 +881,6 @@ def _finalize_slice(
         "huc_02": np.asarray([str(h).zfill(2) for h in np.asarray(raw["huc_02"]).tolist()], dtype="<U2"),
         "basins": np.asarray(basin_ids, dtype="<U8"),
         "dynamic_feature_names": np.asarray(feature_names, dtype=str),
-        "aux_feature_names": np.asarray(aux_feature_names, dtype=str),
         "static_attribute_names": np.asarray(STATIC_ATTRIBUTE_NAMES_27, dtype=str),
     }
 
@@ -898,7 +914,9 @@ def load_camels_slice(
         ``qobs (n_basins, n_days)`` (spin-up masked), ``target_qobs (n_basins, n_target_days)``,
         ``dates``, ``target_dates``, ``n_target_days``, ``spinup_days``, ``n_valid_targets``,
         ``lat``, ``lon``, ``elev``, ``area_km2``, ``huc_02``, ``basins``, ``dynamic_feature_names``,
-        ``static_attribute_names``. Discharge is in mm/day.
+        ``static_attribute_names``. When the source provides auxiliary channels, also ``x_aux
+        (n_basins, n_days, 2*n_products)``, ``aux_feature_names`` and ``aux_sources`` (the product
+        whose block was used for each requested product). Discharge is in mm/day.
     """
     basin_ids = _zfill_basins(basins)
     prods = normalize_forcing_names(forcings)
@@ -1022,7 +1040,7 @@ def convert_legacy_bundle(
     if not (legacy_cfs_constant > 0.0):
         raise ValueError("legacy_cfs_constant must be positive.")
     attr_df = load_camels_attributes(attributes_dir)
-    with np.load(src, allow_pickle=True) as z:
+    with np.load(src, allow_pickle=False) as z:
         keys = list(z.files)
         required = ["basins", "dates", "qobs", "area_km2"] + list(LEGACY_PRODUCT_KEYS.values())
         missing = [k for k in required if k not in keys]

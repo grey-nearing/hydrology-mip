@@ -3,7 +3,7 @@
 Exposes the single primary public API function `calculate_model_leaderboard_metrics`
 for scoring standardized model hydrograph Zarr stores directly from
 `gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr` against
-`gs://camels-us-mip/observations/newman_eval_targets.zarr`, alongside the 12
+`gs://camels-us-mip/observations/newman_eval_targets.zarr`, alongside the 14
 Gauch et al. (2023) hydrological metrics in `metrics.metrics`.
 """
 
@@ -31,6 +31,8 @@ from metrics.metrics import (
     get_frequency_factor,
     infer_datetime_coord,
     kge,
+    log_kge,
+    log_nse,
     mean_peak_timing,
     mse,
     nse,
@@ -60,6 +62,8 @@ __all__ = [
     "get_frequency_factor",
     "infer_datetime_coord",
     "kge",
+    "log_kge",
+    "log_nse",
     "mean_peak_timing",
     "mse",
     "nse",

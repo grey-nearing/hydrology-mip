@@ -20,12 +20,12 @@ from typing import Any
 import gcsfs
 import numpy as np
 
+from hydromip.evaluation.zarr_io import get_gcs_storage_options
 from metrics.evaluator import (
     CANONICAL_LEADERBOARD_IDS,
     DEFAULT_BUCKET_URI,
     NUM_BASINS,
     NUM_EVAL_DAYS,
-    _get_gcs_storage_options,
     calculate_model_leaderboard_metrics,
 )
 
@@ -101,7 +101,7 @@ def discover_hydrograph_zarr_entries(
     discovered: list[tuple[str, str]] = []
 
     if root_uri.startswith("gs://"):
-        storage_options = _get_gcs_storage_options()
+        storage_options = get_gcs_storage_options()
         fs = gcsfs.GCSFileSystem(**storage_options)
         for lb_id in target_leaderboards:
             lb_prefix = f"{root_uri}/hydrographs/{lb_id}"
@@ -307,7 +307,7 @@ def verify_single_entry_report(entry_metrics: dict[str, Any]) -> None:
     if any(nse_p[i] > nse_p[i + 1] + 1e-6 for i in range(len(nse_p) - 1)):
         raise ValueError(
             f"Lower-tail NSE percentiles are not monotonically ordered for "
-            f"'{entry_metrics['model_id']}': {dict(zip(REQUIRED_LOWER_TAIL_NSE_KEYS, nse_p))}"
+            f"'{entry_metrics['model_id']}': {dict(zip(REQUIRED_LOWER_TAIL_NSE_KEYS, nse_p, strict=True))}"
         )
 
     # Verify monotonic ordering of lower-tail KGE percentiles
@@ -315,7 +315,7 @@ def verify_single_entry_report(entry_metrics: dict[str, Any]) -> None:
     if any(kge_p[i] > kge_p[i + 1] + 1e-6 for i in range(len(kge_p) - 1)):
         raise ValueError(
             f"Lower-tail KGE percentiles are not monotonically ordered for "
-            f"'{entry_metrics['model_id']}': {dict(zip(REQUIRED_LOWER_TAIL_KGE_KEYS, kge_p))}"
+            f"'{entry_metrics['model_id']}': {dict(zip(REQUIRED_LOWER_TAIL_KGE_KEYS, kge_p, strict=True))}"
         )
 
     # Verify monotonic ordering of upper-tail |FHV| percentiles
@@ -325,7 +325,7 @@ def verify_single_entry_report(entry_metrics: dict[str, Any]) -> None:
     ):
         raise ValueError(
             f"Upper-tail |FHV| percentiles are invalid for '{entry_metrics['model_id']}': "
-            f"{dict(zip(REQUIRED_UPPER_TAIL_FHV_KEYS, fhv_p))}"
+            f"{dict(zip(REQUIRED_UPPER_TAIL_FHV_KEYS, fhv_p, strict=True))}"
         )
 
     # Verify all 18 USGS HUC-02 regional medians exist and are finite

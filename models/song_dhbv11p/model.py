@@ -1,8 +1,11 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Song et al. (2024) Differentiable HBV 1.1p (dHBV 1.1p / dMG) Architecture & Trainer.
 
 References:
 - Song, Y., Bindas, T., Shen, C., Ji, H., Knoben, W. J. M., Lonzarich, L., et al.
-  (2024). High-resolution national-scale water modeling is enhanced by
+  (2025). High-resolution national-scale water modeling is enhanced by
   multiscale differentiable physics-informed machine learning. Water Resources
   Research, 61(4), e2024WR038928. (Earlier HESS 2024 formulation: Song, Y.,
   Knoben, W. J. M., Clark, M. P., Bindas, T., & Shen, C. (2024). When ancient
@@ -13,6 +16,7 @@ References:
 
 from __future__ import annotations
 
+import logging
 import math
 from typing import Optional, Tuple
 
@@ -20,9 +24,8 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from models.song_dhbv11p.dhbv_standalone_core import (
+from models._dhbv_common.core import (
     CudnnLstm,
-    DropMask,
     HbvCoreFunction,
     StandaloneDHBV,
     StandaloneDHBV11p,
@@ -33,7 +36,6 @@ from models.song_dhbv11p.dhbv_standalone_core import (
 __all__ = [
     "CudnnLstm",
     "DHBV11pTrainer",
-    "DropMask",
     "HbvCoreFunction",
     "NseBatchLoss",
     "RmseCombLoss",
@@ -43,6 +45,18 @@ __all__ = [
     "uh_conv_fast",
     "uh_gamma_fast",
 ]
+
+LOGGER = logging.getLogger(__name__)
+
+# Training raises if more than this fraction of minibatches produce a non-finite loss.
+MAX_NONFINITE_LOSS_FRACTION = 0.01
+
+
+def _require_finite(name: str, arr: np.ndarray) -> None:
+    """Raise if `arr` contains NaN/Inf (``camels_data`` guarantees gap-free forcings and attributes)."""
+    n_bad = int(np.size(arr) - np.count_nonzero(np.isfinite(arr)))
+    if n_bad > 0:
+        raise ValueError(f"{name} contains {n_bad} non-finite values; inputs must be gap-free.")
 
 
 def compute_hargreaves_pet(
@@ -86,31 +100,16 @@ def _derive_physical_p_t_pet(
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Derive physical (P, Tmean, PET) in mm/day and degC from CAMELS forcing channels."""
     n_channels = x_dyn.shape[2]
-    if n_channels >= 5 and n_channels % 5 == 0:
-        prcp = np.maximum(0.0, np.nanmean(x_dyn[:, :, 0::5], axis=2))
-        srad = np.maximum(0.0, np.nanmean(x_dyn[:, :, 1::5], axis=2))
-        tmax = np.nanmean(x_dyn[:, :, 2::5], axis=2)
-        tmin = np.nanmean(x_dyn[:, :, 3::5], axis=2)
-    else:
-        prcp = np.maximum(0.0, x_dyn[:, :, 0])
-        srad = np.maximum(0.0, x_dyn[:, :, 1])
-        tmax = x_dyn[:, :, 2]
-        tmin = x_dyn[:, :, 3]
-
-    prcp = np.nan_to_num(prcp, nan=0.0)
-    srad = np.nan_to_num(srad, nan=0.0)
-    tmax = np.nan_to_num(tmax, nan=0.0)
-    tmin = np.nan_to_num(tmin, nan=0.0)
+    if n_channels < 5 or n_channels % 5 != 0:
+        raise ValueError(f"Expected 5 channels per forcing product, got {n_channels} channels.")
+    if lat_deg is None or doy is None or len(doy) != x_dyn.shape[1]:
+        raise ValueError("lat_deg and a doy array matching the time axis are required for Hargreaves PET.")
+    _require_finite("x_dyn", x_dyn)
+    prcp = np.maximum(0.0, np.mean(x_dyn[:, :, 0::5], axis=2))
+    tmax = np.mean(x_dyn[:, :, 2::5], axis=2)
+    tmin = np.mean(x_dyn[:, :, 3::5], axis=2)
     tmean = 0.5 * (tmax + tmin)
-
-    if lat_deg is not None and doy is not None and len(doy) == x_dyn.shape[1]:
-        pet = compute_hargreaves_pet(tmax, tmin, lat_deg, doy)
-    else:
-        rn_mm = srad * 0.0864 * 0.408 * 0.55
-        es = 0.6108 * np.exp((17.27 * tmean) / (tmean + 237.3 + 1e-6))
-        delta = (4098.0 * es) / ((tmean + 237.3 + 1e-6) ** 2)
-        gamma = 0.066
-        pet = np.maximum(0.0, 1.26 * (delta / (delta + gamma)) * rn_mm)
+    pet = compute_hargreaves_pet(tmax, tmin, lat_deg, doy)
 
     return prcp.astype(np.float32), tmean.astype(np.float32), pet.astype(np.float32)
 
@@ -217,11 +216,11 @@ class DHBV11pTrainer:
         x_phy_te = np.stack([p_te, t_te, pet_te], axis=-1)
 
         x_nn_tr_raw = np.concatenate(
-            [np.nan_to_num(x_dyn_train.astype(np.float32, copy=True), nan=0.0), x_phy_tr[:, :, 1:3]],
+            [x_dyn_train.astype(np.float32, copy=True), x_phy_tr[:, :, 1:3]],
             axis=2,
         )
         x_nn_te_raw = np.concatenate(
-            [np.nan_to_num(x_dyn_test.astype(np.float32, copy=True), nan=0.0), x_phy_te[:, :, 1:3]],
+            [x_dyn_test.astype(np.float32, copy=True), x_phy_te[:, :, 1:3]],
             axis=2,
         )
         d_nn_dim = x_nn_tr_raw.shape[2]
@@ -234,10 +233,12 @@ class DHBV11pTrainer:
         xs_mean = np.nanmean(x_stat_train, axis=0, keepdims=True)
         xs_std = np.maximum(np.nanstd(x_stat_train, axis=0, keepdims=True), 1e-3)
 
-        xd_tr = np.nan_to_num((x_nn_tr_raw - xd_mean) / xd_std, nan=0.0).astype(np.float32)
-        xd_te = np.nan_to_num((x_nn_te_raw - xd_mean) / xd_std, nan=0.0).astype(np.float32)
-        xs_tr = np.nan_to_num((x_stat_train - xs_mean) / xs_std, nan=0.0).astype(np.float32)
-        xs_te = np.nan_to_num((x_stat_test - xs_mean) / xs_std, nan=0.0).astype(np.float32)
+        _require_finite("x_stat_train", x_stat_train)
+        _require_finite("x_stat_test", x_stat_test)
+        xd_tr = ((x_nn_tr_raw - xd_mean) / xd_std).astype(np.float32)
+        xd_te = ((x_nn_te_raw - xd_mean) / xd_std).astype(np.float32)
+        xs_tr = ((x_stat_train - xs_mean) / xs_std).astype(np.float32)
+        xs_te = ((x_stat_test - xs_mean) / xs_std).astype(np.float32)
 
         std_tr = np.zeros(n_train, dtype=np.float32)
         for i in range(n_train):
@@ -295,6 +296,8 @@ class DHBV11pTrainer:
         max_start = max(min_target_idx, t_train - eff_rho)
 
         model.train()
+        n_nonfinite_loss = 0
+        n_loss_total = 0
         for _ in range(epochs):
             for _ in range(n_iter):
                 b_idx = np.random.choice(
@@ -330,10 +333,25 @@ class DHBV11pTrainer:
                     loss = rmse_criterion(q_sim, yo_t)
                 else:
                     loss = nse_criterion(q_sim, yo_t, st_t)
-                if torch.isfinite(loss) and loss.requires_grad:
-                    optimizer.zero_grad(set_to_none=True)
-                    loss.backward()
-                    optimizer.step()
+                n_loss_total += 1
+                if not torch.isfinite(loss):
+                    n_nonfinite_loss += 1
+                    continue
+                optimizer.zero_grad(set_to_none=True)
+                loss.backward()
+                optimizer.step()
+        if n_nonfinite_loss > 0:
+            LOGGER.warning(
+                "Skipped %d of %d minibatches with a non-finite loss (seed %d).",
+                n_nonfinite_loss,
+                n_loss_total,
+                self.seed,
+            )
+        if n_nonfinite_loss > MAX_NONFINITE_LOSS_FRACTION * n_loss_total:
+            raise RuntimeError(
+                f"{n_nonfinite_loss}/{n_loss_total} minibatches produced a non-finite loss "
+                f"(> {MAX_NONFINITE_LOSS_FRACTION:.0%}); training diverged."
+            )
 
         model.eval()
         model.warmup = eval_start_idx if t_test > eval_start_idx else 0
@@ -353,5 +371,6 @@ class DHBV11pTrainer:
                 xp_ev = torch.from_numpy(np.transpose(x_phy_te[sl], (1, 0, 2))).to(self.device).contiguous()
                 q_out = model(xc_ev, xp_ev)
                 q_np = q_out.cpu().numpy().T
-                preds[sl] = np.maximum(0.0, np.nan_to_num(q_np, nan=0.0))
+                # NaN/Inf propagate so run_model's non-finite guard rejects a diverged model.
+                preds[sl] = np.maximum(0.0, q_np)
         return preds

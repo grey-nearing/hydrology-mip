@@ -1,5 +1,5 @@
 {
-  "total_families": 33,
+  "total_families": 34,
   "families": [
     {
       "family_id": "fuse_suite",
@@ -773,12 +773,12 @@
       "paradigm": "Selective State Space Model (Mamba + Static-Dynamic Adapter)",
       "citation": "Shahriar (2026)",
       "paper_url": "https://doi.org/10.2139/ssrn.7552815",
-      "github_url": "https://doi.org/10.5281/zenodo.23087719",
+      "github_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/shahriar2026_mamba3",
       "code_dir": "models/shahriar2026_mamba3",
       "zenodo_doi": "10.5281/zenodo.23087719",
       "zenodo_url": "https://zenodo.org/records/23087719",
       "hydroshare_url": "",
-      "description": "Parameter- and depth-matched 2-layer selective state-space model (d_model=112, d_state=32, d_conv=4, expand=2, 320,641 parameters) coupled with zero-initialized post-block Static-Dynamic Adapters conditioning hidden representations on 27 CAMELS static catchment attributes over 365-day Daymet lookback sequences (Shahriar, 2026; SSRN 7552815, Zenodo 10.5281/zenodo.23087719).",
+      "description": "Pure-PyTorch 3-layer Mamba-3 selective state-space model (hidden size H=80, d_state=64, headdim=32; 208,706 trainable parameters; batch size 128) coupled with zero-initialized post-block Static-Dynamic Adapters conditioning hidden representations on 27 CAMELS static catchment attributes over 365-day Daymet lookback sequences (Shahriar, 2026; SSRN 7552815, Zenodo 10.5281/zenodo.23087719).",
       "asterisk": false,
       "asterisk_reason": null,
       "n_entries": 1,
@@ -817,18 +817,30 @@
     {
       "family_id": "naive_lag1_persistence",
       "name": "Naive Lag-1 Streamflow Persistence (Lower Benchmark)",
+      "category": "Statistical",
+      "provenance_category": "Contribution",
       "paradigm": "Statistical Lower Benchmark (Zero-Parameter Lag-1 Persistence)",
-      "model_category": "Statistical",
       "citation": "Nearing et al. (2026)",
       "paper_url": "",
       "github_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+      "code_dir": "models/naive_lag1_persistence",
       "zenodo_doi": "10.5281/zenodo.24383448",
       "zenodo_url": "https://doi.org/10.5281/zenodo.24383448",
       "hydroshare_url": "",
-      "code_provenance": "Contribution",
-      "description": "Zero-parameter naive lag-1 discharge persistence Q_hat(t) = Q_obs(t-1) serving as an explicit lower predictability benchmark and 1.0-day phase-lag anchor on all three lagged-streamflow leaderboards."
+      "description": "Zero-parameter naive lag-1 discharge persistence Q_hat(t) = Q_obs(t-1) serving as an explicit lower predictability benchmark and 1.0-day phase-lag anchor on all three lagged-streamflow leaderboards.",
+      "asterisk": false,
+      "asterisk_reason": null,
+      "n_entries": 3,
+      "leaderboards_covered": [
+        "gauged__lagged_streamflow",
+        "pub__lagged_streamflow",
+        "pur__lagged_streamflow"
+      ],
+      "best_nse": 0.454,
+      "year": 2026,
+      "model_category": "Statistical"
     }
   ],
-  "num_families": 33,
+  "num_families": 34,
   "n_families": 34
 }

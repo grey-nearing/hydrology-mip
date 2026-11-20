@@ -4,7 +4,7 @@
   "model_name": "Kratzert et al. (2019) EA-LSTM",
   "provenance": "Trained in-process via models.kratzert_ealstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
   "protocol": {
-    "basins_source": "splits/basins_531.json",
+    "basins_source": "mips/camels_us_daily/splits/basins_531.json",
     "n_basins": 531,
     "train_period": [
       "1999-10-01",
@@ -28,7 +28,7 @@
   "published": {
     "single_median_nse": 0.712,
     "ensemble_median_nse": 0.741,
-    "source": "Kratzert et al. (2019), HESS 23, 5089-5110, Table 2; leaderboards/gauged__single_camels.json entries t3_23 (ensemble) and t3_38 (single)"
+    "source": "Kratzert et al. (2019), HESS 23, 5089-5110, Table 2; mips/camels_us_daily/leaderboards/gauged__single_camels.json entries t3_23 (ensemble) and t3_38 (single)"
   },
   "reference_used": "ensemble",
   "published_median_nse": 0.741,

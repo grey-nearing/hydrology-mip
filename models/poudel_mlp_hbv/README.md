@@ -21,8 +21,20 @@ Poudel & Steinschneider (2026) evaluated `MLP + 16HBV` on **Split-2C** across th
 
 Verify the Stage-1 confirmation report via:
 ```bash
-python models/poudel_mlp_hbv/reproduce_author_metrics.py --mode verify
+# Print the tracked Stage-1 report
+python -m models.poudel_mlp_hbv.reproduce_author_metrics --mode verify
+
+# Re-train and evaluate on Split-2C from scratch
+python -m models.poudel_mlp_hbv.reproduce_author_metrics --mode train_and_eval --out outputs/poudel_stage1.json
 ```
+- `--mode train_and_eval` writes to `--out`. The default is `models/poudel_mlp_hbv/stage1_author_reproduction_results.local.json`, which is not tracked by git. The tracked `stage1_author_reproduction_results.json` is overwritten only if `--out` points at it explicitly.
+- Evaluation uses `eval_spinup_days=0`: the `1980-01-01` evaluation start is the first day of the data bundle, so there is no pre-evaluation spinup.
+
+## Build Prerequisites
+The HBV kernels in `model.py` come in two forms: C++/OpenMP kernels, used for all inference and for training on CPU, and CUDA kernels, used for training on GPU. Inference always uses the CPU OpenMP kernel, so a GPU host needs both a working `nvcc` and an OpenMP-capable `g++`. The kernels are JIT-compiled with `torch.utils.cpp_extension.load_inline` on the first call, which takes a few minutes. The build is cached in `~/.cache/torch_extensions`. Set `TORCH_EXTENSIONS_DIR` to change the cache location, for example to a separate directory for each concurrent process. You need:
+- **C++ compiler:** Linux `g++` with OpenMP. On macOS (Apple clang) the C++ kernels build without `-fopenmp` and run single-threaded.
+- **`ninja`:** `pip install ninja`. torch cannot load C++ extensions without it.
+- **GPU only:** an `nvcc` whose version matches `torch.version.cuda`, with `CUDA_HOME` pointing at that toolkit.
 
 ## Stage-2 CAMELS-US MIP Protocol Results (Tables 3, 7, and 11)
 Evaluated on all 531 canonical basins over `1989-10-01` to `1999-09-30` (trained on `1999-10-01` to `2008-09-30`, Daymet forcing, 3 random seeds `[101, 102, 103]`):

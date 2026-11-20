@@ -16,19 +16,20 @@
 
 ## Model Architecture
 
-$\delta\text{HBV 1.1p}$ (also denoted $\delta\text{MG}$ in the MHPI `generic_deltamodel` framework; Song et al., 2024) extends the static differentiable HBV 1.0 architecture of Feng et al. (2022) by introducing:
+$\delta\text{HBV 1.1p}$ (also denoted $\delta\text{MG}$ in the MHPI `generic_deltamodel` framework; Song et al., 2024) extends the differentiable HBV 1.0 architecture of Feng et al. (2022), which has dynamic $\beta_t$ and $\gamma_t$ only, by introducing:
 
-1. **Capillary Rise Flux ($C$):** An upward moisture flux from the upper groundwater zone ($S_{\text{UZ}}$) back into the root-zone soil moisture store ($S_{\text{soil}}$) when soil moisture is below field capacity ($\text{FC}$):
-   $$R_{\text{up},t} = \min\!\left(S_{\text{UZ},t},\; C \cdot S_{\text{UZ},t} \cdot \max\!\left(0,\; 1 - \frac{S_{\text{soil},t}}{\text{FC}}\right)\right), \quad C \in [0.0001, 1.0]\text{ day}^{-1}$$
-2. **Dynamic (Time-Varying) Parameterization ($\beta_t, K_{0,t}, \gamma_t$):** At each daily timestep $t$ and across each of the $N_{\text{mul}} = 16$ sub-grid HBV response units, the LSTM parameter network outputs three time-varying physical parameters:
+1. **Capillary Rise Flux ($C$):** An upward moisture flux from the lower groundwater zone ($S_{\text{LZ}}$) back into the root-zone soil moisture store ($S_{\text{soil}}$) when soil moisture is below field capacity ($\text{FC}$):
+   $$R_{\text{up},t} = \min\!\left(S_{\text{LZ},t},\; C \cdot S_{\text{LZ},t} \cdot \left(1 - \min\!\left(1,\; \frac{S_{\text{soil},t}}{\text{FC}}\right)\right)\right), \quad C \in [0, 1]\text{ day}^{-1}$$
+2. **Dynamic (Time-Varying) Parameterization ($\beta_t, K_{0,t}, \gamma_t$):** At each daily timestep $t$ and across each of the $N_{\text{mul}} = 16$ sub-grid HBV response units, the LSTM parameter network outputs three time-varying physical parameters (`dynamic_params = ["parBETA", "parK0", "parBETAET"]`):
    - $\beta_t \in [1.0, 6.0]$ (`parBETA`): Nonlinear soil moisture recharge exponent in $(S_{\text{soil},t}/\text{FC})^{\beta_t}$.
-   - $K_{0,t} \in [0.05, 0.99]\text{ day}^{-1}$ (`parK0`): Near-surface rapid runoff recession coefficient above threshold $\text{UZL}$.
+   - $K_{0,t} \in [0.05, 0.9]\text{ day}^{-1}$ (`parK0`): Near-surface rapid runoff recession coefficient above threshold $\text{UZL}$.
    - $\gamma_t = \beta_{\text{ET},t} \in [0.3, 5.0]$ (`parBETAET`): Nonlinear evapotranspiration shape exponent in
      $$E_{\text{act},t} = \min\!\left(S_{\text{soil},t},\; \text{PET}_t \cdot \min\!\left(\left(\frac{S_{\text{soil},t}}{\text{FC}\cdot\text{LP}}\right)^{\gamma_t},\; 1.0\right)\right)$$
-3. **Parameter Estimation Network ($g_{\text{NN}}$):** A 1-layer, 256-unit DropConnect LSTM (`dropout=0.5`) receiving z-score normalized dynamic meteorological forcings (with precipitation pre-transformed via $\log_{10}(\sqrt{P_t} + 0.1)$) concatenated with 27 static CAMELS-US catchment attributes. The network outputs:
-   - **Static head:** $16 \times 14 + 2 = 226$ time-averaged sigmoid-activated outputs mapped to the 14 static HBV bounds per sub-bucket (`TT`, `CFMAX`, `CFR`, `CWH`, `FC`, `LP`, `K0` baseline, `K1`, `K2`, `UZL`, `PERC`, `BETA` baseline, `C`, `BETAET` baseline) and 2 basin-wide Gamma unit hydrograph routing parameters ($\alpha_{\text{UH}} \in [1.0, 2.9]$, $\theta_{\text{UH}} \in [0.01, 6.5]$).
-   - **Dynamic head:** $16 \times 3 = 48$ daily sigmoid-activated outputs overriding $(\beta_t, K_{0,t}, \gamma_t)$ at every timestep $t$.
-4. **Routing & Objective Function:** Sub-grid runoff averaged across all $N_{\text{mul}} = 16$ buckets is routed through a 15-day causal Gamma unit hydrograph (`uh_gamma_fast` and `uh_conv_fast`). Models are trained end-to-end for 50 epochs using `Adadelta(lr=1.0, rho=0.9, eps=1e-6)` on `batch_size=100` random basin-time windows of length $\rho = 365$ days preceded by $W = 365$ warmup spinup days, minimizing the basin-std normalized squared error loss (`NseBatchLoss`, $\epsilon = 0.1$).
+3. **Parameter Estimation Network ($g_{\text{NN}}$):** `StandaloneDHBV11p` in `models/_dhbv_common/core.py` (trained by `models/song_dhbv11p/model.py`): a `Linear + ReLU` input layer feeding a 1-layer, 256-unit DropConnect LSTM (`dropout=0.5`). Its inputs are the z-score normalized **raw** CAMELS forcing channels (`prcp`, `srad`, `tmax`, `tmin`, `vp`; precipitation is not transformed, unlike `feng_dhbv10`), plus the derived daily mean temperature and Hargreaves PET, concatenated with 27 static CAMELS-US catchment attributes. A single linear readout produces, at every timestep, $16 \times 14 + 2 = 226$ sigmoid-activated outputs:
+   - **Static parameters:** the 11 static HBV parameters per sub-bucket (`TT` $\in [-2.5, 2.5]$, `CFMAX`, `CFR`, `CWH`, `FC`, `LP`, `K1`, `K2`, `UZL`, `PERC`, `C`) and 2 basin-wide Gamma unit hydrograph routing parameters ($a \in [0, 2.9]$, $b \in [0, 6.5]$). Static parameters and routing parameters are read from the LSTM output at the **last timestep** of the input sequence.
+   - **Dynamic parameters:** for the $16 \times 3 = 48$ entries of $(\beta_t, K_{0,t}, \gamma_t)$, the LSTM output at every timestep $t$ is used.
+   - **Note on static parameters (faithful to the MHPI implementation):** Because static and routing parameters come from the final timestep (`StandaloneDHBV._descale_phy` and `forward`), they are non-causal within a sequence and depend on its length: training uses warm-up + `rho`-day windows, whereas evaluation feeds the full spinup + test sequence.
+4. **Routing & Objective Function:** Sub-grid runoff averaged across all $N_{\text{mul}} = 16$ buckets is routed through a 15-day causal Gamma unit hydrograph (`uh_gamma_fast` and `uh_conv_fast`). Models are trained end-to-end for 50 epochs using `Adadelta(lr=1.0, rho=0.9, eps=1e-6)` (hardcoded in the trainer; the runner's `lr` argument is currently ignored) on `batch_size=100` random basin-time windows of length $\rho = 365$ days preceded by $W = 365$ warmup spinup days, minimizing the basin-std normalized squared error loss (`NseBatchLoss`, $\epsilon = 0.1$).
 
 ---
 
@@ -38,9 +39,9 @@ Song et al. (2024, *HESS* 28, 3051–3077, Section 2.4 & Figure 2) evaluated $\d
 
 | Verification Protocol | Split (Train / Test) | Forcing & Basins | Published Med NSE | Reproduced 1-Seed Med NSE | Reproduced Ensemble Med NSE | $\Delta$ (1-Seed) | Status |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **Author Split-3 (Maurer 531)** | WY1980–1995 / WY1995–2010 | Maurer (531 basins) | 0.750 (0.730 $\delta\text{HBV 1.0}$) | **0.733** (`0.7333`) | **0.746** (`0.7460`, 2 seeds) | `-0.017` | **PASS** |
-| **Author Split-3 (Daymet 671)** | WY1980–1995 / WY1995–2009 | Daymet (670 basins) | 0.750 | **0.733** (`0.7330`) | **0.744** (`0.7440`, 2 seeds) | `-0.017` | **PASS** |
-| **Author Split-3 (Daymet 531)** | WY1980–1995 / WY1995–2010 | Daymet (531 basins) | 0.750 | **0.741** (`0.7407`) | **0.756** (`0.7556`, 2 seeds) | `-0.009` | **PASS** |
+| **Author Split-3 (Maurer 531)** | WY1980–1995 / WY1995–2008 | Maurer (531 basins) | 0.750 (0.730 $\delta\text{HBV 1.0}$) | **0.733** (`0.7333 ± 0.0024`, 3 seeds) | **0.739** (`0.7389`, 3 seeds) | `-0.017` | **PASS** |
+| **Author Split-3 (Daymet 671)** | WY1980–1995 / WY1995–2010 | Daymet (671 basins) | 0.750 | **0.737** (`0.7371 ± 0.0021`, 3 seeds) | **0.743** (`0.7430`, 3 seeds) | `-0.013` | **PASS** |
+| **Author Split-3 (Daymet 531)** | WY1980–1995 / WY1995–2010 | Daymet (531 basins) | 0.750 | **0.742** (`0.7418 ± 0.0009`, 3 seeds) | **0.748** (`0.7475`, 3 seeds) | `-0.008` | **PASS** |
 | **Split-1 MHPI Checkpoint** | WY1999–2008 / WY1989–1999 | Daymet (531 basins) | 0.757 (`0.7574` ens / `0.7548` 1-seed) | **0.754** (`0.7537 ± 0.0011`, 5 seeds) | **0.759** (`0.7589`, 5 seeds) | `-0.001` (`+0.002` ens) | **PASS** |
 
 ---
@@ -66,16 +67,31 @@ All Stage-2 runs use the standardized CAMELS-US MIP Split-1 temporal window (`19
 
 ---
 
+## Build Prerequisites
+
+The shared dHBV core (`models/_dhbv_common/core.py`, also used by `feng_dhbv10`) contains C++/OpenMP (CPU) and CUDA (GPU) kernels. They are JIT-compiled with `torch.utils.cpp_extension.load_inline` on the first call, which takes a few minutes. The build is cached in `~/.cache/torch_extensions`. Set `TORCH_EXTENSIONS_DIR` to change the cache location, for example to a separate directory for each concurrent process. You need:
+- **C++ compiler:** Linux `g++` with OpenMP. On macOS (Apple clang) the C++ kernels build without `-fopenmp` and run single-threaded.
+- **`ninja`:** `pip install ninja`. torch cannot load C++ extensions without it.
+- **GPU only:** an `nvcc` whose version matches `torch.version.cuda`, with `CUDA_HOME` pointing at that toolkit.
+
+---
+
 ## Reproducing Results
 
 ```bash
-# Verify Stage-1 author reproduction report
-python3 models/song_dhbv11p/reproduce_author_metrics.py --mode verify
+# Print the tracked Stage-1 author reproduction report
+python -m models.song_dhbv11p.reproduce_author_metrics --mode verify
 
-# Run Stage-2 standardized MIP fold evaluation
-python3 models/run_model.py \
-  --model-dir models/song_dhbv11p \
-  --regime gauged \
-  --forcings single \
-  --seeds 111 222 333 444 555
+# Re-score the canonical Split-1 Zarr store t3_18 from GCS (needs GCS read credentials)
+python -m models.song_dhbv11p.reproduce_author_metrics --mode verify --verify-gcs
+
+# Re-train and evaluate on Split-3 from scratch
+python -m models.song_dhbv11p.reproduce_author_metrics --mode train_and_eval --split split3 --forcing daymet --out outputs/song_stage1.json
+
+# Run the Stage-2 standardized MIP fold evaluation
+python -m models.run_model --model song_dhbv11p --spatial-regime gauged --forcings daymet --seeds 111 222 333 444 555
 ```
+
+- `reproduce_author_metrics.py` writes its report to `--out`. The default is `models/song_dhbv11p/stage1_author_reproduction_results.local.json`, which is not tracked by git. The tracked `stage1_author_reproduction_results.json` is overwritten only if `--out` points at it explicitly.
+- `--verify-gcs` reads from `gs://camels-us-mip`, which is not public, so it needs GCS read credentials (Application Default Credentials).
+- The Split-3 `train_and_eval` run uses 274 spinup days, because the data bundle starts on `1980-01-01` and training starts on `1980-10-01`.

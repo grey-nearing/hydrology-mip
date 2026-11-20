@@ -15,13 +15,17 @@ from metrics.evaluator import (
     calculate_model_leaderboard_metrics,
 )
 
+#: The cloud Zarr evaluator in `metrics/evaluator.py` implements the CAMELS-US Daily
+#: protocol (531 basins x 3,652 days); other registered MIPs need their own evaluator.
+SUPPORTED_MIP_IDS: tuple[str, ...] = (DEFAULT_MIP_ID,)
+
 
 def build_parser() -> argparse.ArgumentParser:
     """Create the argument parser for `mip-score-model`."""
     parser = argparse.ArgumentParser(
         prog="mip-score-model",
         description=(
-            "Calculate standardized HydroMIP metrics for one model and one "
+            "Calculate standardized HydrologyMIP metrics for one model and one "
             "leaderboard directly from cloud Zarr hydrographs."
         ),
     )
@@ -46,9 +50,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--bucket-uri",
-        default=DEFAULT_BUCKET_URI,
+        default=None,
         type=str,
-        help=f"Root URI of the Zarr bucket (default: {DEFAULT_BUCKET_URI}).",
+        help=(
+            "Root URI of the Zarr bucket (default: the MIP protocol's storage.bucket_uri, "
+            f"i.e. {DEFAULT_BUCKET_URI} for {DEFAULT_MIP_ID})."
+        ),
     )
     parser.add_argument(
         "--output-json",
@@ -63,10 +70,24 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Execute the `mip-score-model` CLI."""
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.mip not in SUPPORTED_MIP_IDS:
+        parser.error(
+            f"--mip {args.mip!r} is not supported by this evaluator; supported: "
+            f"{list(SUPPORTED_MIP_IDS)}."
+        )
     protocol = get_mip(args.mip)
-    bucket_uri = args.bucket_uri
-    if bucket_uri == DEFAULT_BUCKET_URI and "bucket_uri" in protocol.storage:
+    if args.leaderboard_id not in protocol.leaderboard_ids:
+        parser.error(
+            f"--leaderboard-id {args.leaderboard_id!r} is not declared by MIP {args.mip!r}."
+        )
+    if args.bucket_uri is not None:
+        bucket_uri = args.bucket_uri
+    elif "bucket_uri" in protocol.storage:
         bucket_uri = str(protocol.storage["bucket_uri"])
+    else:
+        parser.error(
+            f"MIP {args.mip!r} declares no storage.bucket_uri; pass --bucket-uri explicitly."
+        )
 
     result = calculate_model_leaderboard_metrics(
         model_id=args.model_id,

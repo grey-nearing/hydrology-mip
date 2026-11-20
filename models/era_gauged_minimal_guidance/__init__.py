@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """ERA (Evolving Research Agent) Gauged Minimal Guidance winning model (Node 73)."""
 
 from models.era_gauged_minimal_guidance.model import EntityAwareLSTM

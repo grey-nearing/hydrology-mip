@@ -1,0 +1,52 @@
+name: "Bug / Protocol / Leaderboard Report"
+description: "Report a software bug, documentation mismatch, or leaderboard citation/metadata correction."
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: "Affected Component"
+      options:
+        - "Core Library (`hydromip/`)"
+        - "Metrics & Cloud Zarr Evaluator (`metrics/`)"
+        - "Model Zoo & Central Runner (`models/`)"
+        - "CAMELS-US Daily Splits / Leaderboards / Figures (`mips/camels_us_daily/`, `leaderboards/`)"
+        - "Web Portal & API (`https://hydrologymip.org`)"
+        - "Documentation & Agent Skills (`README.md`, `skills/`)"
+        - "CI / Packaging (`pyproject.toml`, `.github/`)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Summary of the Issue"
+      description: "Clearly describe what is broken or inaccurate, including file paths, `entry_id` / `family_id` values, or paper DOIs if reporting a leaderboard metadata issue."
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: "Exact Steps or Command to Reproduce"
+      placeholder: |
+        1. Run `mip-score-model ...`
+        2. Observe traceback / output ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Expected Behavior"
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: "Environment (OS, Python Version, Commit SHA)"
+      placeholder: "e.g., Ubuntu 24.04, Python 3.11.9, main @ 58caa4e"
+    validations:
+      required: false

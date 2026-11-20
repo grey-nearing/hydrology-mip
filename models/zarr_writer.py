@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Centralized consolidated Zarr v2 hydrograph writer and validator for CAMELS-US MIP.
 
 The attribute vocabulary written here is the one used by the stores already in
@@ -638,8 +641,13 @@ def run_provenance_attrs(
     runner_kwargs: Mapping[str, object] | None,
     git_commit: str | None,
     data_source: str,
+    git_dirty: bool | None = None,
 ) -> dict[str, object]:
-    """Provenance attributes recorded by `models/run_model.py` alongside the canonical attrs."""
+    """Provenance attributes recorded by `models/run_model.py` alongside the canonical attrs.
+
+    ``data_source`` is reduced to its final path component (e.g. ``camels_671_1980_2014.npz`` or
+    ``data``) so public stores never carry absolute workstation paths.
+    """
     return {
         "generator": "camels-us-mip/models/run_model.py",
         "created_utc": _dt.datetime.now(_dt.timezone.utc).replace(microsecond=0).isoformat(),
@@ -648,5 +656,6 @@ def run_provenance_attrs(
         "fold_ids": [str(f) for f in fold_ids],
         "runner_kwargs_json": json.dumps(dict(runner_kwargs or {}), sort_keys=True, default=str),
         "git_commit": str(git_commit) if git_commit else "unknown",
-        "data_source": str(data_source),
+        "git_dirty": "unknown" if git_dirty is None else bool(git_dirty),
+        "data_source": Path(str(data_source)).name,
     }

@@ -5,32 +5,32 @@ in `mm/day`) stored in `<bucket_uri>/hydrographs/<leaderboard_id>/<model_id>.zar
 against the ground-truth USGS observations (`qobs`, shape `(531, 3652)` in `mm/day`)
 stored in `<bucket_uri>/observations/newman_eval_targets.zarr`.
 
-Computes all 12 Gauch et al. (2023) ("In Defense of Metrics") hydrological metrics
+Computes all 14 Gauch et al. (2023) ("In Defense of Metrics") hydrological metrics
 via `metrics/metrics.py` and strictly enforces that no missing basins or missing
 predictions on valid observation days are allowed (`pred_nan_when_obs_valid == 0`).
+The only exception is an explicit `allow_partial_archive=True` for declared partial
+author archives, which permits whole-basin exclusion but never within-basin masking.
 """
 
 from __future__ import annotations
 
 import logging
-import os
-import warnings
-from pathlib import Path
 from typing import Any
 
-import dask
-import gcsfs
 import numpy as np
 import pandas as pd
 import xarray as xr
-import zarr
 
+from hydromip.evaluation.zarr_io import (
+    deterministic_io,
+    get_gcs_storage_options,
+    open_zarr_store,
+    validate_store_id,
+    zarr_store_exists,
+)
 from metrics.metrics import calculate_all_metrics, get_available_metrics, nse
 
 LOGGER = logging.getLogger(__name__)
-
-zarr.config.set({"async.concurrency": 1})
-dask.config.set(scheduler="synchronous")
 
 DEFAULT_BUCKET_URI: str = "gs://camels-us-mip"
 NUM_BASINS: int = 531
@@ -45,6 +45,8 @@ GAUCH_2023_METRICS: tuple[str, ...] = (
     "MSE",
     "RMSE",
     "KGE",
+    "logNSE",
+    "logKGE",
     "Alpha-NSE",
     "Pearson-r",
     "Beta-KGE",
@@ -60,6 +62,8 @@ GAUCH_METRIC_TO_SNAKE: dict[str, str] = {
     "MSE": "mse",
     "RMSE": "rmse",
     "KGE": "kge",
+    "logNSE": "log_nse",
+    "logKGE": "log_kge",
     "Alpha-NSE": "alpha_nse",
     "Pearson-r": "pearson_r",
     "Beta-KGE": "beta_kge",
@@ -85,82 +89,11 @@ CANONICAL_LEADERBOARD_IDS: tuple[str, ...] = (
     "pur__freeform",
 )
 
-
-def _get_gcs_storage_options() -> dict[str, Any]:
-    """Return Google Cloud Storage authentication options for gcsfs and xarray."""
-    adc_override = (
-        os.environ["CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE"].strip()
-        if "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE" in os.environ
-        else ""
-    )
-    if adc_override and os.path.exists(adc_override):
-        return {"token": adc_override}
-    default_adc = os.path.expanduser(
-        "~/.config/gcloud/application_default_credentials.json"
-    )
-    if os.path.exists(default_adc):
-        return {"token": default_adc}
-    return {"token": "google_default"}
-
-
-def _zarr_store_exists(
-    store_uri: str,
-    storage_options: dict[str, Any] | None = None,
-) -> bool:
-    """Explicitly check whether a GCS or local Zarr store exists."""
-    if store_uri.startswith("gs://"):
-        opts = (
-            storage_options
-            if storage_options is not None
-            else _get_gcs_storage_options()
-        )
-        fs = gcsfs.GCSFileSystem(**opts)
-        return bool(
-            fs.exists(store_uri)
-            or fs.exists(f"{store_uri}/.zmetadata")
-            or fs.exists(f"{store_uri}/zarr.json")
-            or fs.exists(f"{store_uri}/.zgroup")
-        )
-    local_str = (
-        store_uri.removeprefix("file://")
-    )
-    local_path = Path(local_str)
-    if not local_path.exists() or not local_path.is_dir():
-        return False
-    return (
-        (local_path / ".zmetadata").exists()
-        or (local_path / "zarr.json").exists()
-        or (local_path / ".zgroup").exists()
-    )
-
-
-def _open_zarr_store(store_uri: str) -> xr.Dataset:
-    """Verify store existence and open a Zarr store with xarray."""
-    if store_uri.startswith("gs://"):
-        storage_options = _get_gcs_storage_options()
-        fs = gcsfs.GCSFileSystem(**storage_options)
-        has_consolidated = bool(fs.exists(f"{store_uri}/.zmetadata"))
-        if not (
-            has_consolidated
-            or fs.exists(store_uri)
-            or fs.exists(f"{store_uri}/zarr.json")
-            or fs.exists(f"{store_uri}/.zgroup")
-        ):
-            raise FileNotFoundError(
-                f"Required cloud Zarr store not found on GCS: {store_uri}"
-            )
-        return xr.open_zarr(
-            store_uri,
-            consolidated=has_consolidated,
-            storage_options=storage_options,
-        )
-    if not _zarr_store_exists(store_uri):
-        raise FileNotFoundError(
-            f"Required Zarr store not found at path: {store_uri}"
-        )
-    local_str = store_uri.removeprefix("file://")
-    has_local_consolidated = (Path(local_str) / ".zmetadata").exists()
-    return xr.open_zarr(local_str, consolidated=has_local_consolidated)
+# Backwards-compatible private aliases; the single implementation lives in
+# `hydromip.evaluation.zarr_io` (credential resolution, existence checks, store opening).
+_get_gcs_storage_options = get_gcs_storage_options
+_zarr_store_exists = zarr_store_exists
+_open_zarr_store = open_zarr_store
 
 
 _GCS_TARGETS_CACHE: dict[str, tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]] = {}
@@ -384,6 +317,26 @@ def _resolve_ensemble_reduction(hydrograph_ds: xr.Dataset, hydrograph_uri: str) 
     return reduction
 
 
+def _mean_over_finite_members(stack: np.ndarray) -> np.ndarray:
+    """Mean over axis 0 of the finite entries; NaN where no member is finite (no warnings)."""
+    finite = np.isfinite(stack)
+    n_finite = np.sum(finite, axis=0)
+    total = np.sum(np.where(finite, stack, 0.0), axis=0)
+    return np.where(n_finite > 0, total / np.maximum(n_finite, 1), np.nan)
+
+
+def _median_over_finite_members(stack: np.ndarray) -> np.ndarray:
+    """Median over axis 0 of the finite entries; NaN where no member is finite (no warnings)."""
+    n_finite = np.sum(np.isfinite(stack), axis=0)
+    ordered = np.sort(stack, axis=0)  # NaNs sort to the end of axis 0
+    last = int(stack.shape[0]) - 1
+    lower = np.clip((n_finite - 1) // 2, 0, last)[np.newaxis, ...]
+    upper = np.clip(n_finite // 2, 0, last)[np.newaxis, ...]
+    lower_vals = np.take_along_axis(ordered, lower, axis=0)[0]
+    upper_vals = np.take_along_axis(ordered, upper, axis=0)[0]
+    return np.where(n_finite > 0, 0.5 * (lower_vals + upper_vals), np.nan)
+
+
 def _check_members_against_qsim(
     sim: np.ndarray,
     members: np.ndarray,
@@ -395,7 +348,10 @@ def _check_members_against_qsim(
     """Enforce consistency between `qsim` and `qsim_members` and derive per-member bookkeeping.
 
     - Every member must be finite on every valid observation day (same anti-masking rule
-      as `qsim`).
+      as `qsim`), except under the explicitly declared partial-member reductions
+      (`nanmean`, `nanmedian`, `per_basin_oracle`), where a member may be absent for a
+      whole basin. Per-member scoring still rejects a member that is only partially
+      missing within a basin (no within-basin masking).
     - For an ensemble store, `qsim` must equal the declared member reduction
       (`ensemble_reduction` attribute: `"mean"` (default) or `"median"`, compared with
       `np.allclose(rtol=1e-4, atol=1e-4)`); a store whose `qsim` was clipped, re-weighted,
@@ -440,15 +396,10 @@ def _check_members_against_qsim(
             reduced = np.mean(members, axis=0)
         elif reduction == "median":
             reduced = np.median(members, axis=0)
+        elif reduction == "nanmean":
+            reduced = _mean_over_finite_members(members)
         else:
-            with warnings.catch_warnings():
-                # All-NaN member slices legitimately yield NaN for a partial-member suite.
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                reduced = (
-                    np.nanmean(members, axis=0)
-                    if reduction == "nanmean"
-                    else np.nanmedian(members, axis=0)
-                )
+            reduced = _median_over_finite_members(members)
         comparable = np.isfinite(sim) & np.isfinite(reduced)
         if not np.array_equal(np.isfinite(sim) & obs_valid, np.isfinite(reduced) & obs_valid):
             raise ValueError(
@@ -586,7 +537,7 @@ def calculate_model_leaderboard_metrics(
     allow_partial_archive: bool = False,
     evaluation_mode: str | None = None,
 ) -> dict[str, Any]:
-    """Calculate all 12 Gauch et al. (2023) & CAMELS-US MIP metrics for one model and leaderboard.
+    """Calculate all 14 Gauch et al. (2023) & CAMELS-US MIP metrics for one model and leaderboard.
 
     Reads the standardized model hydrograph Zarr store at
     `<bucket_uri>/hydrographs/<leaderboard_id>/<model_id>.zarr` and scores it against
@@ -615,7 +566,7 @@ def calculate_model_leaderboard_metrics(
         bucket_uri: Root URI of the CAMELS-US MIP bucket (default `"gs://camels-us-mip"`).
 
     Returns:
-        Dictionary containing the 5 headline leaderboard metrics, all 12 Gauch et al.
+        Dictionary containing the 5 headline leaderboard metrics, all 14 Gauch et al.
         (2023) metric distributions (`gauch_2023_metrics`), lower-tail skill percentiles,
         upper-tail peak-flow bias percentiles, `pred_nan_when_obs_valid` (`0`),
         18-region USGS HUC-02 median NSE breakdown (`regional_huc02`), and per-basin
@@ -625,14 +576,34 @@ def calculate_model_leaderboard_metrics(
         ValueError: If `model_id`, `leaderboard_id`, or `bucket_uri` is invalid, if
             coordinates or shapes do not match `(531, 3652)`, or if any evaluable basin
             is missing or contains any `NaN` or `Inf` on valid observation days
-            (`pred_nan_when_obs_valid > 0`).
+            (`pred_nan_when_obs_valid > 0`). With `allow_partial_archive=True`, whole
+            basins may be absent, but a basin that is only partially predicted still
+            raises. `evaluation_mode="single_member_mean"` raises unless the store
+            carries `qsim_members` with at least two members.
         FileNotFoundError: If either the target Zarr store or the model hydrograph
             Zarr store does not exist.
         KeyError: If required variables (`qobs`, `qsim`) or coordinates (`basin`,
             `date`, `huc_02`) are missing from the Zarr stores.
     """
-    if not isinstance(model_id, str) or not model_id.strip():
-        raise ValueError("model_id must be a non-empty string.")
+    validate_store_id(model_id, "model_id")
+    with deterministic_io():
+        return _score_model_leaderboard(
+            model_id=model_id,
+            leaderboard_id=leaderboard_id,
+            bucket_uri=bucket_uri,
+            allow_partial_archive=allow_partial_archive,
+            evaluation_mode=evaluation_mode,
+        )
+
+
+def _score_model_leaderboard(
+    model_id: str,
+    leaderboard_id: str,
+    bucket_uri: str,
+    allow_partial_archive: bool,
+    evaluation_mode: str | None,
+) -> dict[str, Any]:
+    """Implementation of `calculate_model_leaderboard_metrics` (called inside scoped I/O)."""
     if leaderboard_id not in CANONICAL_LEADERBOARD_IDS:
         raise ValueError(
             f"Invalid leaderboard_id '{leaderboard_id}'. Must be one of the 12 canonical "
@@ -676,6 +647,15 @@ def calculate_model_leaderboard_metrics(
         target_huc02=target_huc02,
     )
     members = _validate_hydrograph_members(hydrograph_ds, hydrograph_uri)
+    if evaluation_mode == "single_member_mean" and (
+        members is None or int(members.shape[0]) < 2
+    ):
+        n_found = 0 if members is None else int(members.shape[0])
+        raise ValueError(
+            f"evaluation_mode='single_member_mean' requires 'qsim_members' with at least 2 "
+            f"members in '{hydrograph_uri}', found {n_found}. The stored 'qsim' (possibly an "
+            f"ensemble mean) is never substituted for a single-seed score."
+        )
     is_ensemble = _resolve_is_ensemble(hydrograph_ds, hydrograph_uri, members)
     if is_ensemble and members is None:
         declared = hydrograph_ds.attrs.get("num_members")
@@ -698,27 +678,41 @@ def calculate_model_leaderboard_metrics(
     obs_valid = (~np.isnan(obs)) & (obs >= 0.0)
     pred_nan_mask = obs_valid & np.isnan(sim)
     pred_nan_when_obs_valid = int(np.sum(pred_nan_mask))
-    if pred_nan_when_obs_valid > 0 and not allow_partial_archive:
-        affected_basins = int(np.sum(np.any(pred_nan_mask, axis=1)))
-        missing_basins = [
-            str(target_basins[i])
-            for i in range(NUM_BASINS)
-            if np.any(obs_valid[i]) and np.all(np.isnan(sim[i, obs_valid[i]]))
-        ]
-        raise ValueError(
-            f"Anti-masking / missing-basin violation in '{hydrograph_uri}': "
-            f"pred_nan_when_obs_valid = {pred_nan_when_obs_valid} predicted NaN values "
-            f"on valid observation days across {affected_basins} basin(s) "
-            f"({len(missing_basins)} completely missing basin(s)). No missing basins "
-            f"or silent NaN masking are allowed."
+    n_valid_per_basin = np.sum(obs_valid, axis=1)
+    n_pred_nan_per_basin = np.sum(pred_nan_mask, axis=1)
+    excluded_basin_mask = np.zeros(NUM_BASINS, dtype=bool)
+    if pred_nan_when_obs_valid > 0:
+        affected_basins = int(np.sum(n_pred_nan_per_basin > 0))
+        missing_basin_mask = (n_pred_nan_per_basin > 0) & (
+            n_pred_nan_per_basin == n_valid_per_basin
         )
+        partial_basin_mask = (n_pred_nan_per_basin > 0) & (
+            n_pred_nan_per_basin < n_valid_per_basin
+        )
+        if not allow_partial_archive:
+            raise ValueError(
+                f"Anti-masking / missing-basin violation in '{hydrograph_uri}': "
+                f"pred_nan_when_obs_valid = {pred_nan_when_obs_valid} predicted NaN values "
+                f"on valid observation days across {affected_basins} basin(s) "
+                f"({int(np.sum(missing_basin_mask))} completely missing basin(s)). No missing "
+                f"basins or silent NaN masking are allowed."
+            )
+        if np.any(partial_basin_mask):
+            sample = [str(b) for b in target_basins[partial_basin_mask][:5]]
+            raise ValueError(
+                f"Partial-archive violation in '{hydrograph_uri}': "
+                f"{int(np.sum(partial_basin_mask))} basin(s) are only partially predicted on "
+                f"valid observation days (e.g. {sample}). allow_partial_archive permits "
+                f"whole-basin exclusion only, never within-basin masking."
+            )
+        excluded_basin_mask = missing_basin_mask
 
-    if not allow_partial_archive and not np.all(np.isfinite(sim[obs_valid])):
+    eval_valid = obs_valid & ~excluded_basin_mask[:, np.newaxis]
+    if not np.all(np.isfinite(sim[eval_valid])):
         raise ValueError(
             f"Non-finite prediction violation in '{hydrograph_uri}' on valid observation days."
         )
 
-    eval_valid = (obs_valid & np.isfinite(sim)) if allow_partial_archive else obs_valid
     if members is not None:
         member_info = _check_members_against_qsim(
             sim=sim,
@@ -750,7 +744,7 @@ def calculate_model_leaderboard_metrics(
             f"observations and SST > {MIN_SST_THRESHOLD}."
         )
 
-    # Compute all 12 Gauch et al. (2023) metrics per evaluable basin via metrics/metrics.py
+    # Compute all 14 Gauch et al. (2023) metrics per evaluable basin via metrics/metrics.py
     per_basin_vectors: dict[str, np.ndarray] = {
         m: np.full(NUM_BASINS, np.nan, dtype=np.float64)
         for m in GAUCH_2023_METRICS
@@ -758,14 +752,7 @@ def calculate_model_leaderboard_metrics(
     dates_ns = target_dates.astype("datetime64[ns]")
     obs_for_da = np.where(obs_valid, obs, np.nan)
 
-    if evaluation_mode == "single_member_mean" and (
-        members is None or int(members.shape[0]) <= 1
-    ):
-        is_ensemble = False
-        evaluation_mode = None
-
-    if evaluation_mode == "single_member_mean":
-        assert members is not None
+    if evaluation_mode == "single_member_mean" and members is not None:
         is_ensemble = False
         n_m = int(members.shape[0])
         member_info["num_members"] = n_m
@@ -784,9 +771,17 @@ def calculate_model_leaderboard_metrics(
             }
             for b_idx in np.where(good_b)[0]:
                 m_row = members[m_idx, b_idx]
-                missing = np.isnan(m_row) & obs_valid[b_idx]
-                if np.all(missing[obs_valid[b_idx]]):
+                basin_valid = eval_valid[b_idx]
+                n_missing = int(np.sum(np.isnan(m_row) & basin_valid))
+                if n_missing == int(np.sum(basin_valid)):
+                    # Member entirely absent for this basin (declared partial-member suite).
                     continue
+                if n_missing > 0:
+                    raise ValueError(
+                        f"Member {m_idx} in '{hydrograph_uri}' is partially missing on "
+                        f"{n_missing} valid observation days of basin {target_basins[b_idx]}; "
+                        f"within-basin masking is not allowed."
+                    )
                 obs_da = xr.DataArray(
                     obs_for_da[b_idx], coords={"date": dates_ns}, dims=("date",)
                 )
@@ -832,9 +827,9 @@ def calculate_model_leaderboard_metrics(
 
         for m_name in GAUCH_2023_METRICS + ("abs_fhv", "abs_fms", "abs_flv"):
             stacked = np.stack([mpb[m_name] for mpb in member_per_basin], axis=0)
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                per_basin_vectors[m_name] = np.nanmean(stacked, axis=0)
+            # Mean over the members that score each basin (a member absent for a whole
+            # basin contributes nothing; partial within-basin members were rejected above).
+            per_basin_vectors[m_name] = _mean_over_finite_members(stacked)
 
         single_seed_per_member = [
             round(float(md["NSE"]["median"]), 4) for md in member_distributions
@@ -991,6 +986,8 @@ def calculate_model_leaderboard_metrics(
 
     nse_d = gauch_distributions["NSE"]
     kge_d = gauch_distributions["KGE"]
+    log_nse_d = gauch_distributions["logNSE"]
+    log_kge_d = gauch_distributions["logKGE"]
     pr_d = gauch_distributions["Pearson-r"]
     mse_d = gauch_distributions["MSE"]
     rmse_d = gauch_distributions["RMSE"]
@@ -1007,6 +1004,10 @@ def calculate_model_leaderboard_metrics(
         "num_evaluated_basins": num_evaluated_basins,
         "num_eval_days": NUM_EVAL_DAYS,
         "pred_nan_when_obs_valid": pred_nan_when_obs_valid,
+        # Whole basins excluded under an explicit allow_partial_archive=True (never masked days)
+        "allow_partial_archive": bool(allow_partial_archive),
+        "num_excluded_basins": int(np.sum(excluded_basin_mask)),
+        "excluded_basins": [str(b) for b in target_basins[excluded_basin_mask]],
         # Ensemble / single-seed bookkeeping (never inferred from names or claims)
         "is_ensemble": bool(is_ensemble),
         "num_members": int(member_info["num_members"]),
@@ -1045,6 +1046,13 @@ def calculate_model_leaderboard_metrics(
         "p75_kge": kge_d["q75"],
         "max_kge": kge_d["max"],
         "mean_kge": kge_d["mean"],
+        # Log-space efficiencies (low-flow emphasis): 531-basin median and quartiles
+        "median_log_nse": log_nse_d["median"],
+        "q25_log_nse": log_nse_d["q25"],
+        "q75_log_nse": log_nse_d["q75"],
+        "median_log_kge": log_kge_d["median"],
+        "q25_log_kge": log_kge_d["q25"],
+        "q75_log_kge": log_kge_d["q75"],
         # Upper-tail peak flow bias (|FHV| %) distribution
         "min_abs_fhv": abs_fhv_d["min"],
         "q25_abs_fhv": abs_fhv_d["q25"],

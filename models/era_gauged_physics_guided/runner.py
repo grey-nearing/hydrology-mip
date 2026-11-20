@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Fold execution interface for the ERA Physics-Guided Gauged winning model (Node 187 — PhysicsHybridEALSTM)."""
 
 from __future__ import annotations
@@ -147,10 +150,23 @@ def run_fold(
     train_indices = np.where(train_mask_np)[0]
     valid_starts = train_indices[train_indices >= (seq_len - 1)]
     if len(valid_starts) == 0:
-        valid_starts = np.array([max(0, seq_len - 1)], dtype=np.int64)
+        raise ValueError(
+            f"No valid training window end days: seq_len={seq_len} exceeds the post-spin-up "
+            f"training slice ({n_train_days} days, spinup_days={spinup_days})."
+        )
 
+    # PhysicsHybridEALSTM learns one embedding per training basin, so it is only defined for
+    # basins seen in training (gauged regime).  Unseen basins must not borrow another basin's
+    # embedding.
     train_basin_to_idx = {str(b).zfill(8): i for i, b in enumerate(train_basins)}
-    eval_basin_indices = [train_basin_to_idx.get(str(b).zfill(8), 0) for b in test_basins]
+    unseen_basins = [str(b).zfill(8) for b in test_basins if str(b).zfill(8) not in train_basin_to_idx]
+    if unseen_basins:
+        raise ValueError(
+            "era_gauged_physics_guided uses per-training-basin embeddings and supports only the "
+            f"gauged spatial regime; {len(unseen_basins)} evaluation basin(s) were not in the "
+            f"training set: {unseen_basins}"
+        )
+    eval_basin_indices = [train_basin_to_idx[str(b).zfill(8)] for b in test_basins]
     all_b_eval = torch.tensor(eval_basin_indices, dtype=torch.long, device=device)
 
     n_eval_days = int(eval_slice["n_target_days"])

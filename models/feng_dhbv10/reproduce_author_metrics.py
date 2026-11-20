@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 Author Metric Reproduction Script: Feng et al. (2022) dHBV 1.0 (Split-3 Author Protocol).
 
 Paper:
@@ -25,14 +28,25 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+from metrics.metrics import calculate_all_metrics
+from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice
+from models.feng_dhbv10.runner import run_fold
+from models.run_model import load_canonical_basins
 
-from metrics.metrics import calculate_all_metrics  # noqa: E402
-from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice  # noqa: E402
-from models.feng_dhbv10.runner import run_fold  # noqa: E402
-from models.run_model import load_canonical_basins  # noqa: E402
+MODEL_DIR = Path(__file__).resolve().parent
+# Tracked, committed Stage-1 record. Only rewritten when --out explicitly points here.
+TRACKED_RESULTS_PATH = MODEL_DIR / "stage1_author_reproduction_results.json"
+# Default output for new runs: untracked, so reproducing never mutates the committed record.
+DEFAULT_OUT_PATH = MODEL_DIR / "stage1_author_reproduction_results.local.json"
+
+# Feng et al. (2022) Split-3 author protocol windows.
+SPLIT3_TRAIN = ("1980-10-01", "1995-09-30")
+SPLIT3_EVAL = ("1995-10-01", "2008-12-31")
+# First day of the canonical CAMELS bundle (camels_671_1980_2014.npz).
+BUNDLE_FIRST_DAY = "1980-01-01"
+# Spin-up that fits inside the bundle: 1980-01-01 .. 1980-09-30 (274 days) instead of the runner's
+# default 365, which would reach back to 1979-10-02 and fail the bundle coverage check.
+SPLIT3_SPINUP_DAYS = int((pd.Timestamp(SPLIT3_TRAIN[0]) - pd.Timestamp(BUNDLE_FIRST_DAY)).days)
 
 
 def _evaluate_predictions(
@@ -67,11 +81,11 @@ def _evaluate_predictions(
             dims=["date"],
         )
         m = calculate_all_metrics(da_obs, da_sim)
-        if m.get("NSE") is not None and np.isfinite(m["NSE"]):
+        if np.isfinite(m["NSE"]):
             nses.append(float(m["NSE"]))
-        if m.get("KGE") is not None and np.isfinite(m["KGE"]):
+        if np.isfinite(m["KGE"]):
             kges.append(float(m["KGE"]))
-        if m.get("FHV") is not None and np.isfinite(m["FHV"]):
+        if np.isfinite(m["FHV"]):
             fhvs.append(abs(float(m["FHV"])))
 
     return {
@@ -102,20 +116,26 @@ def main() -> None:
         nargs="+",
         default=[111, 222, 333, 444, 555],
     )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=DEFAULT_OUT_PATH,
+        help="Where to write a newly computed report (default: untracked *.local.json). The tracked "
+        "stage1_author_reproduction_results.json is only overwritten if --out points at it.",
+    )
     args = parser.parse_args()
 
-    out_path = Path(__file__).resolve().parent / "stage1_author_reproduction_results.json"
     published_median_nse = 0.715
     tolerance = 0.03
 
     if args.mode == "verify":
-        if not out_path.is_file():
-            raise FileNotFoundError(f"Missing reproduction report: {out_path}")
-        report = json.loads(out_path.read_text(encoding="utf-8"))
+        if not TRACKED_RESULTS_PATH.is_file():
+            raise FileNotFoundError(f"Missing reproduction report: {TRACKED_RESULTS_PATH}")
+        report = json.loads(TRACKED_RESULTS_PATH.read_text(encoding="utf-8"))
     else:
         basins = load_canonical_basins()
-        train_period = ("1980-10-01", "1995-09-30")
-        eval_period = ("1995-10-01", "2008-12-31")
+        train_period = SPLIT3_TRAIN
+        eval_period = SPLIT3_EVAL
         qsim = run_fold(
             train_basins=basins,
             test_basins=basins,
@@ -125,6 +145,7 @@ def main() -> None:
             data_dir=args.data_dir,
             seeds=tuple(args.seeds),
             epochs=args.epochs,
+            spinup_days=SPLIT3_SPINUP_DAYS,
         )
         eval_slice = load_camels_slice(
             basins=basins,
@@ -157,12 +178,13 @@ def main() -> None:
             "tolerance": tolerance,
             "num_evaluated_basins": int(metrics_out["num_evaluated_basins"]),
             "pred_nan_when_obs_valid": int(metrics_out["pred_nan_when_obs_valid"]),
+            "spinup_days": SPLIT3_SPINUP_DAYS,
             "status": status,
         }
-        out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+        args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report, indent=2))
-    if report.get("status") != "PASS":
+    if report["status"] != "PASS":
         sys.exit(1)
 
 

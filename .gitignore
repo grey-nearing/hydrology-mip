@@ -1,3 +1,4 @@
+# --- Python bytecode, builds, and packaging artifacts ---
 __pycache__/
 *.py[cod]
 *$py.class
@@ -6,13 +7,70 @@ __pycache__/
 .eggs/
 build/
 dist/
+pip-wheel-metadata/
+
+# --- Test, lint, type-check, and coverage caches ---
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.hypothesis/
+.tox/
+.nox/
 .coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# --- Logs and temporary files (incl. interrupted atomic `<file>.json.tmp` writes) ---
 *.log
+*.tmp
+*.swp
+*~
+
+# --- OS and editor files ---
 .DS_Store
+.idea/
+.vscode/
+
+# --- Virtual environments and local secrets ---
+.venv/
+venv/
+.env
+.env.*
+.envrc
+
+# --- Notebook checkpoints ---
+.ipynb_checkpoints/
+
+# --- Large data bundles, hydrographs, and upload archives (hosted on gs://camels-us-mip/) ---
 *.npz
 *.npy
 *.zarr/
+*.zarr.zip
+*.zip
+*.nc
+*.h5
+*.hdf5
+*.parquet
+*.pkl
+*.pickle
 hydrographs/
+
+# --- Community submissions written by the web portal (default `<repo>/submissions/`) ---
+submissions/
+
+# --- Model checkpoints and experiment-tracking output ---
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+lightning_logs/
+wandb/
+mlruns/
+
+# --- Local model-run outputs and untracked local reproduction reports ---
+# `models/run_model.py` writes local Zarr outputs to `./outputs/` by default, and the
+# `reproduce_author_metrics.py` scripts default to `*.local.json` reports.
+outputs/
+local_bucket/
+*.local.json

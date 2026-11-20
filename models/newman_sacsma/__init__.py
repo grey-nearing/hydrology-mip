@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Nearing et al. (2020) & Newman et al. (2017) Snow-17 + SAC-SMA conceptual hydrological model and donor transfer."""
 
 from models.newman_sacsma.model import (

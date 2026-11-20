@@ -2,30 +2,51 @@
   "status": "COMPLETED_NO_PUBLISHED_REFERENCE",
   "model_key": "naive_lag1_persistence",
   "model_name": "Naive Lag-1 Persistence (Q(t-1), Lower Benchmark)",
-  "family_id": "naive_lag1_persistence",
-  "family_name": "Naive Lag-1 Streamflow Persistence (Lower Benchmark)",
-  "citation": "Nearing et al. (2026)",
-  "zenodo_doi": "10.5281/zenodo.24383448",
-  "zenodo_url": "https://doi.org/10.5281/zenodo.24383448",
-  "newman_train_period": [
-    "1999-10-01",
-    "2008-09-30"
-  ],
-  "newman_test_period": [
-    "1989-10-01",
-    "1999-09-30"
-  ],
-  "spatial_regime": "gauged_pub_pur",
-  "leaderboard_id": "gauged__lagged_streamflow",
-  "forcings": [],
-  "num_seeds": 1,
-  "seeds": [0],
-  "ours_median_nse": 0.4542,
-  "ours_mean_nse": 0.4119,
-  "ours_median_kge": 0.7271,
-  "ours_median_peak_timing_days": 1.0,
+  "provenance": "Trained in-process via models.naive_lag1_persistence.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
+  "protocol": {
+    "basins_source": "mips/camels_us_daily/splits/basins_531.json",
+    "n_basins": 531,
+    "train_period": [
+      "1999-10-01",
+      "2008-09-30"
+    ],
+    "eval_period": [
+      "1989-10-01",
+      "1999-09-30"
+    ],
+    "forcings": [
+      "daymet"
+    ],
+    "seeds": [
+      0
+    ],
+    "runner_kwargs": {
+      "cold_start_value": 0.0
+    },
+    "data_dir": "mips/camels_us_daily/data"
+  },
+  "published": {
+    "single_median_nse": null,
+    "ensemble_median_nse": null,
+    "source": "none (zero-parameter lag-1 persistence lower benchmark contributed by HydrologyMIP)"
+  },
+  "reference_used": null,
+  "published_median_nse": null,
+  "tolerance": 0.01,
+  "abs_diff_median_nse": null,
+  "ours_median_nse": 0.454163952129672,
+  "ours_mean_nse": 0.41185020708654463,
+  "ours_median_kge": 0.727077763737896,
   "ours_nse_le_zero_count": 86,
   "ours_n_scored_basins": 531,
   "unscored_basins": [],
-  "pred_nan_when_obs_valid": 0
+  "pred_nan_when_obs_valid": 0,
+  "single_seed_median_nse_per_member": [
+    0.454163952129672
+  ],
+  "single_seed_median_nse_mean": 0.454163952129672,
+  "single_seed_median_nse_std": 0.0,
+  "hydrograph_path": "models/naive_lag1_persistence/stage1_author_reproduction_hydrograph.npz",
+  "train_and_predict_seconds": 6.262705564498901,
+  "generated_at_utc": "2026-11-20T14:35:39Z"
 }

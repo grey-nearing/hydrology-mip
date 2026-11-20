@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Tests for `models/camels_data.py`, `models/zarr_writer.py`, and `models/run_model.py`.
 
 All hydrograph dataset, fold-stitching, and Zarr store tests operate at the full native `(531, 3652)`
@@ -28,6 +31,7 @@ from models.run_model import (
     load_canonical_basins,
     load_model_fold_runner,
     load_spatial_folds,
+    default_output_uri,
     run_model_experiment,
     stitch_fold_predictions,
     validate_periods,
@@ -52,7 +56,7 @@ from models.zarr_writer import (
 MODELS_DIR: Path = Path(__file__).resolve().parent.parent
 REPO_ROOT: Path = MODELS_DIR.parent
 
-EXPECTED_16_MODEL_DIRS: tuple[str, ...] = (
+EXPECTED_MODEL_DIRS: tuple[str, ...] = (
     "kratzert_lstm",
     "kratzert_ealstm",
     "hoedt_mclstm",
@@ -681,10 +685,37 @@ def test_run_model_experiment_guards(tmp_path: Path) -> None:
     assert ds.attrs["leaderboard_id"] == "gauged__multi_camels" and ds.attrs["table_id"] == "table_4"
     assert ds.attrs["num_members"] == 1 and ds.attrs["is_ensemble"] is False
     assert "qsim_members" in ds.data_vars and ds["qsim_members"].shape[0] == 1
+    # Regime guardrails: a forcings-only model can never be filed under lagged_streamflow, and a
+    # model that reads observed test-basin discharge can only be filed under lagged_streamflow.
+    with pytest.raises(ValueError, match="not registered for forcing_regime 'lagged_streamflow'"):
+        run_model_experiment(
+            **base, output_zarr=tmp_path / "i.zarr", forcing_regime="lagged_streamflow", fold_runner=_ok_runner
+        )
+    for lagged_model in ("feng2020_di_lstm", "yin2022_rrformer", "naive_lag1_persistence"):
+        with pytest.raises(ValueError, match="not registered for forcing_regime 'single_camels'"):
+            run_model_experiment(
+                **{**base, "model_name": lagged_model}, output_zarr=tmp_path / "i2.zarr", fold_runner=_ok_runner
+            )
     ds2, _ = run_model_experiment(
-        **base, output_zarr=tmp_path / "i.zarr", forcing_regime="lagged_streamflow", fold_runner=_ok_runner
+        **{**base, "model_name": "naive_lag1_persistence"},
+        output_zarr=tmp_path / "i3.zarr",
+        forcing_regime="lagged_streamflow",
+        fold_runner=_ok_runner,
     )
     assert ds2.attrs["leaderboard_id"] == "gauged__lagged_streamflow" and ds2.attrs["table_id"] == "table_5"
+    assert json.loads(ds2.attrs["runner_kwargs_json"]) == {"cold_start_value": 0.0}
+    # Gauged-only models (per-basin embeddings) are rejected in PUB/PUR before any fold runs.
+    for gauged_model in ("era_gauged_physics_guided", "era_gauged_multi_paradigm", "era_gauged_minimal_guidance"):
+        with pytest.raises(ValueError, match="not registered for spatial_regime 'pub_12fold'"):
+            run_model_experiment(
+                model_name=gauged_model,
+                spatial_regime="pub_12fold",
+                forcings=["daymet", "maurer", "nldas"],
+                data_dir=tmp_path,
+                seeds=[1],
+                output_zarr=tmp_path / "i4.zarr",
+                fold_runner=_ok_runner,
+            )
 
     validate_periods((CANONICAL_TRAIN_START, CANONICAL_TRAIN_END), (CANONICAL_EVAL_START, CANONICAL_EVAL_END))
 
@@ -756,10 +787,11 @@ def test_split_loading_has_no_fallback_and_validates_pur_purity(tmp_path: Path) 
         assert len({huc[b] for b in f.test_basins}) == 1
 
 
-def test_all_16_model_directories_registered_and_expose_run_fold() -> None:
-    """Verify all 16 model subdirectories exist, are registered, and expose a compliant `run_fold`."""
-    assert set(MODEL_REGISTRY.keys()) == set(EXPECTED_16_MODEL_DIRS)
-    for model_key in EXPECTED_16_MODEL_DIRS:
+def test_all_model_directories_registered_and_expose_run_fold() -> None:
+    """Verify all 20 model subdirectories exist, are registered, and expose a compliant `run_fold`."""
+    assert len(EXPECTED_MODEL_DIRS) == 20
+    assert set(MODEL_REGISTRY.keys()) == set(EXPECTED_MODEL_DIRS)
+    for model_key in EXPECTED_MODEL_DIRS:
         model_dir = MODELS_DIR / model_key
         assert model_dir.is_dir(), f"Missing model directory: {model_dir}"
         assert (model_dir / "__init__.py").is_file()
@@ -785,6 +817,8 @@ def test_ast_audit_zero_try_except_zero_split_loading_zero_hardcoded_dates_in_mo
 
     py_files = [p for p in sorted(MODELS_DIR.rglob("*.py")) if "tests" not in p.parts]
     assert len(py_files) >= 15 * 3 + 3
+    # Internal-infrastructure references are covered repo-wide by `hydromip.tools.ci_guardrails`.
+    forbidden_path_prefixes = ("/tmp/", "/usr/local/", "/home/")
 
     for py_path in py_files:
         source = py_path.read_text(encoding="utf-8")
@@ -796,10 +830,49 @@ def test_ast_audit_zero_try_except_zero_split_loading_zero_hardcoded_dates_in_mo
         for node in ast.walk(tree):
             if isinstance(node, ast.Attribute) and node.attr == "suppress":
                 pytest.fail(f"{rel_path} uses forbidden contextlib.suppress at line {node.lineno}")
+            if isinstance(node, ast.Constant) and isinstance(node.value, str):
+                for prefix in forbidden_path_prefixes:
+                    assert not node.value.startswith(prefix), (
+                        f"{rel_path}:{node.lineno} hardcodes machine-local path {node.value!r}"
+                    )
+            if isinstance(node, ast.Call):
+                for kw in node.keywords:
+                    if kw.arg == "allow_pickle":
+                        assert isinstance(kw.value, ast.Constant) and kw.value.value is False, (
+                            f"{rel_path}:{node.lineno} must pass allow_pickle=False"
+                        )
+                    if kw.arg == "weights_only":
+                        assert isinstance(kw.value, ast.Constant) and kw.value.value is True, (
+                            f"{rel_path}:{node.lineno} must pass weights_only=True"
+                        )
+            # No process-wide environment mutation of PATH-like variables inside model packages.
+            if isinstance(node, (ast.Assign, ast.AugAssign)):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                for tgt in targets:
+                    if (
+                        isinstance(tgt, ast.Subscript)
+                        and isinstance(tgt.value, ast.Attribute)
+                        and tgt.value.attr == "environ"
+                        and isinstance(tgt.slice, ast.Constant)
+                        and tgt.slice.value in ("PATH", "LD_LIBRARY_PATH", "CUDA_HOME")
+                    ):
+                        pytest.fail(f"{rel_path}:{node.lineno} mutates os.environ[{tgt.slice.value!r}]")
+            # Unseen basins must never silently map onto a training basin's embedding row.
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "get"
+                and len(node.args) == 2
+                and isinstance(node.args[1], ast.Constant)
+                and node.args[1].value == 0
+                and isinstance(node.func.value, ast.Name)
+                and "idx" in node.func.value.id
+            ):
+                pytest.fail(f"{rel_path}:{node.lineno} uses an index fallback `.get(..., 0)`")
 
         if (
             len(rel_path.parts) > 1
-            and rel_path.parts[0] in EXPECTED_16_MODEL_DIRS
+            and rel_path.parts[0] in EXPECTED_MODEL_DIRS
             and py_path.name != "reproduce_author_metrics.py"
         ):
             for node in ast.walk(tree):
@@ -815,9 +888,9 @@ def test_ast_audit_zero_try_except_zero_split_loading_zero_hardcoded_dates_in_mo
                         )
 
 
-def test_all_16_reproduce_author_metrics_scripts_and_json_results() -> None:
-    """Verify all 16 model subdirectories contain a hermetic `reproduce_author_metrics.py` and an honest Stage-1 status JSON."""
-    for model_key in EXPECTED_16_MODEL_DIRS:
+def test_all_reproduce_author_metrics_scripts_and_json_results() -> None:
+    """Verify all 20 model subdirectories contain a hermetic `reproduce_author_metrics.py` and an honest Stage-1 status JSON."""
+    for model_key in EXPECTED_MODEL_DIRS:
         model_dir = MODELS_DIR / model_key
         script_path = model_dir / "reproduce_author_metrics.py"
         json_path = model_dir / "stage1_author_reproduction_results.json"
@@ -840,7 +913,7 @@ def test_run_model_cli_list_models(capsys: pytest.CaptureFixture[str]) -> None:
     rc = run_model_cli_main(["--list-models"])
     assert rc == 0
     captured = capsys.readouterr().out
-    for model_key in EXPECTED_16_MODEL_DIRS:
+    for model_key in EXPECTED_MODEL_DIRS:
         assert model_key in captured
     assert len(canonical_evaluation_dates()) == EXPECTED_NUM_DAYS
 
@@ -923,3 +996,146 @@ def test_feng2020_yin2022_models_finite_predictions_with_missing_qobs(
         device="cpu",
     )
     assert q_rr.shape == (2, 731) and np.all(np.isfinite(q_rr)) and np.all(q_rr >= 0.0)
+
+
+# =============================================================================
+# Registry, catalog, output defaults, and naive persistence
+# =============================================================================
+
+
+def test_catalog_json_matches_model_registry() -> None:
+    """`models/catalog.json` must mirror `MODEL_REGISTRY` exactly (one source of truth)."""
+    catalog = json.loads((MODELS_DIR / "catalog.json").read_text(encoding="utf-8"))
+    by_key = {m["key"]: m for m in catalog["models"]}
+    assert set(by_key) == set(MODEL_REGISTRY)
+    for key, entry in MODEL_REGISTRY.items():
+        m = by_key[key]
+        assert m["model_name"] == entry.model_name, key
+        assert m["model_family"] == entry.model_family, key
+        assert m["provenance_category"] == entry.provenance_category, key
+        assert m["runner_module"] == entry.runner_module, key
+        assert m["code_url"] == entry.code_url, key
+        assert tuple(m["supported_forcing_regimes"]) == entry.allowed_forcing_regimes, key
+        assert tuple(m["supported_spatial_regimes"]) == entry.allowed_spatial_regimes, key
+
+
+def test_registry_regimes_are_valid_and_lagged_models_are_isolated() -> None:
+    from models.zarr_writer import VALID_FORCING_REGIMES, VALID_SPATIAL_REGIMES
+
+    lagged = {"feng2020_di_lstm", "yin2022_rrformer", "naive_lag1_persistence"}
+    for key, entry in MODEL_REGISTRY.items():
+        assert entry.allowed_forcing_regimes and entry.allowed_spatial_regimes, key
+        assert set(entry.allowed_forcing_regimes) <= set(VALID_FORCING_REGIMES), key
+        assert set(entry.allowed_spatial_regimes) <= set(VALID_SPATIAL_REGIMES), key
+        if key in lagged:
+            assert entry.allowed_forcing_regimes == ("lagged_streamflow",), key
+        else:
+            assert "lagged_streamflow" not in entry.allowed_forcing_regimes, key
+        if key.startswith("era_gauged_"):
+            assert entry.allowed_spatial_regimes == ("gauged",), key
+
+
+def test_default_output_is_local_and_provenance_has_no_absolute_paths(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Without --output-zarr the store goes to ./outputs/<leaderboard>/<model_id>.zarr, never the bucket."""
+
+    def _ok_runner(train_basins, test_basins, train_period, eval_period, forcings, data_dir, seeds=(1,), **kw):
+        return _deterministic_basin_hydrograph(test_basins)
+
+    monkeypatch.chdir(tmp_path)
+    data_dir = tmp_path / "some" / "private" / "data"
+    ds, uri = run_model_experiment(
+        model_name="kratzert_lstm",
+        spatial_regime="gauged",
+        forcings=["daymet"],
+        data_dir=data_dir,
+        seeds=[1],
+        fold_runner=_ok_runner,
+    )
+    expected = default_output_uri("gauged__single_camels", "kratzert_lstm_gauged_single_camels")
+    assert uri == str(expected) and not uri.startswith("gs://")
+    assert (tmp_path / expected / ".zmetadata").is_file()
+    assert ds.attrs["data_source"] == "data"
+    assert ds.attrs["archive_url"].startswith("gs://camels-us-mip/hydrographs/gauged__single_camels/")
+    assert ds.attrs["git_dirty"] in (True, False, "unknown")
+
+
+def test_naive_lag1_persistence_is_strictly_causal_and_uses_true_previous_day(tmp_path: Path) -> None:
+    """Day 1 of the evaluation window persists the real observation of the day before it."""
+    from models.naive_lag1_persistence.model import predict_lag1_persistence
+    from models.naive_lag1_persistence.runner import run_fold
+
+    q = np.array([[1.0, 2.0, np.nan, 4.0, -999.0, 6.0]], dtype=np.float32)
+    preds, n_cold = predict_lag1_persistence(q, lookback_days=2)
+    np.testing.assert_array_equal(preds, [[2.0, 2.0, 4.0, 4.0]])
+    assert n_cold == 0
+    cold = np.array([[np.nan, np.nan, 3.0, 5.0]], dtype=np.float32)
+    with pytest.raises(ValueError, match="cold_start_value"):
+        predict_lag1_persistence(cold, lookback_days=2)
+    preds_c, n_cold_c = predict_lag1_persistence(cold, lookback_days=2, cold_start_value=0.0)
+    np.testing.assert_array_equal(preds_c, [[0.0, 3.0]])
+    assert n_cold_c == 1
+
+    root = tmp_path / "raw"
+    build_synthetic_raw_camels(root, negative_sentinel_day=None)
+    eval_p = ("2000-10-01", "2001-09-30")
+    out = run_fold(
+        train_basins=list(SYNTHETIC_BASINS),
+        test_basins=list(SYNTHETIC_BASINS),
+        train_period=("1998-10-01", "1999-09-30"),
+        eval_period=eval_p,
+        forcings=["daymet"],
+        data_dir=root,
+        seeds=(0,),
+        fold_id="gauged",
+        fold_index=0,
+    )
+    sl = cd.load_camels_slice(list(SYNTHETIC_BASINS), ("2000-09-30", eval_p[1]), ["daymet"], root)
+    np.testing.assert_allclose(out, sl["qobs"][:, :-1], rtol=0, atol=0)
+    with pytest.raises(ValueError, match="Unknown runner kwargs"):
+        run_fold(list(SYNTHETIC_BASINS), list(SYNTHETIC_BASINS), eval_p, eval_p, ["daymet"], root, bogus=1)
+
+
+def test_registered_runners_smoke_on_synthetic_camels(tmp_path: Path) -> None:
+    """Fast CPU end-to-end `run_fold` calls on a hermetic 4-basin tree for representative runners."""
+    from models.kratzert_lstm.runner import run_fold as run_lstm
+    from models.naive_lag1_persistence.runner import run_fold as run_naive
+    from models.shahriar2026_mamba3.runner import run_fold as run_mamba
+
+    root = tmp_path / "raw"
+    build_synthetic_raw_camels(root)
+    train_b, test_b = list(SYNTHETIC_BASINS[:2]), list(SYNTHETIC_BASINS[2:])
+    train_p, eval_p = ("1999-10-01", "2000-09-30"), ("2000-10-01", "2001-09-30")
+    n_eval = len(pd.date_range(*eval_p, freq="D"))
+    common = dict(
+        train_basins=train_b, test_basins=test_b, train_period=train_p, eval_period=eval_p, data_dir=root, seeds=(1,)
+    )
+    q_naive = run_naive(**common, forcings=["daymet"])
+    q_mamba = run_mamba(
+        **common,
+        forcings=["daymet"],
+        hidden_size=16,
+        mamba_layers=1,
+        epochs=1,
+        n_batches_per_epoch=2,
+        batch_size=4,
+        spinup_days=30,
+        rho=60,
+        device="cpu",
+    )
+    q_lstm = run_lstm(
+        **common,
+        forcings=["daymet"],
+        seq_len=60,
+        epochs=1,
+        n_batches_per_epoch=2,
+        batch_size=8,
+        hidden_size=8,
+        eval_batch_size=64,
+        device="cpu",
+    )
+    for q in (q_naive, q_mamba, q_lstm):
+        arr = np.asarray(q)
+        assert arr.shape[-2:] == (len(test_b), n_eval)
+        assert np.all(np.isfinite(arr))

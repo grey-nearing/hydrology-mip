@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydroMIP Contributors
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Zero-parameter Naive Lag-1 Persistence lower benchmark for lagged-streamflow tracks."""

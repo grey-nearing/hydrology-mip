@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """ERA Physics-Guided Gauged winning architecture (Node 187 — PhysicsHybridEALSTM / d-EA-LSTM)."""
 
 from __future__ import annotations
@@ -117,8 +120,12 @@ class PhysicsHybridEALSTM(nn.Module):
         raw_t: torch.Tensor,
     ) -> torch.Tensor:
         b, seq_len, _ = x_d.shape
-        safe_b_idx = torch.clamp(b_idx, min=0, max=self.num_basins - 1)
-        s_feat = torch.cat([x_s, self.basin_embed(safe_b_idx)], dim=-1)
+        if b_idx.numel() > 0 and (int(b_idx.min()) < 0 or int(b_idx.max()) >= self.num_basins):
+            raise ValueError(
+                f"basin index out of range [0, {self.num_basins}): "
+                f"min={int(b_idx.min())}, max={int(b_idx.max())}"
+            )
+        s_feat = torch.cat([x_s, self.basin_embed(b_idx)], dim=-1)
         static_hidden = self.static_net(s_feat)
         i_gate_feat, phys_feat = torch.chunk(static_hidden, 2, dim=-1)
 

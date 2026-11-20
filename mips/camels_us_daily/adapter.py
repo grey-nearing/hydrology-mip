@@ -3,8 +3,17 @@
 
 """Adapter binding the ``camels_us_daily`` MIP splits, protocol, and data to ``hydromip``.
 
-Zero ``try``/``except`` blocks. All split invariants are verified strictly via
-``hydromip.splits.validate_cv_folds``.
+Split files and fold counts come from ``mips/camels_us_daily/protocol.json``
+(``spatial_regimes[*].split_file`` / ``num_folds``), so the protocol is the single source
+of truth. Every regime is verified strictly via ``hydromip.splits.validate_cv_folds``:
+
+* ``gauged``: one fold whose train and test sets are the full 531-basin cohort.
+* ``pub_12fold``: disjoint train/test, train + test == 531 in every fold, and the test sets
+  partition the 531 basins exactly.
+* ``pur_18huc02``: as PUB, plus every fold holds out exactly one USGS HUC-02 region that
+  never appears in its training set.
+
+Zero ``try``/``except`` blocks.
 """
 
 from __future__ import annotations
@@ -17,6 +26,9 @@ from hydromip.protocol import MipProtocol, get_mip
 from hydromip.splits import CvFold, load_cv_splits_json, validate_cv_folds
 
 MIP_ID: str = "camels_us_daily"
+NUM_CANONICAL_BASINS: int = 531
+#: Spatial regimes whose folds must be leave-one-HUC02-region-out.
+HUC02_GROUPED_REGIMES: frozenset[str] = frozenset({"pur_18huc02"})
 
 
 def load_protocol(repo_root: str | Path | None = None) -> MipProtocol:
@@ -39,12 +51,16 @@ def load_canonical_basins(splits_dir: str | Path | None = None) -> list[str]:
         for line in basins_file.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    if len(basins) != 531 or len(set(basins)) != 531:
+    if len(basins) != NUM_CANONICAL_BASINS or len(set(basins)) != NUM_CANONICAL_BASINS:
         raise ValueError(
-            f"Expected 531 unique basins in {basins_file}, found {len(basins)} ({len(set(basins))} unique)."
+            f"Expected {NUM_CANONICAL_BASINS} unique basins in {basins_file}, found "
+            f"{len(basins)} ({len(set(basins))} unique)."
         )
     if basins != sorted(basins):
         raise ValueError(f"Canonical basin list in {basins_file} must be lexicographically sorted.")
+    malformed = [b for b in basins if len(b) != 8 or not b.isdigit()]
+    if malformed:
+        raise ValueError(f"Non 8-digit basin IDs in {basins_file}: {malformed[:5]}")
     return basins
 
 
@@ -61,24 +77,39 @@ def load_basin_to_huc02(splits_dir: str | Path | None = None) -> dict[str, str]:
     spec = json.loads(spec_path.read_text(encoding="utf-8"))
     if "basin_to_huc02" not in spec or not isinstance(spec["basin_to_huc02"], dict):
         raise KeyError(f"{spec_path} missing 'basin_to_huc02' mapping.")
-    return {str(k).zfill(8): str(v).zfill(2) for k, v in spec["basin_to_huc02"].items()}
+    mapping = {str(k).zfill(8): str(v).zfill(2) for k, v in spec["basin_to_huc02"].items()}
+    canonical = set(load_canonical_basins(sdir))
+    if set(mapping) != canonical:
+        raise ValueError(f"'basin_to_huc02' keys in {spec_path} do not equal the canonical basins.")
+    return mapping
 
 
 def load_splits_for_regime(
     spatial_regime: str,
     splits_dir: str | Path | None = None,
+    repo_root: str | Path | None = None,
 ) -> list[CvFold]:
-    """Load and verify canonical CV folds for ``gauged``, ``pub_12fold``, or ``pur_18huc02``."""
-    sdir = (
-        Path(splits_dir)
-        if splits_dir is not None
-        else resolve_mip_paths(MIP_ID).splits_dir
-    )
+    """Load and verify the canonical CV folds of one declared spatial regime.
+
+    Args:
+        spatial_regime: A spatial regime ``id`` declared in ``protocol.json``
+            (``gauged``, ``pub_12fold``, or ``pur_18huc02``).
+        splits_dir: Optional override of the splits directory (defaults to the MIP's).
+        repo_root: Optional repository root used to load the protocol.
+    """
+    protocol = load_protocol(repo_root)
+    regime = protocol.get_spatial_regime(spatial_regime)
+    sdir = Path(splits_dir) if splits_dir is not None else protocol.paths.splits_dir
     basins = load_canonical_basins(sdir)
-    if spatial_regime == "gauged":
+
+    if regime.split_file is None:
+        if regime.num_folds != 1:
+            raise ValueError(
+                f"Spatial regime {regime.id!r} declares {regime.num_folds} folds without a split file."
+            )
         folds = [
             CvFold(
-                fold_id="gauged",
+                fold_id=regime.id,
                 fold_index=0,
                 train_entities=tuple(basins),
                 test_entities=tuple(basins),
@@ -89,30 +120,18 @@ def load_splits_for_regime(
             basins,
             require_disjoint_train_test=False,
             require_exact_test_partition=True,
+            require_train_test_union_equals_cohort=True,
         )
         return folds
 
-    if spatial_regime == "pub_12fold":
-        return load_cv_splits_json(
-            sdir / "pub_12fold_random_splits.json",
-            basins,
-            expected_num_folds=12,
-            require_disjoint_train_test=True,
-            require_exact_test_partition=True,
-        )
-
-    if spatial_regime == "pur_18huc02":
-        basin_to_huc02 = load_basin_to_huc02(sdir)
-        return load_cv_splits_json(
-            sdir / "pur_18fold_huc02_splits.json",
-            basins,
-            expected_num_folds=18,
-            require_disjoint_train_test=True,
-            require_exact_test_partition=True,
-            entity_to_group=basin_to_huc02,
-        )
-
-    raise ValueError(
-        f"Unsupported spatial_regime {spatial_regime!r} for {MIP_ID}; "
-        "expected 'gauged', 'pub_12fold', or 'pur_18huc02'."
+    grouped = regime.id in HUC02_GROUPED_REGIMES
+    return load_cv_splits_json(
+        sdir / regime.split_file,
+        basins,
+        expected_num_folds=regime.num_folds,
+        require_disjoint_train_test=True,
+        require_exact_test_partition=True,
+        entity_to_group=load_basin_to_huc02(sdir) if grouped else None,
+        require_train_test_union_equals_cohort=True,
+        require_single_test_group=grouped,
     )

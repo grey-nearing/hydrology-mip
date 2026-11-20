@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC, Grey Nearing, and the CAMELS-US MIP Contributors
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Stage-1 author-protocol confirmation for Shahriar (2026) Mamba-3 Adapter.
@@ -10,17 +10,22 @@ Supports both:
      `seed=111111`, 30 epochs x 361 batches/epoch) and evaluates over
      `1995-10-01`..`2010-09-30`, scoring both all 671 basins (published
      `Med NSE = 0.7272`) and the canonical 531 Newman basins (`Med NSE = 0.7307`),
-     then writes consolidated Zarr v2 predictions (`mm/day`) to
-     `gs://camels-us-mip/stage1_author_reproductions/shahriar2026_mamba3.zarr`.
+     and, only when `--upload` is passed, writes consolidated Zarr v2 predictions
+     (`mm/day`) to `--output-zarr` (default
+     `gs://camels-us-mip/stage1_author_reproductions/shahriar2026_mamba3.zarr`).
   2. Direct Zenodo checkpoint/hydrograph verification (`--mode archive`): verifies
      Shahriar (2026)'s archived `pred_daily_m3s.npy` (`10.5281/zenodo.23087719`)
-     converted cleanly from `m^3/s` to `mm/day` (`q_mm = q_m3s * 86.4 / area_km2`).
+     converted from `m^3/s` to `mm/day` (`q_mm = q_m3s * 86.4 / area_km2`, with
+     `area_km2` the bundle area, i.e. the Daymet forcing-file header area).
+
+Results are written to `--out` (default: the untracked
+`stage1_author_reproduction_results.local.json` next to this script). The tracked
+`stage1_author_reproduction_results.json` is only overwritten when `--out` points at it.
 """
 
 from __future__ import annotations
 
 import argparse
-import inspect
 import io
 import json
 from pathlib import Path
@@ -51,6 +56,7 @@ AUTHOR_EVAL_PERIOD = ("1995-10-01", "2010-09-30")
 PUBLISHED_MED_NSE_671 = 0.7272
 PUBLISHED_MED_NSE_531 = 0.7307
 STAGE1_ZARR_URI = "gs://camels-us-mip/stage1_author_reproductions/shahriar2026_mamba3.zarr"
+DEFAULT_OUT_JSON = MODEL_DIR / "stage1_author_reproduction_results.local.json"
 
 
 def _fetch_zip_member(url: str, local_header_offset: int, comp_size: int) -> bytes:
@@ -116,10 +122,7 @@ def write_stage1_zarr_v2(
         },
         attrs=attrs,
     )
-    zarr_kwargs: dict[str, object] = {"mode": "w", "consolidated": True}
-    if "zarr_format" in inspect.signature(ds.to_zarr).parameters:
-        zarr_kwargs["zarr_format"] = 2
-    ds.to_zarr(target_uri, **zarr_kwargs)
+    ds.to_zarr(target_uri, mode="w", consolidated=True, zarr_format=2)
 
 
 def load_all_671_basins(data_dir: Path) -> list[str]:
@@ -136,9 +139,26 @@ def main() -> int:
     parser.add_argument("--seeds", type=int, nargs="+", default=list(DEFAULT_SEEDS))
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--output-zarr", type=str, default=STAGE1_ZARR_URI)
-    parser.add_argument("--no-upload", action="store_true")
+    parser.add_argument(
+        "--upload",
+        action="store_true",
+        help="Write the clean-room Stage-1 Zarr v2 store to --output-zarr (off by default).",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=DEFAULT_OUT_JSON,
+        help="Results JSON path (default: untracked *.local.json in the model directory).",
+    )
     parser.add_argument("--smoke", action="store_true")
     args = parser.parse_args()
+    if args.upload:
+        if args.smoke:
+            raise ValueError("--upload cannot be combined with --smoke.")
+        if args.mode == "archive":
+            raise ValueError("--upload requires --mode train or both.")
+        if not args.output_zarr:
+            raise ValueError("--upload requires a non-empty --output-zarr.")
 
     basins_531 = load_canonical_basins(args.splits_dir)
     basins_671 = basins_531[:16] if args.smoke else load_all_671_basins(args.data_dir)
@@ -164,14 +184,17 @@ def main() -> int:
 
     if args.mode in ("archive", "both") and not args.smoke:
         print("Verifying Zenodo 23087719 Tier-1 Ep30 pred_daily_m3s.npy...", flush=True)
-        pred_m3s = np.load(io.BytesIO(_fetch_zip_member(ZENODO_OUTPUT_ZIP_URL, PRED_OFFSET, PRED_COMP_SIZE)))
+        pred_m3s = np.load(
+            io.BytesIO(_fetch_zip_member(ZENODO_OUTPUT_ZIP_URL, PRED_OFFSET, PRED_COMP_SIZE)),
+            allow_pickle=False,
+        )
         df_m = pd.read_csv(
             io.BytesIO(_fetch_zip_member(ZENODO_OUTPUT_ZIP_URL, METRICS_CSV_OFFSET, METRICS_CSV_COMP_SIZE))
         )
         z_gauges = [str(g).strip().zfill(8) for g in df_m["gauge_id"].tolist()]
         z_to_row = {g: i for i, g in enumerate(z_gauges)}
         rows_671 = [z_to_row[b] for b in basins_671]
-        # Convert m^3/s -> mm/day using CAMELS GAGES-II catchment area (km^2):
+        # Convert m^3/s -> mm/day using the bundle `area_km2` (Daymet forcing-header area):
         # (m^3/s * 86400 s/d) / (km^2 * 1e6 m^2/km^2) * 1000 mm/m = m^3/s * 86.4 / area_km2
         area_km2 = eval_slice_671["area_km2"][:, None]
         T = qobs_671.shape[1]
@@ -217,7 +240,7 @@ def main() -> int:
         print(f"Clean-room Split-3 671: {rerun_671}", flush=True)
         print(f"Clean-room Split-3 531: {rerun_531} (delta={delta_531:+.4f})", flush=True)
 
-        if not args.no_upload and not args.smoke and args.output_zarr:
+        if args.upload:
             print(f"Writing Stage-1 Zarr v2 (mm/day) to {args.output_zarr}...", flush=True)
             write_stage1_zarr_v2(
                 qsim_531_mm=qsim_mean_671[idx_531],
@@ -242,8 +265,8 @@ def main() -> int:
                 },
             )
 
-    out_json = MODEL_DIR / "stage1_author_reproduction_results.json"
     if not args.smoke:
+        out_json = Path(args.out)
         out_json.write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(results, indent=2), flush=True)
     return 0

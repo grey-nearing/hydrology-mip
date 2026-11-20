@@ -19,7 +19,7 @@ At each daily timestep $t \in \{1, \dots, T\}$ in a sequence of length $T = 365$
 
 $$u_t = \left[ x_t^{(d)} \,\|\, x^{(s)} \right] \in \mathbb{R}^{D_{\text{dyn}} + 27}$$
 
-All dynamic inputs, static attributes, and training target specific discharges are globally $z$-score standardized using the mean and standard deviation computed strictly over the training basins and training period (`1999-10-01` to `2008-09-30`), with missing static attributes imputed to the training-basin feature mean ($0$ after standardization).
+All dynamic inputs, static attributes, and training target specific discharges are globally $z$-score standardized using the mean and standard deviation computed strictly over the training basins and training period (`1999-10-01` to `2008-09-30`), Missing static attributes are not imputed: the trainer raises if any standardized static attribute is non-finite.
 
 The concatenated input $u_t$ drives a single-layer standard LSTM (`nn.LSTM`, hidden dimension $H = 256$):
 
@@ -32,7 +32,7 @@ c_t &= f_t \odot c_{t-1} + i_t \odot g_t \\
 h_t &= o_t \odot \tanh(c_t)
 \end{aligned}$$
 
-Following Kratzert et al. (2019b, 2021) and `NeuralHydrology`, the total forget-gate bias $b_{if} + b_{hf}$ is initialized to $+3.0$ (`bias_ih_l0[H:2H] = 1.5`, `bias_hh_l0[H:2H] = 1.5`) so that cell states retain long-term hydrologic memory at the start of training. Dropout ($p = 0.4$) and a linear readout head map the terminal hidden state $h_T$ to standardized daily specific discharge $\hat{y}_T = w^\top \text{Dropout}(h_T) + b$, which is inverse-transformed to $\text{mm day}^{-1}$ and clamped at zero ($\hat{Q}_t = \max(0, \hat{y}_t \sigma_Q + \mu_Q)$).
+Following Kratzert et al. (2019b, 2021) and `NeuralHydrology`, the total forget-gate bias $b_{if} + b_{hf}$ is initialized to $+3.0$ (`bias_hh_l0[H:2H] = 3.0`; `bias_ih_l0` keeps the PyTorch default initialization) so that cell states retain long-term hydrologic memory at the start of training. Dropout ($p = 0.4$) and a linear readout head map the terminal hidden state $h_T$ to standardized daily specific discharge $\hat{y}_T = w^\top \text{Dropout}(h_T) + b$, which is inverse-transformed to $\text{mm day}^{-1}$ and clamped at zero ($\hat{Q}_t = \max(0, \hat{y}_t \sigma_Q + \mu_Q)$).
 
 ### Basin-Normalized $\text{NSE}^*$ Loss
 
@@ -40,7 +40,7 @@ To prevent humid, high-variance catchments from dominating gradient updates duri
 
 $$\mathcal{L}_{\text{NSE}^*} = \frac{1}{N} \sum_{i=1}^{N} \frac{\left(\hat{y}_i - y_i\right)^2}{\left(s_{b(i)} + \epsilon\right)^2}, \qquad \epsilon = 0.1$$
 
-where $s_b$ is the standard deviation of standardized observed discharge in basin $b$ over the training period.
+where $s_b$ is the standard deviation of observed discharge in basin $b$ over the training period, in mm/d. The prediction error is also expressed in mm/d, so the numerator and denominator share units.
 
 ---
 
@@ -51,7 +51,7 @@ where $s_b$ is the standard deviation of standardized observed discharge in basi
 | `hidden_size` | `256` | Single-layer `nn.LSTM` hidden state dimension |
 | `seq_len` | `365` | 365-day lookback window (364-day spinup precedes first scored day) |
 | `dropout` | `0.4` | Applied to LSTM hidden state before linear readout head |
-| `initial_forget_bias` | `3.0` | Split equally (`1.5` + `1.5`) across `bias_ih` and `bias_hh` |
+| `initial_forget_bias` | `3.0` | Written to `bias_hh_l0[H:2H]` only |
 | `batch_size` | `256` | Sequence-to-one training minibatches |
 | `epochs` | `30` | Full dataset passes over valid training sequences |
 | `lr_schedule` | `{0: 1e-3, 10: 5e-4, 25: 1e-4}` | Piecewise Adam learning rate schedule (Kratzert et al., 2021) |

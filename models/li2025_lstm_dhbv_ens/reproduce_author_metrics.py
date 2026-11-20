@@ -1,3 +1,6 @@
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Stage-1 Author Metric Reproduction Script: Li et al. (2025) (LSTM + dHBV 1.1p) Ensemble.
 
 Paper:
@@ -38,30 +41,37 @@ from pathlib import Path
 import numpy as np
 import zarr
 
-REPO_ROOT = Path(__file__).resolve().parent.parent.parent
-if str(REPO_ROOT) not in sys.path:
-    sys.path.insert(0, str(REPO_ROOT))
+from metrics.evaluator import calculate_model_leaderboard_metrics
+from models.li2025_lstm_dhbv_ens.runner import run_fold  # noqa: F401
+from models.zarr_writer import build_hydrograph_dataset, write_hydrograph_zarr
 
-from metrics.evaluator import calculate_model_leaderboard_metrics  # noqa: E402
-from models.li2025_lstm_dhbv_ens.runner import run_fold  # noqa: E402, F401
-from models.zarr_writer import build_hydrograph_dataset, write_hydrograph_zarr  # noqa: E402
+
+MODEL_DIR = Path(__file__).resolve().parent
+# Tracked, committed Stage-1 record. Only rewritten when --out explicitly points here.
+TRACKED_RESULTS_PATH = MODEL_DIR / "stage1_author_reproduction_results.json"
+# Default output for newly computed reports: untracked, so verification never mutates the record.
+DEFAULT_OUT_PATH = MODEL_DIR / "stage1_author_reproduction_results.local.json"
 
 
 def build_stage2_multi_model_ensemble(
     bucket_uri: str = "gs://camels-us-mip",
-    write_gcs: bool = False,
+    upload: bool = False,
 ) -> dict[str, object]:
-    """Construct and score the Stage-2 (LSTM + dHBV 1.1p) multi-model ensemble t4_06."""
+    """Score the Stage-2 (LSTM + dHBV 1.1p) multi-model ensemble t4_06.
+
+    With ``upload=True`` (maintainers only, opt-in) t4_06.zarr is first rebuilt from t4_05.zarr and
+    t4_24.zarr and written to the bucket; otherwise nothing is written.
+    """
     uri_lstm = f"{bucket_uri.rstrip('/')}/hydrographs/gauged__multi_camels/t4_05.zarr"
     uri_dhbv = f"{bucket_uri.rstrip('/')}/hydrographs/gauged__multi_camels/t4_24.zarr"
     uri_out = f"{bucket_uri.rstrip('/')}/hydrographs/gauged__multi_camels/t4_06.zarr"
 
-    if write_gcs:
+    if upload:
         g_lstm = zarr.open_group(uri_lstm, mode="r")
         g_dhbv = zarr.open_group(uri_dhbv, mode="r")
         basins = [str(b) for b in g_dhbv["basin"][:]]
         hucs = [str(h) for h in g_dhbv["huc_02"][:]]
-        basin_to_huc02 = dict(zip(basins, hucs))
+        basin_to_huc02 = dict(zip(basins, hucs, strict=True))
         q_lstm = np.asarray(g_lstm["qsim"][:], dtype=np.float32)
         q_dhbv = np.asarray(g_dhbv["qsim"][:], dtype=np.float32)
         qsim_members = np.stack([q_lstm, q_dhbv], axis=0).astype(np.float32)
@@ -111,25 +121,32 @@ def main() -> None:
         help="Re-score the canonical Stage-2 Zarr store t4_06 directly from GCS.",
     )
     parser.add_argument(
-        "--write-gcs",
+        "--upload",
         action="store_true",
-        help="Rebuild and write t4_06.zarr from t4_05.zarr + t4_24.zarr on GCS before scoring.",
+        help="Maintainers only: rebuild t4_06.zarr from t4_05.zarr + t4_24.zarr and WRITE it to the "
+        "bucket before scoring. Off by default; without it this script never writes to GCS.",
     )
     parser.add_argument("--bucket-uri", type=str, default="gs://camels-us-mip")
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=DEFAULT_OUT_PATH,
+        help="Where to write a newly computed report (default: untracked *.local.json). The tracked "
+        "stage1_author_reproduction_results.json is only overwritten if --out points at it.",
+    )
     args = parser.parse_args()
 
-    out_path = Path(__file__).resolve().parent / "stage1_author_reproduction_results.json"
     tolerance = 0.03
 
     if args.mode == "verify" and not args.verify_gcs:
-        if not out_path.is_file():
-            raise FileNotFoundError(f"Missing reproduction report: {out_path}")
-        report = json.loads(out_path.read_text(encoding="utf-8"))
+        if not TRACKED_RESULTS_PATH.is_file():
+            raise FileNotFoundError(f"Missing reproduction report: {TRACKED_RESULTS_PATH}")
+        report = json.loads(TRACKED_RESULTS_PATH.read_text(encoding="utf-8"))
     else:
         published_median_nse = 0.823
         metrics_out = build_stage2_multi_model_ensemble(
             bucket_uri=args.bucket_uri,
-            write_gcs=args.write_gcs,
+            upload=args.upload,
         )
         reproduced = float(metrics_out["median_nse"])
         delta = reproduced - published_median_nse
@@ -151,9 +168,10 @@ def main() -> None:
             "pred_nan_when_obs_valid": int(metrics_out["pred_nan_when_obs_valid"]),
             "status": status,
         }
+        args.out.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(json.dumps(report, indent=2))
-    if report.get("status") != "PASS":
+    if report["status"] != "PASS":
         sys.exit(1)
 
 

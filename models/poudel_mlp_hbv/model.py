@@ -1,4 +1,4 @@
-# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, and the CAMELS-US MIP Contributors
+# Copyright 2026 Google LLC, Grey Nearing, Daniel Klotz, Patrick Ebel, Martin Gauch, and the HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 #
 # Independent first-party C++/OpenMP, CUDA, and PyTorch implementation of the
@@ -25,11 +25,31 @@ OpenMP C++ forward/backward kernel (`_POUDEL_OMP_CPP`).
 from __future__ import annotations
 
 import copy
+import logging
+import sys
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import torch
 import torch.nn as nn
+
+LOGGER = logging.getLogger(__name__)
+
+# Training raises if more than this fraction of minibatches produce a non-finite loss.
+MAX_NONFINITE_LOSS_FRACTION = 0.01
+
+
+def _openmp_flags() -> List[str]:
+    """Return ``-fopenmp`` except on macOS (Apple clang), where the kernels build serially."""
+    return [] if sys.platform == "darwin" else ["-fopenmp"]
+
+
+def _require_finite(name: str, arr: np.ndarray) -> None:
+    """Raise if `arr` contains NaN/Inf (``camels_data`` guarantees gap-free forcings and attributes)."""
+    n_bad = int(np.size(arr) - np.count_nonzero(np.isfinite(arr)))
+    if n_bad > 0:
+        raise ValueError(f"{name} contains {n_bad} non-finite values; inputs must be gap-free.")
+
 
 # 20 HBV parameter bounds published in Poudel & Steinschneider (2026, HESS, CC-BY-4.0)
 POUDEL_PARAM_BOUNDS: Dict[str, Tuple[float, float]] = {
@@ -99,78 +119,26 @@ def _derive_physical_p_t_daylen(
     lat_deg: Optional[np.ndarray] = None,
     doy: Optional[np.ndarray] = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Extract (precip mm/d, tmean degC, daylen hours) from CAMELS forcing channels."""
-    n_channels = x_dyn.shape[2]
-    if n_channels >= 5 and n_channels % 5 == 0:
-        prcp = np.maximum(0.0, np.nanmean(x_dyn[:, :, 0::5], axis=2))
-        tmax = np.nanmean(x_dyn[:, :, 2::5], axis=2)
-        tmin = np.nanmean(x_dyn[:, :, 3::5], axis=2)
-    else:
-        prcp = np.maximum(0.0, x_dyn[:, :, 0])
-        tmax = x_dyn[:, :, 2]
-        tmin = x_dyn[:, :, 3]
+    """Extract (precip mm/d, tmean degC, daylen hours) from CAMELS forcing channels.
 
-    prcp = np.nan_to_num(prcp, nan=0.0).astype(np.float32)
-    tmax = np.nan_to_num(tmax, nan=0.0).astype(np.float32)
-    tmin = np.nan_to_num(tmin, nan=0.0).astype(np.float32)
+    Multi-forcing inputs (5 channels per product) are averaged across products.
+    """
+    n_channels = x_dyn.shape[2]
+    if n_channels < 5 or n_channels % 5 != 0:
+        raise ValueError(f"Expected 5 channels per forcing product, got {n_channels} channels.")
+    if lat_deg is None or doy is None or len(doy) != x_dyn.shape[1]:
+        raise ValueError("lat_deg and a doy array matching the time axis are required for day length.")
+    _require_finite("x_dyn", x_dyn)
+    prcp = np.maximum(0.0, np.mean(x_dyn[:, :, 0::5], axis=2)).astype(np.float32)
+    tmax = np.mean(x_dyn[:, :, 2::5], axis=2).astype(np.float32)
+    tmin = np.mean(x_dyn[:, :, 3::5], axis=2).astype(np.float32)
     tmean = (0.5 * (tmax + tmin)).astype(np.float32)
-
-    if lat_deg is not None and doy is not None and len(doy) == x_dyn.shape[1]:
-        daylen = compute_daylength_hours(lat_deg, doy)
-    else:
-        daylen = np.full(prcp.shape, 12.0, dtype=np.float32)
-
+    daylen = compute_daylength_hours(lat_deg, doy)
     return prcp, tmean, daylen
-
-
-def compute_hamon_pet_base(tmean: np.ndarray, daylen: np.ndarray) -> np.ndarray:
-    """Compute unscaled Hamon (1961) potential evapotranspiration in mm/day."""
-    es = 0.6108 * np.exp((17.27 * tmean) / (tmean + 237.3 + 1e-5))
-    rhosat = 216.7 * es / (tmean + 273.15 + 1e-5)
-    pet = 0.1651 * (daylen / 12.0) * rhosat
-    return np.maximum(0.0, pet).astype(np.float32)
-
-
-def _derive_physical_p_t_pet(
-    x_dyn: np.ndarray,
-    lat_deg: Optional[np.ndarray] = None,
-    doy: Optional[np.ndarray] = None,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Derive physical (P, Tmean, PET) in mm/day and degC from CAMELS forcing channels."""
-    n_channels = x_dyn.shape[2]
-    if n_channels >= 5 and n_channels % 5 == 0:
-        prcp = np.maximum(0.0, np.nanmean(x_dyn[:, :, 0::5], axis=2))
-        srad = np.maximum(0.0, np.nanmean(x_dyn[:, :, 1::5], axis=2))
-        tmax = np.nanmean(x_dyn[:, :, 2::5], axis=2)
-        tmin = np.nanmean(x_dyn[:, :, 3::5], axis=2)
-    else:
-        prcp = np.maximum(0.0, x_dyn[:, :, 0])
-        srad = np.maximum(0.0, x_dyn[:, :, 1])
-        tmax = x_dyn[:, :, 2]
-        tmin = x_dyn[:, :, 3]
-
-    prcp = np.nan_to_num(prcp, nan=0.0)
-    srad = np.nan_to_num(srad, nan=0.0)
-    tmax = np.nan_to_num(tmax, nan=0.0)
-    tmin = np.nan_to_num(tmin, nan=0.0)
-    tmean = 0.5 * (tmax + tmin)
-
-    if lat_deg is not None and doy is not None and len(doy) == x_dyn.shape[1]:
-        daylen = compute_daylength_hours(lat_deg, doy)
-        pet = compute_hamon_pet_base(tmean, daylen)
-    else:
-        rn_mm = srad * 0.0864 * 0.408 * 0.55
-        es = 0.6108 * np.exp((17.27 * tmean) / (tmean + 237.3 + 1e-6))
-        delta = (4098.0 * es) / ((tmean + 237.3 + 1e-6) ** 2)
-        gamma = 0.066
-        pet = np.maximum(0.0, 1.26 * (delta / (delta + gamma)) * rn_mm)
-
-    return prcp.astype(np.float32), tmean.astype(np.float32), pet.astype(np.float32)
 
 
 _POUDEL_OMP_CPP = r"""
 #include <torch/extension.h>
-#include <omp.h>
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -1555,8 +1523,8 @@ def _get_poudel_omp_ext():
             "poudel_window_forward_cpu",
             "poudel_window_backward_cpu",
         ],
-        extra_cflags=["-O3", "-fopenmp"],
-        extra_ldflags=["-fopenmp"],
+        extra_cflags=["-O3", *_openmp_flags()],
+        extra_ldflags=_openmp_flags(),
         verbose=False,
     )
     return _POUDEL_OMP_EXT
@@ -1883,10 +1851,12 @@ class PoudelHBVTrainer:
             x_dyn_test, lat_deg=lat_test, doy=test_doy
         )
 
-        xs_mean = np.nanmean(x_stat_train, axis=0, keepdims=True)
-        xs_std = np.nanstd(x_stat_train, axis=0, keepdims=True) + 1e-8
-        xs_tr = np.nan_to_num((x_stat_train - xs_mean) / xs_std, nan=0.0).astype(np.float32)
-        xs_te = np.nan_to_num((x_stat_test - xs_mean) / xs_std, nan=0.0).astype(np.float32)
+        _require_finite("x_stat_train", x_stat_train)
+        _require_finite("x_stat_test", x_stat_test)
+        xs_mean = np.mean(x_stat_train, axis=0, keepdims=True)
+        xs_std = np.std(x_stat_train, axis=0, keepdims=True) + 1e-8
+        xs_tr = ((x_stat_train - xs_mean) / xs_std).astype(np.float32)
+        xs_te = ((x_stat_test - xs_mean) / xs_std).astype(np.float32)
 
         # Build deterministic sliding windows with stride=60 matching 01best_mlp_hbv.py
         first_win_start = max(0, eff_spinup - eff_warmup)
@@ -1968,6 +1938,8 @@ class PoudelHBVTrainer:
         best_val = float("inf")
         best_state = copy.deepcopy(model.state_dict())
         bad_epochs = 0
+        n_nonfinite_loss = 0
+        n_loss_total = 0
 
         for _ep in range(1, epochs + 1):
             model.train()
@@ -1995,7 +1967,9 @@ class PoudelHBVTrainer:
                     eff_rho,
                 )
                 loss = masked_mse(q_sim, q_targ)
+                n_loss_total += 1
                 if not torch.isfinite(loss):
+                    n_nonfinite_loss += 1
                     continue
                 optimizer.zero_grad(set_to_none=True)
                 loss.backward()
@@ -2023,9 +1997,12 @@ class PoudelHBVTrainer:
                         eff_rho,
                     )
                     v_l = masked_mse(q_sim, q_targ)
-                    if torch.isfinite(v_l):
-                        val_losses.append(float(v_l.item()))
-                va_loss = float(np.mean(val_losses)) if val_losses else float("inf")
+                    if not torch.isfinite(v_l):
+                        raise RuntimeError(
+                            f"Non-finite validation loss at epoch {_ep} (seed {self.seed}); model diverged."
+                        )
+                    val_losses.append(float(v_l.item()))
+                va_loss = float(np.mean(val_losses))
 
             scheduler.step(va_loss)
             if va_loss < best_val:
@@ -2037,6 +2014,18 @@ class PoudelHBVTrainer:
                 if bad_epochs >= early_stop_patience:
                     break
 
+        if n_nonfinite_loss > 0:
+            LOGGER.warning(
+                "Skipped %d of %d minibatches with a non-finite loss (seed %d).",
+                n_nonfinite_loss,
+                n_loss_total,
+                self.seed,
+            )
+        if n_nonfinite_loss > MAX_NONFINITE_LOSS_FRACTION * n_loss_total:
+            raise RuntimeError(
+                f"{n_nonfinite_loss}/{n_loss_total} minibatches produced a non-finite loss "
+                f"(> {MAX_NONFINITE_LOSS_FRACTION:.0%}); training diverged."
+            )
         model.load_state_dict(best_state)
         model.eval()
         preds = np.zeros((n_test, t_test - eval_start_idx), dtype=np.float32)
@@ -2049,7 +2038,6 @@ class PoudelHBVTrainer:
                     torch.from_numpy(d_te[sl]),
                     torch.from_numpy(xs_te[sl]).to(self.device),
                 ).cpu().numpy()
-                preds[sl] = np.clip(
-                    np.nan_to_num(q_full[:, eval_start_idx:], nan=0.0), 0.0, None
-                )
+                # NaN/Inf propagate so run_model's non-finite guard rejects a diverged model.
+                preds[sl] = np.clip(q_full[:, eval_start_idx:], 0.0, None)
         return preds
