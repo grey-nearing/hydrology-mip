@@ -5820,6 +5820,7 @@
   const VALID_VIEWS = new Set([
     "landing",
     "about",
+    "about-protocol",
     "about-camels-us",
     "contribute",
     "leaderboards-hub",
@@ -5908,6 +5909,7 @@
     const navMap = {
       landing: "nav-tab-landing",
       about: "nav-tab-about",
+      "about-protocol": "nav-tab-about",
       "about-camels-us": "nav-tab-about",
       contribute: "nav-tab-contribute",
       "leaderboards-hub": "nav-tab-leaderboards-hub",
@@ -5994,6 +5996,10 @@
     bindViewButton("btn-back-to-camels-lb", "leaderboards");
     bindViewButton("btn-back-to-lb-from-hydro", "leaderboards");
     bindViewButton("btn-back-to-about-from-camels", "about");
+    bindViewButton("link-open-general-protocol", "about-protocol");
+    bindViewButton("btn-back-to-about-from-protocol", "about");
+    bindViewButton("btn-open-camels-spec-from-protocol", "about-camels-us");
+    bindViewButton("btn-open-contribute-from-protocol", "contribute");
     bindViewButton("btn-open-camels-lb-from-about", "leaderboards");
 
     // Hydrograph Comparison Explorer buttons & controls
