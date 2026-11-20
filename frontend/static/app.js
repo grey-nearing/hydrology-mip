@@ -1,5 +1,5 @@
-/* Copyright 2026 HydrologyMIP Contributors
- * Tab-driven frontend controller for hydrologymip.org
+/* Copyright 2026 HydroMIP Contributors
+ * Tab-driven frontend controller for hydromip.org
  */
 
 (function () {
@@ -298,7 +298,7 @@
       }
       await loadComments();
     } catch (err) {
-      console.error("Failed to load HydrologyMIP data:", err);
+      console.error("Failed to load HydroMIP data:", err);
     }
   }
 
@@ -3121,7 +3121,7 @@
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `hydrologymip_pr_manifest_${modelName.replace(/[^a-z0-9]+/gi, "_").toLowerCase()}.json`;
+    a.download = `hydromip_pr_manifest_${modelName.replace(/[^a-z0-9]+/gi, "_").toLowerCase()}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -5392,7 +5392,7 @@
     const btnCopyShare = document.getElementById("btn-copy-share-link");
     if (btnCopyShare) {
       btnCopyShare.addEventListener("click", async () => {
-        const shareUrl = window.location.href || "https://hydrologymip.org/";
+        const shareUrl = window.location.href || "https://hydromip.org/";
         const lbl = document.getElementById("copy-share-link-label");
         try {
           if (navigator.clipboard && navigator.clipboard.writeText) {

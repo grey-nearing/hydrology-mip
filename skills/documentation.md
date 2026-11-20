@@ -28,7 +28,7 @@ description: >-
 
 ### Tier 1 — Concise Top-Level [`README.md`](../README.md)
 - Keep the root `README.md` short, scannable, and focused on:
-  - Brief overview of the CAMELS-US Model Intercomparison Project (`camels-us-mip`) and the $3 \times 4 = 12$ leaderboards on `hydrologymip.org`.
+  - Brief overview of the CAMELS-US Model Intercomparison Project (`camels-us-mip`) and the $3 \times 4 = 12$ leaderboards on `hydromip.org`.
   - Installation (`pip install -e .`).
   - Copy-pasteable quick-start commands for:
     1. Running any model via `models/run_model.py`,

@@ -1,10 +1,10 @@
 {
-  "total_contributions": 59,
+  "total_contributions": 60,
   "entries": {
     "t3_29": {
       "entry_id": "t3_29",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "δHBV 1.0 (5-model ensemble)",
+      "model_name": "\u03b4HBV 1.0 (5-model ensemble)",
       "family_id": "feng_dhbv10",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -212,7 +212,7 @@
     "t3_33": {
       "entry_id": "t3_33",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "δHBV 1.0 (single model)",
+      "model_name": "\u03b4HBV 1.0 (single model)",
       "family_id": "feng_dhbv10",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -432,7 +432,7 @@
     "hoedt_mclstm_maurer": {
       "entry_id": "hoedt_mclstm_maurer",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer)",
+      "model_name": "MC-LSTM (Hoedt 2021 \u2014 MIP Re-run, Maurer)",
       "family_id": "hoedt_mclstm",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -638,7 +638,7 @@
     "hoedt_mclstm_maurer_single": {
       "entry_id": "hoedt_mclstm_maurer_single",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 — MIP Re-run, Maurer, Single Model)",
+      "model_name": "MC-LSTM (Hoedt 2021 \u2014 MIP Re-run, Maurer, Single Model)",
       "family_id": "hoedt_mclstm",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -1688,7 +1688,7 @@
     "t3_18": {
       "entry_id": "t3_18",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "δHBV 1.1p / δMG (5-model ensemble)",
+      "model_name": "\u03b4HBV 1.1p / \u03b4MG (5-model ensemble)",
       "family_id": "song_dhbv11p",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -1896,7 +1896,7 @@
     "t3_19": {
       "entry_id": "t3_19",
       "leaderboard_id": "gauged__single_camels",
-      "model_name": "δHBV 1.1p / δMG (single model)",
+      "model_name": "\u03b4HBV 1.1p / \u03b4MG (single model)",
       "family_id": "song_dhbv11p",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -2116,7 +2116,7 @@
     "hoedt_mclstm_3f_avgp": {
       "entry_id": "hoedt_mclstm_3f_avgp",
       "leaderboard_id": "gauged__multi_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 — 3-Forcing Mean-Precip + 3F Gates Ensemble)",
+      "model_name": "MC-LSTM (Hoedt 2021 \u2014 3-Forcing Mean-Precip + 3F Gates Ensemble)",
       "family_id": "hoedt_mclstm",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -2327,7 +2327,7 @@
     "hoedt_mclstm_3f_avgp_single": {
       "entry_id": "hoedt_mclstm_3f_avgp_single",
       "leaderboard_id": "gauged__multi_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 — 3-Forcing Mean-Precip + 3F Gates, Single Model)",
+      "model_name": "MC-LSTM (Hoedt 2021 \u2014 3-Forcing Mean-Precip + 3F Gates, Single Model)",
       "family_id": "hoedt_mclstm",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -2550,7 +2550,7 @@
     "hoedt_mclstm_3f_ens_b": {
       "entry_id": "hoedt_mclstm_3f_ens_b",
       "leaderboard_id": "gauged__multi_camels",
-      "model_name": "MC-LSTM (Hoedt 2021 — 3-Forcing Model-Average Ensemble)",
+      "model_name": "MC-LSTM (Hoedt 2021 \u2014 3-Forcing Model-Average Ensemble)",
       "family_id": "hoedt_mclstm",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -4236,7 +4236,7 @@
     "t7_10": {
       "entry_id": "t7_10",
       "leaderboard_id": "pub__single_camels",
-      "model_name": "δHBV 1.0 (5-model ensemble)",
+      "model_name": "\u03b4HBV 1.0 (5-model ensemble)",
       "family_id": "feng_dhbv10",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -4444,7 +4444,7 @@
     "t7_14": {
       "entry_id": "t7_14",
       "leaderboard_id": "pub__single_camels",
-      "model_name": "δHBV 1.0 (single model)",
+      "model_name": "\u03b4HBV 1.0 (single model)",
       "family_id": "feng_dhbv10",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -5292,7 +5292,7 @@
     "t7_06": {
       "entry_id": "t7_06",
       "leaderboard_id": "pub__single_camels",
-      "model_name": "δHBV 1.1p / δMG (5-model ensemble)",
+      "model_name": "\u03b4HBV 1.1p / \u03b4MG (5-model ensemble)",
       "family_id": "song_dhbv11p",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -5500,7 +5500,7 @@
     "t7_11": {
       "entry_id": "t7_11",
       "leaderboard_id": "pub__single_camels",
-      "model_name": "δHBV 1.1p / δMG (single model)",
+      "model_name": "\u03b4HBV 1.1p / \u03b4MG (single model)",
       "family_id": "song_dhbv11p",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -7002,7 +7002,7 @@
     "t11_06": {
       "entry_id": "t11_06",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "δHBV 1.0 (5-model ensemble)",
+      "model_name": "\u03b4HBV 1.0 (5-model ensemble)",
       "family_id": "feng_dhbv10",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -7210,7 +7210,7 @@
     "t11_10": {
       "entry_id": "t11_10",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "δHBV 1.0 (single model)",
+      "model_name": "\u03b4HBV 1.0 (single model)",
       "family_id": "feng_dhbv10",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -9372,7 +9372,7 @@
     "t11_04": {
       "entry_id": "t11_04",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "δHBV 1.1p / δMG (5-model ensemble)",
+      "model_name": "\u03b4HBV 1.1p / \u03b4MG (5-model ensemble)",
       "family_id": "song_dhbv11p",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -9580,7 +9580,7 @@
     "t11_04_single": {
       "entry_id": "t11_04_single",
       "leaderboard_id": "pur__single_camels",
-      "model_name": "δHBV 1.1p / δMG (single model)",
+      "model_name": "\u03b4HBV 1.1p / \u03b4MG (single model)",
       "family_id": "song_dhbv11p",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
@@ -11190,6 +11190,230 @@
       "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/era_experiments/era_pur_physics_informed_winner.ipynb",
       "primary_ranking_nse": 0.684,
       "submitted_at": "2026-10-26T13:34:51.303824+00:00"
+    },
+    "shahriar2026_mamba3_daymet": {
+      "entry_id": "shahriar2026_mamba3_daymet",
+      "leaderboard_id": "gauged__single_camels",
+      "model_name": "Mamba-3 Static-Dynamic Adapter (single model)",
+      "family_id": "shahriar2026_mamba3",
+      "category": "MIP Re-run",
+      "code_provenance": "Our Code",
+      "spatial_regime": "gauged",
+      "forcing_regime": "single_camels",
+      "forcings_used": "Daymet",
+      "is_ensemble": false,
+      "num_members": 1,
+      "has_qsim_members": true,
+      "ensemble_source": "single_member",
+      "metrics": {
+        "median_nse": 0.718,
+        "mean_nse": 0.675,
+        "median_kge": 0.737,
+        "median_abs_fhv": 15.2,
+        "nse_le_zero_count": 6,
+        "single_seed_median_nse_mean": 0.718,
+        "single_seed_median_nse_std": null,
+        "single_seed_median_nse_per_member": [
+          0.7182
+        ]
+      },
+      "hydrograph_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/shahriar2026_mamba3_daymet.zarr",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/shahriar2026_mamba3",
+      "data_url": "gs://camels-us-mip/hydrographs/gauged__single_camels/shahriar2026_mamba3_daymet.zarr",
+      "target_leaderboard_tables": [
+        "table_3",
+        "gauged__single_camels"
+      ],
+      "gauch_2023_metrics": {
+        "NSE": {
+          "median": 0.7182,
+          "mean": 0.6752,
+          "min": -0.7298,
+          "p01": -0.0307,
+          "p05": 0.3136,
+          "p10": 0.4386,
+          "q25": 0.6019,
+          "q75": 0.8001,
+          "p90": 0.8551,
+          "p95": 0.8834,
+          "p99": 0.9327,
+          "max": 0.9497
+        },
+        "MSE": {
+          "median": 1.6791,
+          "mean": 3.4928,
+          "min": 0.0053,
+          "p01": 0.0127,
+          "p05": 0.0824,
+          "p10": 0.1867,
+          "q25": 0.7601,
+          "q75": 3.7003,
+          "p90": 8.9571,
+          "p95": 12.8845,
+          "p99": 23.5798,
+          "max": 65.996
+        },
+        "RMSE": {
+          "median": 1.2958,
+          "mean": 1.54,
+          "min": 0.073,
+          "p01": 0.1128,
+          "p05": 0.2871,
+          "p10": 0.4321,
+          "q25": 0.8718,
+          "q75": 1.9236,
+          "p90": 2.9928,
+          "p95": 3.5895,
+          "p99": 4.8532,
+          "max": 8.1238
+        },
+        "KGE": {
+          "median": 0.7374,
+          "mean": 0.6952,
+          "min": -1.721,
+          "p01": 0.0874,
+          "p05": 0.3458,
+          "p10": 0.4931,
+          "q25": 0.6214,
+          "q75": 0.8249,
+          "p90": 0.8724,
+          "p95": 0.9018,
+          "p99": 0.9288,
+          "max": 0.9459
+        },
+        "Alpha-NSE": {
+          "median": 0.8641,
+          "mean": 0.856,
+          "min": 0.1127,
+          "p01": 0.3812,
+          "p05": 0.5404,
+          "p10": 0.6299,
+          "q25": 0.7506,
+          "q75": 0.9595,
+          "p90": 1.0643,
+          "p95": 1.1641,
+          "p99": 1.3511,
+          "max": 1.6847
+        },
+        "Pearson-r": {
+          "median": 0.8641,
+          "mean": 0.8401,
+          "min": 0.2105,
+          "p01": 0.4972,
+          "p05": 0.661,
+          "p10": 0.716,
+          "q25": 0.7993,
+          "q75": 0.9047,
+          "p90": 0.933,
+          "p95": 0.9465,
+          "p99": 0.9679,
+          "max": 0.9816
+        },
+        "Beta-KGE": {
+          "median": 0.939,
+          "mean": 0.9548,
+          "min": 0.5297,
+          "p01": 0.622,
+          "p05": 0.718,
+          "p10": 0.7604,
+          "q25": 0.8564,
+          "q75": 1.0254,
+          "p90": 1.1198,
+          "p95": 1.2149,
+          "p99": 1.3804,
+          "max": 3.6728
+        },
+        "Beta-NSE": {
+          "median": -0.0291,
+          "mean": -0.0267,
+          "min": -0.4163,
+          "p01": -0.2051,
+          "p05": -0.1489,
+          "p10": -0.1201,
+          "q25": -0.0707,
+          "q75": 0.0118,
+          "p90": 0.0658,
+          "p95": 0.1118,
+          "p99": 0.2576,
+          "max": 0.3446
+        },
+        "FHV": {
+          "median": -14.06,
+          "mean": -13.99,
+          "min": -88.12,
+          "p01": -58.6,
+          "p05": -40.91,
+          "p10": -32.47,
+          "q25": -23.59,
+          "q75": -3.47,
+          "p90": 4.96,
+          "p95": 13.41,
+          "p99": 28.77,
+          "max": 61.52
+        },
+        "FMS": {
+          "median": -7.27,
+          "mean": 201395.1,
+          "min": -89.54,
+          "p01": -83.42,
+          "p05": -54.44,
+          "p10": -39.1,
+          "q25": -19.98,
+          "q75": 3.27,
+          "p90": 13.32,
+          "p95": 22.54,
+          "p99": 41.85,
+          "max": 106946032.01
+        },
+        "FLV": {
+          "median": -57.34,
+          "mean": -17555789367.29,
+          "min": -1073348167109.28,
+          "p01": -858506114048.89,
+          "p05": -1615.43,
+          "p10": -926.57,
+          "q25": -323.2,
+          "q75": 1.02,
+          "p90": 32.06,
+          "p95": 47.87,
+          "p99": 73.17,
+          "max": 95.93
+        },
+        "Peak-Timing": {
+          "median": 0.3333,
+          "mean": 0.4437,
+          "min": 0.0,
+          "p01": 0.0405,
+          "p05": 0.0952,
+          "p10": 0.12,
+          "q25": 0.2174,
+          "q75": 0.5789,
+          "p90": 0.9286,
+          "p95": 1.2,
+          "p99": 1.5553,
+          "max": 2.375
+        }
+      },
+      "regional_huc02": {
+        "01": 0.7719,
+        "02": 0.6909,
+        "03": 0.6868,
+        "04": 0.7517,
+        "05": 0.7656,
+        "06": 0.7457,
+        "07": 0.6859,
+        "08": 0.6132,
+        "09": 0.2973,
+        "10": 0.6679,
+        "11": 0.5793,
+        "12": 0.5394,
+        "13": 0.7724,
+        "14": 0.8788,
+        "15": 0.5871,
+        "16": 0.8117,
+        "17": 0.8325,
+        "18": 0.79
+      }
     }
   }
 }

@@ -10,7 +10,6 @@
   "zenodo_url": "https://doi.org/10.5281/zenodo.23639429",
   "starting_notebook": "era_experiments/era_pur_minimal_guidance.ipynb",
   "winner_notebook": "era_experiments/era_pur_minimal_guidance_winner.ipynb",
-  "xid": "302137603",
   "winning_node_id": 135,
   "era_validation_period": [
     "1999-10-01",

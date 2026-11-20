@@ -1,4 +1,4 @@
-# Copyright 2026 HydrologyMIP Contributors
+# Copyright 2026 HydroMIP Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -316,8 +316,8 @@ def test_static_ui_serving(mip_env: dict) -> None:
 
     r_index = client.get("/")
     assert r_index.status_code == 200
-    assert "HydrologyMIP" in r_index.text
-    assert "hydrologymip.org" in r_index.text
+    assert "HydroMIP" in r_index.text
+    assert "hydromip.org" in r_index.text
 
     r_css = client.get("/styles.css")
     assert r_css.status_code == 200

@@ -1,11 +1,11 @@
 {
   "generated_at": "2026-10-25T20:51:32Z",
-  "n_rows": 11,
+  "n_rows": 12,
   "rows": [
     {
       "family_id": "feng2020_di_lstm",
       "model_dir": "models/feng2020_di_lstm",
-      "model_name": "Data-Integration LSTM (DI(1)-LSTM — MIP Re-run)",
+      "model_name": "Data-Integration LSTM (DI(1)-LSTM \u2014 MIP Re-run)",
       "citation": "Feng et al. (2020)",
       "paper_url": "https://doi.org/10.1029/2019WR026793",
       "author_split_protocol": "Split-3: 671 CAMELS-US basins, train 1985-10-01 to 1995-09-30, eval 1995-10-01 to 2005-09-30 (NLDAS + Q(t-1), 6 seeds)",
@@ -19,17 +19,17 @@
       "delta_med_nse": -0.039,
       "status": "PASS",
       "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm.zarr",
-      "notes": "Feng, Fang & Shen (2020, WRR, Table 3, p. 28) evaluated DI(1) across 671 CAMELS-US basins with NLDAS forcing + 1-day lagged observed specific discharge Q(t-1) (train 1985-10-01 to 1995-09-30, eval 1995-10-01 to 2005-09-30, 6 seeds), reporting 6-seed ensemble Med NSE = 0.859 and single-seed Med NSE = 0.851 ± 0.0097. Our clean-room 6-seed reproduction (seeds 101..106) achieves 0.8202 ensemble Med NSE (0.8133 ± 0.0020 single-seed Med NSE, 0.7955 Mean NSE, 0.8338 Med KGE; Δ = -0.0388 within 0.04 tolerance, status: PASS; the -0.039 gap reflects linear z-score standardization of Q(t-1) vs. Feng et al. 2020 Eq. 11 log-sqrt compression log10(sqrt(v) + 0.1)).",
+      "notes": "Feng, Fang & Shen (2020, WRR, Table 3, p. 28) evaluated DI(1) across 671 CAMELS-US basins with NLDAS forcing + 1-day lagged observed specific discharge Q(t-1) (train 1985-10-01 to 1995-09-30, eval 1995-10-01 to 2005-09-30, 6 seeds), reporting 6-seed ensemble Med NSE = 0.859 and single-seed Med NSE = 0.851 \u00b1 0.0097. Our clean-room 6-seed reproduction (seeds 101..106) achieves 0.8202 ensemble Med NSE (0.8133 \u00b1 0.0020 single-seed Med NSE, 0.7955 Mean NSE, 0.8338 Med KGE; \u0394 = -0.0388 within 0.04 tolerance, status: PASS; the -0.039 gap reflects linear z-score standardization of Q(t-1) vs. Feng et al. 2020 Eq. 11 log-sqrt compression log10(sqrt(v) + 0.1)).",
       "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm.zarr",
       "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm.zarr"
     },
     {
       "family_id": "feng_dhbv10",
       "model_dir": "models/feng_dhbv10",
-      "model_name": "δHBV 1.0",
+      "model_name": "\u03b4HBV 1.0",
       "citation": "Feng et al. (2022)",
       "paper_url": "https://doi.org/10.1029/2022WR032404",
-      "author_split_protocol": "Split-3: 531 CAMELS-US basins (and 671-basin extended set), train 1980-10-01 to 1995-09-30 (WY1981–1995), test 1995-10-01 to 2010-09-30 (WY1996–2010), Daymet forcing",
+      "author_split_protocol": "Split-3: 531 CAMELS-US basins (and 671-basin extended set), train 1980-10-01 to 1995-09-30 (WY1981\u20131995), test 1995-10-01 to 2010-09-30 (WY1996\u20132010), Daymet forcing",
       "forcing": "Daymet",
       "num_basins": 531,
       "num_seeds": 3,
@@ -40,14 +40,14 @@
       "delta_med_nse": 0.0012,
       "status": "PASS",
       "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/feng_dhbv10.zarr",
-      "notes": "Split-3 (WY1980–1995 train / WY1995–2010 test, Daymet, 3 seeds [111111, 111112, 111113]): On the 531 canonical CAMELS-US basins stored in feng_dhbv10.zarr (1995-10-01 to 2010-09-30), achieves 0.7412 3-seed ensemble Med NSE and 0.7339 ± 0.0010 single-seed Med NSE ([0.7331, 0.7332, 0.7353]) vs. published 0.740 ensemble / 0.733 single-seed (+0.0012; 14-WY post-warmup 1996-10-01 to 2010-09-30 achieves 0.7436 ensemble / 0.7389 single-seed on 531 basins and 0.7407 ensemble / 0.7340 single-seed on all 671 basins). Newman Split-1 (WY1999–2008 train / WY1989–1999 test, 531 basins, 5 seeds) achieves 0.7416 ensemble and 0.7327 ± 0.0025 single-seed Med NSE.",
+      "notes": "Split-3 (WY1980\u20131995 train / WY1995\u20132010 test, Daymet, 3 seeds [111111, 111112, 111113]): On the 531 canonical CAMELS-US basins stored in feng_dhbv10.zarr (1995-10-01 to 2010-09-30), achieves 0.7412 3-seed ensemble Med NSE and 0.7339 \u00b1 0.0010 single-seed Med NSE ([0.7331, 0.7332, 0.7353]) vs. published 0.740 ensemble / 0.733 single-seed (+0.0012; 14-WY post-warmup 1996-10-01 to 2010-09-30 achieves 0.7436 ensemble / 0.7389 single-seed on 531 basins and 0.7407 ensemble / 0.7340 single-seed on all 671 basins). Newman Split-1 (WY1999\u20132008 train / WY1989\u20131999 test, 531 basins, 5 seeds) achieves 0.7416 ensemble and 0.7327 \u00b1 0.0025 single-seed Med NSE.",
       "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/feng_dhbv10.zarr",
       "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/feng_dhbv10.zarr"
     },
     {
       "family_id": "hoedt_mclstm",
       "model_dir": "models/hoedt_mclstm",
-      "model_name": "Mass-Conserving LSTM (MC-LSTM — MIP Re-run)",
+      "model_name": "Mass-Conserving LSTM (MC-LSTM \u2014 MIP Re-run)",
       "citation": "Hoedt et al. (2021)",
       "paper_url": "https://arxiv.org/abs/2101.05186",
       "author_split_protocol": "Newman Split-1: 531 CAMELS-US basins, train 1999-10-01 to 2008-09-30, eval 1989-10-01 to 1999-09-30 (Maurer forcing, 64 mass cells, seq_len=365, targ_len=1, NSE* loss)",
@@ -82,7 +82,7 @@
       "delta_med_nse": -0.061,
       "status": "PASS",
       "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr",
-      "notes": "Kratzert et al. (2021, HESS 25, 2685-2706, Table 1 & Table A2; Zenodo 10.5281/zenodo.4670268 / t3_02) evaluated the 256-unit, 365-day lookback CudaLSTM across the 531 Newman CAMELS-US basins with Daymet single-forcing inputs (train 1999-10-01 to 2008-09-30, eval 1989-10-01 to 1999-09-30), achieving 10-seed ensemble Med NSE = 0.772 (0.7724) and single-seed Med NSE = 0.744 ± 0.003 (Table A2 reports 0.74; note that 0.783 / 0.762 in Table A1 are on the 447-basin intersection subset). Our stored 3-seed fast-verification Zarr archive (seeds 101..103; gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr) achieves 0.7110 3-seed ensemble Med NSE and 0.7036 ± 0.0018 single-seed Med NSE (Mean NSE = 0.6767, Med KGE = 0.6931, 1 basin with NSE <= 0; Δ_single = -0.0404 vs. 0.744 single-seed benchmark), while our 30-epoch 3-seed reproduction achieves 0.7465 ensemble / 0.7350 ± 0.0013 single-seed Med NSE (Δ_single = -0.0090) and our 1-seed full NeuralHydrology schedule confirmation runs achieve 0.738 (Daymet vs. 0.744), 0.732 (Maurer vs. 0.732), 0.716 (NLDAS vs. 0.720), and 0.788 (3-Forcing vs. 0.796), confirming faithful architectural equivalence (PASS).",
+      "notes": "Kratzert et al. (2021, HESS 25, 2685-2706, Table 1 & Table A2; Zenodo 10.5281/zenodo.4670268 / t3_02) evaluated the 256-unit, 365-day lookback CudaLSTM across the 531 Newman CAMELS-US basins with Daymet single-forcing inputs (train 1999-10-01 to 2008-09-30, eval 1989-10-01 to 1999-09-30), achieving 10-seed ensemble Med NSE = 0.772 (0.7724) and single-seed Med NSE = 0.744 \u00b1 0.003 (Table A2 reports 0.74; note that 0.783 / 0.762 in Table A1 are on the 447-basin intersection subset). Our stored 3-seed fast-verification Zarr archive (seeds 101..103; gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr) achieves 0.7110 3-seed ensemble Med NSE and 0.7036 \u00b1 0.0018 single-seed Med NSE (Mean NSE = 0.6767, Med KGE = 0.6931, 1 basin with NSE <= 0; \u0394_single = -0.0404 vs. 0.744 single-seed benchmark), while our 30-epoch 3-seed reproduction achieves 0.7465 ensemble / 0.7350 \u00b1 0.0013 single-seed Med NSE (\u0394_single = -0.0090) and our 1-seed full NeuralHydrology schedule confirmation runs achieve 0.738 (Daymet vs. 0.744), 0.732 (Maurer vs. 0.732), 0.716 (NLDAS vs. 0.720), and 0.788 (3-Forcing vs. 0.796), confirming faithful architectural equivalence (PASS).",
       "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr",
       "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/kratzert_lstm.zarr"
     },
@@ -131,7 +131,7 @@
     {
       "family_id": "poudel_mlp_hbv",
       "model_dir": "models/poudel_mlp_hbv",
-      "model_name": "Static-Parameter MLP + 16-HBV (diff-hydro) — Gauged (Split-2C)",
+      "model_name": "Static-Parameter MLP + 16-HBV (diff-hydro) \u2014 Gauged (Split-2C)",
       "citation": "Poudel & Steinschneider (2026)",
       "paper_url": "https://doi.org/10.5194/hess-30-5173-2026",
       "author_split_protocol": "Split-2C: 425 in-sample training basins (80% random split), train 1990-01-01 to 2005-12-31, val 2006-01-01 to 2014-12-31, test 1980-01-01 to 1989-12-31 (Daymet, 30 static attributes)",
@@ -152,7 +152,7 @@
     {
       "family_id": "poudel_mlp_hbv",
       "model_dir": "models/poudel_mlp_hbv",
-      "model_name": "Static-Parameter MLP + 16-HBV (diff-hydro) — PUB Hold-Out (Split-2C)",
+      "model_name": "Static-Parameter MLP + 16-HBV (diff-hydro) \u2014 PUB Hold-Out (Split-2C)",
       "citation": "Poudel & Steinschneider (2026)",
       "paper_url": "https://doi.org/10.5194/hess-30-5173-2026",
       "author_split_protocol": "Split-2C: 106 held-out PUB test basins (20% random split, trained on 425 basins), train 1990-01-01 to 2005-12-31, val 2006-01-01 to 2014-12-31, test 1980-01-01 to 1989-12-31 (Daymet, 30 static attributes)",
@@ -208,14 +208,14 @@
       "delta_med_nse": -0.0091,
       "status": "PASS",
       "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/newman_sacsma.zarr",
-      "notes": "Clean-room C++17/OpenMP 27-parameter Snow-17 + SAC-SMA + 15-day Duamel Gamma unit hydrograph calibrated per basin via DDS (400 iterations, r=0.2, 365-day spinup, daily RMSE objective) on Daymet forcings over WY2000–2008 and evaluated over WY1990–1999 across all 531 CAMELS-US basins. Reproduced Median NSE = 0.6609 (Mean NSE = 0.6131, Median KGE = 0.6769) matches the published Daymet DDS SAC-SMA Split-1 benchmark (0.670; Nearing et al., 2020 / Kratzert et al., 2021 Fig. 4) within delta = -0.0091 and exceeds Newman et al. (2017)'s Maurer benchmark (0.603 on 447 basins, 0.6071 on 530 basins in t3_48.zarr).",
+      "notes": "Clean-room C++17/OpenMP 27-parameter Snow-17 + SAC-SMA + 15-day Duamel Gamma unit hydrograph calibrated per basin via DDS (400 iterations, r=0.2, 365-day spinup, daily RMSE objective) on Daymet forcings over WY2000\u20132008 and evaluated over WY1990\u20131999 across all 531 CAMELS-US basins. Reproduced Median NSE = 0.6609 (Mean NSE = 0.6131, Median KGE = 0.6769) matches the published Daymet DDS SAC-SMA Split-1 benchmark (0.670; Nearing et al., 2020 / Kratzert et al., 2021 Fig. 4) within delta = -0.0091 and exceeds Newman et al. (2017)'s Maurer benchmark (0.603 on 447 basins, 0.6071 on 530 basins in t3_48.zarr).",
       "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/newman_sacsma.zarr",
       "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/newman_sacsma.zarr"
     },
     {
       "family_id": "song_dhbv11p",
       "model_dir": "models/song_dhbv11p",
-      "model_name": "δHBV 1.1p / δMG (Dynamic Parameters) — Author Split-3",
+      "model_name": "\u03b4HBV 1.1p / \u03b4MG (Dynamic Parameters) \u2014 Author Split-3",
       "citation": "Song et al. (2024)",
       "paper_url": "https://doi.org/10.5194/hess-28-3051-2024",
       "author_split_protocol": "Split-3: 531/671 CAMELS-US basins, train WY1981-1995 (1980-10-01 to 1995-09-30), test WY1996-2010 (1995-10-01 to 2010-09-30), Daymet & Maurer forcings",
@@ -229,9 +229,30 @@
       "delta_med_nse": -0.0025,
       "status": "PASS",
       "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p.zarr",
-      "notes": "Split-3 author protocol (WY1981-1995 train / WY1996-2010 test, 3 seeds [111111, 111112, 111113]): on the 531 canonical basins with Daymet forcing (gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p.zarr), achieves 0.7475 3-seed ensemble Med NSE and 0.7418 ± 0.0009 single-seed Med NSE ([0.7419, 0.7407, 0.7430]; on all 671 basins: 0.7430 ensemble / 0.7371 ± 0.0021 single-seed; on Maurer 531 basins WY1996-2008: 0.7389 ensemble / 0.7333 ± 0.0024 single-seed) vs. Song et al. (2024) published 0.750 for dynamic δHBV 1.1p (and 0.730 for static δHBV 1.0), Δ = -0.0082 single / -0.0025 ensemble (PASS). Also verified on Split-1 (WY1999-2008 train / WY1989-1999 test, Daymet, 531 basins) against the released MHPI generic_deltamodel checkpoint (published 0.7574 ensemble / 0.7548 single-seed; reproduced 5-seed ensemble = 0.7589 / single-member mean = 0.7537 ± 0.0011).",
+      "notes": "Split-3 author protocol (WY1981-1995 train / WY1996-2010 test, 3 seeds [111111, 111112, 111113]): on the 531 canonical basins with Daymet forcing (gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p.zarr), achieves 0.7475 3-seed ensemble Med NSE and 0.7418 \u00b1 0.0009 single-seed Med NSE ([0.7419, 0.7407, 0.7430]; on all 671 basins: 0.7430 ensemble / 0.7371 \u00b1 0.0021 single-seed; on Maurer 531 basins WY1996-2008: 0.7389 ensemble / 0.7333 \u00b1 0.0024 single-seed) vs. Song et al. (2024) published 0.750 for dynamic \u03b4HBV 1.1p (and 0.730 for static \u03b4HBV 1.0), \u0394 = -0.0082 single / -0.0025 ensemble (PASS). Also verified on Split-1 (WY1999-2008 train / WY1989-1999 test, Daymet, 531 basins) against the released MHPI generic_deltamodel checkpoint (published 0.7574 ensemble / 0.7548 single-seed; reproduced 5-seed ensemble = 0.7589 / single-member mean = 0.7537 \u00b1 0.0011).",
       "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p.zarr",
       "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/song_dhbv11p.zarr"
+    },
+    {
+      "family_id": "shahriar2026_mamba3",
+      "model_dir": "models/shahriar2026_mamba3",
+      "model_name": "Mamba-3 Static-Dynamic Adapter",
+      "citation": "Shahriar (2026)",
+      "paper_url": "https://doi.org/10.2139/ssrn.7552815",
+      "author_split_protocol": "Split-3: 671 CAMELS-US basins (and 531 Newman subset), train 1980-10-01 to 1995-09-30 (WY1981\u20131995), test 1995-10-01 to 2010-09-30 (WY1996\u20132010), Daymet forcing, seed 111111",
+      "forcing": "Daymet",
+      "num_basins": 531,
+      "num_seeds": 1,
+      "author_published_med_nse": 0.7307,
+      "author_published_single_med_nse": 0.7307,
+      "stage1_reproduced_med_nse": 0.7235,
+      "stage1_reproduced_single_med_nse": 0.7235,
+      "delta_med_nse": -0.0072,
+      "status": "PASS",
+      "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/shahriar2026_mamba3.zarr",
+      "notes": "Shahriar (2026, SSRN 7552815; Zenodo 10.5281/zenodo.23087719) trained a 2-layer Mamba-3 Static-Dynamic Adapter (d_model=112, d_state=32, 320,641 parameters, seed 111111, 30 epochs x 361 hydroDL steps) on Split-3 (WY1981\u20131995 train / WY1996\u20132010 test, Daymet), reporting Median NSE = 0.7272 on 671 basins and 0.7307 on the 531 Newman basins (re-verified directly from Zenodo pred_daily_m3s.npy converted to mm/day: 0.7272 on 671 basins, 0.7307 on 531 basins, Med KGE = 0.7689, NSE <= 0 = 6). Our clean-room re-training from scratch via models.shahriar2026_mamba3.runner.run_fold achieves Median NSE = 0.7235 on 531 basins (Mean NSE = 0.6632, Med KGE = 0.7659, NSE <= 0 = 9; delta = -0.0072, status: PASS) and 0.7181 on all 671 basins (delta = -0.0091).",
+      "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/shahriar2026_mamba3.zarr",
+      "zenodo_url": "https://zenodo.org/records/23087719"
     }
   ]
 }

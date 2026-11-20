@@ -9,9 +9,10 @@ description = "CAMELS-US Model Intercomparison Project (MIP) Leaderboards, Cloud
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Grey Nearing" },
+    { name = "Grey S. Nearing" },
     { name = "Daniel Klotz" },
-    { name = "HydrologyMIP Contributors" },
+    { name = "Patrick Ebel" },
+    { name = "HydroMIP Contributors" },
 ]
 requires-python = ">=3.10"
 dependencies = [

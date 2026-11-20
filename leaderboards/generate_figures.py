@@ -78,6 +78,10 @@ SERIES1_FAMILY_PUBLICATION_YEARS: dict[str, int] = {
     "hydrodiffusion": 2025,
     "poudel_mlp_hbv": 2025,
     "poudel2026_mlp_hbv": 2025,
+    "feng2020_di_lstm": 2020,
+    "yin2022_rrformer": 2022,
+    "li2025_lstm_dhbv_ens": 2025,
+    "shahriar2026_mamba3": 2026,
 }
 #: Accepted range for a publication year parsed from `model_name` / `citation` / `publication_year`.
 PUBLICATION_YEAR_MIN: int = 1990

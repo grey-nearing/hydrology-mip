@@ -1,6 +1,6 @@
 # Leaderboard Website Frontend & Backend (`frontend/`)
 
-`frontend/` runs the `hydrologymip.org` web application. It serves the 12 CAMELS-US stream-gauge leaderboards (Tables 3 to 14), the model-family registry (Table 2, counted from `table_2_registry.json`), the benchmark split protocol, and an interactive tool that scores uploaded daily streamflow predictions (`mm/day` over `1989-10-01` to `1999-09-30`, shape `531` basins by `3,652` days).
+`frontend/` runs the `hydromip.org` web application. It serves the 12 CAMELS-US stream-gauge leaderboards (Tables 3 to 14), the model-family registry (Table 2, counted from `table_2_registry.json`), the benchmark split protocol, and an interactive tool that scores uploaded daily streamflow predictions (`mm/day` over `1989-10-01` to `1999-09-30`, shape `531` basins by `3,652` days).
 
 ---
 
@@ -70,7 +70,7 @@ print(table_3["title"], "Top model:", table_3["top_model"], "Median NSE:", table
 ### 3.3 Deploy to Google Cloud Run
 
 ```bash
-gcloud run deploy hydrologymip-web \
+gcloud run deploy hydromip-web \
   --source . \
   --dockerfile frontend/Dockerfile \
   --region us-central1 \

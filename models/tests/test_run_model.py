@@ -70,6 +70,7 @@ EXPECTED_16_MODEL_DIRS: tuple[str, ...] = (
     "era_pur_physics_guided",
     "era_gauged_multi_paradigm",
     "feng2020_di_lstm",
+    "shahriar2026_mamba3",
     "yin2022_rrformer",
 )
 

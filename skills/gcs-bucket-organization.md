@@ -10,7 +10,7 @@ description: >-
 
 # `gs://camels-us-mip/` GCS Bucket Organization & Runbook
 
-This skill documents the canonical layout, Zarr schemas, and access conventions for the private **`gs://camels-us-mip/`** Google Cloud Storage bucket used by the CAMELS-US Model Intercomparison Project (`camels-us-mip` and `hydrologymip.org`).
+This skill documents the canonical layout, Zarr schemas, and access conventions for the private **`gs://camels-us-mip/`** Google Cloud Storage bucket used by the CAMELS-US Model Intercomparison Project (`camels-us-mip` and `hydromip.org`).
 
 - **Bucket Root:** `gs://camels-us-mip/`
 - **Bucket Root Documentation:** `gs://camels-us-mip/README.md`

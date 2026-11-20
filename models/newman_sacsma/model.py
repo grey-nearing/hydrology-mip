@@ -4,7 +4,7 @@ References:
 - Nearing, G., Sampson, A., Kratzert, F., & Frame, J. (2020). Post-Processing a
   Conceptual Rainfall-Runoff Model with an LSTM. EarthArXiv Preprint,
   https://doi.org/10.31223/osf.io/53te4 (https://github.com/Upstream-Tech/SACSMA-SNOW17).
-- Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Littell, J. S., &
+- Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Nearing, G., &
   Nijssen, B. (2017). Benchmarking of a physically based hydrologic model.
   Journal of Hydrometeorology, 18(8), 2215-2225,
   https://doi.org/10.1175/JHM-D-16-0284.1 (https://github.com/NCAR/camels).

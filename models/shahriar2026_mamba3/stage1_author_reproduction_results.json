@@ -1,0 +1,38 @@
+{
+  "family_id": "shahriar2026_mamba3",
+  "published_med_nse_671": 0.7272,
+  "published_med_nse_531": 0.7307,
+  "zenodo_archive_671": {
+    "num_valid_basins": 671,
+    "median_nse": 0.7272377964125027,
+    "mean_nse": 0.6616022482177195,
+    "median_kge": 0.7635872578123711,
+    "nse_le_0": 13
+  },
+  "zenodo_archive_531": {
+    "num_valid_basins": 531,
+    "median_nse": 0.7306607658873892,
+    "mean_nse": 0.6713606549451514,
+    "median_kge": 0.7688846041008744,
+    "nse_le_0": 6
+  },
+  "clean_room_rerun_671": {
+    "num_valid_basins": 671,
+    "median_nse": 0.718109282123131,
+    "mean_nse": 0.6507152511827753,
+    "median_kge": 0.7552081984150983,
+    "nse_le_0": 16
+  },
+  "clean_room_rerun_531": {
+    "num_valid_basins": 531,
+    "median_nse": 0.7235280448075141,
+    "mean_nse": 0.663231251801954,
+    "median_kge": 0.7658778939608648,
+    "nse_le_0": 9
+  },
+  "per_seed_med_nse_531": [
+    0.7235280448075141
+  ],
+  "delta_med_nse_531": -0.0072,
+  "status": "PASS"
+}

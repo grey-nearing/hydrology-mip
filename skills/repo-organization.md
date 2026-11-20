@@ -78,7 +78,7 @@ camels-us-mip/
 │   ├── era_pub_physics_informed.ipynb
 │   ├── era_pur_minimal_guidance.ipynb
 │   └── era_pur_physics_informed.ipynb
-├── frontend/                      # Leaderboard web portal (hydrologymip.org) UI & FastAPI backend
+├── frontend/                      # Leaderboard web portal (hydromip.org) UI & FastAPI backend
 │   ├── __init__.py
 │   ├── README.md
 │   ├── Dockerfile

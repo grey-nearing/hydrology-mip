@@ -1,6 +1,6 @@
 # Project Agent Skills (`skills/`)
 
-This directory contains project-level skill guides for AI coding assistants working on `camels-us-mip` (the CAMELS-US Model Intercomparison Project & `hydrologymip.org`):
+This directory contains project-level skill guides for AI coding assistants working on `camels-us-mip` (the CAMELS-US Model Intercomparison Project & `hydromip.org`):
 
 | Skill | File | Purpose |
 | :--- | :--- | :--- |

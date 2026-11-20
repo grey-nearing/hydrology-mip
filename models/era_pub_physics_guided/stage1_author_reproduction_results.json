@@ -10,7 +10,6 @@
   "zenodo_url": "https://doi.org/10.5281/zenodo.23639402",
   "starting_notebook": "era_experiments/era_pub_physics_informed.ipynb",
   "winner_notebook": "era_experiments/era_pub_physics_informed_winner.ipynb",
-  "xid": "303537325",
   "winning_node_id": 203,
   "era_validation_period": [
     "1999-10-01",

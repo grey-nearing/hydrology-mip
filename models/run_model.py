@@ -240,6 +240,15 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         code_url="https://github.com/mhpi/hydroDL",
         default_seeds=(101, 102, 103, 104, 105, 106),
     ),
+    "shahriar2026_mamba3": ModelRegistryEntry(
+        key="shahriar2026_mamba3",
+        model_name="Mamba-3 Static-Dynamic Adapter",
+        model_family="Mamba State Space Model",
+        provenance_category="MIP Re-run",
+        runner_module="models.shahriar2026_mamba3.runner",
+        code_url="https://doi.org/10.5281/zenodo.23087719",
+        default_seeds=(111111,),
+    ),
     "yin2022_rrformer": ModelRegistryEntry(
         key="yin2022_rrformer",
         model_name="RR-Former",

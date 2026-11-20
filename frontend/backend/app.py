@@ -1,11 +1,11 @@
-# Copyright 2026 HydrologyMIP Contributors
+# Copyright 2026 HydroMIP Contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
-"""FastAPI backend for hydrologymip.org (`camels-us-mip/frontend/`).
+"""FastAPI backend for hydromip.org (`camels-us-mip/frontend/`).
 
 Serves the 3 x 4 = 12 CAMELS-531 Newman-period leaderboards, the model-family
 registry (Table 2; the family count is always read from `table_2_registry.json`,
@@ -125,11 +125,11 @@ CANONICAL_LEADERBOARD_IDS: tuple[str, ...] = (
 )
 
 app = FastAPI(
-    title="HydrologyMIP — CAMELS-US Model Intercomparison Project",
+    title="HydroMIP — CAMELS-US Model Intercomparison Project",
     description=(
         "Public 3x4 = 12 leaderboards, reproducible model-family registry (Table 2), "
         "protocol metadata, and deterministic 531x3652 hydrograph scoring engine "
-        "for hydrologymip.org."
+        "for hydromip.org."
     ),
     version="1.0.0",
 )
@@ -1484,7 +1484,7 @@ def api_health() -> dict[str, Any]:
     contrib_data = load_contributions_index()
     return {
         "status": "ok",
-        "service": "hydrologymip.org",
+        "service": "hydromip.org",
         "n_leaderboards": len(tables_data["leaderboards"]),
         "n_families": len(reg_data["families"]),
         "total_entries": int(tables_data.get("total_entries", 0)),
@@ -2076,9 +2076,9 @@ def api_download_template(kind: str) -> Response:
     if kind in ("protocol.json", "folds.json"):
         splits_proto = load_splits_protocol()
         filename = (
-            "hydrologymip_camels531_protocol.json"
+            "hydromip_camels531_protocol.json"
             if kind == "protocol.json"
-            else "hydrologymip_camels531_canonical_folds.json"
+            else "hydromip_camels531_canonical_folds.json"
         )
         return Response(
             content=json.dumps(splits_proto, indent=2),
@@ -2100,7 +2100,7 @@ def api_download_template(kind: str) -> Response:
         return Response(
             content=buf.getvalue(),
             media_type="application/octet-stream",
-            headers={"Content-Disposition": 'attachment; filename="hydrologymip_camels531_sample_submission.npz"'},
+            headers={"Content-Disposition": 'attachment; filename="hydromip_camels531_sample_submission.npz"'},
         )
 
     raise HTTPException(

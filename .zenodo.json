@@ -1,16 +1,20 @@
 {
-  "title": "CAMELS-US Model Intercomparison Project (camels-us-mip)",
+  "title": "HydroMIP: CAMELS-US Model Intercomparison Project (camels-us-mip)",
   "upload_type": "software",
   "license": "Apache-2.0",
-  "description": "Codebase, standardized evaluation metrics, basin split definitions, and leaderboard registry for the CAMELS-US Model Intercomparison Project (MIP). First-party code is licensed under Apache-2.0; first-party benchmark datasets, hydrograph Zarr archives, splits, and leaderboard tables are licensed under CC-BY-4.0.",
+  "description": "Codebase, standardized evaluation metrics, basin split definitions, and leaderboard registry for HydroMIP: A CAMELS-US Model Intercomparison Project (hydromip.org). First-party code is licensed under Apache-2.0; first-party benchmark datasets, hydrograph Zarr archives, splits, and leaderboard tables are licensed under CC-BY-4.0.",
   "creators": [
     {
-      "name": "Nearing, Grey",
-      "affiliation": "Google Research"
+      "name": "Nearing, Grey S.",
+      "affiliation": "Google Research, Zurich, Switzerland"
     },
     {
       "name": "Klotz, Daniel",
-      "affiliation": "Google Research"
+      "affiliation": "Google Research, Zurich, Switzerland; Interdisciplinary Transformation University Austria (IT:U), Linz, Austria"
+    },
+    {
+      "name": "Ebel, Patrick",
+      "affiliation": "Google Research, Zurich, Switzerland"
     }
   ],
   "keywords": [
@@ -20,6 +24,7 @@
     "streamflow prediction",
     "model intercomparison",
     "machine learning",
-    "benchmarking"
+    "benchmarking",
+    "HydroMIP"
   ]
 }

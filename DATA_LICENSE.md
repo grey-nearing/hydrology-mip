@@ -22,7 +22,7 @@ are licensed under the **Creative Commons Attribution 4.0 International License 
 
 You are free to copy, redistribute, remix, transform, and build upon these datasets for any purpose, even commercially, provided that you give appropriate credit:
 
-> Nearing, G., & Klotz, D. (2026). *A CAMELS-US Model Intercomparison Project* (`hydrologymip.org`). Licensed under CC BY 4.0.
+> Nearing, G. S., Klotz, D., & Ebel, P. (2026). *HydroMIP: A CAMELS-US Model Intercomparison Project* (`hydromip.org`). Licensed under CC BY 4.0.
 
 When using simulated hydrographs from any model family in `gs://camels-us-mip/`, please also cite the original publication introducing that model architecture (recorded in `leaderboards/table_2_registry.json` and in each Zarr store's `.zattrs`).
 
@@ -55,6 +55,6 @@ Each `.zarr` directory in `gs://camels-us-mip/` is an independent dataset in a s
 
 ## 4. Policy on Community Submissions & External Archives
 
-1. **Community Contributions (`hydrologymip.org`):** Community-contributed hydrograph stores submitted to the MIP leaderboards are licensed under **`CC-BY-4.0`** with scholarly attribution to the contributing authors.
+1. **Community Contributions (`hydromip.org`):** Community-contributed hydrograph stores submitted to the MIP leaderboards are licensed under **`CC-BY-4.0`** with scholarly attribution to the contributing authors.
 2. **Literature-Only Entries:** For `Literature` and `Literature*` entries (`kratzert2019a_pub_lstm`, `feng2020_di_lstm_lit`, `gauch_xgboost_lit`, `hoedt_mclstm_lit`, `tsai2021_dpl_vic`, `nearing2022_ar_da_lstm`, `jamaat2025_dhbv_da`, `liu2025_tslib_suite`, `wang_s4dft`), **zero hydrograph Zarr stores and zero source code files** are redistributed; only published scalar summary statistics (`17 U.S.C. § 102(b)`) are reported in `leaderboards/*.json` with full academic citations.
 3. **No Warranty:** All datasets and hydrograph archives are provided "AS IS", without warranty of any kind, express or implied, in accordance with `CC-BY-4.0` Section 5 and the respective upstream data licenses.
