@@ -2788,20 +2788,20 @@
       ],
       rulesHtml: `
         <li>
-          <strong>Blind Evaluation Window</strong>
-          <span>Select architectures, hyperparameters, and early stopping strictly on <code>1999-10-01</code> to <code>2008-09-30</code>; evaluate blindly on <code>1989-10-01</code> to <code>1999-09-30</code>.</span>
+          <strong>Keep the test years blind</strong>
+          <span>Train and tune your model on Oct 1999 through Sep 2008 only. Do not use the Oct 1989 through Sep 1999 test years to choose architectures, tune hyperparameters, or stop training early.</span>
         </li>
         <li>
-          <strong>Canonical Spatial Folds</strong>
-          <span>Use the canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> basin splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target-basin leakage.</span>
+          <strong>Use the standard basins and folds</strong>
+          <span>Predict daily streamflow (mm/day) for all <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>. For ungauged runs, hold out the test catchments strictly using the <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> or <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold PUR</a> splits.</span>
         </li>
         <li>
-          <strong>Forcing Inputs &amp; 14 Canonical Metrics</strong>
-          <span>Declare all meteorological and lagged streamflow inputs used. Models are scored across the 14 canonical Gauch et al. (2023) deterministic metrics including <code>logNSE</code> and <code>logKGE</code> (<code>mm/day</code> specific discharge).</span>
+          <strong>Declare every input you used</strong>
+          <span>List all meteorological datasets and any lagged streamflow inputs so your model lands on the right leaderboard. Every entry is scored on the 14 Gauch et al. (2023) metrics (including <code>logNSE</code> and <code>logKGE</code>).</span>
         </li>
         <li>
-          <strong>Instant Preview + Open GitHub PR</strong>
-          <span>Step 1&ndash;3 previews remain strictly local in your browser (<code>localStorage</code>). Permanent leaderboard publication requires a DOI-minted prediction archive, codebase URL (or Closed-Source declaration), and automated CI verification via GitHub.</span>
+          <strong>Preview privately, then publish</strong>
+          <span>Steps 1 to 3 run locally in your browser so you can check scores before sharing. Permanent publication requires a DOI archive (Zenodo or HydroShare), a code link (or closed-source note), and an automated GitHub check.</span>
         </li>
       `,
       chk1Html: `Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)`,
@@ -2845,7 +2845,7 @@
     }
 
     if (rulesHeading) {
-      rulesHeading.innerHTML = `Submission Rules &mdash; ${esc(cfg.title)}`;
+      rulesHeading.innerHTML = `Before You Submit &mdash; ${esc(cfg.title)}`;
     }
     if (rulesList) {
       rulesList.innerHTML = cfg.rulesHtml;
@@ -5823,6 +5823,7 @@
     "about-protocol",
     "about-camels-us",
     "contribute",
+    "contribute-rules",
     "leaderboards-hub",
     "leaderboards",
     "hydrographs",
@@ -5912,6 +5913,7 @@
       "about-protocol": "nav-tab-about",
       "about-camels-us": "nav-tab-about",
       contribute: "nav-tab-contribute",
+      "contribute-rules": "nav-tab-contribute",
       "leaderboards-hub": "nav-tab-leaderboards-hub",
       leaderboards: "nav-tab-leaderboards-hub",
       hydrographs: "nav-tab-leaderboards-hub",
@@ -6000,6 +6002,12 @@
     bindViewButton("btn-back-to-about-from-protocol", "about");
     bindViewButton("btn-open-camels-spec-from-protocol", "about-camels-us");
     bindViewButton("btn-open-contribute-from-protocol", "contribute");
+    bindViewButton("btn-open-contrib-rules", "contribute-rules");
+    bindViewButton("link-open-contrib-rules-sidebar", "contribute-rules");
+    bindViewButton("btn-back-to-contribute-from-rules", "contribute");
+    bindViewButton("btn-start-sub-from-rules", "contribute");
+    bindViewButton("btn-open-camels-from-rules", "about-camels-us");
+    bindViewButton("link-protocol-from-contrib-rules", "about-protocol");
     bindViewButton("btn-open-camels-lb-from-about", "leaderboards");
 
     // Hydrograph Comparison Explorer buttons & controls

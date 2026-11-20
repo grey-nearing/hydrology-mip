@@ -806,32 +806,40 @@
           <p class="editorial-kicker">Community Submissions</p>
           <h2 class="page-title">Contribute a Model</h2>
           <p class="page-sub" id="contrib-page-sub">
-            Inspect and score daily discharge predictions right away in a browser-local leaderboard preview, then publish permanently via an automated GitHub PR.
+            Test and score your daily discharge predictions privately in your browser first, then publish to the leaderboard through GitHub.
           </p>
+        </div>
+        <div class="page-head-actions">
+          <button type="button" class="btn-secondary" id="btn-open-contrib-rules">
+            Contribution Rules &rarr;
+          </button>
         </div>
       </div>
 
       <div class="contrib-layout-grid">
         <div class="protocol-rules-col">
-          <h3 class="sub-heading" id="contrib-rules-heading">Submission Rules &mdash; CAMELS-US</h3>
+          <h3 class="sub-heading" id="contrib-rules-heading">Before You Submit &mdash; CAMELS-US</h3>
           <ol class="clean-rule-list" id="contrib-rules-list">
             <li>
-              <strong>Blind Evaluation Window</strong>
-              <span>Select architectures, hyperparameters, and early stopping strictly on <code>1999-10-01</code> to <code>2008-09-30</code>; evaluate blindly on <code>1989-10-01</code> to <code>1999-09-30</code>.</span>
+              <strong>Keep the test years blind</strong>
+              <span>Train and tune your model on Oct 1999 through Sep 2008 only. Do not use the Oct 1989 through Sep 1999 test years to choose architectures, tune hyperparameters, or stop training early.</span>
             </li>
             <li>
-              <strong>Canonical Spatial Folds</strong>
-              <span>Use the canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> basin splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target-basin leakage.</span>
+              <strong>Use the standard basins and folds</strong>
+              <span>Predict daily streamflow (mm/day) for all <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>. For ungauged runs, hold out the test catchments strictly using the <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> or <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold PUR</a> splits.</span>
             </li>
             <li>
-              <strong>Forcing Inputs &amp; 14 Canonical Metrics</strong>
-              <span>Declare all meteorological and lagged streamflow inputs used. Models are scored across the 14 canonical Gauch et al. (2023) deterministic metrics including <code>logNSE</code> and <code>logKGE</code> (<code>mm/day</code> specific discharge).</span>
+              <strong>Declare every input you used</strong>
+              <span>List all meteorological datasets and any lagged streamflow inputs so your model lands on the right leaderboard. Every entry is scored on the 14 Gauch et al. (2023) metrics (including <code>logNSE</code> and <code>logKGE</code>).</span>
             </li>
             <li>
-              <strong>Instant Preview + Open GitHub PR</strong>
-              <span>Step 1&ndash;3 previews remain strictly local in your browser (<code>localStorage</code>). Permanent leaderboard publication requires a DOI-minted prediction archive, codebase URL (or Closed-Source declaration), and automated CI verification via GitHub.</span>
+              <strong>Preview privately, then publish</strong>
+              <span>Steps 1 to 3 run locally in your browser so you can check scores before sharing. Permanent publication requires a DOI archive (Zenodo or HydroShare), a code link (or closed-source note), and an automated GitHub check.</span>
             </li>
           </ol>
+          <p style="margin: 1rem 0 0; font-size: 0.82rem; color: var(--color-muted); line-height: 1.5;">
+            Need full details on splits, file formats, or ensembles? Read the <a href="#contribute-rules" id="link-open-contrib-rules-sidebar" style="font-weight: 500;">complete contribution rules &rarr;</a>
+          </p>
         </div>
 
         <div class="workbench-card">
@@ -1152,6 +1160,100 @@
             </div>
           </form>
         </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         5B. CONTRIBUTION RULES (DETAILED GUIDE)
+         =================================================================== -->
+    <section id="view-contribute-rules" role="tabpanel" aria-labelledby="nav-tab-contribute" style="display: none;">
+      <div class="page-head">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-contribute-from-rules">
+            &larr; Contribute a Model
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">Contribution Rules</h2>
+          <p class="page-sub">
+            How to run a valid benchmark experiment, package your daily predictions, and submit a model to HydrologyMIP.
+          </p>
+        </div>
+      </div>
+
+      <div class="spec-grid-3">
+        <div class="spec-block">
+          <h3>1. Splits &amp; Preventing Leakage</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Training &amp; Test Dates (CAMELS-US)</dt>
+              <dd>Train, validate, and tune strictly within Oct 1, 1999 through Sep 30, 2008. Hold out Oct 1, 1989 through Sep 30, 1999 exclusively for final scoring. Meteorological spin-up before Oct 1, 1989 is allowed as long as no test-period streamflow is used.</dd>
+            </div>
+            <div>
+              <dt>No Peeking at Test Scores</dt>
+              <dd>Do not use 1989&ndash;1999 test scores to pick architectures, tune hyperparameters, stop training early, or select the best run out of multiple trials. Make all modeling decisions using validation splits inside the training period.</dd>
+            </div>
+            <div>
+              <dt>Ungauged Folds (PUB &amp; PUR)</dt>
+              <dd>For <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a>, train a separate model for each fold using only that fold&rsquo;s training basins. Never use observed streamflow, locally calibrated parameters, or test-period basin statistics from held-out basins.</dd>
+            </div>
+            <div>
+              <dt>Honor System</dt>
+              <dd>Automated checks verify your file format and compute metrics, but cannot audit your training code line by line. Contributors are expected to follow the <a href="#about-protocol" id="link-protocol-from-contrib-rules">Experimental Protocol</a> honestly and contact us if an error is discovered later.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>2. Inputs, Forcings &amp; Ensembles</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Single vs. Multiple CAMELS Forcings</dt>
+              <dd>Models driven by one standard CAMELS-US forcing product (Daymet, Maurer, or NLDAS) belong on Single CAMELS. Models combining two or three of those products belong on Multiple CAMELS.</dd>
+            </div>
+            <div>
+              <dt>Lagged Streamflow &amp; Assimilation</dt>
+              <dd>Any model that takes past observed streamflow as input (autoregression, error updating, or data assimilation) must go on the Lagged Streamflow leaderboard (Gauged only), never on an open-loop leaderboard.</dd>
+            </div>
+            <div>
+              <dt>External (Freeform) Forcings</dt>
+              <dd>If you use meteorological data outside the standard CAMELS-US forcings (for example AORC, ERA5-Land, or EM-Earth), submit under Freeform.</dd>
+            </div>
+            <div>
+              <dt>Ensembles vs. Single Runs</dt>
+              <dd>State clearly whether your predictions are a single run or an ensemble (and how many members or random seeds were averaged). Ensembles and single-model runs are tracked separately. If you run multiple seeds, archiving all members lets us score both.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>3. File Format &amp; Publication</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Units, Shape &amp; Missing Values</dt>
+              <dd>Submit deterministic daily discharge in <code>mm/day</code> covering all <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a> across all 3,652 days (1989-10-01 to 1999-09-30). Mark missing days as <code>NaN</code>, not <code>0</code> or <code>-999</code>.</dd>
+            </div>
+            <div>
+              <dt>Supported File Types</dt>
+              <dd>Upload NetCDF (<code>.nc</code>), zipped Zarr (<code>.zarr.zip</code>), Parquet (<code>.parquet</code>), CSV (<code>.csv</code>), or NumPy (<code>.npz</code>) with 8-digit USGS basin IDs and <code>YYYY-MM-DD</code> dates. Pickle files (<code>.pkl</code>) are blocked for security.</dd>
+            </div>
+            <div>
+              <dt>Permanent DOI Archive</dt>
+              <dd>Steps 1 to 3 let you inspect and score a local file privately in your browser. Publishing to the leaderboard (Step 4) requires uploading the predictions to a permanent DOI repository (Zenodo or HydroShare).</dd>
+            </div>
+            <div>
+              <dt>Code &amp; Closed-Source Models</dt>
+              <dd>Include a link to your public code repository whenever possible. Closed-source or proprietary models are welcome as long as the predictions are archived under a permanent DOI and marked as Closed-Source in the form.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.65rem; flex-wrap: wrap;">
+        <button type="button" class="btn-primary-cta" id="btn-start-sub-from-rules">
+          Start a Model Submission &rarr;
+        </button>
+        <button type="button" class="btn-secondary" id="btn-open-camels-from-rules">
+          CAMELS-US Splits &amp; Specification
+        </button>
       </div>
     </section>
 
