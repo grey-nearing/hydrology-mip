@@ -21,14 +21,16 @@ from benchmarks import (
     verify_single_entry_report,
 )
 from benchmarks.metrics_pipeline import main as benchmark_cli_main
+from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from metrics import EVAL_END_DATE, EVAL_START_DATE, NUM_BASINS, NUM_EVAL_DAYS
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SPLITS_DIR = resolve_mip_paths(DEFAULT_MIP_ID).splits_dir
 
 
 def _load_canonical_basins_and_huc02() -> tuple[np.ndarray, np.ndarray]:
     """Load the 531 canonical USGS basin IDs and 2-digit HUC-02 codes."""
-    spec_path = REPO_ROOT / "splits" / "splits_and_regimes.json"
+    spec_path = SPLITS_DIR / "splits_and_regimes.json"
     assert spec_path.exists(), f"Missing canonical split specification at {spec_path}"
 
     spec = json.loads(spec_path.read_text(encoding="utf-8"))

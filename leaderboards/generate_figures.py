@@ -44,9 +44,11 @@ import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 
-REPO_ROOT: Path = Path(__file__).resolve().parents[1]
-DEFAULT_LEADERBOARDS_DIR: Path = Path(__file__).resolve().parent
-DEFAULT_FIGURES_DIR: Path = REPO_ROOT / "figures"
+from hydromip.paths import DEFAULT_MIP_ID, REPO_ROOT, resolve_mip_paths
+
+_DEFAULT_MIP_PATHS = resolve_mip_paths(DEFAULT_MIP_ID)
+DEFAULT_LEADERBOARDS_DIR: Path = _DEFAULT_MIP_PATHS.leaderboards_dir
+DEFAULT_FIGURES_DIR: Path = _DEFAULT_MIP_PATHS.figures_dir
 
 #: Year of the CAMELS-US MIP study itself ("this study"). "Contribution" entries
 #: without a prior Series-1 paper are dated at this year (or their `submitted_at` year).
@@ -57,7 +59,7 @@ MIP_RERUN_CATEGORIES: frozenset[str] = frozenset({"MIP Re-run", "Contribution"})
 #: Normalized source categories for new MIP/community contributions (dated at `MIP_STUDY_YEAR`).
 MIP_CONTRIBUTION_CATEGORIES: frozenset[str] = frozenset({"Contribution"})
 #: Normalized source categories whose results are taken verbatim from the literature / archives.
-LITERATURE_CATEGORIES: frozenset[str] = frozenset({"Literature", "Archive", "Archive*"})
+LITERATURE_CATEGORIES: frozenset[str] = frozenset({"Literature", "Literature*", "Archive", "Archive*"})
 #: Canonical publication year of the original paper each Series-1 (`MIP Re-run`) model family
 #: builds from (verified against `models/<family>/reproduce_author_metrics.py` and Table 2).
 SERIES1_FAMILY_PUBLICATION_YEARS: dict[str, int] = {
@@ -70,14 +72,14 @@ SERIES1_FAMILY_PUBLICATION_YEARS: dict[str, int] = {
     "feng_dhbv10": 2022,
     "das_tide": 2023,
     "das2023_tide": 2023,
-    "rasiya_koya_tft": 2023,
-    "nh_tft_rerun": 2023,
+    "rasiya_koya_tft": 2024,
+    "nh_tft_rerun": 2024,
     "song_dhbv11p": 2024,
     "wang_s4dft": 2025,
     "wang2025_s4d": 2025,
     "hydrodiffusion": 2025,
-    "poudel_mlp_hbv": 2025,
-    "poudel2026_mlp_hbv": 2025,
+    "poudel_mlp_hbv": 2026,
+    "poudel2026_mlp_hbv": 2026,
     "feng2020_di_lstm": 2020,
     "yin2022_rrformer": 2022,
     "li2025_lstm_dhbv_ens": 2025,
@@ -120,6 +122,7 @@ MODEL_CATEGORY_COLORS: dict[str, str] = {
     "Hybrid (ML + Physics)": "#8E24AA",
     "Conceptual": "#D95F02",
     "Process-based": "#1B9E77",
+    "Statistical": "#64748B",
 }
 
 FORCING_REGIME_MAP: dict[str, str] = {
@@ -171,7 +174,8 @@ INITIAL_LABEL_OFFSETS: dict[tuple[int, str, int], tuple[float, float]] = {
     (0, "Freeform Forcings", 2023): (10.0, -24.0),
     (1, "Single CAMELS Forcing", 2017): (10.0, -24.0),
     (1, "Single CAMELS Forcing", 2019): (-68.0, -26.0),
-    (1, "Single CAMELS Forcing", 2024): (-115.0, -28.0),
+    (1, "Single CAMELS Forcing", 2022): (-10.0, -34.0),
+    (1, "Single CAMELS Forcing", 2024): (-15.0, 26.0),
     (1, "Multiple CAMELS Forcings", 2019): (-55.0, 16.0),
     (1, "Multiple CAMELS Forcings", 2022): (-95.0, 14.0),
     (1, "Multiple CAMELS Forcings", 2023): (-115.0, -28.0),
@@ -225,6 +229,8 @@ def classify_model_category(row: dict[str, Any]) -> str:
         return "Conceptual"
     if "conceptual" in paradigm:
         return "Conceptual"
+    if "statistical" in paradigm or "persistence" in fid or "persistence" in name:
+        return "Statistical"
     if "land-surface" in paradigm or "distributed process" in paradigm:
         return "Process-based"
     return "Machine learning"
@@ -245,6 +251,8 @@ def normalize_source_category(row: dict[str, Any]) -> str:
     raw = raw.strip("()").strip()
     raw = raw.replace("_asterisk", "*").replace(" *", "*")
     word_map = {
+        "literature*": "Literature*",
+        "lit*": "Literature*",
         "literature": "Literature",
         "lit": "Literature",
         "mip re-run": "MIP Re-run",
@@ -563,7 +571,15 @@ def partition_panel_rows(
                 {**row, "primary_ranking_nse": nse_val},
                 year=year,
             )
-            exclude_frontier = "oracle" in str(row.get("model_name", "")).lower()
+            norm_cat = normalize_source_category(row)
+            is_nonstandard_lit = norm_cat == "Literature*" or (
+                norm_cat == "Literature" and bool(row.get("asterisk"))
+            )
+            exclude_frontier = (
+                "oracle" in str(row.get("model_name", "")).lower()
+                or is_nonstandard_lit
+                or str(row.get("family_id", "")).lower() == "naive_lag1_persistence"
+            )
             points.append(
                 {
                     "entry_id": str(row.get("entry_id", "")),
@@ -1361,11 +1377,11 @@ def generate_figure_2_leaderboard_progress(
         handles=cat_handles,
         loc="upper center",
         bbox_to_anchor=(0.5, 0.992),
-        ncol=6,
+        ncol=len(cat_handles),
         frameon=True,
         facecolor="#F8FAFC",
         edgecolor="#CBD5E1",
-        fontsize=8.6,
+        fontsize=8.2,
         title=_CATEGORY_LEGEND_TITLE,
         title_fontsize=9.5,
     )
@@ -1436,11 +1452,11 @@ def generate_figure_2_leaderboard_progress(
             handles=s_cat_handles,
             loc="upper center",
             bbox_to_anchor=(0.5, 0.99),
-            ncol=6,
+            ncol=len(s_cat_handles),
             frameon=True,
             facecolor="#F8FAFC",
             edgecolor="#CBD5E1",
-            fontsize=8.2,
+            fontsize=7.8,
             title=_CATEGORY_LEGEND_TITLE,
             title_fontsize=9.0,
         )
@@ -1519,11 +1535,11 @@ def generate_figure_2_leaderboard_progress(
                 handles=cat_handles,
                 loc="upper center",
                 bbox_to_anchor=(0.5, 0.99),
-                ncol=6,
+                ncol=len(cat_handles),
                 frameon=True,
                 facecolor="#F8FAFC",
                 edgecolor="#CBD5E1",
-                fontsize=8.2,
+                fontsize=7.8,
                 title=_CATEGORY_LEGEND_TITLE,
                 title_fontsize=9.0,
             )
@@ -1690,14 +1706,19 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument(
+        "--mip",
+        default=DEFAULT_MIP_ID,
+        help=f"Registered MIP identifier under mips/ (default: {DEFAULT_MIP_ID}).",
+    )
+    parser.add_argument(
         "--leaderboards-dir",
-        default=str(DEFAULT_LEADERBOARDS_DIR),
-        help="Path to the leaderboards/ directory containing the JSON files.",
+        default=None,
+        help="Path to the leaderboards/ directory containing the JSON files (defaults to mips/<mip>/leaderboards).",
     )
     parser.add_argument(
         "--output-dir",
         default=None,
-        help="Output directory for generated figures (default: repo figures/).",
+        help="Output directory for generated figures (defaults to mips/<mip>/figures).",
     )
     return parser
 
@@ -1705,9 +1726,20 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
+    mip_paths = resolve_mip_paths(args.mip)
+    leaderboards_dir = (
+        Path(args.leaderboards_dir)
+        if args.leaderboards_dir is not None
+        else mip_paths.leaderboards_dir
+    )
+    output_dir = (
+        Path(args.output_dir)
+        if args.output_dir is not None
+        else (mip_paths.figures_dir if args.leaderboards_dir is None else None)
+    )
     manifest = generate_all_paper_figures(
-        leaderboards_dir=args.leaderboards_dir,
-        output_dir=args.output_dir,
+        leaderboards_dir=leaderboards_dir,
+        output_dir=output_dir,
     )
     print(json.dumps(manifest["figures"], indent=2))
     return 0

@@ -12,6 +12,9 @@ authors:
   - family-names: Ebel
     given-names: Patrick
     affiliation: Google Research, Zurich, Switzerland
+  - family-names: Gauch
+    given-names: Martin
+    affiliation: Google Research, Zurich, Switzerland
 license: Apache-2.0
 version: "1.0.0"
 doi: "10.5281/zenodo.24383448"
@@ -19,7 +22,7 @@ repository-code: "https://github.com/grey-nearing/camels-us-mip"
 url: "https://hydromip.org"
 preferred-citation:
   type: article
-  title: "HydroMIP: A CAMELS-US Model Intercomparison Project"
+  title: "HydroMIP: A Rainfall-Runoff Model Intercomparison Project"
   authors:
     - family-names: Nearing
       given-names: Grey S.
@@ -29,6 +32,9 @@ preferred-citation:
       affiliation: Google Research, Zurich, Switzerland; Interdisciplinary Transformation University Austria (IT:U), Linz, Austria
     - family-names: Ebel
       given-names: Patrick
+      affiliation: Google Research, Zurich, Switzerland
+    - family-names: Gauch
+      given-names: Martin
       affiliation: Google Research, Zurich, Switzerland
   journal: "Hydrology and Earth System Sciences"
   year: 2026

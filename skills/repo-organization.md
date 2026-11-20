@@ -1,122 +1,78 @@
 ---
 name: repo-organization
 description: >-
-  Repository architecture, top-level package layout, centralized model runner
-  design (models/run_model.py), standalone cloud-only metrics package
-  (metrics/), ERA experiment notebooks (era_experiments/), leaderboard website
-  frontend (frontend/), and packaging/CI synchronization for camels-us-mip. Use
-  whenever adding, moving, refactoring, or reviewing modules, model scripts,
-  ERA notebooks, or CLI entry points.
+  Multi-MIP repository architecture, shared hydromip/ core package, per-MIP
+  directory contract under mips/<mip_id>/, shared Model Zoo (models/),
+  standalone cloud-only metrics package (metrics/), leaderboard tooling
+  (leaderboards/), multi-MIP web portal (frontend/), and packaging/CI
+  synchronization for HydroMIP (camels-us-mip). Use whenever adding a new MIP,
+  moving, refactoring, or reviewing modules, model scripts, or CLI entry points.
 ---
 
-# Repository Organization (`camels-us-mip`)
+# Multi-MIP Repository Organization (`HydroMIP` / `camels-us-mip`)
 
-This skill defines the package layout, directory boundaries, centralized execution rules, and packaging conventions for the `camels-us-mip` repository.
+This skill defines the multi-MIP monorepo layout, package boundaries, centralized execution rules, and packaging conventions so new MIPs (global Caravan, probabilistic streamflow, soil moisture, 2D flood inundation, real-time, forecasting) can be added cleanly under `mips/<mip_id>/` without duplicating models, metrics, or website infrastructure.
 
 ---
 
 ## 1. Top-Level Repository Layout
 
-The repository is organized into self-contained top-level directories (`splits/`, `metrics/`, `models/`, `era_experiments/`, `frontend/`, `leaderboards/`, `benchmarks/`, `skills/`):
-
 ```text
 camels-us-mip/
 ├── .github/workflows/             # All GitHub Actions CI workflows (root-only)
+├── hydromip/                      # Shared, MIP-agnostic core library (zero try/except)
+│   ├── protocol.py                #   Declarative MipProtocol schema & auto-discovery (mips/*/protocol.json)
+│   ├── paths.py                   #   Canonical repo & per-MIP path resolution
+│   ├── splits.py                  #   Generic CV split loader & strict anti-leakage hygiene verifier
+│   ├── metrics/                   #   Pluggable METRIC_SUITES registry + deterministic_daily.py (Gauch 2023)
+│   ├── evaluation/                #   Shared GCS/local Zarr store I/O helpers
+│   ├── leaderboards/              #   Per-MIP leaderboard/figure directory resolvers
+│   └── tests/                     #   Core, CV-hygiene, and multi-MIP plugin extensibility tests
+├── mips/                          # Self-contained per-MIP benchmark directories (purely additive!)
+│   ├── README.md                  #   Plugin contract & onboarding checklist for new MIPs
+│   └── camels_us_daily/           #   Active MIP: CAMELS-US Daily Streamflow (v1.0.0)
+│       ├── protocol.json          #     Machine-readable MIP protocol spec
+│       ├── adapter.py             #     Verified CAMELS-US split & data adapter
+│       ├── splits/                #     Canonical 531/671/447 basin lists, 12-fold PUB, 18-fold HUC-02 PUR
+│       ├── leaderboards/          #     12 leaderboard JSONs, tables_3_to_14.json, table_2_registry.json, Stage-1 appendix
+│       ├── figures/               #     Manuscript & portal figures + figures_manifest.json
+│       ├── era_experiments/       #     14 canonical 256-iteration ERA prompt & winner notebooks
+│       └── data/                  #     Raw/compiled dataset docs (binary bundles gitignored)
+├── models/                        # Shared Model Zoo (model code lives ONCE, runs across compatible MIPs)
+│   ├── catalog.json               #   Machine-readable model capability manifest
+│   ├── run_model.py               #   Central CV runner (`--mip <mip_id>`, default `camels_us_daily`)
+│   ├── zarr_writer.py             #   Standardized Zarr hydrograph builder & GCS uploader
+│   ├── camels_data.py             #   Shared CAMELS-US data loader
+│   ├── tests/                     #   Unit & integration tests for central runner & Zarr standardization
+│   └── <model_name>/              #   19 verified model subdirectories (unchanged top-level URLs)
+├── metrics/                       # Standalone cloud-only Zarr metrics scoring pipeline & CLI
+├── leaderboards/                  # Pure Python leaderboard ranking & figure-generation tooling (no data JSONs)
+├── frontend/                      # Multi-MIP aware web portal (hydromip.org) UI & FastAPI backend
+├── benchmarks/                    # Canonical cloud Zarr benchmark verification suite
 ├── skills/                        # Project-level AI agent skills
-│   ├── README.md
-│   ├── repo-organization.md
-│   ├── algorithm-rules-and-norms.md
-│   ├── model-compliance-and-leaderboard-norms.md
-│   ├── gcs-bucket-organization.md
-│   ├── data-structures.md
-│   ├── testing.md
-│   ├── documentation.md
-│   ├── pr-review.md
-│   ├── benchmarking.md
-│   └── community-contribution.md
-├── splits/                        # Canonical 531-basin list, 12-fold PUB splits, and 18-fold HUC-02 PUR splits
-│   ├── README.md
-│   ├── basins_531.txt
-│   ├── basins_531.json
-│   ├── basins_447_kratzert2019b.txt
-│   ├── basins_447_kratzert2019b.json
-│   ├── splits_and_regimes.json
-│   ├── pub_12fold_random_splits.json
-│   ├── pub_12fold/                # fold_00..11_{train,test}.txt
-│   ├── pur_18fold_huc02_splits.json
-│   └── pur_18fold/                # huc_01..18_{train,test}.txt
-├── metrics/                       # Standalone metrics calculation pipeline (cloud Zarr only, zero fallbacks)
-│   ├── __init__.py
-│   ├── evaluator.py               # Single API: calculate_model_leaderboard_metrics(model_id, leaderboard_id, ...)
-│   ├── cli.py                     # CLI entrypoint (mip-score-model)
-│   ├── README.md
-│   └── tests/                     # Co-located unit & data-integrity regression tests
-├── models/                        # All reproduced literature & study models + central deployment script
-│   ├── __init__.py
-│   ├── run_model.py               # Single central script for running Gauged, 12-fold PUB, and 18-fold PUR models
-│   ├── zarr_writer.py             # Standardized Zarr hydrograph builder & GCS uploader
-│   ├── README.md
-│   ├── tests/                     # Unit & integration tests for central runner & Zarr standardization
-│   ├── kratzert_lstm/             # NeuralHydrology CudaLSTM code & fold runner
-│   ├── kratzert_ealstm/           # Entity-Aware LSTM code & fold runner
-│   ├── hoedt_mclstm/              # Mass-Conserving LSTM code & fold runner
-│   ├── rasiya_koya_tft/           # Temporal Fusion Transformer code & fold runner
-│   ├── gauch_xgboost/             # XGBoost code & fold runner
-│   ├── das_tide/                  # TiDE code & fold runner
-│   ├── wang_s4dft/                # S4D & S4D-FT code & fold runner
-│   ├── poudel_mlp_hbv/            # Poudel & Steinschneider (2026) MLP + 16HBV code & fold runner
-│   ├── hydrodiffusion/            # HydroDiffusion code & fold runner
-│   ├── feng_dhbv10/               # dHBV 1.0 (hydroDL) code & fold runner
-│   ├── song_dhbv11p/              # dHBV 1.1p (hydroDL) code & fold runner
-│   ├── newman_sacsma/             # SAC-SMA + Snow-17 DDS calibration & ensemble code & fold runner
-│   ├── era_gauged_minimal_guidance/ # ERA Gauged Minimal Guidance (EntityAwareLSTM) code & fold runner
-│   └── era_pur_minimal_guidance/  # ERA PUR Minimal Guidance (DualFiLMLSTM) code & fold runner
-├── era_experiments/               # 6 canonical 256-iteration ERA hillclimbing prompt notebooks
-│   ├── era_gauged_minimal_guidance.ipynb
-│   ├── era_gauged_physics_informed.ipynb
-│   ├── era_pub_minimal_guidance.ipynb
-│   ├── era_pub_physics_informed.ipynb
-│   ├── era_pur_minimal_guidance.ipynb
-│   └── era_pur_physics_informed.ipynb
-├── frontend/                      # Leaderboard web portal (hydromip.org) UI & FastAPI backend
-│   ├── __init__.py
-│   ├── README.md
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── backend/                   # FastAPI application serving leaderboards & live Zarr scoring
-│   ├── static/                    # HTML/CSS/JS frontend assets
-│   └── tests/                     # Co-located backend & UI tests
-├── leaderboards/                  # Leaderboard JSON tables & model family registry
-│   ├── contributions_index.json
-│   ├── table_2_registry.json
-│   └── tables_3_to_14.json
-├── benchmarks/                    # Canonical benchmark suite verifying metrics/ and models/
-│   ├── __init__.py
-│   ├── README.md
-│   ├── metrics_pipeline.py
-│   └── tests/
-├── LICENSE_ASSESSMENT.md          # Comprehensive license audit for all model repos and hydrograph archives
-├── pyproject.toml                 # Ruff linter and Pytest configuration
-├── setup.py                       # Package installation and console_scripts entry points
-└── README.md                      # Top-level repository guide
+├── LICENSE_ASSESSMENT.md          # Comprehensive license audit
+├── pyproject.toml / setup.py      # Packaging, console_scripts, ruff, and pytest config
+└── README.md                      # Top-level platform overview
 ```
 
 ---
 
 ## 2. Package Rules & Architectural Boundaries
 
-1. **No Tracked Hydrograph Binary Blobs in Git:**
-   - Do **not** commit `.npz`, `.npy`, or `.zarr` hydrograph outputs into the GitHub repository (`hydrographs/` and `protocol/newman_eval_targets.npz` must not live in Git).
-   - All daily model hydrographs (`(531, 3652)`) and the canonical evaluation target store (`newman_eval_targets.zarr`) live in the private Google Cloud Storage bucket **`gs://camels-us-mip/`**.
-2. **Standalone `metrics/` Package With a Single Public API:**
-   - `metrics/` contains the standalone scoring pipeline (`metrics/evaluator.py`).
-   - It exposes a **single public API function** (`calculate_model_leaderboard_metrics(model_id: str, leaderboard_id: str, bucket_uri: str = "gs://camels-us-mip") -> dict`) and CLI (`mip-score-model`) that computes the metrics for **one model and one leaderboard** directly from `gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr` and `gs://camels-us-mip/observations/newman_eval_targets.zarr`.
-   - Zero fallback paths, zero `try`/`except` blocks, and zero local file fallbacks.
-3. **Centralized Model Execution in `models/run_model.py`:**
-   - Every reproduced literature model and study model lives in its own subdirectory `models/<model_name>/`, which includes the original upstream model code and a model-specific `runner.py` (exposing a standard interface `run_fold(train_basins, test_basins, train_dates, eval_dates, forcings, data_dir, **kwargs) -> np.ndarray`).
-   - Individual model subdirectories must **never** load split files, choose training/evaluation time periods, or assign basins on their own.
-   - `models/run_model.py` is the **only** entry point for running any model across `gauged`, `pub_12fold`, or `pur_18huc02`: it loads the canonical splits from `splits/` (or `gs://camels-us-mip/splits/`), orchestrates the cross-validation loop or parallel fold execution, collects predictions, converts them to a standardized Zarr store via `models/zarr_writer.py`, and writes them directly to `gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr`.
-4. **No Root `scripts/` or `tools/` Folders:**
-   - Never create top-level `scripts/`, `tools/`, or `scratch/` folders in the repository. Any package-specific helper scripts belong inside `<package>/tools/`.
-5. **Keep Packaging & CI Synchronized:**
-   - Whenever adding or modifying packages, CLI entry points, or test suites, keep `setup.py`, `pyproject.toml` (`[tool.pytest.ini_options] testpaths`), and `.github/workflows/` synchronized.
+1. **Strict Separation of Shared Code vs. Per-MIP Data (`mips/<mip_id>/`):**
+   - Benchmark-specific splits, leaderboard JSONs, generated figures, dataset bundles, and MIP-specific experiment notebooks **must** live inside `mips/<mip_id>/`.
+   - Shared Python packages (`hydromip/`, `models/`, `metrics/`, `leaderboards/`, `frontend/`, `benchmarks/`) must never store per-MIP JSON tables or PNG/PDF figures inside their package directories.
+   - Adding a new MIP must be **purely additive**: create `mips/<new_mip_id>/` with a valid `protocol.json` (plus a new metric module in `hydromip/metrics/` if needed) without editing existing MIPs.
+2. **No Tracked Hydrograph Binary Blobs in Git:**
+   - Never commit `.npz`, `.npy`, or `.zarr` hydrographs into Git. Standardized daily hydrographs and observation targets live in cloud Zarr storage (`gs://camels-us-mip/` for `camels_us_daily`).
+3. **Standalone `metrics/` & Pluggable `hydromip.metrics` Registry:**
+   - `hydromip/metrics/deterministic_daily.py` is the canonical source of the 12 Gauch et al. (2023) metrics (re-exported identically by `metrics/metrics.py`).
+   - Future MIP metric suites (probabilistic CRPS/PIT, 2D flood inundation CSI/IoU, soil moisture ubRMSE, forecast lead-time skill) live in `hydromip/metrics/` and register via `register_metric_suite()`.
+   - Zero fallback paths and zero `try`/`except` blocks across `hydromip/`, `mips/*/adapter.py`, `metrics/`, `models/`, `leaderboards/`, and `benchmarks/`.
+4. **Centralized Model Execution in `models/run_model.py`:**
+   - All model architectures live once under `models/<model_name>/` (preserving public GitHub links) and declare compatible tasks/MIPs in `models/catalog.json`.
+   - Individual model runners never load split files or hardcode dates; `models/run_model.py` loads canonical splits from `mips/<mip_id>/splits/` via `hydromip.paths`.
+5. **No Root `scripts/` or `tools/` Folders:**
+   - Keep root clean; package-specific helpers belong inside `<package>/tools/`.
+6. **Keep Packaging, Portal, & CI Synchronized:**
+   - Keep `setup.py`, `pyproject.toml` (`packages.find` and `pytest.ini_options.testpaths`), `frontend/Dockerfile`, and `.github/workflows/` synchronized whenever packages or MIPs change.

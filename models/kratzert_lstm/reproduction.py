@@ -22,11 +22,11 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from hydromip.paths import DEFAULT_MIP_ID, REPO_ROOT, resolve_mip_paths
 from metrics.metrics import calculate_all_metrics, nse
 from models.camels_data import DEFAULT_DATA_DIR, load_camels_slice
 
-REPO_ROOT: Path = Path(__file__).resolve().parents[2]
-SPLITS_DIR: Path = REPO_ROOT / "splits"
+SPLITS_DIR: Path = resolve_mip_paths(DEFAULT_MIP_ID).splits_dir
 RESULTS_FILENAME: str = "stage1_author_reproduction_results.json"
 SMOKE_RESULTS_FILENAME: str = "stage1_smoke_results.json"
 HYDROGRAPH_FILENAME: str = "stage1_author_reproduction_hydrograph.npz"

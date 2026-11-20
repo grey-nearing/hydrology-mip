@@ -16,14 +16,14 @@ import re
 from pathlib import Path
 from typing import Any
 
+from hydromip.paths import DEFAULT_MIP_ID, REPO_ROOT, resolve_mip_paths
 from metrics.evaluator import (
     CANONICAL_LEADERBOARD_IDS,
     DEFAULT_BUCKET_URI,
     calculate_model_leaderboard_metrics,
 )
 
-REPO_ROOT: Path = Path(__file__).resolve().parents[1]
-DEFAULT_LEADERBOARDS_DIR: Path = Path(__file__).resolve().parent
+DEFAULT_LEADERBOARDS_DIR: Path = resolve_mip_paths(DEFAULT_MIP_ID).leaderboards_dir
 
 
 def _read_json_dict(path: Path) -> dict[str, Any]:
@@ -1253,9 +1253,14 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         help=f"Cloud bucket root URI (default: {DEFAULT_BUCKET_URI}).",
     )
     parser.add_argument(
+        "--mip",
+        default=DEFAULT_MIP_ID,
+        help=f"Registered MIP identifier under mips/ (default: {DEFAULT_MIP_ID}).",
+    )
+    parser.add_argument(
         "--leaderboards-dir",
-        default=str(DEFAULT_LEADERBOARDS_DIR),
-        help="Path to the leaderboards/ directory.",
+        default=None,
+        help="Path to the MIP leaderboards/ directory (defaults to mips/<mip>/leaderboards).",
     )
     return parser
 
@@ -1263,6 +1268,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = _build_arg_parser()
     args = parser.parse_args(argv)
+    leaderboards_dir = (
+        Path(args.leaderboards_dir)
+        if args.leaderboards_dir is not None
+        else resolve_mip_paths(args.mip).leaderboards_dir
+    )
 
     def _emit(result: dict[str, Any]) -> None:
         text = json.dumps(result, indent=2) + "\n"
@@ -1273,13 +1283,13 @@ def main(argv: list[str] | None = None) -> int:
         print(text)
 
     if args.normalize_legacy_rows:
-        _emit(normalize_legacy_leaderboards(leaderboards_dir=args.leaderboards_dir))
+        _emit(normalize_legacy_leaderboards(leaderboards_dir=leaderboards_dir))
         return 0
     if args.reconcile_archived:
         _emit(
             reconcile_archived_rows(
                 bucket_uri=args.bucket_uri,
-                leaderboards_dir=args.leaderboards_dir,
+                leaderboards_dir=leaderboards_dir,
                 apply=bool(args.apply),
             )
         )
@@ -1287,7 +1297,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.recalculate_all_self_run:
         result = recalculate_all_self_run_models(
             bucket_uri=args.bucket_uri,
-            leaderboards_dir=args.leaderboards_dir,
+            leaderboards_dir=leaderboards_dir,
         )
         report_path = Path(REPO_ROOT) / "benchmarks" / "recalculated_self_run_models_report.json"
         report_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
@@ -1318,7 +1328,7 @@ def main(argv: list[str] | None = None) -> int:
         code_url=args.code_url,
         data_archive_url=args.data_archive_url,
         bucket_uri=args.bucket_uri,
-        leaderboards_dir=args.leaderboards_dir,
+        leaderboards_dir=leaderboards_dir,
     )
     print(json.dumps(result["updated_entry"], indent=2))
     return 0

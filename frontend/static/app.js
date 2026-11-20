@@ -410,6 +410,11 @@
       `;
     }
 
+    const srcCat = formatSourceCategory(row.category || row.code_provenance);
+    if (row.is_closed_source || srcCat === "Contribution" || row.is_user_submission) {
+      return `<span class="badge-closed-source" title="Closed-source submission: no public code repository linked">Closed-Source</span>`;
+    }
+
     return `<span class="btn-row-absent" title="No public code repository linked">&mdash;</span>`;
   }
 

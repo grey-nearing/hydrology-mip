@@ -23,11 +23,12 @@ import pandas as pd
 import pytest
 import xarray as xr
 
+from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from metrics import build_eval_targets as bet
 from metrics.evaluator import _open_zarr_store
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-SPLITS_DIR = REPO_ROOT / "splits"
+SPLITS_DIR = resolve_mip_paths(DEFAULT_MIP_ID).splits_dir
 
 FULL_INDEX = pd.date_range("1980-01-01", "2008-12-31", freq="D")
 KNOWN_AREA_M2 = 587_675_987.0  # real Daymet header area of a CAMELS basin (m^2)

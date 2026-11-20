@@ -807,8 +807,8 @@
               <span>Declare all meteorological and lagged streamflow inputs used; the submission system automatically places the model into the matching forcing category (Single CAMELS, Multi-CAMELS, Lagged Streamflow, or Freeform).</span>
             </li>
             <li>
-              <strong>DOI-Minted Archive</strong>
-              <span>Link a DOI-minted repository (Zenodo or HydroShare) containing daily discharge predictions; the backend resolves, inspects, and scores the archive automatically.</span>
+              <strong>DOI-Minted Coordinate-Labeled Archive</strong>
+              <span>Link a DOI-minted repository (Zenodo or HydroShare) containing coordinate-labeled daily predictions in Zarr v2 (<code>.zarr.zip</code>) or keyed <code>.npz</code> format (with canonical <code>qsim</code>, <code>basin</code>, and <code>date</code> arrays, plus optional 3D <code>qsim_members</code> for ensembles; unlabeled <code>.npy</code> arrays are rejected).</span>
             </li>
           </ol>
         </div>
@@ -852,7 +852,7 @@
                     <option value="Maurer + NLDAS">Maurer + NLDAS</option>
                     <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
                   </optgroup>
-                  <optgroup label="With Lagged Streamflow (Gauged Only)">
+                  <optgroup label="With Lagged Streamflow">
                     <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
                     <option value="Maurer + Lagged Streamflow">Maurer + Lagged Streamflow</option>
                     <option value="NLDAS + Lagged Streamflow">NLDAS + Lagged Streamflow</option>
@@ -889,8 +889,8 @@
               </div>
 
               <div class="form-field">
-                <label for="sub-github-url">Codebase URL</label>
-                <input type="text" id="sub-github-url" placeholder="https://github.com/owner/repo (optional)" />
+                <label for="sub-github-url">Codebase URL (Recommended)</label>
+                <input type="text" id="sub-github-url" placeholder="https://github.com/owner/repo (omitting flags Closed-Source)" />
               </div>
 
               <div class="form-field">
@@ -986,7 +986,7 @@
           <span>CAMELS-US Benchmark</span>
         </div>
         <h3 class="publication-title">HydroMIP: A CAMELS-US Model Intercomparison Project</h3>
-        <p class="publication-authors">Nearing, G. S., Klotz, D., &amp; Ebel, P. (2026)</p>
+        <p class="publication-authors">Nearing, G. S., Klotz, D., Ebel, P., &amp; Gauch, M. (2026)</p>
         <div class="publication-links">
           <a href="https://github.com/grey-nearing/camels-us-mip" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-code">GitHub &#8599;</a>
           <a href="https://doi.org/10.5281/zenodo.24383448" target="_blank" rel="noopener noreferrer" class="btn-row-link btn-row-archive">Zenodo v1.0.0 &#8599;</a>

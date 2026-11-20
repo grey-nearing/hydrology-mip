@@ -1713,6 +1713,19 @@ tr.pulse-highlight-row td {
   color: var(--color-muted);
 }
 
+.badge-closed-source {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.14rem 0.42rem;
+  border-radius: 4px;
+  color: #8a4b08;
+  background: #fff4e5;
+  border: 1px solid #f0c38e;
+  white-space: nowrap;
+}
+
 .btn-cdf {
   appearance: none;
   background: transparent;

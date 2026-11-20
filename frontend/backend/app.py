@@ -47,6 +47,8 @@ from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_subdir
+from hydromip.protocol import discover_mips, get_mip
 from leaderboards.update_leaderboard import (
     load_all_leaderboards,
     rank_leaderboard_rows,
@@ -146,36 +148,45 @@ _EVAL_TARGETS_CACHE: dict[str, dict[str, Any]] = {}
 
 
 def get_data_root() -> Path:
-    """Resolve the repository or override data directory (`CAMELS_MIP_DATA_DIR`)."""
-    env_dir = os.environ.get("CAMELS_MIP_DATA_DIR", "").strip()
-    if env_dir:
-        root = Path(env_dir).resolve()
-        if not root.exists():
-            raise FileNotFoundError(f"CAMELS_MIP_DATA_DIR does not exist: {root}")
-        return root
+    """Resolve the repository or override data directory (`HYDROMIP_DATA_DIR` / `CAMELS_MIP_DATA_DIR`)."""
+    for env_var in ("CAMELS_MIP_DATA_DIR", "HYDROMIP_DATA_DIR"):
+        env_dir = os.environ.get(env_var, "").strip()
+        if env_dir:
+            root = Path(env_dir).resolve()
+            if not root.exists():
+                raise FileNotFoundError(f"{env_var} does not exist: {root}")
+            return root
     return REPO_ROOT
 
 
-def get_leaderboards_dir() -> Path:
+def get_leaderboards_dir(mip_id: str = DEFAULT_MIP_ID) -> Path:
     """Return the directory containing `tables_3_to_14.json`, `table_2_registry.json`, and `contributions_index.json`."""
-    data_root = get_data_root()
-    candidate = data_root / "leaderboards"
-    if candidate.exists():
-        return candidate
-    if (data_root / "tables_3_to_14.json").exists():
-        return data_root
-    raise FileNotFoundError(f"Leaderboards directory not found under {data_root}")
+    return resolve_mip_subdir(
+        get_data_root(),
+        "leaderboards",
+        mip_id=mip_id,
+        marker_filename="tables_3_to_14.json",
+    )
 
 
-def get_splits_dir() -> Path:
+def get_splits_dir(mip_id: str = DEFAULT_MIP_ID) -> Path:
     """Return the directory containing `splits_and_regimes.json`."""
-    data_root = get_data_root()
-    candidate = data_root / "splits"
-    if candidate.exists():
-        return candidate
-    if (data_root / "splits_and_regimes.json").exists():
-        return data_root
-    raise FileNotFoundError(f"Splits directory not found under {data_root}")
+    return resolve_mip_subdir(
+        get_data_root(),
+        "splits",
+        mip_id=mip_id,
+        marker_filename="splits_and_regimes.json",
+    )
+
+
+def get_figures_dir(mip_id: str = DEFAULT_MIP_ID) -> Path:
+    """Return the directory containing generated figures for `mip_id`."""
+    return resolve_mip_subdir(
+        get_data_root(),
+        "figures",
+        mip_id=mip_id,
+        marker_filename="figures_manifest.json",
+    )
 
 
 def get_submissions_dir() -> Path:
@@ -552,6 +563,11 @@ def build_enriched_leaderboards(
             )
             row["data_archive_url"] = data_url
             row["code_url"] = row.get("code_url") or row["github_url"] or ""
+            cat_str = str(row.get("category") or row.get("code_provenance") or "").strip().lower()
+            row["is_open_source"] = bool(row["code_url"])
+            row["is_closed_source"] = (not row["is_open_source"]) and (
+                cat_str.startswith("contrib") or cat_str == "community" or bool(row.get("is_user_submission"))
+            )
             _attach_flat_gauch_metrics(row)
 
             if paradigm and paradigm.lower() not in str(row.get("paradigm", "")).lower():
@@ -796,19 +812,22 @@ def parse_uploaded_hydrograph(
     raw_bytes: bytes,
     eval_targets: dict[str, Any],
 ) -> ParsedHydrograph:
-    """Validate and parse an uploaded `.zarr` (zipped Zarr store), `.npz`, or `.npy` hydrograph file.
+    """Validate and parse an uploaded coordinate-labeled `.zarr` (zipped Zarr store) or keyed `.npz` file.
 
     Enforces exact `(531, 3652)` basin-by-day dimensions (or `(N_members, 531, 3652)`) and
-    canonical coordinate alignment without `try`/`except` error swallowing.
+    canonical `basin` and `date` coordinate alignment without `try`/`except` error swallowing.
+    Unlabeled `.npy` uploads are rejected because they carry no coordinate metadata and cannot
+    detect silent basin-order or date misalignment.
 
     - Zarr with `qsim` only: the stored `qsim` is scored (`ensemble_source="stored_qsim_without_members"`).
     - Zarr with `qsim` and `qsim_members` (`("member", "basin", "date")`): the stored `qsim` is
       scored exactly as submitted; `resolve_member_info` then enforces the same consistency
       rules as `metrics.evaluator._check_members_against_qsim` (`is_ensemble` and
       `ensemble_reduction` attributes honoured; mismatches are HTTP 400).
-    - 2-D `.npz`/`.npy`: the array is scored as submitted (`ensemble_source="stored_qsim_without_members"`).
-    - 3-D `.npz`/`.npy` (members only): the ensemble is `mean(members, axis=0)`
-      (`ensemble_source="mean_of_members_no_stored_qsim"`).
+    - Keyed `.npz`: must include `qsim`, `basin` (or `basins`), and `date` (or `dates`) matching
+      the canonical 531 USGS IDs and 1989-10-01..1999-09-30 dates. A 2-D `qsim` is scored as
+      submitted (optionally paired with 3-D `qsim_members`); a 3-D `qsim` (members only) scores
+      `mean(members, axis=0)` (`ensemble_source="mean_of_members_no_stored_qsim"`).
     """
     if not filename or len(raw_bytes) == 0:
         raise HTTPException(status_code=400, detail="Uploaded hydrograph file is empty.")
@@ -930,46 +949,85 @@ def parse_uploaded_hydrograph(
                     status_code=400,
                     detail=f"Missing required 'qsim' array key in '{filename}'. Found keys: {keys}",
                 )
-            if "basin" in keys or "basins" in keys:
-                bk = "basin" if "basin" in keys else "basins"
-                file_basins = [str(b).zfill(8) for b in npz[bk]]
-                if file_basins != canonical_basins:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Uploaded 'basin' coordinate does not match canonical sorted 531 USGS gauge IDs.",
-                    )
-            if "date" in keys or "dates" in keys:
-                dk = "date" if "date" in keys else "dates"
-                file_dates = pd.to_datetime(npz[dk]).strftime("%Y-%m-%d").tolist()
-                if file_dates != canonical_dates:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=(
-                            f"Uploaded 'date' coordinate does not match canonical Newman evaluation dates "
-                            f"({NEWMAN_START_DATE} to {NEWMAN_END_DATE})."
-                        ),
-                    )
+            if "basin" not in keys and "basins" not in keys:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Missing required 'basin' (or 'basins') coordinate array in '{filename}'. "
+                        "Coordinate-labeled uploads are required to verify canonical 531-basin alignment."
+                    ),
+                )
+            bk = "basin" if "basin" in keys else "basins"
+            file_basins = [str(b).zfill(8) for b in npz[bk]]
+            if file_basins != canonical_basins:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Uploaded 'basin' coordinate does not match canonical sorted 531 USGS gauge IDs.",
+                )
+            if "date" not in keys and "dates" not in keys:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Missing required 'date' (or 'dates') coordinate array in '{filename}'. "
+                        "Coordinate-labeled uploads are required to verify canonical Newman evaluation dates."
+                    ),
+                )
+            dk = "date" if "date" in keys else "dates"
+            file_dates = pd.to_datetime(npz[dk]).strftime("%Y-%m-%d").tolist()
+            if file_dates != canonical_dates:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        f"Uploaded 'date' coordinate does not match canonical Newman evaluation dates "
+                        f"({NEWMAN_START_DATE} to {NEWMAN_END_DATE})."
+                    ),
+                )
             arr = np.asarray(npz["qsim"], dtype=np.float64)
             meta["format"] = "npz"
             meta["primary_key"] = "qsim"
+            if "qsim_members" in keys:
+                if arr.ndim != 2 or arr.shape != (NEWMAN_N_BASINS, NEWMAN_N_DAYS):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            f"Invalid 'qsim' shape {arr.shape} alongside 'qsim_members'; "
+                            f"expected 2D ({NEWMAN_N_BASINS}, {NEWMAN_N_DAYS})."
+                        ),
+                    )
+                members_arr = np.asarray(npz["qsim_members"], dtype=np.float64)
+                if members_arr.ndim != 3 or members_arr.shape[0] < 1 or members_arr.shape[1:] != (NEWMAN_N_BASINS, NEWMAN_N_DAYS):
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"Invalid 'qsim_members' shape {members_arr.shape}; expected (N_members, {NEWMAN_N_BASINS}, {NEWMAN_N_DAYS}).",
+                    )
+                meta["has_qsim_members"] = True
+                return ParsedHydrograph(
+                    ensemble=arr,
+                    members=members_arr,
+                    has_stored_qsim=True,
+                    declared_is_ensemble=None,
+                    ensemble_reduction="mean",
+                    meta=meta,
+                )
             return _parsed_from_numpy_array(arr, meta)
 
     if fname.endswith(".npy"):
-        if len(raw_bytes) < 10 or raw_bytes[:6] != b"\x93NUMPY":
-            raise HTTPException(
-                status_code=400,
-                detail=f"Uploaded file '{filename}' does not have a valid NumPy .npy header.",
-            )
-        arr = np.asarray(np.load(io.BytesIO(raw_bytes), allow_pickle=False), dtype=np.float64)
-        meta["format"] = "npy"
-        meta["primary_key"] = "qsim"
-        return _parsed_from_numpy_array(arr, meta)
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Bare .npy uploads ('{filename}') are not accepted because they carry no 'basin' "
+                "or 'date' coordinate arrays to guard against silent basin-order or date misalignment. "
+                "Upload a coordinate-labeled zipped Zarr store (.zarr.zip) or keyed .npz archive "
+                "containing 'qsim', 'basin', and 'date'."
+            ),
+        )
 
     raise HTTPException(
         status_code=400,
         detail=(
-            f"Unsupported file format for '{filename}'. Upload a zipped Zarr store (.zarr, .zip) "
-            f"or NumPy array (.npz, .npy) with 'qsim' of shape ({NEWMAN_N_BASINS}, {NEWMAN_N_DAYS})."
+            f"Unsupported file format for '{filename}'. Upload a coordinate-labeled zipped Zarr "
+            f"store (.zarr, .zarr.zip, .zip) or keyed .npz archive with 'qsim', 'basin', and 'date' "
+            f"aligned to ({NEWMAN_N_BASINS}, {NEWMAN_N_DAYS})."
         ),
     )
 
@@ -1476,15 +1534,109 @@ def persist_submission_zarr(
     return store_path
 
 
+@app.get("/api/mips")
+def api_list_mips() -> dict[str, Any]:
+    """Auto-discover and return all registered MIP protocols under `mips/*/protocol.json`."""
+    data_root = get_data_root()
+    repo_for_mips = data_root if (data_root / "mips").is_dir() else REPO_ROOT
+    mips = discover_mips(repo_root=repo_for_mips)
+    return {
+        "default_mip_id": DEFAULT_MIP_ID,
+        "n_mips": len(mips),
+        "mips": [proto.to_summary_dict() for proto in mips.values()],
+    }
+
+
+@app.get("/api/mips/{mip_id}/protocol")
+def api_mip_protocol(mip_id: str) -> dict[str, Any]:
+    """Return the declarative protocol specification for a registered MIP."""
+    data_root = get_data_root()
+    repo_for_mips = data_root if (data_root / "mips").is_dir() else REPO_ROOT
+    mips = discover_mips(repo_root=repo_for_mips)
+    if mip_id not in mips:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Unknown mip_id '{mip_id}'. Registered MIPs: {sorted(mips.keys())}",
+        )
+    return get_mip(mip_id=mip_id, repo_root=repo_for_mips).to_summary_dict()
+
+
+@app.get("/api/splits/{filename}")
+def api_get_split_file(filename: str) -> Response:
+    """Serve canonical basin split files (.json, .txt) for the default MIP."""
+    safe_name = Path(filename).name
+    split_path = get_splits_dir(DEFAULT_MIP_ID) / safe_name
+    if not split_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Split file '{safe_name}' not found.")
+    media_type = "application/json" if safe_name.endswith(".json") else "text/plain; charset=utf-8"
+    return FileResponse(str(split_path), media_type=media_type)
+
+
+@app.get("/api/mips/{mip_id}/splits/{filename}")
+def api_get_mip_split_file(mip_id: str, filename: str) -> Response:
+    """Serve canonical split files (.json, .txt) for a specific registered MIP."""
+    data_root = get_data_root()
+    repo_for_mips = data_root if (data_root / "mips").is_dir() else REPO_ROOT
+    mips = discover_mips(repo_root=repo_for_mips)
+    if mip_id not in mips:
+        raise HTTPException(status_code=404, detail=f"Unknown mip_id '{mip_id}'.")
+    safe_name = Path(filename).name
+    split_path = get_splits_dir(mip_id) / safe_name
+    if not split_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Split file '{safe_name}' not found for '{mip_id}'.")
+    media_type = "application/json" if safe_name.endswith(".json") else "text/plain; charset=utf-8"
+    return FileResponse(str(split_path), media_type=media_type)
+
+
+@app.get("/api/figures/{filename}")
+def api_get_figure(filename: str) -> Response:
+    """Serve generated paper figures (.png, .pdf, .json) for the default MIP."""
+    safe_name = Path(filename).name
+    fig_path = get_figures_dir(DEFAULT_MIP_ID) / safe_name
+    if not fig_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Figure '{safe_name}' not found.")
+    media_type = "image/png"
+    if safe_name.endswith(".pdf"):
+        media_type = "application/pdf"
+    elif safe_name.endswith(".json"):
+        media_type = "application/json"
+    return FileResponse(str(fig_path), media_type=media_type, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/mips/{mip_id}/figures/{filename}")
+def api_get_mip_figure(mip_id: str, filename: str) -> Response:
+    """Serve generated paper figures (.png, .pdf, .json) for a specific registered MIP."""
+    data_root = get_data_root()
+    repo_for_mips = data_root if (data_root / "mips").is_dir() else REPO_ROOT
+    mips = discover_mips(repo_root=repo_for_mips)
+    if mip_id not in mips:
+        raise HTTPException(status_code=404, detail=f"Unknown mip_id '{mip_id}'.")
+    safe_name = Path(filename).name
+    fig_path = get_figures_dir(mip_id) / safe_name
+    if not fig_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Figure '{safe_name}' not found for '{mip_id}'.")
+    media_type = "image/png"
+    if safe_name.endswith(".pdf"):
+        media_type = "application/pdf"
+    elif safe_name.endswith(".json"):
+        media_type = "application/json"
+    return FileResponse(str(fig_path), media_type=media_type, headers={"Cache-Control": "no-store"})
+
+
 @app.get("/api/health")
 def api_health() -> dict[str, Any]:
     """Health check endpoint verifying leaderboard and registry readiness."""
     tables_data = load_tables_data()
     reg_data = load_registry_data()
     contrib_data = load_contributions_index()
+    data_root = get_data_root()
+    repo_for_mips = data_root if (data_root / "mips").is_dir() else REPO_ROOT
+    mips = discover_mips(repo_root=repo_for_mips)
     return {
         "status": "ok",
         "service": "hydromip.org",
+        "default_mip_id": DEFAULT_MIP_ID,
+        "n_mips": len(mips),
         "n_leaderboards": len(tables_data["leaderboards"]),
         "n_families": len(reg_data["families"]),
         "total_entries": int(tables_data.get("total_entries", 0)),
@@ -2019,6 +2171,8 @@ async def api_submit_to_leaderboard(
         "hydrograph_path": hydrograph_path,
         "github_url": gh_clean,
         "code_url": gh_clean,
+        "is_open_source": bool(gh_clean),
+        "is_closed_source": not bool(gh_clean),
         "zenodo_doi": z_doi,
         "zenodo_url": z_url,
         "data_archive_url": z_url or hs_clean,

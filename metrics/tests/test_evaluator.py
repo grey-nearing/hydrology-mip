@@ -28,14 +28,16 @@ from metrics import (
     get_frequency_factor,
     infer_datetime_coord,
 )
+from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from metrics.cli import main as cli_main
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+SPLITS_DIR = resolve_mip_paths(DEFAULT_MIP_ID).splits_dir
 
 
 def _load_canonical_basins_and_huc02() -> tuple[np.ndarray, np.ndarray]:
     """Load the real 531 sorted USGS basin IDs and 2-digit HUC-02 region codes."""
-    spec_path = REPO_ROOT / "splits" / "splits_and_regimes.json"
+    spec_path = SPLITS_DIR / "splits_and_regimes.json"
     assert spec_path.exists(), f"Missing canonical split specification at {spec_path}"
 
     spec = json.loads(spec_path.read_text(encoding="utf-8"))

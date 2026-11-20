@@ -23,16 +23,21 @@ from leaderboards import (
     trigger_submission_from_gcs,
     upsert_leaderboard_entry,
 )
+from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from leaderboards.update_leaderboard import main as cli_main
 from leaderboards.update_leaderboard import normalize_legacy_row
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+LEADERBOARDS_PKG_DIR = Path(__file__).resolve().parents[1]
+SPLITS_DIR = resolve_mip_paths(DEFAULT_MIP_ID).splits_dir
 
 
 @pytest.mark.unit
 def test_zero_try_except_blocks_in_leaderboards() -> None:
     """Enforce zero try/except blocks in `leaderboards/`."""
-    for py_path in sorted(DEFAULT_LEADERBOARDS_DIR.rglob("*.py")):
+    py_files = sorted(LEADERBOARDS_PKG_DIR.rglob("*.py"))
+    assert py_files, f"Expected Python modules under {LEADERBOARDS_PKG_DIR}"
+    for py_path in py_files:
         tree = ast.parse(py_path.read_text(encoding="utf-8"), filename=str(py_path))
         try_nodes = [node for node in ast.walk(tree) if isinstance(node, ast.Try)]
         assert not try_nodes, f"Forbidden try/except block found in {py_path}"
@@ -64,7 +69,7 @@ def test_upsert_and_trigger_submission_from_gcs(tmp_path: Path) -> None:
     shutil.copy2(DEFAULT_LEADERBOARDS_DIR / "tables_3_to_14.json", lb_dir / "tables_3_to_14.json")
 
     splits = json.loads(
-        (REPO_ROOT / "splits" / "splits_and_regimes.json").read_text(encoding="utf-8")
+        (SPLITS_DIR / "splits_and_regimes.json").read_text(encoding="utf-8")
     )
     basin_to_huc = splits["basin_to_huc02"]
     basins = np.array(sorted(basin_to_huc.keys()), dtype="<U8")
@@ -185,7 +190,7 @@ def _write_member_bucket(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Write synthetic targets plus a hydrograph store carrying `qsim_members`."""
     splits = json.loads(
-        (REPO_ROOT / "splits" / "splits_and_regimes.json").read_text(encoding="utf-8")
+        (SPLITS_DIR / "splits_and_regimes.json").read_text(encoding="utf-8")
     )
     basin_to_huc = splits["basin_to_huc02"]
     basins = np.array(sorted(basin_to_huc.keys()), dtype="<U8")

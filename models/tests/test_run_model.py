@@ -72,6 +72,7 @@ EXPECTED_16_MODEL_DIRS: tuple[str, ...] = (
     "feng2020_di_lstm",
     "shahriar2026_mamba3",
     "yin2022_rrformer",
+    "naive_lag1_persistence",
 )
 
 # Four real canonical basins / HUCs (values come from splits/splits_and_regimes.json at test time).
@@ -727,7 +728,8 @@ def test_stitch_fold_predictions_detects_missing_and_overlapping_basins() -> Non
 
 def test_split_loading_has_no_fallback_and_validates_pur_purity(tmp_path: Path) -> None:
     """Only the canonical full split files are accepted; a missing file is an error, never a fallback."""
-    src = REPO_ROOT / "splits"
+    from models.run_model import DEFAULT_SPLITS_DIR
+    src = DEFAULT_SPLITS_DIR
     partial = tmp_path / "splits"
     partial.mkdir()
     for name in ("basins_531.txt", "splits_and_regimes.json", "pur_18fold_huc02_splits.json"):

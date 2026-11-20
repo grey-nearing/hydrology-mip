@@ -4,7 +4,7 @@
   "model_name": "ERA-Physics-Guided-PUR (10-model ensemble)",
   "single_model_name": "ERA-Physics-Guided-PUR",
   "family_id": "era_lstm_seeded",
-  "family_name": "Empirical Research Assistant -- LSTM Seeded",
+  "family_name": "Empirical Research Assistance -- LSTM Seeded",
   "citation": "Nearing (2026)",
   "zenodo_doi": "10.5281/zenodo.23639461",
   "zenodo_url": "https://doi.org/10.5281/zenodo.23639461",

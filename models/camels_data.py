@@ -43,8 +43,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-REPO_ROOT: Path = Path(__file__).resolve().parent.parent
-DEFAULT_DATA_DIR: Path = REPO_ROOT / "data"
+from hydromip.paths import DEFAULT_MIP_ID, REPO_ROOT, resolve_mip_paths  # noqa: F401
+
+DEFAULT_DATA_DIR: Path = resolve_mip_paths(DEFAULT_MIP_ID).data_dir
 
 BUNDLE_SCHEMA_VERSION: str = "camels-us-mip-bundle-v1"
 CANONICAL_BUNDLE_FILENAME: str = "camels_671_1980_2014.npz"

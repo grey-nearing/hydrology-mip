@@ -1,0 +1,355 @@
+{
+  "schema_version": "hydromip-model-catalog-v1",
+  "description": "Shared HydroMIP Model Zoo capability manifest. Each model directory under models/<model_key>/ can be dispatched across any compatible MIP without duplicating model code.",
+  "models": [
+    {
+      "key": "kratzert_lstm",
+      "model_name": "CudaLSTM",
+      "model_family": "LSTM",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.kratzert_lstm.runner",
+      "code_url": "https://github.com/neuralhydrology/neuralhydrology",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "kratzert_ealstm",
+      "model_name": "EA-LSTM",
+      "model_family": "EA-LSTM",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.kratzert_ealstm.runner",
+      "code_url": "https://github.com/neuralhydrology/neuralhydrology",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "hoedt_mclstm",
+      "model_name": "MC-LSTM",
+      "model_family": "MC-LSTM",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.hoedt_mclstm.runner",
+      "code_url": "https://github.com/ml-jku/mc-lstm",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "rasiya_koya_tft",
+      "model_name": "Temporal Fusion Transformer",
+      "model_family": "Transformer",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.rasiya_koya_tft.runner",
+      "code_url": "https://github.com/sinanrk/TFT_hydrology",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "poudel_mlp_hbv",
+      "model_name": "MLP-HBV (16-zone)",
+      "model_family": "Differentiable Process-Based",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.poudel_mlp_hbv.runner",
+      "code_url": "https://github.com/snpoudel/diff-hydro",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "feng_dhbv10",
+      "model_name": "dHBV 1.0 (Static Parameters)",
+      "model_family": "Differentiable Process-Based",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.feng_dhbv10.runner",
+      "code_url": "https://github.com/mhpi/hydroDL",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "song_dhbv11p",
+      "model_name": "dHBV 1.1p (Dynamic Parameters)",
+      "model_family": "Differentiable Process-Based",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.song_dhbv11p.runner",
+      "code_url": "https://github.com/mhpi/generic_deltamodel",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "li2025_lstm_dhbv_ens",
+      "model_name": "LSTM + dHBV 1.1p Ensemble",
+      "model_family": "Hybrid DL + Conceptual Ensemble",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.li2025_lstm_dhbv_ens.runner",
+      "code_url": "https://github.com/mhpi/generic_deltamodel",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "newman_sacsma",
+      "model_name": "SAC-SMA + Snow-17 (DDS)",
+      "model_family": "Process-Based / Conceptual",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.newman_sacsma.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels"
+      ]
+    },
+    {
+      "key": "feng2020_di_lstm",
+      "model_name": "DI-LSTM (Data Integration)",
+      "model_family": "Autoregressive / Data Integration",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.feng2020_di_lstm.runner",
+      "code_url": "https://github.com/mhpi/hydroDL",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "lagged_streamflow"
+      ]
+    },
+    {
+      "key": "yin2022_rrformer",
+      "model_name": "RR-Former",
+      "model_family": "Transformer",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.yin2022_rrformer.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/yin2022_rrformer",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "lagged_streamflow"
+      ]
+    },
+    {
+      "key": "shahriar2026_mamba3",
+      "model_name": "Mamba-3",
+      "model_family": "State-Space Model",
+      "provenance_category": "MIP Re-run",
+      "runner_module": "models.shahriar2026_mamba3.runner",
+      "code_url": "https://github.com/shahriar1995/HydroMamba",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "single_camels",
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "era_gauged_minimal_guidance",
+      "model_name": "ERA Gauged Minimal Guidance (EntityAwareLSTM)",
+      "model_family": "ERA Contribution",
+      "provenance_category": "Contribution",
+      "runner_module": "models.era_gauged_minimal_guidance.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_minimal_guidance",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "era_gauged_physics_guided",
+      "model_name": "ERA Gauged Physics-Guided (PhysicsHybridEALSTM)",
+      "model_family": "ERA Contribution",
+      "provenance_category": "Contribution",
+      "runner_module": "models.era_gauged_physics_guided.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_physics_guided",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "era_gauged_multi_paradigm",
+      "model_name": "ERA Gauged Multi-Paradigm",
+      "model_family": "ERA Contribution",
+      "provenance_category": "Contribution",
+      "runner_module": "models.era_gauged_multi_paradigm.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_gauged_multi_paradigm",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "era_pub_minimal_guidance",
+      "model_name": "ERA PUB Minimal Guidance",
+      "model_family": "ERA Contribution",
+      "provenance_category": "Contribution",
+      "runner_module": "models.era_pub_minimal_guidance.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_minimal_guidance",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "era_pub_physics_guided",
+      "model_name": "ERA PUB Physics-Guided",
+      "model_family": "ERA Contribution",
+      "provenance_category": "Contribution",
+      "runner_module": "models.era_pub_physics_guided.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pub_physics_guided",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "era_pur_minimal_guidance",
+      "model_name": "ERA PUR Minimal Guidance (DualFiLMLSTM)",
+      "model_family": "ERA Contribution",
+      "provenance_category": "Contribution",
+      "runner_module": "models.era_pur_minimal_guidance.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_minimal_guidance",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "era_pur_physics_guided",
+      "model_name": "ERA PUR Physics-Guided",
+      "model_family": "ERA Contribution",
+      "provenance_category": "Contribution",
+      "runner_module": "models.era_pur_physics_guided.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/era_pur_physics_guided",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "multi_camels"
+      ]
+    },
+    {
+      "key": "naive_lag1_persistence",
+      "model_name": "Naive Lag-1 Persistence",
+      "model_family": "Statistical Lower Benchmark",
+      "provenance_category": "Contribution",
+      "runner_module": "models.naive_lag1_persistence.runner",
+      "code_url": "https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+      "supported_tasks": [
+        "streamflow_daily_deterministic"
+      ],
+      "supported_mips": [
+        "camels_us_daily"
+      ],
+      "supported_forcing_regimes": [
+        "lagged_streamflow"
+      ]
+    }
+  ]
+}

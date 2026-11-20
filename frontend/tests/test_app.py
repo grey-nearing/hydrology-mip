@@ -35,15 +35,17 @@ from frontend.backend.app import (
     NEWMAN_N_BASINS,
     NEWMAN_N_DAYS,
     NEWMAN_START_DATE,
-    REPO_ROOT,
     app,
 )
+from hydromip.paths import DEFAULT_MIP_ID, resolve_mip_paths
 from metrics.evaluator import calculate_model_leaderboard_metrics
+
+DEFAULT_MIP_PATHS = resolve_mip_paths(DEFAULT_MIP_ID)
 
 
 def _load_canonical_splits_dict() -> dict:
     """Load the repository's canonical `splits_and_regimes.json` for test fixture setup."""
-    splits_candidate = REPO_ROOT / "splits" / "splits_and_regimes.json"
+    splits_candidate = DEFAULT_MIP_PATHS.splits_dir / "splits_and_regimes.json"
     assert splits_candidate.exists(), f"Missing canonical splits at {splits_candidate}"
     with open(splits_candidate, "r", encoding="utf-8") as f:
         return json.load(f)
@@ -164,15 +166,15 @@ def mip_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
     splits_dir.mkdir(parents=True, exist_ok=True)
 
     for fname in ("tables_3_to_14.json", "table_2_registry.json", "contributions_index.json"):
-        shutil.copy2(REPO_ROOT / "leaderboards" / fname, lb_dir / fname)
+        shutil.copy2(DEFAULT_MIP_PATHS.leaderboards_dir / fname, lb_dir / fname)
     for lb_id in CANONICAL_LEADERBOARD_IDS:
-        shutil.copy2(REPO_ROOT / "leaderboards" / f"{lb_id}.json", lb_dir / f"{lb_id}.json")
+        shutil.copy2(DEFAULT_MIP_PATHS.leaderboards_dir / f"{lb_id}.json", lb_dir / f"{lb_id}.json")
 
     splits_dict = _load_canonical_splits_dict()
     with open(splits_dir / "splits_and_regimes.json", "w", encoding="utf-8") as f:
         json.dump(splits_dict, f, indent=2)
     shutil.copy2(
-        REPO_ROOT / "splits" / "basins_447_kratzert2019b.json",
+        DEFAULT_MIP_PATHS.splits_dir / "basins_447_kratzert2019b.json",
         splits_dir / "basins_447_kratzert2019b.json",
     )
 
@@ -403,7 +405,7 @@ def test_score_valid_zarr_and_npz_hydrographs(mip_env: dict) -> None:
     # Also verify that NaN in qsim ONLY where qobs is already NaN is permitted (pred_nan_when_obs_valid == 0)
     qsim_matching_obs_nan = qobs.copy()
     npz_buf = io.BytesIO()
-    np.savez_compressed(npz_buf, qsim=qsim_matching_obs_nan, basin=basins)
+    np.savez_compressed(npz_buf, qsim=qsim_matching_obs_nan, basin=basins, date=dates)
     resp_npz = client.post(
         "/api/score",
         data={"leaderboard_id": "pub__single_camels"},
@@ -444,7 +446,7 @@ def test_reject_pred_nan_when_obs_valid_and_invalid_shapes(mip_env: dict) -> Non
 
     # Also verify rejection via .npz when pred_nan_when_obs_valid > 0
     npz_nan_buf = io.BytesIO()
-    np.savez_compressed(npz_nan_buf, qsim=qsim_with_nan)
+    np.savez_compressed(npz_nan_buf, qsim=qsim_with_nan, basin=basins, date=dates)
     resp_nan_npz = client.post(
         "/api/score",
         data={"leaderboard_id": "gauged__single_camels"},
@@ -458,6 +460,8 @@ def test_reject_pred_nan_when_obs_valid_and_invalid_shapes(mip_env: dict) -> Non
     np.savez_compressed(
         wrong_shape_buf,
         qsim=np.ones((530, NEWMAN_N_DAYS), dtype=np.float32),
+        basin=basins,
+        date=dates,
     )
     resp_wrong_shape = client.post(
         "/api/score",
@@ -466,6 +470,42 @@ def test_reject_pred_nan_when_obs_valid_and_invalid_shapes(mip_env: dict) -> Non
     )
     assert resp_wrong_shape.status_code == 400
     assert "531, 3652" in resp_wrong_shape.json()["detail"]
+
+    # 2b. Bare .npy upload must be rejected with HTTP 400 (no coordinate metadata)
+    npy_buf = io.BytesIO()
+    np.save(npy_buf, np.where(np.isnan(qobs), 0.0, qobs).astype(np.float32))
+    resp_npy = client.post(
+        "/api/score",
+        data={"leaderboard_id": "gauged__single_camels"},
+        files={"file": ("unlabeled.npy", npy_buf.getvalue(), "application/octet-stream")},
+    )
+    assert resp_npy.status_code == 400
+    assert ".npy" in resp_npy.json()["detail"]
+
+    # 2c. Keyed .npz missing 'basin' or 'date' coordinates must be rejected with HTTP 400
+    no_coords_buf = io.BytesIO()
+    np.savez_compressed(no_coords_buf, qsim=np.where(np.isnan(qobs), 0.0, qobs).astype(np.float32))
+    resp_no_coords = client.post(
+        "/api/score",
+        data={"leaderboard_id": "gauged__single_camels"},
+        files={"file": ("no_coords.npz", no_coords_buf.getvalue(), "application/octet-stream")},
+    )
+    assert resp_no_coords.status_code == 400
+    assert "basin" in resp_no_coords.json()["detail"]
+
+    no_date_buf = io.BytesIO()
+    np.savez_compressed(
+        no_date_buf,
+        qsim=np.where(np.isnan(qobs), 0.0, qobs).astype(np.float32),
+        basin=basins,
+    )
+    resp_no_date = client.post(
+        "/api/score",
+        data={"leaderboard_id": "gauged__single_camels"},
+        files={"file": ("no_date.npz", no_date_buf.getvalue(), "application/octet-stream")},
+    )
+    assert resp_no_date.status_code == 400
+    assert "date" in resp_no_date.json()["detail"]
 
     # 3. Missing 'qsim' key must be rejected with HTTP 400
     missing_key_buf = io.BytesIO()
@@ -511,7 +551,7 @@ def test_default_repo_root_loading(monkeypatch: pytest.MonkeyPatch) -> None:
     r_health = client.get("/api/health")
     assert r_health.status_code == 200
     assert r_health.json()["n_leaderboards"] == 12
-    assert r_health.json()["n_families"] == _expected_counts(REPO_ROOT / "leaderboards")["n_families"]
+    assert r_health.json()["n_families"] == _expected_counts(DEFAULT_MIP_PATHS.leaderboards_dir)["n_families"]
 
     r_proto = client.get("/api/protocol")
     assert r_proto.status_code == 200
@@ -774,9 +814,9 @@ def test_reject_zarr_when_qsim_is_not_mean_of_members(mip_env: dict) -> None:
     assert resp_dims.status_code == 400
     assert "('member', 'basin', 'date')" in resp_dims.json()["detail"]
 
-    # A members-only 3-D .npz upload is scored as mean(members) and says so.
+    # A members-only 3-D .npz upload with full basin/date coordinates is scored as mean(members) and says so.
     npz_buf = io.BytesIO()
-    np.savez_compressed(npz_buf, qsim=members.astype(np.float32), basin=basins)
+    np.savez_compressed(npz_buf, qsim=members.astype(np.float32), basin=basins, date=dates)
     resp_npz = client.post(
         "/api/score",
         data={"leaderboard_id": "gauged__single_camels"},
@@ -1270,3 +1310,45 @@ def test_member_semantics_match_evaluator(mip_env: dict) -> None:
     cols_declared = backend_app._format_nse_columns(declared["scoring"])
     assert cols_declared["ens_med_nse"] == declared["median_nse"]
     assert cols_declared["single_med_nse"] is None and cols_declared["single_med_nse_display"] == "---"
+
+
+def test_closed_source_contribution_flagging(mip_env: dict) -> None:
+    """Verify open-source code is recommended (optional) and omitting it flags `is_closed_source=True`."""
+    client: TestClient = mip_env["client"]
+    targets = mip_env["targets"]
+    qobs: np.ndarray = targets["qobs"]
+    basins: np.ndarray = targets["basins"]
+    dates: np.ndarray = targets["dates"]
+
+    qsim = np.where(np.isnan(qobs), 0.0, qobs * 0.95).astype(np.float32)
+    zarr_bytes = _create_zipped_zarr_bytes(
+        qsim=qsim,
+        basins=basins,
+        dates=dates,
+        tmp_dir=mip_env["tmp_path"],
+    )
+    resp = client.post(
+        "/api/submit",
+        data={
+            "leaderboard_id": "gauged__single_camels",
+            "model_name": "ClosedSourceTestModel",
+            "forcing": "Daymet",
+            "paradigm": "Machine learning",
+            "github_url": "",
+            "zenodo_doi": "10.5281/zenodo.99999999",
+            "citation": "Test (2026)",
+        },
+        files={"file": ("closed_model.zarr.zip", zarr_bytes, "application/zip")},
+    )
+    assert resp.status_code == 200, resp.text
+    entry = resp.json()["entry"]
+    assert entry["is_open_source"] is False
+    assert entry["is_closed_source"] is True
+
+    lb_resp = client.get("/api/leaderboards")
+    assert lb_resp.status_code == 200
+    gsc = [b for b in lb_resp.json()["leaderboards"] if b["id"] == "gauged__single_camels"][0]
+    row = [r for r in gsc["rows"] if r["entry_id"] == entry["entry_id"]][0]
+    assert row["is_open_source"] is False
+    assert row["is_closed_source"] is True
+

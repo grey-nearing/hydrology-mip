@@ -7,6 +7,8 @@ import json
 from collections.abc import Sequence
 from pathlib import Path
 
+from hydromip.paths import DEFAULT_MIP_ID
+from hydromip.protocol import get_mip
 from metrics.evaluator import (
     CANONICAL_LEADERBOARD_IDS,
     DEFAULT_BUCKET_URI,
@@ -19,9 +21,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="mip-score-model",
         description=(
-            "Calculate standardized CAMELS-US MIP metrics for one model and one "
-            "leaderboard directly from Zarr hydrographs in gs://camels-us-mip/."
+            "Calculate standardized HydroMIP metrics for one model and one "
+            "leaderboard directly from cloud Zarr hydrographs."
         ),
+    )
+    parser.add_argument(
+        "--mip",
+        default=DEFAULT_MIP_ID,
+        type=str,
+        help=f"Registered MIP identifier under mips/ (default: {DEFAULT_MIP_ID}).",
     )
     parser.add_argument(
         "--model-id",
@@ -55,11 +63,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Execute the `mip-score-model` CLI."""
     parser = build_parser()
     args = parser.parse_args(argv)
+    protocol = get_mip(args.mip)
+    bucket_uri = args.bucket_uri
+    if bucket_uri == DEFAULT_BUCKET_URI and "bucket_uri" in protocol.storage:
+        bucket_uri = str(protocol.storage["bucket_uri"])
 
     result = calculate_model_leaderboard_metrics(
         model_id=args.model_id,
         leaderboard_id=args.leaderboard_id,
-        bucket_uri=args.bucket_uri,
+        bucket_uri=bucket_uri,
     )
 
     if args.output_json is not None:

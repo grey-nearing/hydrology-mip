@@ -31,8 +31,9 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from hydromip.paths import DEFAULT_MIP_ID, REPO_ROOT, resolve_mip_paths
 from models.camels_data import (
-    DEFAULT_DATA_DIR,
+    DEFAULT_DATA_DIR,  # noqa: F401
     forcing_display_label,
     normalize_forcing_names,
     resolve_forcing_regime,
@@ -53,8 +54,7 @@ from models.zarr_writer import (
     write_hydrograph_zarr,
 )
 
-REPO_ROOT: Path = Path(__file__).resolve().parent.parent
-DEFAULT_SPLITS_DIR: Path = REPO_ROOT / "splits"
+DEFAULT_SPLITS_DIR: Path = resolve_mip_paths(DEFAULT_MIP_ID).splits_dir
 
 SPLIT_FILES: dict[str, tuple[str, int]] = {
     "pub_12fold": ("pub_12fold_random_splits.json", 12),
@@ -257,6 +257,15 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         runner_module="models.yin2022_rrformer.runner",
         code_url="https://github.com/iThronne/RR-Former",
         default_seeds=(601, 602, 603),
+    ),
+    "naive_lag1_persistence": ModelRegistryEntry(
+        key="naive_lag1_persistence",
+        model_name="Naive Lag-1 Persistence",
+        model_family="Statistical Lower Benchmark",
+        provenance_category="Contribution",
+        runner_module="models.naive_lag1_persistence.runner",
+        code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/naive_lag1_persistence",
+        default_seeds=(0,),
     ),
 }
 
@@ -754,7 +763,13 @@ def run_model_experiment(
 
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Centralized CAMELS-US MIP model runner across gauged, pub_12fold, and pur_18huc02 regimes."
+        description="Centralized HydroMIP model runner enforcing canonical splits and anti-leakage CV hygiene."
+    )
+    parser.add_argument(
+        "--mip",
+        type=str,
+        default=DEFAULT_MIP_ID,
+        help=f"Registered MIP identifier under mips/ (default: {DEFAULT_MIP_ID}).",
     )
     parser.add_argument("--list-models", action="store_true", help="List all registered model families and exit.")
     parser.add_argument(
@@ -785,12 +800,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--data-dir",
         type=Path,
-        default=DEFAULT_DATA_DIR,
-        help="Canonical CAMELS bundle (.npz or directory containing it), raw NCAR CAMELS-US v1.2 "
-        "directory, or NetCDF layout.",
+        default=None,
+        help="Dataset bundle or raw directory (defaults to mips/<mip>/data).",
     )
     parser.add_argument(
-        "--splits-dir", type=Path, default=DEFAULT_SPLITS_DIR, help="Directory containing canonical split files."
+        "--splits-dir",
+        type=Path,
+        default=None,
+        help="Directory containing canonical split files (defaults to mips/<mip>/splits).",
     )
     parser.add_argument(
         "--output-zarr",
@@ -853,13 +870,17 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not args.model:
         parser.error("--model is required unless --list-models is specified.")
 
+    mip_paths = resolve_mip_paths(args.mip)
+    resolved_data_dir = args.data_dir if args.data_dir is not None else mip_paths.data_dir
+    resolved_splits_dir = args.splits_dir if args.splits_dir is not None else mip_paths.splits_dir
+
     ds, written_uri = run_model_experiment(
         model_name=args.model,
         spatial_regime=args.spatial_regime,
         forcings=args.forcings,
-        data_dir=args.data_dir,
+        data_dir=resolved_data_dir,
         output_zarr=args.output_zarr,
-        splits_dir=args.splits_dir,
+        splits_dir=resolved_splits_dir,
         seeds=args.seeds,
         max_workers=args.max_workers,
         executor=args.executor,

@@ -1,0 +1,199 @@
+{
+  "schema_version": "hydromip-protocol-v1",
+  "mip_id": "camels_us_daily",
+  "name": "CAMELS-US Daily Streamflow Model Intercomparison Project",
+  "short_name": "CAMELS-US Daily",
+  "status": "active",
+  "version": "1.0.0",
+  "task_type": "streamflow_daily_deterministic",
+  "metric_suite": "gauch_2023_deterministic",
+  "primary_metric": "NSE",
+  "primary_metric_higher_is_better": true,
+  "target_variable": "qobs",
+  "target_units": "mm/day",
+  "prediction_dims": [
+    "basin",
+    "date"
+  ],
+  "ensemble_prediction_dims": [
+    "member",
+    "basin",
+    "date"
+  ],
+  "entity_unit": "basin",
+  "num_entities": 531,
+  "num_eval_steps": 3652,
+  "temporal_resolution": "1D",
+  "temporal_windows": {
+    "train_start": "1999-10-01",
+    "train_end": "2008-09-30",
+    "train_days": 3288,
+    "eval_start": "1989-10-01",
+    "eval_end": "1999-09-30",
+    "eval_days": 3652,
+    "spinup_days": 365
+  },
+  "spatial_regimes": [
+    {
+      "id": "gauged",
+      "leaderboard_prefix": "gauged",
+      "title": "Gauged Simulation",
+      "num_folds": 1,
+      "split_file": null,
+      "section": "4.1",
+      "description": "In-sample 531 CAMELS-US basins trained on WY2000-WY2008 (1999-10-01 to 2008-09-30) and evaluated blindly on WY1990-WY1999 (1989-10-01 to 1999-09-30)."
+    },
+    {
+      "id": "pub_12fold",
+      "leaderboard_prefix": "pub",
+      "title": "12-Fold Random PUB",
+      "num_folds": 12,
+      "split_file": "pub_12fold_random_splits.json",
+      "section": "4.2",
+      "description": "12-fold random Prediction in Ungauged Basins cross-validation across all 531 CAMELS-US basins (seed=42)."
+    },
+    {
+      "id": "pur_18huc02",
+      "leaderboard_prefix": "pur",
+      "title": "18-Fold HUC-02 PUR",
+      "num_folds": 18,
+      "split_file": "pur_18fold_huc02_splits.json",
+      "section": "4.3",
+      "description": "18-fold Leave-One-HUC02-Region-Out Prediction in Ungauged Regions cross-validation across all 18 CONUS USGS 2-digit hydrologic regions."
+    }
+  ],
+  "forcing_regimes": [
+    {
+      "id": "single_camels",
+      "title": "Single CAMELS Forcing",
+      "description": "Single standard CAMELS-US meteorological forcing product (Daymet, Maurer, or NLDAS)."
+    },
+    {
+      "id": "multi_camels",
+      "title": "Multiple CAMELS Forcings",
+      "description": "Two or all three standard CAMELS-US meteorological forcing products (Daymet + Maurer + NLDAS)."
+    },
+    {
+      "id": "lagged_streamflow",
+      "title": "With Lagged Streamflow",
+      "description": "Models ingesting lagged observed discharge / data assimilation alongside meteorological forcings."
+    },
+    {
+      "id": "freeform",
+      "title": "Freeform / External Forcings",
+      "description": "Models using external non-CAMELS forcings (e.g., ERA5-Land, AORC), additional attributes, or foundation pretraining."
+    }
+  ],
+  "leaderboards": [
+    {
+      "id": "gauged__single_camels",
+      "spatial_regime": "gauged",
+      "forcing_regime": "single_camels",
+      "title": "Gauged Simulation — Single CAMELS Forcing",
+      "table_number": 3,
+      "section": "4.1"
+    },
+    {
+      "id": "gauged__multi_camels",
+      "spatial_regime": "gauged",
+      "forcing_regime": "multi_camels",
+      "title": "Gauged Simulation — Multiple CAMELS Forcings",
+      "table_number": 4,
+      "section": "4.1"
+    },
+    {
+      "id": "gauged__lagged_streamflow",
+      "spatial_regime": "gauged",
+      "forcing_regime": "lagged_streamflow",
+      "title": "Gauged Simulation — With Lagged Streamflow",
+      "table_number": 5,
+      "section": "4.1"
+    },
+    {
+      "id": "gauged__freeform",
+      "spatial_regime": "gauged",
+      "forcing_regime": "freeform",
+      "title": "Gauged Simulation — Freeform Forcings",
+      "table_number": 6,
+      "section": "4.1"
+    },
+    {
+      "id": "pub__single_camels",
+      "spatial_regime": "pub",
+      "forcing_regime": "single_camels",
+      "title": "12-Fold Random PUB — Single CAMELS Forcing",
+      "table_number": 7,
+      "section": "4.2"
+    },
+    {
+      "id": "pub__multi_camels",
+      "spatial_regime": "pub",
+      "forcing_regime": "multi_camels",
+      "title": "12-Fold Random PUB — Multiple CAMELS Forcings",
+      "table_number": 8,
+      "section": "4.2"
+    },
+    {
+      "id": "pub__lagged_streamflow",
+      "spatial_regime": "pub",
+      "forcing_regime": "lagged_streamflow",
+      "title": "12-Fold Random PUB — With Lagged Streamflow",
+      "table_number": 9,
+      "section": "4.2"
+    },
+    {
+      "id": "pub__freeform",
+      "spatial_regime": "pub",
+      "forcing_regime": "freeform",
+      "title": "12-Fold Random PUB — Freeform Forcings",
+      "table_number": 10,
+      "section": "4.2"
+    },
+    {
+      "id": "pur__single_camels",
+      "spatial_regime": "pur",
+      "forcing_regime": "single_camels",
+      "title": "18-Fold HUC-02 PUR — Single CAMELS Forcing",
+      "table_number": 11,
+      "section": "4.3"
+    },
+    {
+      "id": "pur__multi_camels",
+      "spatial_regime": "pur",
+      "forcing_regime": "multi_camels",
+      "title": "18-Fold HUC-02 PUR — Multiple CAMELS Forcings",
+      "table_number": 12,
+      "section": "4.3"
+    },
+    {
+      "id": "pur__lagged_streamflow",
+      "spatial_regime": "pur",
+      "forcing_regime": "lagged_streamflow",
+      "title": "18-Fold HUC-02 PUR — With Lagged Streamflow",
+      "table_number": 13,
+      "section": "4.3"
+    },
+    {
+      "id": "pur__freeform",
+      "spatial_regime": "pur",
+      "forcing_regime": "freeform",
+      "title": "18-Fold HUC-02 PUR — Freeform Forcings",
+      "table_number": 14,
+      "section": "4.3"
+    }
+  ],
+  "storage": {
+    "bucket_uri": "gs://camels-us-mip",
+    "targets_zarr_uri": "gs://camels-us-mip/observations/newman_eval_targets.zarr",
+    "hydrographs_prefix": "gs://camels-us-mip/hydrographs",
+    "zenodo_release_doi": "10.5281/zenodo.24383448"
+  },
+  "paths": {
+    "splits": "splits",
+    "leaderboards": "leaderboards",
+    "figures": "figures",
+    "data": "data",
+    "era_experiments": "era_experiments"
+  },
+  "citation": "Nearing, G. S., Klotz, D., & Ebel, P. (2026). HydroMIP: A CAMELS-US Model Intercomparison Project. Hydrology and Earth System Sciences (submitted)."
+}
