@@ -201,7 +201,8 @@
       "regional_huc02": null,
       "model_category": "Machine learning",
       "publication_year": 2022,
-      "rank": 1
+      "rank": 1,
+      "mean_kge": 0.865
     },
     {
       "entry_id": "t5_02",
@@ -392,7 +393,8 @@
       "regional_huc02": null,
       "model_category": "Machine learning",
       "publication_year": 2022,
-      "rank": 2
+      "rank": 2,
+      "mean_kge": 0.859
     },
     {
       "entry_id": "t5_03",
@@ -583,7 +585,8 @@
       "regional_huc02": null,
       "model_category": "Machine learning",
       "publication_year": 2022,
-      "rank": 3
+      "rank": 3,
+      "mean_kge": 0.844
     },
     {
       "entry_id": "yin2022_rrformer_daymet",
@@ -594,7 +597,7 @@
       "paradigm": "Encoder-Decoder Transformer (RR-Former)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
-      "forcing": "Daymet + Lagged Q (t-7..t-1)",
+      "forcing": "Daymet + Lagged Q (t-15..t-1)",
       "is_ensemble": true,
       "num_members": 3,
       "has_qsim_members": true,
@@ -1379,12 +1382,13 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 7-day lagged observed streamflow Q(t-7..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
-      "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 7-day lagged streamflow Q(t-7..t-1); 3-seed ensemble mean (seeds 601, 602, 603; Ensemble Med NSE = 0.847, Mean NSE = 0.822, Med KGE = 0.862, NSE <= 0 = 0).",
+      "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 15-day lagged observed streamflow Q(t-15..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
+      "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 15-day lagged streamflow Q(t-15..t-1); 3-seed ensemble mean (seeds 601, 602, 603; Ensemble Med NSE = 0.847, Mean NSE = 0.822, Med KGE = 0.862, NSE <= 0 = 0).",
       "model_category": "Machine learning",
       "publication_year": 2022,
       "rank": 4,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
+      "mean_kge": 0.832
     },
     {
       "entry_id": "t5_04",
@@ -1470,7 +1474,7 @@
       "paradigm": "Encoder-Decoder Transformer (RR-Former)",
       "category": "MIP Re-run",
       "code_provenance": "Our Code",
-      "forcing": "Daymet + Lagged Q (t-7..t-1)",
+      "forcing": "Daymet + Lagged Q (t-15..t-1)",
       "is_ensemble": false,
       "num_members": 3,
       "has_qsim_members": true,
@@ -2269,12 +2273,13 @@
       "zenodo_url": null,
       "hydroshare_url": "",
       "data_archive_url": null,
-      "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 7-day lagged observed streamflow Q(t-7..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
-      "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 7-day lagged streamflow Q(t-7..t-1); single-model performance averaged across all 3 random seeds (seeds 601, 602, 603; evaluation_mode='single_member_mean'; Single-Seed Med NSE = 0.839 ± 0.002).",
+      "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 15-day lagged observed streamflow Q(t-15..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
+      "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 15-day lagged streamflow Q(t-15..t-1); single-model performance averaged across all 3 random seeds (seeds 601, 602, 603; evaluation_mode='single_member_mean'; Single-Seed Med NSE = 0.839 ± 0.002).",
       "model_category": "Machine learning",
       "publication_year": 2022,
       "rank": 6,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
+      "mean_kge": 0.827
     },
     {
       "entry_id": "t5_06",
@@ -3228,7 +3233,8 @@
       "model_category": "Machine learning",
       "publication_year": 2020,
       "rank": 9,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
+      "mean_kge": 0.766
     },
     {
       "entry_id": "feng2020_di_lstm_nldas_single",
@@ -4046,7 +4052,8 @@
       "model_category": "Machine learning",
       "publication_year": 2020,
       "rank": 10,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
+      "mean_kge": 0.762
     },
     {
       "entry_id": "t5_08",
@@ -4920,7 +4927,8 @@
       "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/naive_lag1_persistence_gauged.zarr",
       "entry_id": "naive_lag1_persistence_gauged",
       "leaderboard_id": "gauged__lagged_streamflow",
-      "rank": 12
+      "rank": 12,
+      "mean_kge": 0.706
     }
   ],
   "protocol": {

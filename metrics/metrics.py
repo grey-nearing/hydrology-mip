@@ -1,4 +1,4 @@
-# Copyright 2026 HydroMIP Contributors
+# Copyright 2026 HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Backwards-compatible re-export of the canonical Gauch et al. (2023) daily metrics suite.

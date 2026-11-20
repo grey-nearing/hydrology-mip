@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Regression tests for the evaluator's anti-masking and identifier guardrails.
 
 Each test pins one fixed defect from the pre-launch architecture audit:

@@ -1047,7 +1047,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 1,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr",
+          "mean_kge": 0.72
         },
         {
           "entry_id": "t3_06",
@@ -1855,7 +1856,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 2,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr",
+          "mean_kge": 0.722
         },
         {
           "entry_id": "t3_18",
@@ -2658,7 +2660,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2024,
           "rank": 3,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
+          "mean_kge": 0.713
         },
         {
           "entry_id": "t3_11",
@@ -3451,7 +3454,7 @@
           "asterisk_reason": null,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_11",
-          "citation": "Kratzert et al. (2019b)",
+          "citation": "Kratzert et al. (2019a)",
           "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
           "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
           "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -3460,11 +3463,12 @@
           "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
           "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
           "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000–2008 and evaluated over WY1990–1999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
-          "notes": "8-seed ensemble mean of the Kratzert et al. (2019b) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884; 531-basin Ensemble Med NSE = 0.759, Mean NSE = 0.713, Med KGE = 0.742; 447-basin subset Ensemble Med NSE = 0.759).",
+          "notes": "8-seed ensemble mean of the Kratzert et al. (2019a) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884; 531-basin Ensemble Med NSE = 0.759, Mean NSE = 0.713, Med KGE = 0.742; 447-basin subset Ensemble Med NSE = 0.759).",
           "model_category": "Machine learning",
           "publication_year": 2019,
           "rank": 4,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr",
+          "mean_kge": 0.712
         },
         {
           "entry_id": "t3_12",
@@ -4261,7 +4265,8 @@
           "model_category": "Machine learning",
           "publication_year": 2023,
           "rank": 5,
-          "zarr_path": ""
+          "zarr_path": "",
+          "mean_kge": 0.707
         },
         {
           "entry_id": "t3_19",
@@ -5078,7 +5083,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2024,
           "rank": 6,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
+          "mean_kge": 0.708
         },
         {
           "entry_id": "t3_15",
@@ -5886,7 +5892,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 7,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr",
+          "mean_kge": 0.683
         },
         {
           "entry_id": "t3_08",
@@ -6708,7 +6715,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 8,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr",
+          "mean_kge": 0.712
         },
         {
           "entry_id": "hoedt_mclstm_lit_maurer",
@@ -6731,7 +6739,7 @@
           "med_fhv_abs": 14.7,
           "nse_le_0": null,
           "asterisk": true,
-          "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019b) CAMELS subset.",
+          "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019a) CAMELS subset.",
           "num_evaluated_basins": 447,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "hoedt_mclstm_lit_maurer",
@@ -7569,7 +7577,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 10,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
+          "mean_kge": 0.71
         },
         {
           "entry_id": "t3_29",
@@ -8372,7 +8381,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2022,
           "rank": 11,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
+          "mean_kge": 0.676
         },
         {
           "entry_id": "t3_23",
@@ -9165,7 +9175,7 @@
           "asterisk_reason": null,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_23",
-          "citation": "Kratzert et al. (2019b)",
+          "citation": "Kratzert et al. (2019a)",
           "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
           "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
           "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -9178,7 +9188,8 @@
           "model_category": "Machine learning",
           "publication_year": 2019,
           "rank": 12,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr",
+          "mean_kge": 0.686
         },
         {
           "entry_id": "t3_21",
@@ -10032,7 +10043,8 @@
           "model_category": "Machine learning",
           "publication_year": 2023,
           "rank": 14,
-          "zarr_path": ""
+          "zarr_path": "",
+          "mean_kge": 0.679
         },
         {
           "entry_id": "poudel_mlp_hbv_daymet",
@@ -10833,7 +10845,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2026,
           "rank": 15,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
+          "mean_kge": 0.654
         },
         {
           "entry_id": "t3_33",
@@ -11650,7 +11663,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2022,
           "rank": 16,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
+          "mean_kge": 0.67
         },
         {
           "entry_id": "poudel_mlp_hbv_daymet_single",
@@ -12465,7 +12479,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2026,
           "rank": 17,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
+          "mean_kge": 0.65
         },
         {
           "entry_id": "t3_20",
@@ -13287,7 +13302,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 18,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr",
+          "mean_kge": 0.714
         },
         {
           "entry_id": "t3_26",
@@ -14094,7 +14110,7 @@
           "asterisk_reason": null,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_11",
-          "citation": "Kratzert et al. (2019b)",
+          "citation": "Kratzert et al. (2019a)",
           "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
           "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
           "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -14103,11 +14119,12 @@
           "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
           "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
           "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000–2008 and evaluated over WY1990–1999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
-          "notes": "Single-model evaluation scored across all 8 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2019b) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 ± 0.002; 447-basin subset Single-Seed Med NSE = 0.739 ± 0.003).",
+          "notes": "Single-model evaluation scored across all 8 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2019a) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 ± 0.002; 447-basin subset Single-Seed Med NSE = 0.739 ± 0.003).",
           "model_category": "Machine learning",
           "publication_year": 2019,
           "rank": 19,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr",
+          "mean_kge": 0.703
         },
         {
           "entry_id": "hoedt_mclstm_lit_maurer_single",
@@ -14130,7 +14147,7 @@
           "med_fhv_abs": 14.7,
           "nse_le_0": null,
           "asterisk": true,
-          "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019b) CAMELS subset.",
+          "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019a) CAMELS subset.",
           "num_evaluated_basins": 447,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "hoedt_mclstm_lit_maurer_single",
@@ -14989,7 +15006,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 21,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr",
+          "mean_kge": 0.677
         },
         {
           "entry_id": "t3_s4d_lit",
@@ -15845,7 +15863,8 @@
           "model_category": "Machine learning",
           "publication_year": 2026,
           "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/shahriar2026_mamba3_daymet.zarr",
-          "rank": 23
+          "rank": 23,
+          "mean_kge": 0.695
         },
         {
           "entry_id": "tft_gauged_maurer",
@@ -16644,7 +16663,8 @@
           "model_category": "Machine learning",
           "publication_year": 2024,
           "rank": 24,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr",
+          "mean_kge": 0.648
         },
         {
           "entry_id": "hoedt_mclstm_maurer_single",
@@ -17459,7 +17479,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 25,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
+          "mean_kge": 0.702
         },
         {
           "entry_id": "t3_30",
@@ -18266,7 +18287,7 @@
           "asterisk_reason": null,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_23",
-          "citation": "Kratzert et al. (2019b)",
+          "citation": "Kratzert et al. (2019a)",
           "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
           "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
           "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -18275,11 +18296,12 @@
           "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
           "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
           "family_description": "Entity-Aware Long Short-Term Memory network (EA-LSTM; H = 256 memory cells, T = 270-day sequence length, dropout = 0.4, basin-averaged NSE* loss) in which the 27 static CAMELS catchment attributes exclusively modulate a time-invariant sigmoid input gate i = sigma(W_i x_s + b_i) while the 5 dynamic extended Maurer meteorological forcings drive the forget, cell-candidate, and output gates across all 531 CAMELS-US basins (Kratzert et al., 2019b; Zenodo code archive 10.5281/zenodo.3530884; HydroShare hydrograph archive 10.4211/hs.83ea5312635e44dc824eeb99eda12f06).",
-          "notes": "Single-model evaluation of the official Kratzert et al. (2019b) EA-LSTM archive scored across all 8 individual seed members (seeds 111..888 in t3_23.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.712 ± 0.004, matching Kratzert et al., 2019b Table 2 reported 0.71 ± 0.005).",
+          "notes": "Single-model evaluation of the official Kratzert et al. (2019a) EA-LSTM archive scored across all 8 individual seed members (seeds 111..888 in t3_23.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.712 ± 0.004, matching Kratzert et al., 2019b Table 2 reported 0.71 ± 0.005).",
           "model_category": "Machine learning",
           "publication_year": 2019,
           "rank": 26,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr",
+          "mean_kge": 0.676
         },
         {
           "entry_id": "t3_39",
@@ -19076,7 +19098,8 @@
           "model_category": "Conceptual",
           "publication_year": 2018,
           "rank": 27,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_39.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_39.zarr",
+          "mean_kge": 0.623
         },
         {
           "entry_id": "t3_41",
@@ -19875,7 +19898,8 @@
           "model_category": "Process-based",
           "publication_year": 2019,
           "rank": 28,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_41.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_41.zarr",
+          "mean_kge": 0.643
         },
         {
           "entry_id": "sacsma_gauged_single_daymet",
@@ -20674,7 +20698,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 29,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr",
+          "mean_kge": 0.63
         },
         {
           "entry_id": "t3_42",
@@ -21527,7 +21552,7 @@
             "18": 0.7842
           },
           "asterisk": true,
-          "asterisk_reason": "Evaluated on 479 of 531 CAMELS basins available in the Kratzert et al. (2019b) HydroShare benchmark archive (52 basins missing).",
+          "asterisk_reason": "Evaluated on 479 of 531 CAMELS basins available in the Kratzert et al. (2019a) HydroShare benchmark archive (52 basins missing).",
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_43",
           "citation": "Addor et al. (2017)",
@@ -21543,7 +21568,8 @@
           "model_category": "Conceptual",
           "publication_year": 2017,
           "rank": 31,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_43.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_43.zarr",
+          "mean_kge": 0.647
         },
         {
           "entry_id": "t3_44",
@@ -22336,7 +22362,7 @@
           "asterisk_reason": null,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_44",
-          "citation": "Kratzert et al. (2019b)",
+          "citation": "Kratzert et al. (2019a)",
           "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
           "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
           "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -22349,7 +22375,8 @@
           "model_category": "Machine learning",
           "publication_year": 2019,
           "rank": 32,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr",
+          "mean_kge": 0.564
         },
         {
           "entry_id": "t3_45",
@@ -23132,7 +23159,7 @@
             "18": 0.7786
           },
           "asterisk": true,
-          "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019b) HydroShare benchmark archive (30 basins missing).",
+          "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019a) HydroShare benchmark archive (30 basins missing).",
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_45",
           "citation": "Addor et al. (2017)",
@@ -23148,7 +23175,8 @@
           "model_category": "Conceptual",
           "publication_year": 2017,
           "rank": 33,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_45.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_45.zarr",
+          "mean_kge": 0.614
         },
         {
           "entry_id": "t3_42_single",
@@ -24001,7 +24029,7 @@
             "18": 0.7589
           },
           "asterisk": true,
-          "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019b) HydroShare benchmark archive (30 basins missing).",
+          "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019a) HydroShare benchmark archive (30 basins missing).",
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_46",
           "citation": "Addor et al. (2017)",
@@ -24017,7 +24045,8 @@
           "model_category": "Conceptual",
           "publication_year": 2017,
           "rank": 35,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_46.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_46.zarr",
+          "mean_kge": 0.59
         },
         {
           "entry_id": "t3_48",
@@ -24814,7 +24843,8 @@
           "model_category": "Conceptual",
           "publication_year": 2017,
           "rank": 36,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_48.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_48.zarr",
+          "mean_kge": 0.603
         },
         {
           "entry_id": "t3_44_single",
@@ -25621,7 +25651,7 @@
           "asterisk_reason": null,
           "eval_period": "1989-10-01 to 1999-09-30",
           "archive_key": "t3_44",
-          "citation": "Kratzert et al. (2019b)",
+          "citation": "Kratzert et al. (2019a)",
           "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
           "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
           "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -25630,11 +25660,12 @@
           "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
           "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
           "family_description": "Regional single-layer Long Short-Term Memory network (H = 256 memory cells, T = 270-day sequence length, dropout = 0.4, basin-averaged NSE* loss) trained jointly across all 531 CAMELS-US basins using only the 5 dynamic extended Maurer meteorological forcings without any static catchment attributes (D_static = 0 input-ablation baseline from Kratzert et al., 2019b; Zenodo code archive 10.5281/zenodo.3530884; HydroShare hydrograph archive 10.4211/hs.83ea5312635e44dc824eeb99eda12f06).",
-          "notes": "Single-model evaluation of the official Kratzert et al. (2019b) LSTM without Static Attributes archive scored across all 8 individual seed members (seeds 111..888 in t3_44.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.593 ± 0.008, matching Kratzert et al., 2019b Table 2 reported 0.59 ± 0.008).",
+          "notes": "Single-model evaluation of the official Kratzert et al. (2019a) LSTM without Static Attributes archive scored across all 8 individual seed members (seeds 111..888 in t3_44.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.593 ± 0.008, matching Kratzert et al., 2019b Table 2 reported 0.59 ± 0.008).",
           "model_category": "Machine learning",
           "publication_year": 2019,
           "rank": 37,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr",
+          "mean_kge": 0.545
         },
         {
           "entry_id": "t3_52",
@@ -26433,7 +26464,8 @@
           "model_category": "Process-based",
           "publication_year": 2017,
           "rank": 38,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_52.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_52.zarr",
+          "mean_kge": 0.548
         },
         {
           "entry_id": "t3_mhm_mpr",
@@ -27232,7 +27264,8 @@
           "model_category": "Process-based",
           "publication_year": 2019,
           "rank": 39,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_19.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_19.zarr",
+          "mean_kge": 0.404
         },
         {
           "entry_id": "t3_55",
@@ -28093,7 +28126,8 @@
           "model_category": "Process-based",
           "publication_year": 2017,
           "rank": 41,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_22.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_22.zarr",
+          "mean_kge": 0.164
         }
       ]
     },
@@ -28108,15 +28142,15 @@
       "tab_label": "Multiple CAMELS Forcings (Table 4)",
       "subtitle": "531 basins, Newman evaluation decade (1989–1999) — Two or three CAMELS forcings (Daymet, Maurer, NLDAS).",
       "n_entries": 30,
-      "top_model": "ERA-Multi-Paradigm-Gauged (10-model ensemble)",
+      "top_model": "ERA-Multi-Paradigm-Gauged (4-arch × 10-seed ensemble)",
       "top_nse": 0.827,
       "rows": [
         {
           "entry_id": "era_gauged_multi_paradigm",
           "leaderboard_id": "gauged__multi_camels",
-          "model_name": "ERA-Multi-Paradigm-Gauged (10-model ensemble)",
+          "model_name": "ERA-Multi-Paradigm-Gauged (4-arch × 10-seed ensemble)",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "10",
@@ -29002,39 +29036,42 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23641695",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_newman_cv_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_newman_cv_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "gauged__multi_camels__era_gauged_multi_paradigm",
           "model_key": "gauged__multi_camels__era_gauged_multi_paradigm",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.826482,
-          "gauch_kge": 0.806108,
-          "gauch_pearson_r": 0.918955,
-          "gauch_alpha_nse": 0.863615,
-          "gauch_beta_nse": -0.031408,
-          "gauch_beta_kge": 0.932276,
-          "gauch_mse": 1.041906,
-          "gauch_rmse": 1.020738,
-          "gauch_fhv": -12.629876,
-          "gauch_fms": -5.288444,
-          "gauch_flv": 34.93858,
-          "gauch_peak_timing": 0.238095,
+          "gauch_nse": 0.8265,
+          "gauch_kge": 0.8061,
+          "gauch_pearson_r": 0.919,
+          "gauch_alpha_nse": 0.8636,
+          "gauch_beta_nse": -0.0314,
+          "gauch_beta_kge": 0.9323,
+          "gauch_mse": 1.0419,
+          "gauch_rmse": 1.0207,
+          "gauch_fhv": -12.63,
+          "gauch_fms": -5.29,
+          "gauch_flv": 34.94,
+          "gauch_peak_timing": 0.2381,
           "publication_year": 2026,
           "rank": 1,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.756,
+          "gauch_log_nse": 0.8709,
+          "gauch_log_kge": 0.693
         },
         {
           "entry_id": "era_gauged_multi_paradigm_single",
           "leaderboard_id": "gauged__multi_camels",
           "model_name": "ERA-Multi-Paradigm-Gauged",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "1",
@@ -29048,8 +29085,8 @@
           "single_med_nse_display": "0.822 ± 0.002",
           "primary_ranking_nse": 0.822,
           "mean_nse": 0.771,
-          "med_kge": 0.805,
-          "med_fhv_abs": 13.15,
+          "med_kge": 0.806,
+          "med_fhv_abs": 13.17,
           "nse_le_0": 2,
           "gauch_2023_metrics": {
             "NSE": {
@@ -29934,32 +29971,35 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23641695",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_newman_cv_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_newman_cv_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "gauged__multi_camels__era_gauged_multi_paradigm_single",
           "model_key": "gauged__multi_camels__era_gauged_multi_paradigm_single",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.823095,
-          "gauch_kge": 0.804901,
-          "gauch_pearson_r": 0.916875,
-          "gauch_alpha_nse": 0.865627,
-          "gauch_beta_nse": -0.031408,
-          "gauch_beta_kge": 0.932276,
-          "gauch_mse": 1.070592,
-          "gauch_rmse": 1.034613,
-          "gauch_fhv": -12.515015,
-          "gauch_fms": -4.980668,
-          "gauch_flv": 22.841206,
-          "gauch_peak_timing": 0.241667,
+          "gauch_nse": 0.8222,
+          "gauch_kge": 0.8062,
+          "gauch_pearson_r": 0.9167,
+          "gauch_alpha_nse": 0.8658,
+          "gauch_beta_nse": -0.0323,
+          "gauch_beta_kge": 0.9332,
+          "gauch_mse": 1.0683,
+          "gauch_rmse": 1.0336,
+          "gauch_fhv": -12.49,
+          "gauch_fms": -5.14,
+          "gauch_flv": 23.91,
+          "gauch_peak_timing": 0.2411,
           "publication_year": 2026,
           "rank": 2,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.755,
+          "gauch_log_nse": 0.8623,
+          "gauch_log_kge": 0.6773
         },
         {
           "entry_id": "t4_05",
@@ -30767,7 +30807,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 3,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr",
+          "mean_kge": 0.755
         },
         {
           "entry_id": "t4_06",
@@ -31564,14 +31605,15 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2025,
           "rank": 4,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_06.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_06.zarr",
+          "mean_kge": 0.754
         },
         {
           "entry_id": "era_gauged_physics_guided",
           "leaderboard_id": "gauged__multi_camels",
           "model_name": "ERA-Physics-Guided-Gauged (10-model ensemble)",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "10",
@@ -32457,39 +32499,42 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639367",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_physics_informed_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_physics_informed_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "gauged__multi_camels__era_gauged_physics_guided",
           "model_key": "gauged__multi_camels__era_gauged_physics_guided",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.820257,
-          "gauch_kge": 0.820702,
-          "gauch_pearson_r": 0.913953,
-          "gauch_alpha_nse": 0.882956,
-          "gauch_beta_nse": -0.02555,
-          "gauch_beta_kge": 0.949164,
-          "gauch_mse": 1.093716,
-          "gauch_rmse": 1.045809,
-          "gauch_fhv": -10.769059,
-          "gauch_fms": -6.818911,
-          "gauch_flv": 37.886349,
-          "gauch_peak_timing": 0.238095,
+          "gauch_nse": 0.8203,
+          "gauch_kge": 0.8207,
+          "gauch_pearson_r": 0.914,
+          "gauch_alpha_nse": 0.883,
+          "gauch_beta_nse": -0.0255,
+          "gauch_beta_kge": 0.9492,
+          "gauch_mse": 1.0937,
+          "gauch_rmse": 1.0458,
+          "gauch_fhv": -10.77,
+          "gauch_fms": -6.82,
+          "gauch_flv": 37.89,
+          "gauch_peak_timing": 0.2381,
           "publication_year": 2026,
           "rank": 5,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.766,
+          "gauch_log_nse": 0.8442,
+          "gauch_log_kge": 0.6195
         },
         {
           "entry_id": "era_gauged_minimal_guidance",
           "leaderboard_id": "gauged__multi_camels",
           "model_name": "ERA-Unguided-Gauged (10-model ensemble)",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "10",
@@ -33375,24 +33420,24 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639347",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_minimal_guidance_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_minimal_guidance_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "gauged__multi_camels__era_gauged_minimal_guidance",
           "model_key": "gauged__multi_camels__era_gauged_minimal_guidance",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.81922,
-          "gauch_kge": 0.801928,
-          "gauch_pearson_r": 0.913179,
-          "gauch_alpha_nse": 0.866276,
-          "gauch_beta_nse": -0.029637,
-          "gauch_beta_kge": 0.941242,
-          "gauch_mse": 1.118676,
-          "gauch_rmse": 1.057675,
-          "gauch_fhv": -12.825434,
-          "gauch_fms": -5.410729,
-          "gauch_flv": 25.287647,
+          "gauch_nse": 0.8192,
+          "gauch_kge": 0.8019,
+          "gauch_pearson_r": 0.9132,
+          "gauch_alpha_nse": 0.8663,
+          "gauch_beta_nse": -0.0296,
+          "gauch_beta_kge": 0.9412,
+          "gauch_mse": 1.1187,
+          "gauch_rmse": 1.0577,
+          "gauch_fhv": -12.83,
+          "gauch_fms": -5.41,
+          "gauch_flv": 25.29,
           "gauch_peak_timing": 0.25,
           "publication_year": 2026,
           "rank": 6,
@@ -33400,7 +33445,10 @@
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.749,
+          "gauch_log_nse": 0.8547,
+          "gauch_log_kge": 0.6494
         },
         {
           "entry_id": "t4_09",
@@ -34208,14 +34256,15 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 7,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr",
+          "mean_kge": 0.745
         },
         {
           "entry_id": "era_gauged_minimal_guidance_single",
           "leaderboard_id": "gauged__multi_camels",
           "model_name": "ERA-Unguided-Gauged",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "1",
@@ -34229,8 +34278,8 @@
           "single_med_nse_display": "0.810 ± 0.002",
           "primary_ranking_nse": 0.81,
           "mean_nse": 0.755,
-          "med_kge": 0.798,
-          "med_fhv_abs": 13.26,
+          "med_kge": 0.799,
+          "med_fhv_abs": 13.36,
           "nse_le_0": 3,
           "gauch_2023_metrics": {
             "NSE": {
@@ -35115,32 +35164,35 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639347",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_minimal_guidance_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_minimal_guidance_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "gauged__multi_camels__era_gauged_minimal_guidance_single",
           "model_key": "gauged__multi_camels__era_gauged_minimal_guidance_single",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.807789,
-          "gauch_kge": 0.798089,
-          "gauch_pearson_r": 0.907616,
-          "gauch_alpha_nse": 0.871028,
-          "gauch_beta_nse": -0.029637,
-          "gauch_beta_kge": 0.941242,
-          "gauch_mse": 1.167661,
-          "gauch_rmse": 1.079721,
-          "gauch_fhv": -12.43207,
-          "gauch_fms": -4.110934,
-          "gauch_flv": 4.875715,
-          "gauch_peak_timing": 0.25,
+          "gauch_nse": 0.8102,
+          "gauch_kge": 0.7988,
+          "gauch_pearson_r": 0.9085,
+          "gauch_alpha_nse": 0.8694,
+          "gauch_beta_nse": -0.0294,
+          "gauch_beta_kge": 0.9397,
+          "gauch_mse": 1.1751,
+          "gauch_rmse": 1.084,
+          "gauch_fhv": -12.68,
+          "gauch_fms": -4.52,
+          "gauch_flv": 10.13,
+          "gauch_peak_timing": 0.2489,
           "publication_year": 2026,
           "rank": 8,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.745,
+          "gauch_log_nse": 0.8263,
+          "gauch_log_kge": 0.6019
         },
         {
           "entry_id": "t4_08",
@@ -35948,14 +36000,15 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 9,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr",
+          "mean_kge": 0.747
         },
         {
           "entry_id": "era_gauged_physics_guided_single",
           "leaderboard_id": "gauged__multi_camels",
           "model_name": "ERA-Physics-Guided-Gauged",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "1",
@@ -35969,8 +36022,8 @@
           "single_med_nse_display": "0.800 ± 0.003",
           "primary_ranking_nse": 0.8,
           "mean_nse": 0.755,
-          "med_kge": 0.818,
-          "med_fhv_abs": 11.14,
+          "med_kge": 0.815,
+          "med_fhv_abs": 11.3,
           "nse_le_0": 2,
           "gauch_2023_metrics": {
             "NSE": {
@@ -36855,32 +36908,35 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639367",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_physics_informed_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_gauged_physics_informed_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "gauged__multi_camels__era_gauged_physics_guided_single",
           "model_key": "gauged__multi_camels__era_gauged_physics_guided_single",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.800888,
-          "gauch_kge": 0.817613,
-          "gauch_pearson_r": 0.903708,
-          "gauch_alpha_nse": 0.894992,
-          "gauch_beta_nse": -0.02555,
-          "gauch_beta_kge": 0.949164,
-          "gauch_mse": 1.208361,
-          "gauch_rmse": 1.098706,
-          "gauch_fhv": -9.912032,
-          "gauch_fms": -5.69518,
-          "gauch_flv": 24.587426,
-          "gauch_peak_timing": 0.257895,
+          "gauch_nse": 0.8005,
+          "gauch_kge": 0.8148,
+          "gauch_pearson_r": 0.9041,
+          "gauch_alpha_nse": 0.8931,
+          "gauch_beta_nse": -0.0259,
+          "gauch_beta_kge": 0.9474,
+          "gauch_mse": 1.2222,
+          "gauch_rmse": 1.1055,
+          "gauch_fhv": -10.1,
+          "gauch_fms": -5.68,
+          "gauch_flv": 28.44,
+          "gauch_peak_timing": 0.2528,
           "publication_year": 2026,
           "rank": 10,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.76,
+          "gauch_log_nse": 0.822,
+          "gauch_log_kge": 0.6026
         },
         {
           "entry_id": "t4_19",
@@ -37688,7 +37744,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 11,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr",
+          "mean_kge": 0.731
         },
         {
           "entry_id": "t4_11",
@@ -38510,7 +38567,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 12,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_05.zarr",
+          "mean_kge": 0.748
         },
         {
           "entry_id": "t4_25",
@@ -39332,7 +39390,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 13,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_09.zarr",
+          "mean_kge": 0.739
         },
         {
           "entry_id": "hoedt_mclstm_3f_avgp",
@@ -40138,7 +40197,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 14,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr",
+          "mean_kge": 0.702
         },
         {
           "entry_id": "t4_31",
@@ -40960,7 +41020,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 15,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_19.zarr",
+          "mean_kge": 0.725
         },
         {
           "entry_id": "t4_28",
@@ -41782,7 +41843,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 16,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/t4_08.zarr",
+          "mean_kge": 0.739
         },
         {
           "entry_id": "hoedt_mclstm_3f_ens_b",
@@ -42583,7 +42645,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 17,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_ens_b.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_ens_b.zarr",
+          "mean_kge": 0.695
         },
         {
           "entry_id": "hoedt_mclstm_3f_avgp_single",
@@ -43403,7 +43466,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 18,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/hoedt_mclstm_3f_avgp.zarr",
+          "mean_kge": 0.695
         },
         {
           "entry_id": "t4_34",
@@ -44447,7 +44511,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 22,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr",
+          "mean_kge": 0.616
         },
         {
           "entry_id": "sacsma_gauged_multi_3f_single",
@@ -45262,7 +45327,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 23,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__multi_camels/sacsma_3f_ens.zarr",
+          "mean_kge": 0.614
         },
         {
           "entry_id": "t4_38",
@@ -46036,7 +46102,8 @@
           "regional_huc02": null,
           "model_category": "Machine learning",
           "publication_year": 2022,
-          "rank": 1
+          "rank": 1,
+          "mean_kge": 0.865
         },
         {
           "entry_id": "t5_02",
@@ -46227,7 +46294,8 @@
           "regional_huc02": null,
           "model_category": "Machine learning",
           "publication_year": 2022,
-          "rank": 2
+          "rank": 2,
+          "mean_kge": 0.859
         },
         {
           "entry_id": "t5_03",
@@ -46418,7 +46486,8 @@
           "regional_huc02": null,
           "model_category": "Machine learning",
           "publication_year": 2022,
-          "rank": 3
+          "rank": 3,
+          "mean_kge": 0.844
         },
         {
           "entry_id": "yin2022_rrformer_daymet",
@@ -46429,7 +46498,7 @@
           "paradigm": "Encoder-Decoder Transformer (RR-Former)",
           "category": "MIP Re-run",
           "code_provenance": "Our Code",
-          "forcing": "Daymet + Lagged Q (t-7..t-1)",
+          "forcing": "Daymet + Lagged Q (t-15..t-1)",
           "is_ensemble": true,
           "num_members": 3,
           "has_qsim_members": true,
@@ -47214,12 +47283,13 @@
           "zenodo_url": null,
           "hydroshare_url": "",
           "data_archive_url": null,
-          "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 7-day lagged observed streamflow Q(t-7..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
-          "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 7-day lagged streamflow Q(t-7..t-1); 3-seed ensemble mean (seeds 601, 602, 603; Ensemble Med NSE = 0.847, Mean NSE = 0.822, Med KGE = 0.862, NSE <= 0 = 0).",
+          "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 15-day lagged observed streamflow Q(t-15..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
+          "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 15-day lagged streamflow Q(t-15..t-1); 3-seed ensemble mean (seeds 601, 602, 603; Ensemble Med NSE = 0.847, Mean NSE = 0.822, Med KGE = 0.862, NSE <= 0 = 0).",
           "model_category": "Machine learning",
           "publication_year": 2022,
           "rank": 4,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
+          "mean_kge": 0.832
         },
         {
           "entry_id": "t5_04",
@@ -47305,7 +47375,7 @@
           "paradigm": "Encoder-Decoder Transformer (RR-Former)",
           "category": "MIP Re-run",
           "code_provenance": "Our Code",
-          "forcing": "Daymet + Lagged Q (t-7..t-1)",
+          "forcing": "Daymet + Lagged Q (t-15..t-1)",
           "is_ensemble": false,
           "num_members": 3,
           "has_qsim_members": true,
@@ -48104,12 +48174,13 @@
           "zenodo_url": null,
           "hydroshare_url": "",
           "data_archive_url": null,
-          "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 7-day lagged observed streamflow Q(t-7..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
-          "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 7-day lagged streamflow Q(t-7..t-1); single-model performance averaged across all 3 random seeds (seeds 601, 602, 603; evaluation_mode='single_member_mean'; Single-Seed Med NSE = 0.839 ± 0.002).",
+          "family_description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 15-day lagged observed streamflow Q(t-15..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
+          "notes": "Yin et al. (2022) RR-Former (d_model=64, nhead=4, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 7-day lookback, 3-layer MLP head 64->32->16->1) trained via 300-epoch regional pretraining across all 531 CAMELS-US basins over WY1999-2008 followed by 40-epoch per-basin fine-tuning (lr=1e-4, patience=10), evaluated over WY1989-1999 with Daymet + 15-day lagged streamflow Q(t-15..t-1); single-model performance averaged across all 3 random seeds (seeds 601, 602, 603; evaluation_mode='single_member_mean'; Single-Seed Med NSE = 0.839 ± 0.002).",
           "model_category": "Machine learning",
           "publication_year": 2022,
           "rank": 6,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr",
+          "mean_kge": 0.827
         },
         {
           "entry_id": "t5_06",
@@ -49063,7 +49134,8 @@
           "model_category": "Machine learning",
           "publication_year": 2020,
           "rank": 9,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
+          "mean_kge": 0.766
         },
         {
           "entry_id": "feng2020_di_lstm_nldas_single",
@@ -49881,7 +49953,8 @@
           "model_category": "Machine learning",
           "publication_year": 2020,
           "rank": 10,
-          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/feng2020_di_lstm_nldas.zarr",
+          "mean_kge": 0.762
         },
         {
           "entry_id": "t5_08",
@@ -50755,7 +50828,8 @@
           "zarr_path": "gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/naive_lag1_persistence_gauged.zarr",
           "entry_id": "naive_lag1_persistence_gauged",
           "leaderboard_id": "gauged__lagged_streamflow",
-          "rank": 12
+          "rank": 12,
+          "mean_kge": 0.706
         }
       ]
     },
@@ -50809,11 +50883,11 @@
           "med_fhv_abs": 20.4,
           "nse_le_0": 24,
           "asterisk": true,
-          "asterisk_reason": "Evaluated in Kratzert et al. (2019a) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
+          "asterisk_reason": "Evaluated in Kratzert et al. (2019b) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
           "num_evaluated_basins": 531,
           "eval_period": "1995-10-01 to 2010-09-30",
           "archive_key": "t7_07",
-          "citation": "Kratzert et al. (2019a)",
+          "citation": "Kratzert et al. (2019b)",
           "paper_url": "https://doi.org/10.1029/2019WR026065",
           "github_url": "https://github.com/kratzert/lstm_for_pub",
           "code_url": "https://github.com/kratzert/lstm_for_pub",
@@ -51666,7 +51740,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2024,
           "rank": 2,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
+          "mean_kge": 0.594
         },
         {
           "entry_id": "t7_11",
@@ -52483,7 +52558,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2024,
           "rank": 3,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
+          "mean_kge": 0.585
         },
         {
           "entry_id": "t7_10",
@@ -53286,7 +53362,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2022,
           "rank": 4,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
+          "mean_kge": 0.568
         },
         {
           "entry_id": "poudel_mlp_hbv_pub_daymet",
@@ -54087,7 +54164,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2026,
           "rank": 5,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
+          "mean_kge": 0.543
         },
         {
           "entry_id": "t7_14",
@@ -54904,7 +54982,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2022,
           "rank": 6,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
+          "mean_kge": 0.557
         },
         {
           "entry_id": "poudel_mlp_hbv_pub_daymet_single",
@@ -55719,7 +55798,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2026,
           "rank": 7,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
+          "mean_kge": 0.54
         },
         {
           "entry_id": "t7_18",
@@ -55742,11 +55822,11 @@
           "med_fhv_abs": 21.9,
           "nse_le_0": 31,
           "asterisk": true,
-          "asterisk_reason": "Evaluated in Kratzert et al. (2019a) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
+          "asterisk_reason": "Evaluated in Kratzert et al. (2019b) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
           "num_evaluated_basins": 531,
           "eval_period": "1995-10-01 to 2010-09-30",
           "archive_key": "t7_18",
-          "citation": "Kratzert et al. (2019a)",
+          "citation": "Kratzert et al. (2019b)",
           "paper_url": "https://doi.org/10.1029/2019WR026065",
           "github_url": "https://github.com/kratzert/lstm_for_pub",
           "code_url": "https://github.com/kratzert/lstm_for_pub",
@@ -56595,7 +56675,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 9,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr",
+          "mean_kge": 0.496
         },
         {
           "entry_id": "t7_18_seibert_hbv",
@@ -57392,7 +57473,8 @@
           "model_category": "Conceptual",
           "publication_year": 2018,
           "rank": 10,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_23.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_23.zarr",
+          "mean_kge": 0.301
         }
       ]
     },
@@ -58214,14 +58296,15 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 1,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr",
+          "mean_kge": 0.62
         },
         {
           "entry_id": "era_pub_physics_guided",
           "leaderboard_id": "pub__multi_camels",
           "model_name": "ERA-Physics-Guided-PUB (10-model ensemble)",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "10",
@@ -59107,39 +59190,42 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639402",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_physics_informed_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_physics_informed_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "pub__multi_camels__era_pub_physics_guided",
           "model_key": "pub__multi_camels__era_pub_physics_guided",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.725426,
-          "gauch_kge": 0.663523,
-          "gauch_pearson_r": 0.884458,
-          "gauch_alpha_nse": 0.775835,
-          "gauch_beta_nse": -0.043988,
-          "gauch_beta_kge": 0.905908,
-          "gauch_mse": 1.59362,
-          "gauch_rmse": 1.262386,
-          "gauch_fhv": -21.554136,
-          "gauch_fms": -11.94475,
-          "gauch_flv": 41.577102,
-          "gauch_peak_timing": 0.333333,
+          "gauch_nse": 0.7254,
+          "gauch_kge": 0.6635,
+          "gauch_pearson_r": 0.8845,
+          "gauch_alpha_nse": 0.7758,
+          "gauch_beta_nse": -0.044,
+          "gauch_beta_kge": 0.9059,
+          "gauch_mse": 1.5936,
+          "gauch_rmse": 1.2624,
+          "gauch_fhv": -21.55,
+          "gauch_fms": -11.94,
+          "gauch_flv": 41.58,
+          "gauch_peak_timing": 0.3333,
           "publication_year": 2026,
           "rank": 2,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.598,
+          "gauch_log_nse": 0.7177,
+          "gauch_log_kge": 0.3638
         },
         {
           "entry_id": "era_pub_minimal_guidance",
           "leaderboard_id": "pub__multi_camels",
           "model_name": "ERA-Unguided-PUB (10-model ensemble)",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "10",
@@ -60025,7 +60111,7 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639387",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_minimal_guidance_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_minimal_guidance_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
@@ -60033,31 +60119,34 @@
           "model_key": "pub__multi_camels__era_pub_minimal_guidance",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
           "gauch_nse": 0.7197,
-          "gauch_kge": 0.644309,
-          "gauch_pearson_r": 0.883848,
-          "gauch_alpha_nse": 0.733026,
-          "gauch_beta_nse": -0.055702,
-          "gauch_beta_kge": 0.880947,
-          "gauch_mse": 1.602163,
-          "gauch_rmse": 1.265766,
-          "gauch_fhv": -25.661727,
-          "gauch_fms": -11.505629,
-          "gauch_flv": -5.910458,
-          "gauch_peak_timing": 0.307692,
+          "gauch_kge": 0.6443,
+          "gauch_pearson_r": 0.8838,
+          "gauch_alpha_nse": 0.733,
+          "gauch_beta_nse": -0.0557,
+          "gauch_beta_kge": 0.8809,
+          "gauch_mse": 1.6022,
+          "gauch_rmse": 1.2658,
+          "gauch_fhv": -25.66,
+          "gauch_fms": -11.51,
+          "gauch_flv": -5.91,
+          "gauch_peak_timing": 0.3077,
           "publication_year": 2026,
           "rank": 3,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.575,
+          "gauch_log_nse": 0.7256,
+          "gauch_log_kge": 0.4238
         },
         {
           "entry_id": "era_pub_minimal_guidance_single",
           "leaderboard_id": "pub__multi_camels",
           "model_name": "ERA-Unguided-PUB",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "1",
@@ -60071,7 +60160,7 @@
           "single_med_nse_display": "0.714 ± 0.004",
           "primary_ranking_nse": 0.714,
           "mean_nse": 0.636,
-          "med_kge": 0.641,
+          "med_kge": 0.643,
           "med_fhv_abs": 26.94,
           "nse_le_0": 5,
           "gauch_2023_metrics": {
@@ -60957,39 +61046,42 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639387",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_minimal_guidance_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_minimal_guidance_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "pub__multi_camels__era_pub_minimal_guidance_single",
           "model_key": "pub__multi_camels__era_pub_minimal_guidance_single",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.711243,
-          "gauch_kge": 0.640658,
-          "gauch_pearson_r": 0.878808,
-          "gauch_alpha_nse": 0.739124,
-          "gauch_beta_nse": -0.055702,
-          "gauch_beta_kge": 0.880947,
-          "gauch_mse": 1.648095,
-          "gauch_rmse": 1.280788,
-          "gauch_fhv": -25.318872,
-          "gauch_fms": -9.13398,
-          "gauch_flv": -52.17411,
-          "gauch_peak_timing": 0.311765,
+          "gauch_nse": 0.7142,
+          "gauch_kge": 0.6432,
+          "gauch_pearson_r": 0.8797,
+          "gauch_alpha_nse": 0.7393,
+          "gauch_beta_nse": -0.0561,
+          "gauch_beta_kge": 0.8812,
+          "gauch_mse": 1.6603,
+          "gauch_rmse": 1.2885,
+          "gauch_fhv": -25.6,
+          "gauch_fms": -10.37,
+          "gauch_flv": -26.73,
+          "gauch_peak_timing": 0.3195,
           "publication_year": 2026,
           "rank": 4,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.57,
+          "gauch_log_nse": 0.6351,
+          "gauch_log_kge": 0.3865
         },
         {
           "entry_id": "era_pub_physics_guided_single",
           "leaderboard_id": "pub__multi_camels",
           "model_name": "ERA-Physics-Guided-PUB",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "1",
@@ -61003,8 +61095,8 @@
           "single_med_nse_display": "0.714 ± 0.004",
           "primary_ranking_nse": 0.714,
           "mean_nse": 0.625,
-          "med_kge": 0.662,
-          "med_fhv_abs": 24.11,
+          "med_kge": 0.663,
+          "med_fhv_abs": 24.34,
           "nse_le_0": 11,
           "gauch_2023_metrics": {
             "NSE": {
@@ -61889,32 +61981,35 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639402",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_physics_informed_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pub_physics_informed_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "pub__multi_camels__era_pub_physics_guided_single",
           "model_key": "pub__multi_camels__era_pub_physics_guided_single",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.709179,
-          "gauch_kge": 0.662135,
-          "gauch_pearson_r": 0.876732,
-          "gauch_alpha_nse": 0.780919,
-          "gauch_beta_nse": -0.043988,
-          "gauch_beta_kge": 0.905908,
-          "gauch_mse": 1.651207,
-          "gauch_rmse": 1.284567,
-          "gauch_fhv": -21.089471,
-          "gauch_fms": -10.810597,
-          "gauch_flv": 33.225919,
-          "gauch_peak_timing": 0.330769,
+          "gauch_nse": 0.7138,
+          "gauch_kge": 0.6632,
+          "gauch_pearson_r": 0.8774,
+          "gauch_alpha_nse": 0.7772,
+          "gauch_beta_nse": -0.0447,
+          "gauch_beta_kge": 0.9064,
+          "gauch_mse": 1.6545,
+          "gauch_rmse": 1.2862,
+          "gauch_fhv": -21.7,
+          "gauch_fms": -10.87,
+          "gauch_flv": 35.39,
+          "gauch_peak_timing": 0.3347,
           "publication_year": 2026,
           "rank": 5,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.591,
+          "gauch_log_nse": 0.6943,
+          "gauch_log_kge": 0.3529
         },
         {
           "entry_id": "k21_lstm_pub_3f_single",
@@ -62734,7 +62829,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 6,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/k21_lstm_pub_3f.zarr",
+          "mean_kge": 0.596
         },
         {
           "entry_id": "sacsma_pub_multi_3f",
@@ -63535,7 +63631,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 7,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr",
+          "mean_kge": 0.514
         },
         {
           "entry_id": "sacsma_pub_multi_3f_single",
@@ -64350,7 +64447,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 8,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__multi_camels/sacsma_pub_3f.zarr",
+          "mean_kge": 0.512
         }
       ]
     },
@@ -64535,7 +64633,8 @@
           "publication_year": 2022,
           "rank": 1,
           "pred_nan_when_obs_valid": null,
-          "zarr_path": null
+          "zarr_path": null,
+          "mean_kge": 0.771
         },
         {
           "entry_id": "feng2020_di_lstm_pub_nldas",
@@ -65336,7 +65435,8 @@
           "model_category": "Machine learning",
           "publication_year": 2020,
           "rank": 2,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
+          "mean_kge": 0.724
         },
         {
           "entry_id": "t9_02",
@@ -65505,7 +65605,8 @@
           "publication_year": 2022,
           "rank": 3,
           "pred_nan_when_obs_valid": null,
-          "zarr_path": null
+          "zarr_path": null,
+          "mean_kge": 0.737
         },
         {
           "entry_id": "feng2020_di_lstm_pub_nldas_single",
@@ -66320,7 +66421,8 @@
           "model_category": "Machine learning",
           "publication_year": 2020,
           "rank": 4,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
+          "mean_kge": 0.717
         },
         {
           "model_name": "Naive Lag-1 Persistence (Q(t-1), Lower Benchmark)",
@@ -67119,7 +67221,8 @@
           "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/naive_lag1_persistence_pub.zarr",
           "entry_id": "naive_lag1_persistence_pub",
           "leaderboard_id": "pub__lagged_streamflow",
-          "rank": 5
+          "rank": 5,
+          "mean_kge": 0.706
         }
       ]
     },
@@ -67953,7 +68056,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2024,
           "rank": 1,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
+          "mean_kge": 0.494
         },
         {
           "entry_id": "k21_lstm_pur_daymet",
@@ -68761,7 +68865,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 2,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
+          "mean_kge": 0.497
         },
         {
           "entry_id": "t11_06",
@@ -69564,7 +69669,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2022,
           "rank": 3,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
+          "mean_kge": 0.502
         },
         {
           "entry_id": "t11_04_single",
@@ -70381,7 +70487,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2024,
           "rank": 4,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
+          "mean_kge": 0.482
         },
         {
           "entry_id": "poudel_mlp_hbv_pur_daymet",
@@ -71182,7 +71289,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2026,
           "rank": 5,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
+          "mean_kge": 0.484
         },
         {
           "entry_id": "k21_lstm_pur_maurer",
@@ -71990,7 +72098,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 6,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
+          "mean_kge": 0.498
         },
         {
           "entry_id": "k21_lstm_pur_daymet_single",
@@ -72812,7 +72921,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 7,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
+          "mean_kge": 0.481
         },
         {
           "entry_id": "t11_10",
@@ -73629,7 +73739,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2022,
           "rank": 8,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
+          "mean_kge": 0.492
         },
         {
           "entry_id": "poudel_mlp_hbv_pur_daymet_single",
@@ -74444,7 +74555,8 @@
           "model_category": "Hybrid (ML + Physics)",
           "publication_year": 2026,
           "rank": 9,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
+          "mean_kge": 0.48
         },
         {
           "entry_id": "k21_lstm_pur_nldas",
@@ -75252,7 +75364,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 10,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
+          "mean_kge": 0.477
         },
         {
           "entry_id": "k21_lstm_pur_maurer_single",
@@ -76074,7 +76187,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 11,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
+          "mean_kge": 0.477
         },
         {
           "entry_id": "k21_lstm_pur_nldas_single",
@@ -76896,7 +77010,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 12,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
+          "mean_kge": 0.456
         },
         {
           "entry_id": "sacsma_pur_single_daymet",
@@ -77695,7 +77810,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 13,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr",
+          "mean_kge": 0.353
         }
       ]
     },
@@ -77718,7 +77834,7 @@
           "leaderboard_id": "pur__multi_camels",
           "model_name": "ERA-Unguided-PUR (10-model ensemble)",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "10",
@@ -78604,32 +78720,35 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639429",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_minimal_guidance_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_minimal_guidance_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "pur__multi_camels__era_pur_minimal_guidance",
           "model_key": "pur__multi_camels__era_pur_minimal_guidance",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.695649,
-          "gauch_kge": 0.642426,
-          "gauch_pearson_r": 0.87539,
-          "gauch_alpha_nse": 0.810435,
-          "gauch_beta_nse": -0.053856,
-          "gauch_beta_kge": 0.882584,
-          "gauch_mse": 1.729529,
-          "gauch_rmse": 1.315116,
-          "gauch_fhv": -17.829841,
-          "gauch_fms": -4.189546,
-          "gauch_flv": 34.546305,
-          "gauch_peak_timing": 0.352941,
+          "gauch_nse": 0.6956,
+          "gauch_kge": 0.6424,
+          "gauch_pearson_r": 0.8754,
+          "gauch_alpha_nse": 0.8104,
+          "gauch_beta_nse": -0.0539,
+          "gauch_beta_kge": 0.8826,
+          "gauch_mse": 1.7295,
+          "gauch_rmse": 1.3151,
+          "gauch_fhv": -17.83,
+          "gauch_fms": -4.19,
+          "gauch_flv": 34.55,
+          "gauch_peak_timing": 0.3529,
           "publication_year": 2026,
           "rank": 1,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.53,
+          "gauch_log_nse": 0.6471,
+          "gauch_log_kge": 0.3351
         },
         {
           "entry_id": "k21_lstm_pur_3f",
@@ -79435,14 +79554,15 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 2,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr",
+          "mean_kge": 0.542
         },
         {
           "entry_id": "era_pur_minimal_guidance_single",
           "leaderboard_id": "pur__multi_camels",
           "model_name": "ERA-Unguided-PUR",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "1",
@@ -79456,7 +79576,7 @@
           "single_med_nse_display": "0.686 ± 0.004",
           "primary_ranking_nse": 0.686,
           "mean_nse": 0.466,
-          "med_kge": 0.635,
+          "med_kge": 0.637,
           "med_fhv_abs": 24.71,
           "nse_le_0": 35,
           "gauch_2023_metrics": {
@@ -80342,39 +80462,42 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639429",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_minimal_guidance_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_minimal_guidance_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "pur__multi_camels__era_pur_minimal_guidance_single",
           "model_key": "pur__multi_camels__era_pur_minimal_guidance_single",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.681348,
-          "gauch_kge": 0.635507,
-          "gauch_pearson_r": 0.870378,
-          "gauch_alpha_nse": 0.814591,
-          "gauch_beta_nse": -0.053856,
-          "gauch_beta_kge": 0.882584,
-          "gauch_mse": 1.834668,
-          "gauch_rmse": 1.349407,
-          "gauch_fhv": -16.947899,
-          "gauch_fms": -1.871935,
-          "gauch_flv": 23.926884,
-          "gauch_peak_timing": 0.37,
+          "gauch_nse": 0.6861,
+          "gauch_kge": 0.6369,
+          "gauch_pearson_r": 0.8706,
+          "gauch_alpha_nse": 0.8118,
+          "gauch_beta_nse": -0.0535,
+          "gauch_beta_kge": 0.8851,
+          "gauch_mse": 1.833,
+          "gauch_rmse": 1.3538,
+          "gauch_fhv": -17.47,
+          "gauch_fms": -2.25,
+          "gauch_flv": 26.36,
+          "gauch_peak_timing": 0.365,
           "publication_year": 2026,
           "rank": 3,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.52,
+          "gauch_log_nse": 0.6271,
+          "gauch_log_kge": 0.3185
         },
         {
           "entry_id": "era_pur_physics_guided",
           "leaderboard_id": "pur__multi_camels",
           "model_name": "ERA-Physics-Guided-PUR (10-model ensemble)",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "10",
@@ -81260,39 +81383,42 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639461",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_physics_informed_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_physics_informed_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "pur__multi_camels__era_pur_physics_guided",
           "model_key": "pur__multi_camels__era_pur_physics_guided",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.683725,
-          "gauch_kge": 0.657081,
-          "gauch_pearson_r": 0.868283,
-          "gauch_alpha_nse": 0.811245,
-          "gauch_beta_nse": -0.042905,
-          "gauch_beta_kge": 0.910664,
-          "gauch_mse": 1.788433,
-          "gauch_rmse": 1.337323,
-          "gauch_fhv": -17.140939,
-          "gauch_fms": -12.234699,
-          "gauch_flv": 34.633242,
-          "gauch_peak_timing": 0.333333,
+          "gauch_nse": 0.6837,
+          "gauch_kge": 0.6571,
+          "gauch_pearson_r": 0.8683,
+          "gauch_alpha_nse": 0.8112,
+          "gauch_beta_nse": -0.0429,
+          "gauch_beta_kge": 0.9107,
+          "gauch_mse": 1.7884,
+          "gauch_rmse": 1.3373,
+          "gauch_fhv": -17.14,
+          "gauch_fms": -12.23,
+          "gauch_flv": 34.63,
+          "gauch_peak_timing": 0.3333,
           "publication_year": 2026,
           "rank": 4,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.559,
+          "gauch_log_nse": 0.6582,
+          "gauch_log_kge": 0.3203
         },
         {
           "entry_id": "era_pur_physics_guided_single",
           "leaderboard_id": "pur__multi_camels",
           "model_name": "ERA-Physics-Guided-PUR",
           "family_id": "era_lstm_seeded",
-          "family_name": "Empirical Research Assistance -- LSTM Seeded",
+          "family_name": "Empirical Research Assistance (ERA)",
           "category": "Contribution",
           "forcing": "Daymet + Maurer + NLDAS",
           "seeds": "1",
@@ -81306,8 +81432,8 @@
           "single_med_nse_display": "0.653 ± 0.007",
           "primary_ranking_nse": 0.653,
           "mean_nse": 0.453,
-          "med_kge": 0.636,
-          "med_fhv_abs": 22.28,
+          "med_kge": 0.639,
+          "med_fhv_abs": 23.42,
           "nse_le_0": 33,
           "gauch_2023_metrics": {
             "NSE": {
@@ -82192,32 +82318,35 @@
           "data_archive_url": "https://doi.org/10.5281/zenodo.23639461",
           "paper_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_physics_informed_winner.ipynb",
           "winner_notebook_url": "https://github.com/grey-nearing/camels-us-mip/blob/main/mips/camels_us_daily/era_experiments/era_pur_physics_informed_winner.ipynb",
-          "citation": "Nearing (2026)",
+          "citation": "Nearing et al. (2026)",
           "paradigm": "Machine learning",
           "model_category": "Machine learning",
           "has_hydrograph": true,
           "hydrograph_model_key": "pur__multi_camels__era_pur_physics_guided_single",
           "model_key": "pur__multi_camels__era_pur_physics_guided_single",
           "submitted_at": "2026-10-26T13:34:51.303824+00:00",
-          "gauch_nse": 0.643309,
-          "gauch_kge": 0.636071,
-          "gauch_pearson_r": 0.848013,
-          "gauch_alpha_nse": 0.829513,
-          "gauch_beta_nse": -0.042905,
-          "gauch_beta_kge": 0.910664,
-          "gauch_mse": 2.084501,
-          "gauch_rmse": 1.434406,
-          "gauch_fhv": -15.5377,
-          "gauch_fms": -11.202181,
-          "gauch_flv": -0.861657,
-          "gauch_peak_timing": 0.384615,
+          "gauch_nse": 0.6534,
+          "gauch_kge": 0.639,
+          "gauch_pearson_r": 0.8486,
+          "gauch_alpha_nse": 0.818,
+          "gauch_beta_nse": -0.0422,
+          "gauch_beta_kge": 0.9113,
+          "gauch_mse": 2.0483,
+          "gauch_rmse": 1.431,
+          "gauch_fhv": -16.78,
+          "gauch_fms": -11.12,
+          "gauch_flv": 8.04,
+          "gauch_peak_timing": 0.3742,
           "publication_year": 2026,
           "rank": 5,
           "eval_period": "1989-10-01 to 1999-09-30",
           "code_provenance": "Our Code",
           "num_evaluated_basins": 531,
           "pred_nan_when_obs_valid": 0,
-          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing, 2026)."
+          "family_description": "Autonomous hydrological architectures discovered by the Empirical Research Assistance (ERA) seeded from the Kratzert et al. (2021) regional multi-forcing LSTM baseline across Gauged, 12-Fold PUB, and 18-Fold HUC-02 PUR regimes under Unguided (minimal guidance), Physics-Guided, and Multi-Paradigm experimental protocols (Nearing et al., 2026).",
+          "mean_kge": 0.534,
+          "gauch_log_nse": 0.6112,
+          "gauch_log_kge": 0.298
         },
         {
           "entry_id": "k21_lstm_pur_3f_single",
@@ -83037,7 +83166,8 @@
           "model_category": "Machine learning",
           "publication_year": 2021,
           "rank": 6,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/k21_lstm_pur_3f.zarr",
+          "mean_kge": 0.502
         },
         {
           "entry_id": "sacsma_pur_multi_3f",
@@ -83838,7 +83968,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 7,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr",
+          "mean_kge": 0.407
         },
         {
           "entry_id": "sacsma_pur_multi_3f_single",
@@ -84653,7 +84784,8 @@
           "model_category": "Conceptual",
           "publication_year": 2020,
           "rank": 8,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__multi_camels/sacsma_pur_3f.zarr",
+          "mean_kge": 0.404
         }
       ]
     },
@@ -85470,7 +85602,8 @@
           "model_category": "Machine learning",
           "publication_year": 2020,
           "rank": 1,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr",
+          "mean_kge": 0.704
         },
         {
           "entry_id": "feng2020_di_lstm_pur_nldas_single",
@@ -86285,7 +86418,8 @@
           "model_category": "Machine learning",
           "publication_year": 2020,
           "rank": 2,
-          "zarr_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr"
+          "zarr_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/feng2020_di_lstm_pur_nldas.zarr",
+          "mean_kge": 0.693
         },
         {
           "model_name": "Naive Lag-1 Persistence (Q(t-1), Lower Benchmark)",
@@ -87084,7 +87218,8 @@
           "zarr_path": "gs://camels-us-mip/hydrographs/pur__lagged_streamflow/naive_lag1_persistence_pur.zarr",
           "entry_id": "naive_lag1_persistence_pur",
           "leaderboard_id": "pur__lagged_streamflow",
-          "rank": 3
+          "rank": 3,
+          "mean_kge": 0.706
         }
       ]
     },

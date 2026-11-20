@@ -140,7 +140,7 @@
         "nse": 0.827,
         "model_category": "Machine learning",
         "input_regime": "Multiple CAMELS Forcings",
-        "model_name": "ERA-Multi-Paradigm-Gauged (10-model ensemble)",
+        "model_name": "ERA-Multi-Paradigm-Gauged (4-arch \u00d7 10-seed ensemble)",
         "leaderboard_id": "gauged__multi_camels",
         "entry_id": "era_gauged_multi_paradigm",
         "category": "Contribution",

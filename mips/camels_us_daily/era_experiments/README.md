@@ -1,6 +1,6 @@
 # CAMELS-US MIP — Empirical Research Assistance (ERA) Experiments
 
-This directory contains the **7 starting notebooks** and **7 final winning notebooks** from the Empirical Research Assistance (ERA) hydrological model discovery experiments in **Nearing (2026)**, strictly aligned with the canonical **Newman et al. (2015)** temporal split.
+This directory contains the **7 starting notebooks** and **7 final winning notebooks** from the Empirical Research Assistance (ERA) hydrological model discovery experiments in **Nearing et al. (2026)**, strictly aligned with the canonical **Newman et al. (2015)** temporal split.
 
 ## Newman Temporal Protocol and Non-Leakage
 

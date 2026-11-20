@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Canonical cloud-only Zarr metrics benchmark pipeline (`benchmarks/metrics_pipeline.py`).
 
 Iterates over a manifest or all Zarr stores in

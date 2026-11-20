@@ -30,7 +30,7 @@ Configuration matches the Zenodo `Tier1_Ep30_Variant-adapter_V3_head32_H80_L3_dC
 - **Clean-Room Re-Training From Scratch (`gs://camels-us-mip/stage1_author_reproductions/shahriar2026_mamba3.zarr`)**:
   - `671` basins: Median NSE = **`0.7181`**, Mean NSE = `0.6507`, Median KGE = `0.7552`, `NSE <= 0` = `16` ($\Delta = -0.0091$).
   - `531` basins: Median NSE = **`0.7235`**, Mean NSE = `0.6632`, Median KGE = `0.7659`, `NSE <= 0` = `9` ($\Delta = -0.0072$, `status: "PASS"`).
-  - *(MIP standardization note)*: Clean-room runs use the standardized 27 Kratzert et al. (2019b) static catchment attributes from `camels_{clim,topo,soil,geol,vege}.txt` (excluding `gauge_lat`/`gauge_lon` used in Shahriar's 17-attribute subset) and the pure-PyTorch `mamba3.py` described above.
+  - *(MIP standardization note)*: Clean-room runs use the standardized 27 Kratzert et al. (2019a) static catchment attributes from `camels_{clim,topo,soil,geol,vege}.txt` (excluding `gauge_lat`/`gauge_lon` used in Shahriar's 17-attribute subset) and the pure-PyTorch `mamba3.py` described above.
 - **Re-running**: `python -m models.shahriar2026_mamba3.reproduce_author_metrics` writes results to the untracked `stage1_author_reproduction_results.local.json` by default (`--out` to choose another path; the tracked `stage1_author_reproduction_results.json` is only overwritten if `--out` points at it). The Stage-1 Zarr store is only written to GCS with `--upload`.
 
 ## Stage-2 CAMELS-US MIP Protocol (`gauged__single_camels`, Table 3)

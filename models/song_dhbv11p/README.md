@@ -50,20 +50,14 @@ Song et al. (2024, *HESS* 28, 3051–3077, Section 2.4 & Figure 2) evaluated $\d
 
 All Stage-2 runs use the standardized CAMELS-US MIP Split-1 temporal window (`1999-10-01` to `2008-09-30` training; `1989-10-01` to `1999-09-30` evaluation across 531 basins and 3,652 days) with $M = 5$ independent random seeds (`seeds = [111, 222, 333, 444, 555]`). Both the 5-member ensemble mean (`evaluation_mode: "ensemble"`) and the mean across all 5 individual members (`evaluation_mode: "single_member_mean"`) are evaluated from the same 5-member GCS Zarr v2 stores (`qsim_members` shape `(5, 531, 3652)`).
 
-| Table / Leaderboard | Row ID | Evaluation Mode | Forcings | GCS Zarr Store | Med NSE | Mean NSE | Med KGE | Med $|\text{FHV}|$ (%) | $\text{NSE} \le 0$ |
+| Table / Leaderboard | Row ID | Evaluation Mode | Forcings | Zarr Store | Med NSE | Mean NSE | Med KGE | Med $|\text{FHV}|$ (%) | $\text{NSE} \le 0$ |
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **T3** (`gauged__single_camels`) | `t3_18` | 5-Seed Ensemble | Daymet | `gauged__single_camels/t3_18.zarr` | **0.759** | 0.724 | 0.757 | 15.06 | 1 |
-| **T3** (`gauged__single_camels`) | `t3_19` | Single-Model (5-seed mean) | Daymet | `gauged__single_camels/t3_18.zarr` | **0.754** (`±0.001`) | 0.719 | 0.753 | 15.35 | 3 |
-| **T4** (`gauged__multi_camels`) | `t4_24` | 5-Seed Ensemble | Daymet, Maurer, NLDAS | `gauged__multi_camels/t4_24.zarr` | **0.799** | 0.763 | 0.778 | 13.98 | 2 |
-| **T4** (`gauged__multi_camels`) | `t4_29` | Single-Model (5-seed mean) | Daymet, Maurer, NLDAS | `gauged__multi_camels/t4_24.zarr` | **0.793** (`±0.002`) | 0.756 | 0.774 | 14.07 | 3 |
-| **T7** (`pub__single_camels`) | `t7_06` | 5-Seed Ensemble | Daymet | `pub__single_camels/t7_06.zarr` | **0.690** | 0.582 | 0.689 | 20.67 | 24 |
-| **T7** (`pub__single_camels`) | `t7_11` | Single-Model (5-seed mean) | Daymet | `pub__single_camels/t7_06.zarr` | **0.686** (`±0.004`) | 0.547 | 0.681 | 20.78 | 23 |
-| **T8** (`pub__multi_camels`) | `t8_09` | 5-Seed Ensemble | Daymet, Maurer, NLDAS | `pub__multi_camels/t8_09.zarr` | **0.739** | 0.621 | 0.709 | 20.72 | 19 |
-| **T8** (`pub__multi_camels`) | `t8_11` | Single-Model (5-seed mean) | Daymet, Maurer, NLDAS | `pub__multi_camels/t8_09.zarr` | **0.727** (`±0.002`) | 0.576 | 0.686 | 21.48 | 27 |
-| **T11** (`pur__single_camels`) | `t11_04` | 5-Seed Ensemble | Daymet | `pur__single_camels/t11_04.zarr` | **0.651** | 0.292 | 0.641 | 25.04 | 43 |
-| **T11** (`pur__single_camels`) | `t11_04_single` | Single-Model (5-seed mean) | Daymet | `pur__single_camels/t11_04.zarr` | **0.634** (`±0.011`) | 0.350 | 0.630 | 24.44 | 42 |
-| **T12** (`pur__multi_camels`) | `t12_07` | 5-Seed Ensemble | Daymet, Maurer, NLDAS | `pur__multi_camels/t12_07.zarr` | **0.691** | 0.368 | 0.664 | 22.95 | 35 |
-| **T12** (`pur__multi_camels`) | `t12_07_single` | Single-Model (5-seed mean) | Daymet, Maurer, NLDAS | `pur__multi_camels/t12_07.zarr` | **0.677** (`±0.003`) | 0.312 | 0.625 | 25.69 | 49 |
+| **S1** (`gauged__single_camels`) | `t3_18` | 5-Seed Ensemble | Daymet | `gauged__single_camels/t3_18.zarr` | **0.759** | 0.724 | 0.757 | 15.06 | 1 |
+| **S1** (`gauged__single_camels`) | `t3_19` | Single-Model (5-seed mean) | Daymet | `gauged__single_camels/t3_18.zarr` | **0.754** (`±0.001`) | 0.717 | 0.756 | 15.08 | 2 |
+| **S4** (`pub__single_camels`) | `t7_06` | 5-Seed Ensemble | Daymet | `pub__single_camels/t7_06.zarr` | **0.690** | 0.582 | 0.689 | 20.67 | 24 |
+| **S4** (`pub__single_camels`) | `t7_11` | Single-Model (5-seed mean) | Daymet | `pub__single_camels/t7_06.zarr` | **0.686** (`±0.004`) | 0.561 | 0.681 | 20.74 | 24 |
+| **S7** (`pur__single_camels`) | `t11_04` | 5-Seed Ensemble | Daymet | `pur__single_camels/t11_04.zarr` | **0.650** | 0.292 | 0.640 | 25.04 | 43 |
+| **S7** (`pur__single_camels`) | `t11_04_single` | Single-Model (5-seed mean) | Daymet | `pur__single_camels/t11_04.zarr` | **0.634** (`±0.011`) | 0.249 | 0.633 | 24.93 | 48 |
 
 ---
 

@@ -49,22 +49,16 @@ Our 3-seed Split-3 confirmation run (`seeds = [111111, 111112, 111113]`, 50 epoc
 ---
 
 ## 4. Stage-2 CAMELS-US MIP Protocol Results (`Split-1`: `WY1999–2008` Train / `WY1989–1999` Test)
-Under the standardized CAMELS-US MIP protocol (`1999-10-01` to `2008-09-30` training, `1989-10-01` to `1999-09-30` evaluation, 531 canonical basins, 5 random seeds `[111, 222, 333, 444, 555]`), `feng_dhbv10` is evaluated across all 6 CAMELS-forcing leaderboards (Tables 3, 4, 7, 8, 11, and 12), emitting both the 5-model ensemble row (`evaluation_mode="ensemble"`) and the competing single-model row (`evaluation_mode="single_member_mean"` scored across all 5 seeds):
+Under the standardized CAMELS-US MIP protocol (`1999-10-01` to `2008-09-30` training, `1989-10-01` to `1999-09-30` evaluation, 531 canonical basins, 5 random seeds `[111, 222, 333, 444, 555]`), `feng_dhbv10` is evaluated across all 3 single-forcing Daymet leaderboards (Supplement Tables S1, S4, and S7), emitting both the 5-model ensemble row (`evaluation_mode="ensemble"`) and the competing single-model row (`evaluation_mode="single_member_mean"` scored across all 5 seeds):
 
 | Leaderboard | Row ID | Mode | Forcing | Seeds | Med NSE | Zarr Store |
 | :--- | :--- | :--- | :--- | :---: | :---: | :--- |
-| **Table 3** (`gauged__single_camels`) | `t3_29` | 5-model ensemble | Daymet | 5 | **0.742** (`0.7416`) | `gauged__single_camels/t3_29.zarr` |
-| **Table 3** (`gauged__single_camels`) | `t3_33` | Single model (mean of 5 seeds) | Daymet | 5 | **0.733 ± 0.002** (`0.7327`) | `gauged__single_camels/t3_29.zarr` |
-| **Table 4** (`gauged__multi_camels`) | `t4_32` | 5-model ensemble | Daymet + Maurer + NLDAS | 5 | **0.777** (`0.7770`) | `gauged__multi_camels/t4_32.zarr` |
-| **Table 4** (`gauged__multi_camels`) | `t4_33` | Single model (mean of 5 seeds) | Daymet + Maurer + NLDAS | 5 | **0.770 ± 0.002** (`0.7698`) | `gauged__multi_camels/t4_32.zarr` |
-| **Table 7** (`pub__single_camels`) | `t7_10` | 5-model ensemble | Daymet | 5 | **0.681** (`0.6806`) | `pub__single_camels/t7_10.zarr` |
-| **Table 7** (`pub__single_camels`) | `t7_14` | Single model (mean of 5 seeds) | Daymet | 5 | **0.673 ± 0.005** (`0.6735`) | `pub__single_camels/t7_10.zarr` |
-| **Table 8** (`pub__multi_camels`) | `t8_12` | 5-model ensemble | Daymet + Maurer + NLDAS | 5 | **0.721** (`0.7207`) | `pub__multi_camels/t8_12.zarr` |
-| **Table 8** (`pub__multi_camels`) | `t8_16` | Single model (mean of 5 seeds) | Daymet + Maurer + NLDAS | 5 | **0.710 ± 0.003** (`0.7098`) | `pub__multi_camels/t8_12.zarr` |
-| **Table 11** (`pur__single_camels`) | `t11_06` | 5-model ensemble | Daymet | 5 | **0.634** (`0.6336`) | `pur__single_camels/t11_06.zarr` |
-| **Table 11** (`pur__single_camels`) | `t11_10` | Single model (mean of 5 seeds) | Daymet | 5 | **0.620 ± 0.003** (`0.6200`) | `pur__single_camels/t11_06.zarr` |
-| **Table 12** (`pur__multi_camels`) | `t12_10` | 5-model ensemble | Daymet + Maurer + NLDAS | 5 | **0.671** (`0.6711`) | `pur__multi_camels/t12_10.zarr` |
-| **Table 12** (`pur__multi_camels`) | `t12_12` | Single model (mean of 5 seeds) | Daymet + Maurer + NLDAS | 5 | **0.658 ± 0.007** (`0.6583`) | `pur__multi_camels/t12_10.zarr` |
+| **Table S1** (`gauged__single_camels`) | `t3_29` | 5-model ensemble | Daymet | 5 | **0.742** (`0.7416`) | `gauged__single_camels/t3_29.zarr` |
+| **Table S1** (`gauged__single_camels`) | `t3_33` | Single model (mean of 5 seeds) | Daymet | 5 | **0.733 ± 0.002** (`0.7327`) | `gauged__single_camels/t3_29.zarr` |
+| **Table S4** (`pub__single_camels`) | `t7_10` | 5-model ensemble | Daymet | 5 | **0.681** (`0.6806`) | `pub__single_camels/t7_10.zarr` |
+| **Table S4** (`pub__single_camels`) | `t7_14` | Single model (mean of 5 seeds) | Daymet | 5 | **0.673 ± 0.005** (`0.6735`) | `pub__single_camels/t7_10.zarr` |
+| **Table S7** (`pur__single_camels`) | `t11_06` | 5-model ensemble | Daymet | 5 | **0.634** (`0.6336`) | `pur__single_camels/t11_06.zarr` |
+| **Table S7** (`pur__single_camels`) | `t11_10` | Single model (mean of 5 seeds) | Daymet | 5 | **0.620 ± 0.003** (`0.6200`) | `pur__single_camels/t11_06.zarr` |
 
 ---
 

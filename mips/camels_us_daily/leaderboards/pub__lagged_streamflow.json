@@ -179,7 +179,8 @@
       "publication_year": 2022,
       "rank": 1,
       "pred_nan_when_obs_valid": null,
-      "zarr_path": null
+      "zarr_path": null,
+      "mean_kge": 0.771
     },
     {
       "entry_id": "feng2020_di_lstm_pub_nldas",
@@ -980,7 +981,8 @@
       "model_category": "Machine learning",
       "publication_year": 2020,
       "rank": 2,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
+      "mean_kge": 0.724
     },
     {
       "entry_id": "t9_02",
@@ -1149,7 +1151,8 @@
       "publication_year": 2022,
       "rank": 3,
       "pred_nan_when_obs_valid": null,
-      "zarr_path": null
+      "zarr_path": null,
+      "mean_kge": 0.737
     },
     {
       "entry_id": "feng2020_di_lstm_pub_nldas_single",
@@ -1964,7 +1967,8 @@
       "model_category": "Machine learning",
       "publication_year": 2020,
       "rank": 4,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/feng2020_di_lstm_pub_nldas.zarr",
+      "mean_kge": 0.717
     },
     {
       "model_name": "Naive Lag-1 Persistence (Q(t-1), Lower Benchmark)",
@@ -2763,7 +2767,8 @@
       "zarr_path": "gs://camels-us-mip/hydrographs/pub__lagged_streamflow/naive_lag1_persistence_pub.zarr",
       "entry_id": "naive_lag1_persistence_pub",
       "leaderboard_id": "pub__lagged_streamflow",
-      "rank": 5
+      "rank": 5,
+      "mean_kge": 0.706
     }
   ],
   "protocol": {

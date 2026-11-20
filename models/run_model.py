@@ -193,7 +193,7 @@ MODEL_REGISTRY: dict[str, ModelRegistryEntry] = {
         provenance_category="MIP Re-run",
         runner_module="models.newman_sacsma.runner",
         code_url="https://github.com/grey-nearing/camels-us-mip/tree/main/models/newman_sacsma",
-        allowed_forcing_regimes=("single_camels",),
+        allowed_forcing_regimes=("single_camels", "multi_camels"),
         allowed_spatial_regimes=("gauged", "pub_12fold", "pur_18huc02"),
         default_seeds=(123,),
     ),

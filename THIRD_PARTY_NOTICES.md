@@ -4,7 +4,7 @@ This file documents the third-party software from which portions of **HydrologyM
 
 The software in this repository is licensed under the **Apache License, Version 2.0** (see [`LICENSE`](./LICENSE) and [`NOTICE`](./NOTICE)). The derived portions identified in Section 1 remain subject to their permissive upstream licenses (`BSD-3-Clause`, `Apache-2.0`, `MIT`), all of which are compatible with the Apache License 2.0.
 
-First-party and third-party **datasets and hydrograph Zarr stores** in `gs://camels-us-mip/` are governed by [`DATA_LICENSE.md`](./DATA_LICENSE.md).
+First-party and third-party **datasets and hydrograph Zarr stores** in the public mirror `https://data.hydrologymip.org/camels_us_daily/` (and the maintainer archive `gs://camels-us-mip/`) are governed by [`DATA_LICENSE.md`](./DATA_LICENSE.md).
 
 ---
 
@@ -15,7 +15,7 @@ First-party and third-party **datasets and hydrograph Zarr stores** in `gs://cam
 | **Tier 1 — First-Party Original Code & ERA Architectures** | Shared HydrologyMIP core (`hydromip/` Python package: protocol registry, splits, paths, evaluation/Zarr I/O, leaderboard ranking, metric suites), MIP adapters (`mips/*/adapter.py`), MIP evaluation pipeline (`metrics/evaluator.py`, `metrics/cli.py`, `metrics/build_eval_targets.py`), leaderboard and figure tooling (`leaderboards/*.py`), runner/Zarr infrastructure (`models/run_model.py`, `models/camels_data.py`, `models/zarr_writer.py`), web platform (`web/`), benchmarks (`benchmarks/`), ERA notebooks (`mips/camels_us_daily/era_experiments/`), 7 ERA model directories (`models/era_*/`), `models/li2025_lstm_dhbv_ens/`, and the lag-1 persistence baseline `models/naive_lag1_persistence/` | **`Apache-2.0`** | Git repository (`camels-us-mip`) |
 | **Tier 2 — Permissive Third-Party Code & Co-Authored Upstream Adaptations** | `neuralhydrology` (`BSD-3-Clause`), `kratzert/*` (`Apache-2.0`), `ml-jku/mc-lstm` (`MIT`), `jmframe/mclstm_2021_extrapolate` (`MIT`), `sinanrk/TFT-streamflow` (`MIT`), NOAA NWS `Snow-17`/`SAC-SMA` equations (U.S. Public Domain, `17 U.S.C. § 105`) | **`BSD-3-Clause`, `MIT`, `Apache-2.0`, Public Domain** | `hydromip/metrics/deterministic_daily.py` (re-exported by `metrics/metrics.py`), `models/kratzert_lstm/`, `models/kratzert_ealstm/`, `models/hoedt_mclstm/`, `models/rasiya_koya_tft/` |
 | **Tier 3 — Independent First-Party Implementations of Published Mathematical Models** | Independent first-party C++/OpenMP, CUDA, and PyTorch implementations written from published mathematical equations and parameter bounds with no upstream source code copied | **`Apache-2.0`** (with academic citation) | `models/_dhbv_common/` (shared δHBV core), `models/feng_dhbv10/`, `models/song_dhbv11p/`, `models/feng2020_di_lstm/`, `models/newman_sacsma/`, `models/poudel_mlp_hbv/`, `models/yin2022_rrformer/`, `models/shahriar2026_mamba3/` |
-| **Tier 4 — Datasets, Splits, Leaderboards, & Hydrograph Zarr Stores** | First-party data (`CC-BY-4.0`) and external author-archived hydrographs (`CC-BY-4.0`, U.S. Public Domain `17 U.S.C. § 105`, `CC-BY-NC-4.0` for Frame et al. 2023) | **See [`DATA_LICENSE.md`](./DATA_LICENSE.md)** | `mips/camels_us_daily/splits/`, `mips/camels_us_daily/leaderboards/*.{json,csv,md}`, `mips/camels_us_daily/figures/`, and `gs://camels-us-mip/` |
+| **Tier 4 — Datasets, Splits, Leaderboards, & Hydrograph Zarr Stores** | First-party data (`CC-BY-4.0`) and external author-archived hydrographs re-hosted in the public archive (`CC-BY-4.0`, U.S. Public Domain `17 U.S.C. § 105`; `CC-BY-NC-4.0` for Frame et al., 2023 remains on HydroShare only and is not redistributed) | **See [`DATA_LICENSE.md`](./DATA_LICENSE.md)** | `mips/camels_us_daily/splits/`, `mips/camels_us_daily/leaderboards/*.{json,csv,md}`, `mips/camels_us_daily/figures/`, and `https://data.hydrologymip.org/camels_us_daily/` |
 
 ---
 
@@ -155,7 +155,7 @@ In accordance with `17 U.S.C. § 102(b)` (the idea/expression dichotomy), the mo
 | **`TFT`** (Rasiya Koya & Roy, 2024, *J. Hydrol.*, `10.1016/j.jhydrol.2024.131301`; Lim et al., 2021) | `https://github.com/sinanrk/TFT-streamflow` (`MIT`) | `models/rasiya_koya_tft/` — First-party PyTorch VSN/GRN/LSTM/MHA implementation (`Apache-2.0`) |
 | **`Mamba-3 Static-Dynamic Adapter`** (Shahriar, 2026, *SSRN* 7552815, `10.2139/ssrn.7552815`) | `https://doi.org/10.5281/zenodo.23087719` (`MIT`) | `models/shahriar2026_mamba3/` — First-party pure-PyTorch selective state-space + static-dynamic adapter implementation (`Apache-2.0`); the sequence mixer `models/shahriar2026_mamba3/mamba3.py` is Copyright 2026 Google LLC under `Apache-2.0` |
 | **Literature-Only Entries** (`kratzert2019a_pub_lstm`, `feng2020_di_lstm_lit`, `gauch_xgboost_lit`, `hoedt_mclstm_lit`, `tsai2021_dpl_vic`, `nearing2022_ar_da_lstm`, `jamaat2025_dhbv_da`, `liu2025_tslib_suite`, `wang_s4dft`) | Various (`Apache-2.0`, `MIT`, `CC-BY-NC-4.0`, `LicenseRef-PSU-NonCommercial`, or no license) | **Literature-only summary rows in `mips/camels_us_daily/leaderboards/*.json`** (`code_dir: null`; zero source code files and zero hydrograph Zarr stores redistributed) |
-| **Archive-Only Entries** (`fuse_suite`, `mizukami_vic_mpr`, `newman_sacsma`, `newman_vic`, `seibert_hbv`, `kratzert2019b_lstm`, `kratzert_ealstm`, `kratzert_lstm_nostatic`, `mizukami_mhm`, `rakovec_mhm_mpr`, `kratzert2021_lstm_archive`, `frame2023_mclstm_archive`) | Author hydrograph archives on HydroShare, Zenodo, and NCAR GDEX | **External author hydrograph archives in `gs://camels-us-mip/`** (`code_dir: null` except `kratzert_ealstm` Stage-1 runner; see [`DATA_LICENSE.md`](./DATA_LICENSE.md)) |
+| **Archive-Only Entries** (`fuse_suite`, `mizukami_vic_mpr`, `newman_sacsma`, `newman_vic`, `seibert_hbv`, `kratzert2019b_lstm`, `kratzert_ealstm`, `kratzert_lstm_nostatic`, `mizukami_mhm`, `rakovec_mhm_mpr`, `kratzert2021_lstm_archive`) | Author hydrograph archives on HydroShare, Zenodo, and NCAR GDEX | **External author `CC-BY-4.0` hydrograph archives in `https://data.hydrologymip.org/camels_us_daily/`** (`code_dir: null` across Archive entries; `kratzert_ealstm` additionally includes an independent Stage-1 verification runner; `frame2023_mclstm_archive` `CC-BY-NC-4.0` is linked directly on HydroShare and is **not** re-hosted; see [`DATA_LICENSE.md`](./DATA_LICENSE.md)) |
 
 ---
 
@@ -166,9 +166,9 @@ In accordance with `17 U.S.C. § 102(b)` (the idea/expression dichotomy), the mo
 | Package | License |
 | :--- | :--- |
 | `torch` | `BSD-3-Clause` |
-| `numpy`, `pandas`, `scipy`, `dask`, `fsspec`, `gcsfs`, `uvicorn`, `httpx` | `BSD-3-Clause` |
-| `xarray`, `python-multipart`, `ninja` | `Apache-2.0` |
-| `zarr`, `fastapi`, `pydantic`, `pytest`, `pytest-xdist`, `pyyaml`, `ruff` | `MIT` |
+| `numpy`, `pandas`, `scipy`, `dask`, `fsspec`, `gcsfs`, `h5netcdf`, `uvicorn`, `httpx` | `BSD-3-Clause` |
+| `xarray`, `pyarrow`, `google-auth`, `requests`, `python-multipart`, `ninja` | `Apache-2.0` |
+| `zarr`, `netCDF4`, `fastapi`, `pydantic`, `pytest`, `pytest-xdist`, `pyyaml`, `ruff` | `MIT` |
 | `matplotlib` | `PSF-2.0` / Matplotlib License (BSD-compatible) |
 
 The web interface (`web/portal/index.html`) loads the IBM Plex Sans, JetBrains Mono, and Newsreader typefaces at page-load time from Google Fonts (all `OFL-1.1`, SIL Open Font License 1.1); no font files are redistributed in this repository.

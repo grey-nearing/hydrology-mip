@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """CAMELS-US MIP leaderboards package (`leaderboards/`).
 
 Maintains the 12 canonical leaderboard JSON files (`<leaderboard_id>.json`),

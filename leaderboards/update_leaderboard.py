@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Automated leaderboard JSON management and submission-triggered update pipeline.
 
 Maintains the 12 individual leaderboard JSON files (`leaderboards/<leaderboard_id>.json`)
@@ -402,9 +405,16 @@ def clean_model_name(
     s = _TRAILING_AUTHOR_PAREN_RE.sub("", s).strip()
 
     if s.startswith("ERA-"):
-        base_era = re.sub(r"\s*\(\d+-model ensemble\)\s*$", "", s).strip()
+        arch_seed_suffix = re.search(r"\s*\(\d+-arch\s*×\s*\d+-seed\s+ensemble\)\s*$", s)
+        base_era = re.sub(
+            r"\s*\((?:\d+-model|\d+-arch\s*×\s*\d+-seed)\s+ensemble\)\s*$",
+            "",
+            s,
+        ).strip()
         if not include_ensemble_suffix:
             return base_era
+        if arch_seed_suffix is not None and is_ensemble:
+            return f"{base_era} {arch_seed_suffix.group(0).strip()}"
         if is_ensemble and num_members is not None and int(num_members) > 1:
             return f"{base_era} ({int(num_members)}-model ensemble)"
     return s

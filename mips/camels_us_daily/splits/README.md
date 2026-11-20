@@ -10,7 +10,7 @@ reads them: `models/run_model.py` reads them and passes the basins and periods t
 | :--- | :--- |
 | `basins_531.txt`, `basins_531.json` | The 531 benchmark basins (8-digit USGS gauge IDs, Newman et al., 2017), sorted. |
 | `basins_671.txt`, `basins_671.json` | All 671 CAMELS-US basins. |
-| `basins_447_kratzert2019b.txt`, `basins_447_kratzert2019b.json` | The 447-basin subset of Kratzert et al. (2019b), where all benchmark process models of that study have complete simulations. |
+| `basins_447_kratzert2019b.txt`, `basins_447_kratzert2019b.json` | The 447-basin subset of Kratzert et al. (2019a), where all benchmark process models of that study have complete simulations. |
 | `splits_and_regimes.json` | Machine-readable protocol facts: periods, units, regime descriptions, the map `basin_to_huc02` from each of the 531 basins to its two-digit USGS region, and the test basins of every fold (`pub_12fold_test_basins`, `pur_18huc02_test_basins`). |
 | `pub_12fold_random_splits.json` | The 12 PUB folds (regime `pub_12fold`). |
 | `pub_12fold/fold_{00..11}_{train,test}.txt` | The same 12 PUB folds as plain-text basin lists. |
@@ -23,7 +23,7 @@ The PUR regime ID is `pur_18huc02`. Use it in `protocol.json`, on the command li
 
 ## Time periods
 
-All regimes use the periods of Newman et al. (2017) and Kratzert et al. (2019b):
+All regimes use the periods of Newman et al. (2017) and Kratzert et al. (2019a):
 
 - **Training period:** 1999-10-01 to 2008-09-30 (water years 2000 to 2008; 3,288 days). With a
   one-year spin-up, model inputs start on 1998-10-01.

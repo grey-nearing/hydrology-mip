@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Rebuild the canonical CAMELS-US MIP observed streamflow targets from raw NCAR CAMELS-US files.
 
 This module is the single reproducible source of the ground-truth store

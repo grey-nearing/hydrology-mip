@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Cloud-only Zarr hydrograph evaluator for the CAMELS-US Model Intercomparison Project.
 
 Scores standardized daily simulated streamflow hydrographs (`qsim`, shape `(531, 3652)`

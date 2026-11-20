@@ -399,7 +399,12 @@ def build_portal_json_payloads(
                     round(float(v), 3) if v is not None and np.isfinite(float(v)) else None
                     for v in pb_nse
                 ]
-            if has_hydro or (isinstance(pb_nse, list) and len(pb_nse) == 531):
+            if has_hydro or (
+                not available_qsim_keys
+                and isinstance(pb_nse, list)
+                and len(pb_nse) == 531
+                and bool(str(row.get("zarr_path") or "").strip())
+            ):
                 hydro_models.append(
                     {
                         "model_key": mk,
@@ -1310,7 +1315,7 @@ export default {
       for (const lb of (lbs?.leaderboards || [])) {
         for (const r of (lb.rows || [])) {
           if (r.entry_id === entryId && !foundRow) foundRow = r;
-          if (r.entry_id === "t4_03" && !ref3fRow) ref3fRow = r;
+          if (r.entry_id === "t4_05" && !ref3fRow) ref3fRow = r;
           if (r.entry_id === "t3_02" && !ref1fRow) ref1fRow = r;
         }
       }
@@ -1379,7 +1384,7 @@ export default {
         for (const defKey of [
           "gauged__single_camels__t3_02",
           "gauged__single_camels__t3_18",
-          "gauged__single_camels__sacsma_daymet",
+          "gauged__single_camels__sacsma_gauged_single_daymet",
         ]) {
           if (CACHED_HYDRO_MODELS_MAP.has(defKey)) resolvedKeys.push(defKey);
         }

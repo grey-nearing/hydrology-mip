@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Canonical benchmark verification package for CAMELS-US MIP (`benchmarks/`).
 
 Provides end-to-end verification and leaderboard table scoring across all model

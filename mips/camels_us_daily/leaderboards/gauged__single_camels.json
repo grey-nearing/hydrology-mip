@@ -818,7 +818,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 1,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr",
+      "mean_kge": 0.72
     },
     {
       "entry_id": "t3_06",
@@ -1626,7 +1627,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 2,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr",
+      "mean_kge": 0.722
     },
     {
       "entry_id": "t3_18",
@@ -2429,7 +2431,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 3,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
+      "mean_kge": 0.713
     },
     {
       "entry_id": "t3_11",
@@ -3222,7 +3225,7 @@
       "asterisk_reason": null,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_11",
-      "citation": "Kratzert et al. (2019b)",
+      "citation": "Kratzert et al. (2019a)",
       "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
       "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
       "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -3231,11 +3234,12 @@
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
       "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000–2008 and evaluated over WY1990–1999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
-      "notes": "8-seed ensemble mean of the Kratzert et al. (2019b) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884; 531-basin Ensemble Med NSE = 0.759, Mean NSE = 0.713, Med KGE = 0.742; 447-basin subset Ensemble Med NSE = 0.759).",
+      "notes": "8-seed ensemble mean of the Kratzert et al. (2019a) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884; 531-basin Ensemble Med NSE = 0.759, Mean NSE = 0.713, Med KGE = 0.742; 447-basin subset Ensemble Med NSE = 0.759).",
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 4,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr",
+      "mean_kge": 0.712
     },
     {
       "entry_id": "t3_12",
@@ -4032,7 +4036,8 @@
       "model_category": "Machine learning",
       "publication_year": 2023,
       "rank": 5,
-      "zarr_path": ""
+      "zarr_path": "",
+      "mean_kge": 0.707
     },
     {
       "entry_id": "t3_19",
@@ -4849,7 +4854,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 6,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_18.zarr",
+      "mean_kge": 0.708
     },
     {
       "entry_id": "t3_15",
@@ -5657,7 +5663,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 7,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr",
+      "mean_kge": 0.683
     },
     {
       "entry_id": "t3_08",
@@ -6479,7 +6486,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 8,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_02.zarr",
+      "mean_kge": 0.712
     },
     {
       "entry_id": "hoedt_mclstm_lit_maurer",
@@ -6502,7 +6510,7 @@
       "med_fhv_abs": 14.7,
       "nse_le_0": null,
       "asterisk": true,
-      "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019b) CAMELS subset.",
+      "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019a) CAMELS subset.",
       "num_evaluated_basins": 447,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "hoedt_mclstm_lit_maurer",
@@ -7340,7 +7348,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 10,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
+      "mean_kge": 0.71
     },
     {
       "entry_id": "t3_29",
@@ -8143,7 +8152,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2022,
       "rank": 11,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
+      "mean_kge": 0.676
     },
     {
       "entry_id": "t3_23",
@@ -8936,7 +8946,7 @@
       "asterisk_reason": null,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_23",
-      "citation": "Kratzert et al. (2019b)",
+      "citation": "Kratzert et al. (2019a)",
       "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
       "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
       "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -8949,7 +8959,8 @@
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 12,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr",
+      "mean_kge": 0.686
     },
     {
       "entry_id": "t3_21",
@@ -9803,7 +9814,8 @@
       "model_category": "Machine learning",
       "publication_year": 2023,
       "rank": 14,
-      "zarr_path": ""
+      "zarr_path": "",
+      "mean_kge": 0.679
     },
     {
       "entry_id": "poudel_mlp_hbv_daymet",
@@ -10604,7 +10616,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 15,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
+      "mean_kge": 0.654
     },
     {
       "entry_id": "t3_33",
@@ -11421,7 +11434,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2022,
       "rank": 16,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_29.zarr",
+      "mean_kge": 0.67
     },
     {
       "entry_id": "poudel_mlp_hbv_daymet_single",
@@ -12236,7 +12250,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 17,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr",
+      "mean_kge": 0.65
     },
     {
       "entry_id": "t3_20",
@@ -13058,7 +13073,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 18,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_06.zarr",
+      "mean_kge": 0.714
     },
     {
       "entry_id": "t3_26",
@@ -13865,7 +13881,7 @@
       "asterisk_reason": null,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_11",
-      "citation": "Kratzert et al. (2019b)",
+      "citation": "Kratzert et al. (2019a)",
       "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
       "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
       "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -13874,11 +13890,12 @@
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
       "family_description": "Regional single-layer 256-unit Long Short-Term Memory network (CudaLSTM) with 270-day lookback window receiving daily Maurer meteorological forcings concatenated with 27 static CAMELS catchment attributes at every timestep, trained with basin-variance-normalized NSE* loss across 8 random seeds over WY2000–2008 and evaluated over WY1990–1999 on all 531 CAMELS-US basins (Kratzert et al., 2019b; HydroShare 10.4211/hs.83ea5312635e44dc824eeb99eda12f06, Zenodo 10.5281/zenodo.3530884).",
-      "notes": "Single-model evaluation scored across all 8 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2019b) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 ± 0.002; 447-basin subset Single-Seed Med NSE = 0.739 ± 0.003).",
+      "notes": "Single-model evaluation scored across all 8 archived seed members (evaluation_mode='single_member_mean') of the Kratzert et al. (2019a) 270-day lookback regional LSTM with 27 static catchment attributes on Maurer single-forcing inputs across all 531 CAMELS-US basins (531-basin Single-Seed Med NSE = 0.732 ± 0.002; 447-basin subset Single-Seed Med NSE = 0.739 ± 0.003).",
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 19,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_11.zarr",
+      "mean_kge": 0.703
     },
     {
       "entry_id": "hoedt_mclstm_lit_maurer_single",
@@ -13901,7 +13918,7 @@
       "med_fhv_abs": 14.7,
       "nse_le_0": null,
       "asterisk": true,
-      "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019b) CAMELS subset.",
+      "asterisk_reason": "Evaluated in Hoedt et al. (2021) on the 447-basin Kratzert et al. (2019a) CAMELS subset.",
       "num_evaluated_basins": 447,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "hoedt_mclstm_lit_maurer_single",
@@ -14760,7 +14777,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 21,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_15.zarr",
+      "mean_kge": 0.677
     },
     {
       "entry_id": "t3_s4d_lit",
@@ -15616,7 +15634,8 @@
       "model_category": "Machine learning",
       "publication_year": 2026,
       "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/shahriar2026_mamba3_daymet.zarr",
-      "rank": 23
+      "rank": 23,
+      "mean_kge": 0.695
     },
     {
       "entry_id": "tft_gauged_maurer",
@@ -16415,7 +16434,8 @@
       "model_category": "Machine learning",
       "publication_year": 2024,
       "rank": 24,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_21.zarr",
+      "mean_kge": 0.648
     },
     {
       "entry_id": "hoedt_mclstm_maurer_single",
@@ -17230,7 +17250,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 25,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/hoedt_mclstm_maurer.zarr",
+      "mean_kge": 0.702
     },
     {
       "entry_id": "t3_30",
@@ -18037,7 +18058,7 @@
       "asterisk_reason": null,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_23",
-      "citation": "Kratzert et al. (2019b)",
+      "citation": "Kratzert et al. (2019a)",
       "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
       "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
       "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -18046,11 +18067,12 @@
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
       "family_description": "Entity-Aware Long Short-Term Memory network (EA-LSTM; H = 256 memory cells, T = 270-day sequence length, dropout = 0.4, basin-averaged NSE* loss) in which the 27 static CAMELS catchment attributes exclusively modulate a time-invariant sigmoid input gate i = sigma(W_i x_s + b_i) while the 5 dynamic extended Maurer meteorological forcings drive the forget, cell-candidate, and output gates across all 531 CAMELS-US basins (Kratzert et al., 2019b; Zenodo code archive 10.5281/zenodo.3530884; HydroShare hydrograph archive 10.4211/hs.83ea5312635e44dc824eeb99eda12f06).",
-      "notes": "Single-model evaluation of the official Kratzert et al. (2019b) EA-LSTM archive scored across all 8 individual seed members (seeds 111..888 in t3_23.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.712 ± 0.004, matching Kratzert et al., 2019b Table 2 reported 0.71 ± 0.005).",
+      "notes": "Single-model evaluation of the official Kratzert et al. (2019a) EA-LSTM archive scored across all 8 individual seed members (seeds 111..888 in t3_23.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.712 ± 0.004, matching Kratzert et al., 2019b Table 2 reported 0.71 ± 0.005).",
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 26,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_23.zarr",
+      "mean_kge": 0.676
     },
     {
       "entry_id": "t3_39",
@@ -18847,7 +18869,8 @@
       "model_category": "Conceptual",
       "publication_year": 2018,
       "rank": 27,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_39.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_39.zarr",
+      "mean_kge": 0.623
     },
     {
       "entry_id": "t3_41",
@@ -19646,7 +19669,8 @@
       "model_category": "Process-based",
       "publication_year": 2019,
       "rank": 28,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_41.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_41.zarr",
+      "mean_kge": 0.643
     },
     {
       "entry_id": "sacsma_gauged_single_daymet",
@@ -20445,7 +20469,8 @@
       "model_category": "Conceptual",
       "publication_year": 2020,
       "rank": 29,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/sacsma_daymet.zarr",
+      "mean_kge": 0.63
     },
     {
       "entry_id": "t3_42",
@@ -21298,7 +21323,7 @@
         "18": 0.7842
       },
       "asterisk": true,
-      "asterisk_reason": "Evaluated on 479 of 531 CAMELS basins available in the Kratzert et al. (2019b) HydroShare benchmark archive (52 basins missing).",
+      "asterisk_reason": "Evaluated on 479 of 531 CAMELS basins available in the Kratzert et al. (2019a) HydroShare benchmark archive (52 basins missing).",
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_43",
       "citation": "Addor et al. (2017)",
@@ -21314,7 +21339,8 @@
       "model_category": "Conceptual",
       "publication_year": 2017,
       "rank": 31,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_43.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_43.zarr",
+      "mean_kge": 0.647
     },
     {
       "entry_id": "t3_44",
@@ -22107,7 +22133,7 @@
       "asterisk_reason": null,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_44",
-      "citation": "Kratzert et al. (2019b)",
+      "citation": "Kratzert et al. (2019a)",
       "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
       "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
       "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -22120,7 +22146,8 @@
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 32,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr",
+      "mean_kge": 0.564
     },
     {
       "entry_id": "t3_45",
@@ -22903,7 +22930,7 @@
         "18": 0.7786
       },
       "asterisk": true,
-      "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019b) HydroShare benchmark archive (30 basins missing).",
+      "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019a) HydroShare benchmark archive (30 basins missing).",
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_45",
       "citation": "Addor et al. (2017)",
@@ -22919,7 +22946,8 @@
       "model_category": "Conceptual",
       "publication_year": 2017,
       "rank": 33,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_45.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_45.zarr",
+      "mean_kge": 0.614
     },
     {
       "entry_id": "t3_42_single",
@@ -23772,7 +23800,7 @@
         "18": 0.7589
       },
       "asterisk": true,
-      "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019b) HydroShare benchmark archive (30 basins missing).",
+      "asterisk_reason": "Evaluated on 501 of 531 CAMELS basins available in the Kratzert et al. (2019a) HydroShare benchmark archive (30 basins missing).",
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_46",
       "citation": "Addor et al. (2017)",
@@ -23788,7 +23816,8 @@
       "model_category": "Conceptual",
       "publication_year": 2017,
       "rank": 35,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_46.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_46.zarr",
+      "mean_kge": 0.59
     },
     {
       "entry_id": "t3_48",
@@ -24585,7 +24614,8 @@
       "model_category": "Conceptual",
       "publication_year": 2017,
       "rank": 36,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_48.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_48.zarr",
+      "mean_kge": 0.603
     },
     {
       "entry_id": "t3_44_single",
@@ -25392,7 +25422,7 @@
       "asterisk_reason": null,
       "eval_period": "1989-10-01 to 1999-09-30",
       "archive_key": "t3_44",
-      "citation": "Kratzert et al. (2019b)",
+      "citation": "Kratzert et al. (2019a)",
       "paper_url": "https://doi.org/10.5194/hess-23-5089-2019",
       "github_url": "https://github.com/kratzert/ealstm_regional_modeling",
       "code_url": "https://github.com/kratzert/ealstm_regional_modeling",
@@ -25401,11 +25431,12 @@
       "hydroshare_url": "https://www.hydroshare.org/resource/83ea5312635e44dc824eeb99eda12f06/",
       "data_archive_url": "https://doi.org/10.5281/zenodo.3530884",
       "family_description": "Regional single-layer Long Short-Term Memory network (H = 256 memory cells, T = 270-day sequence length, dropout = 0.4, basin-averaged NSE* loss) trained jointly across all 531 CAMELS-US basins using only the 5 dynamic extended Maurer meteorological forcings without any static catchment attributes (D_static = 0 input-ablation baseline from Kratzert et al., 2019b; Zenodo code archive 10.5281/zenodo.3530884; HydroShare hydrograph archive 10.4211/hs.83ea5312635e44dc824eeb99eda12f06).",
-      "notes": "Single-model evaluation of the official Kratzert et al. (2019b) LSTM without Static Attributes archive scored across all 8 individual seed members (seeds 111..888 in t3_44.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.593 ± 0.008, matching Kratzert et al., 2019b Table 2 reported 0.59 ± 0.008).",
+      "notes": "Single-model evaluation of the official Kratzert et al. (2019a) LSTM without Static Attributes archive scored across all 8 individual seed members (seeds 111..888 in t3_44.zarr; evaluation_mode='single_member_mean') over 1989-10-01 to 1999-09-30 across all 531 CAMELS-US basins (Single-Model Median NSE = 0.593 ± 0.008, matching Kratzert et al., 2019b Table 2 reported 0.59 ± 0.008).",
       "model_category": "Machine learning",
       "publication_year": 2019,
       "rank": 37,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_44.zarr",
+      "mean_kge": 0.545
     },
     {
       "entry_id": "t3_52",
@@ -26204,7 +26235,8 @@
       "model_category": "Process-based",
       "publication_year": 2017,
       "rank": 38,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_52.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t3_52.zarr",
+      "mean_kge": 0.548
     },
     {
       "entry_id": "t3_mhm_mpr",
@@ -27003,7 +27035,8 @@
       "model_category": "Process-based",
       "publication_year": 2019,
       "rank": 39,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_19.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_19.zarr",
+      "mean_kge": 0.404
     },
     {
       "entry_id": "t3_55",
@@ -27864,7 +27897,8 @@
       "model_category": "Process-based",
       "publication_year": 2017,
       "rank": 41,
-      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_22.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/gauged__single_camels/t7_22.zarr",
+      "mean_kge": 0.164
     }
   ],
   "protocol": {

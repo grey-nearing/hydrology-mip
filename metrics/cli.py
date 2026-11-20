@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Command-line interface (`mip-score-model`) for scoring one model and leaderboard."""
 
 from __future__ import annotations

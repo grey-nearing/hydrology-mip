@@ -8,14 +8,19 @@ Zero ``try``/``except`` blocks.
 
 from __future__ import annotations
 
+import importlib
 import sys
 from collections.abc import Sequence
 
-from hydromip.tools import ci_guardrails, package_submission, process_submission
+_SUBCOMMAND_MODULES: dict[str, str] = {
+    "package": "hydromip.tools.package_submission",
+    "process-submission": "hydromip.tools.process_submission",
+    "guardrails": "hydromip.tools.ci_guardrails",
+}
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Dispatch ``hydromip <subcommand>`` calls to the matching tool module."""
+    """Dispatch ``hydromip <subcommand>`` calls lazily so ``--help`` needs zero heavy deps."""
     args = list(sys.argv[1:] if argv is None else argv)
     if not args or args[0] in ("-h", "--help"):
         print(
@@ -28,12 +33,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 0
 
     subcmd, rest = args[0], args[1:]
-    if subcmd == "package":
-        return package_submission.main(rest)
-    if subcmd == "process-submission":
-        return process_submission.main(rest)
-    if subcmd == "guardrails":
-        return ci_guardrails.main(rest)
+    mod_path = _SUBCOMMAND_MODULES.get(subcmd)
+    if mod_path is not None:
+        mod = importlib.import_module(mod_path)
+        return int(mod.main(rest))
 
     raise ValueError(
         f"Unknown hydromip subcommand {subcmd!r}. Expected one of: package, process-submission, guardrails."

@@ -1,7 +1,7 @@
 # AGENTS.md — HydrologyMIP (`camels-us-mip`)
 
 Rules for AI coding agents working in this repository (Claude Code, Codex, Gemini CLI, GitHub
-Copilot, Cursor, Jetski, and others). Humans: start with [README.md](README.md) and
+Copilot, Cursor, and others). Humans: start with [README.md](README.md) and
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Project in one paragraph

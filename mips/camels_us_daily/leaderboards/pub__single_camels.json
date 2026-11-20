@@ -33,11 +33,11 @@
       "med_fhv_abs": 20.4,
       "nse_le_0": 24,
       "asterisk": true,
-      "asterisk_reason": "Evaluated in Kratzert et al. (2019a) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
+      "asterisk_reason": "Evaluated in Kratzert et al. (2019b) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
       "num_evaluated_basins": 531,
       "eval_period": "1995-10-01 to 2010-09-30",
       "archive_key": "t7_07",
-      "citation": "Kratzert et al. (2019a)",
+      "citation": "Kratzert et al. (2019b)",
       "paper_url": "https://doi.org/10.1029/2019WR026065",
       "github_url": "https://github.com/kratzert/lstm_for_pub",
       "code_url": "https://github.com/kratzert/lstm_for_pub",
@@ -890,7 +890,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 2,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
+      "mean_kge": 0.594
     },
     {
       "entry_id": "t7_11",
@@ -1707,7 +1708,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 3,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_06.zarr",
+      "mean_kge": 0.585
     },
     {
       "entry_id": "t7_10",
@@ -2510,7 +2512,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2022,
       "rank": 4,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
+      "mean_kge": 0.568
     },
     {
       "entry_id": "poudel_mlp_hbv_pub_daymet",
@@ -3311,7 +3314,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 5,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
+      "mean_kge": 0.543
     },
     {
       "entry_id": "t7_14",
@@ -4128,7 +4132,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2022,
       "rank": 6,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_10.zarr",
+      "mean_kge": 0.557
     },
     {
       "entry_id": "poudel_mlp_hbv_pub_daymet_single",
@@ -4943,7 +4948,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 7,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr",
+      "mean_kge": 0.54
     },
     {
       "entry_id": "t7_18",
@@ -4966,11 +4972,11 @@
       "med_fhv_abs": 21.9,
       "nse_le_0": 31,
       "asterisk": true,
-      "asterisk_reason": "Evaluated in Kratzert et al. (2019a) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
+      "asterisk_reason": "Evaluated in Kratzert et al. (2019b) on Split-3 (trained on WY1981–1995, evaluated on WY1996–2010; 1995-10-01 to 2010-09-30) with extended NLDAS-2 forcing.",
       "num_evaluated_basins": 531,
       "eval_period": "1995-10-01 to 2010-09-30",
       "archive_key": "t7_18",
-      "citation": "Kratzert et al. (2019a)",
+      "citation": "Kratzert et al. (2019b)",
       "paper_url": "https://doi.org/10.1029/2019WR026065",
       "github_url": "https://github.com/kratzert/lstm_for_pub",
       "code_url": "https://github.com/kratzert/lstm_for_pub",
@@ -5819,7 +5825,8 @@
       "model_category": "Conceptual",
       "publication_year": 2020,
       "rank": 9,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/sacsma_pub_daymet.zarr",
+      "mean_kge": 0.496
     },
     {
       "entry_id": "t7_18_seibert_hbv",
@@ -6616,7 +6623,8 @@
       "model_category": "Conceptual",
       "publication_year": 2018,
       "rank": 10,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_23.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pub__single_camels/t7_23.zarr",
+      "mean_kge": 0.301
     }
   ],
   "protocol": {

@@ -124,7 +124,7 @@
       "citation": "Yin et al. (2022)",
       "paper_url": "https://doi.org/10.1016/j.jhydrol.2022.127781",
       "author_split_protocol": "Task 1 (Yin et al., 2022, Section 4.1, p. 6, Fig. 4a & Tables 5-6): train 1980-10-01 to 1995-09-30, val 1995-10-01 to 2000-09-30, test 2000-10-01 to 2014-09-30 (and 1995-10-01 to 2010-09-30 window) on 531 CAMELS-US basins with Daymet + lagged streamflow",
-      "forcing": "Daymet + Lagged Q (t-7..t-1)",
+      "forcing": "Daymet + Lagged Q (t-15..t-1)",
       "num_basins": 531,
       "num_seeds": 3,
       "author_published_med_nse": 0.8265,

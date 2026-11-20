@@ -5,7 +5,7 @@
   "single_model_name": "ERA-Unguided-PUR",
   "family_id": "era_lstm_seeded",
   "family_name": "Empirical Research Assistance -- LSTM Seeded",
-  "citation": "Nearing (2026)",
+  "citation": "Nearing et al. (2026)",
   "zenodo_doi": "10.5281/zenodo.23639429",
   "zenodo_url": "https://doi.org/10.5281/zenodo.23639429",
   "starting_notebook": "mips/camels_us_daily/era_experiments/era_pur_minimal_guidance.ipynb",

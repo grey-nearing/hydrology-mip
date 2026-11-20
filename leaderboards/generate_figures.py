@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Generate all CAMELS-US MIP paper figures directly from the leaderboard JSON files.
 
 Reads the live leaderboard JSON files in `leaderboards/` (`<leaderboard_id>.json` and

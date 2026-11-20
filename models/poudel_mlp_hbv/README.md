@@ -36,14 +36,14 @@ The HBV kernels in `model.py` come in two forms: C++/OpenMP kernels, used for al
 - **`ninja`:** `pip install ninja`. torch cannot load C++ extensions without it.
 - **GPU only:** an `nvcc` whose version matches `torch.version.cuda`, with `CUDA_HOME` pointing at that toolkit.
 
-## Stage-2 CAMELS-US MIP Protocol Results (Tables 3, 7, and 11)
+## Stage-2 CAMELS-US MIP Protocol Results (Supplement Tables S1, S4, and S7)
 Evaluated on all 531 canonical basins over `1989-10-01` to `1999-09-30` (trained on `1999-10-01` to `2008-09-30`, Daymet forcing, 3 random seeds `[101, 102, 103]`):
 
 | Leaderboard | Row ID | Mode | Members | Med NSE | Mean NSE | Med KGE | Med \|FHV\| (%) | `NSE <= 0` | Zarr Path |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **Table 3 (`gauged__single_camels`)** | `poudel_mlp_hbv_daymet` | `ensemble` | 3 | **`0.708`** | `0.670` | `0.676` | `21.52` | `1` | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
-| **Table 3 (`gauged__single_camels`)** | `poudel_mlp_hbv_daymet_single` | `single_member_mean` | 3 | **`0.698 ± 0.005`** | `0.656` | `0.665` | `21.74` | `3` | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
-| **Table 7 (`pub__single_camels`)** | `poudel_mlp_hbv_pub_daymet` | `ensemble` | 3 | **`0.669`** | `0.572` | `0.635` | `24.02` | `17` | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
-| **Table 7 (`pub__single_camels`)** | `poudel_mlp_hbv_pub_daymet_single` | `single_member_mean` | 3 | **`0.661 ± 0.002`** | `0.556` | `0.625` | `24.22` | `20` | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
-| **Table 11 (`pur__single_camels`)** | `poudel_mlp_hbv_pur_daymet` | `ensemble` | 3 | **`0.627`** | `0.419` | `0.596` | `25.52` | `33` | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |
-| **Table 11 (`pur__single_camels`)** | `poudel_mlp_hbv_pur_daymet_single` | `single_member_mean` | 3 | **`0.614 ± 0.001`** | `0.399` | `0.586` | `25.66` | `37` | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |
+| **Table S1 (`gauged__single_camels`)** | `poudel_mlp_hbv_daymet` | `ensemble` | 3 | **`0.735`** | `0.657` | `0.738` | `16.77` | `7` | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
+| **Table S1 (`gauged__single_camels`)** | `poudel_mlp_hbv_daymet_single` | `single_member_mean` | 3 | **`0.733 ± 0.003`** | `0.649` | `0.739` | `17.17` | `9` | `gs://camels-us-mip/hydrographs/gauged__single_camels/poudel_mlp_hbv_daymet_3s.zarr` |
+| **Table S4 (`pub__single_camels`)** | `poudel_mlp_hbv_pub_daymet` | `ensemble` | 3 | **`0.678`** | `0.517` | `0.665` | `23.93` | `23` | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
+| **Table S4 (`pub__single_camels`)** | `poudel_mlp_hbv_pub_daymet_single` | `single_member_mean` | 3 | **`0.669 ± 0.001`** | `0.505` | `0.660` | `24.12` | `23` | `gs://camels-us-mip/hydrographs/pub__single_camels/poudel_mlp_hbv_pub_daymet.zarr` |
+| **Table S7 (`pur__single_camels`)** | `poudel_mlp_hbv_pur_daymet` | `ensemble` | 3 | **`0.624`** | `0.371` | `0.610` | `26.73` | `41` | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |
+| **Table S7 (`pur__single_camels`)** | `poudel_mlp_hbv_pur_daymet_single` | `single_member_mean` | 3 | **`0.618 ± 0.005`** | `0.356` | `0.608` | `26.74` | `42` | `gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr` |

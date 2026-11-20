@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Native-resolution (531 x 3652) tests for `benchmarks/metrics_pipeline.py`."""
 
 from __future__ import annotations

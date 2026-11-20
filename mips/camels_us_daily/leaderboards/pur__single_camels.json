@@ -813,7 +813,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 1,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
+      "mean_kge": 0.494
     },
     {
       "entry_id": "k21_lstm_pur_daymet",
@@ -1621,7 +1622,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 2,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
+      "mean_kge": 0.497
     },
     {
       "entry_id": "t11_06",
@@ -2424,7 +2426,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2022,
       "rank": 3,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
+      "mean_kge": 0.502
     },
     {
       "entry_id": "t11_04_single",
@@ -3241,7 +3244,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2024,
       "rank": 4,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_04.zarr",
+      "mean_kge": 0.482
     },
     {
       "entry_id": "poudel_mlp_hbv_pur_daymet",
@@ -4042,7 +4046,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 5,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
+      "mean_kge": 0.484
     },
     {
       "entry_id": "k21_lstm_pur_maurer",
@@ -4850,7 +4855,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 6,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
+      "mean_kge": 0.498
     },
     {
       "entry_id": "k21_lstm_pur_daymet_single",
@@ -5672,7 +5678,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 7,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_daymet.zarr",
+      "mean_kge": 0.481
     },
     {
       "entry_id": "t11_10",
@@ -6489,7 +6496,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2022,
       "rank": 8,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/t11_06.zarr",
+      "mean_kge": 0.492
     },
     {
       "entry_id": "poudel_mlp_hbv_pur_daymet_single",
@@ -7304,7 +7312,8 @@
       "model_category": "Hybrid (ML + Physics)",
       "publication_year": 2026,
       "rank": 9,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/poudel_mlp_hbv_pur_daymet.zarr",
+      "mean_kge": 0.48
     },
     {
       "entry_id": "k21_lstm_pur_nldas",
@@ -8112,7 +8121,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 10,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
+      "mean_kge": 0.477
     },
     {
       "entry_id": "k21_lstm_pur_maurer_single",
@@ -8934,7 +8944,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 11,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_maurer.zarr",
+      "mean_kge": 0.477
     },
     {
       "entry_id": "k21_lstm_pur_nldas_single",
@@ -9756,7 +9767,8 @@
       "model_category": "Machine learning",
       "publication_year": 2021,
       "rank": 12,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/k21_lstm_pur_nldas.zarr",
+      "mean_kge": 0.456
     },
     {
       "entry_id": "sacsma_pur_single_daymet",
@@ -10555,7 +10567,8 @@
       "model_category": "Conceptual",
       "publication_year": 2020,
       "rank": 13,
-      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr"
+      "zarr_path": "gs://camels-us-mip/hydrographs/pur__single_camels/sacsma_pur_daymet.zarr",
+      "mean_kge": 0.353
     }
   ],
   "protocol": {

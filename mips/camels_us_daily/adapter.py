@@ -1,4 +1,4 @@
-# Copyright 2026 HydroMIP Contributors
+# Copyright 2026 HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """Adapter binding the ``camels_us_daily`` MIP splits, protocol, and data to ``hydromip``.

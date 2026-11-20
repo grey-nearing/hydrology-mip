@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Native-resolution (531 x 3652) tests for `leaderboards/update_leaderboard.py`."""
 
 from __future__ import annotations

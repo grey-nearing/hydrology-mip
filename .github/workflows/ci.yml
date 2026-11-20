@@ -115,7 +115,9 @@ jobs:
           /tmp/wheel_venv/bin/python -m pip install --upgrade pip
           /tmp/wheel_venv/bin/python -m pip install /tmp/dist/*.whl
           cd /tmp
-          /tmp/wheel_venv/bin/python -c "import hydromip, metrics, leaderboards, benchmarks; assert len(leaderboards.load_all_leaderboards()['leaderboards']) == 12; print('OK')"
+          /tmp/wheel_venv/bin/hydromip --help
+          /tmp/wheel_venv/bin/hydromip package --help
+          /tmp/wheel_venv/bin/python -c "import hydromip, hydromip.io, metrics, leaderboards, benchmarks; assert len(leaderboards.load_all_leaderboards()['leaderboards']) == 12; print('OK')"
 
   unit-and-protocol-tests:
     name: Tests (${{ matrix.shard_name }})

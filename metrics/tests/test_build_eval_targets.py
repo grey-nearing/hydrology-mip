@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Hermetic unit tests and an opt-in real-data integration test for `metrics.build_eval_targets`.
 
 The unit tests synthesize a tiny NCAR CAMELS-US v1.2 directory tree under `tmp_path` for a

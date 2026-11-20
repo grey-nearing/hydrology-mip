@@ -1,4 +1,4 @@
-# Copyright 2026 HydroMIP Contributors
+# Copyright 2026 HydrologyMIP Contributors
 # SPDX-License-Identifier: Apache-2.0
 
 """CAMELS-US Daily Streamflow Model Intercomparison Project (`camels_us_daily`)."""

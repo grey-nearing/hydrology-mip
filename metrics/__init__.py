@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Standalone cloud-only hydrograph metrics evaluation package for CAMELS-US MIP.
 
 Exposes the single primary public API function `calculate_model_leaderboard_metrics`

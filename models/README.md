@@ -86,7 +86,7 @@ regimes. `models/tests/test_run_model.py` enforces the match.
 | Directory | Model | Category | Forcing regimes | Spatial regimes |
 | :--- | :--- | :--- | :--- | :--- |
 | `kratzert_lstm/` | Kratzert et al. (2019, 2021) CudaLSTM | MIP Re-run | single, multi | all |
-| `kratzert_ealstm/` | Kratzert et al. (2019b) Entity-Aware LSTM (EA-LSTM) | MIP Re-run | single, multi | all |
+| `kratzert_ealstm/` | Kratzert et al. (2019a) Entity-Aware LSTM (EA-LSTM) | MIP Re-run | single, multi | all |
 | `hoedt_mclstm/` | Hoedt et al. (2021) Mass-Conserving LSTM (MC-LSTM) | MIP Re-run | single, multi | all |
 | `rasiya_koya_tft/` | Rasiya Koya & Roy (2024) Temporal Fusion Transformer | MIP Re-run | single, multi | all |
 | `shahriar2026_mamba3/` | Shahriar (2026) Mamba-3 Static-Dynamic Adapter (pure PyTorch) | MIP Re-run | single, multi | all |

@@ -200,7 +200,8 @@
         "camels_us_daily"
       ],
       "supported_forcing_regimes": [
-        "single_camels"
+        "single_camels",
+        "multi_camels"
       ],
       "supported_spatial_regimes": [
         "gauged",

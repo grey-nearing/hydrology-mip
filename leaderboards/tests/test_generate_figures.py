@@ -1,3 +1,6 @@
+# Copyright 2026 HydrologyMIP Contributors
+# SPDX-License-Identifier: Apache-2.0
+
 """Unit and integration tests for dynamic manuscript figure generation (`leaderboards/generate_figures.py`)."""
 
 from __future__ import annotations
