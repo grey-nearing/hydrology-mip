@@ -27,8 +27,8 @@ from pydantic import BaseModel, Field, ValidationError
 
 from hydromip.io.ingest import DEFAULT_PREFIX_STRIPS, IngestionRecipe
 
-DEFAULT_GEMINI_MODEL: str = "gemini-2.5-flash"
-DEFAULT_VERTEX_LOCATION: str = "us-central1"
+DEFAULT_GEMINI_MODEL: str = "gemini-3.5-flash-lite"
+DEFAULT_VERTEX_LOCATION: str = "global"
 CLOUD_PLATFORM_SCOPE: str = "https://www.googleapis.com/auth/cloud-platform"
 GEMINI_TIMEOUT_SECONDS: int = 20
 
@@ -255,8 +255,13 @@ def infer_recipe_from_metadata(
         )
         quoted_project = urllib.parse.quote(project, safe=".-")
         quoted_location = urllib.parse.quote(location, safe=".-")
+        host = (
+            "aiplatform.googleapis.com"
+            if location == "global"
+            else f"{quoted_location}-aiplatform.googleapis.com"
+        )
         endpoint = (
-            f"https://{quoted_location}-aiplatform.googleapis.com/v1/"
+            f"https://{host}/v1/"
             f"projects/{quoted_project}/locations/{quoted_location}/"
             f"publishers/google/models/{quoted_model}:generateContent"
         )

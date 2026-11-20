@@ -702,10 +702,14 @@ def _schema_summary_from_meta(meta: Mapping[str, Any], recipe: IngestionRecipe |
     avail_vars = list(meta.get("vars") or meta.get("columns") or [])
     avail_dims = list(meta.get("dims") or meta.get("columns") or [])
     return {
-        "var": recipe.var if recipe else (avail_vars[0] if avail_vars else None),
-        "basin_dim": recipe.basin_dim if recipe else None,
-        "time_dim": recipe.time_dim if recipe else None,
-        "member_dim": recipe.member_dim if recipe else None,
+        "var": (recipe.var or recipe.value_col) if recipe else (avail_vars[0] if avail_vars else None),
+        "basin_dim": (recipe.basin_dim or recipe.basin_col) if recipe else None,
+        "time_dim": (recipe.time_dim or recipe.date_col) if recipe else None,
+        "member_dim": (recipe.member_dim or recipe.member_col) if recipe else None,
+        "basin_col": recipe.basin_col if recipe else None,
+        "date_col": recipe.date_col if recipe else None,
+        "value_col": recipe.value_col if recipe else None,
+        "member_col": recipe.member_col if recipe else None,
         "available_vars": avail_vars,
         "available_dims": avail_dims,
     }

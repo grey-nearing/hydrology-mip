@@ -601,8 +601,8 @@ def test_preview_health_and_vertex_ai_iam_path(
     assert h0_data["llm_daily_remaining"] == 100
 
     monkeypatch.setenv("VERTEX_AI_PROJECT", "hydrologymip")
-    monkeypatch.setenv("VERTEX_AI_LOCATION", "us-central1")
-    monkeypatch.setenv("HYDROMIP_LLM_MODEL", "gemini-2.5-flash")
+    monkeypatch.setenv("VERTEX_AI_LOCATION", "global")
+    monkeypatch.setenv("HYDROMIP_LLM_MODEL", "gemini-3.5-flash-lite")
 
     h1 = isolated_api.get("/api/preview/health")
     assert h1.status_code == 200
@@ -683,12 +683,21 @@ def test_preview_health_and_vertex_ai_iam_path(
     assert len(seen_requests) == 1
     req_url, req_auth, req_body = seen_requests[0]
     assert req_url == (
-        "https://us-central1-aiplatform.googleapis.com/v1/"
-        "projects/hydrologymip/locations/us-central1/publishers/google/models/gemini-2.5-flash:generateContent"
+        "https://aiplatform.googleapis.com/v1/"
+        "projects/hydrologymip/locations/global/publishers/google/models/gemini-3.5-flash-lite:generateContent"
     )
     assert req_auth == "Bearer test-vertex-iam-token"
     assert req_body["contents"][0]["role"] == "user"
     assert req_body["generationConfig"]["responseMimeType"] == "application/json"
+
+    # Also verify non-global regional location routes to {location}-aiplatform.googleapis.com
+    monkeypatch.setenv("VERTEX_AI_LOCATION", "us-central1")
+    reg_res = llm_schema_adapter.infer_recipe_from_metadata(meta, ["Ambiguous variables"])
+    assert reg_res["status"] == "ok"
+    assert seen_requests[-1][0] == (
+        "https://us-central1-aiplatform.googleapis.com/v1/"
+        "projects/hydrologymip/locations/us-central1/publishers/google/models/gemini-3.5-flash-lite:generateContent"
+    )
 
     h2 = isolated_api.get("/api/preview/health")
     assert h2.status_code == 200
