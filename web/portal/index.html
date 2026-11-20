@@ -11,7 +11,7 @@
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="HydrologyMIP" />
   <meta property="og:title" content="HydrologyMIP — Standardized Benchmarking for Large-Sample Hydrology" />
-  <meta property="og:description" content="Shared experimental protocols, common catchments, and daily hydrograph evaluation across Gauged, PUB, and PUR spatial regimes." />
+  <meta property="og:description" content="HydrologyMIP evaluates hydrological models on the same catchments, dates, and input data so results from different studies can be compared directly." />
   <meta property="og:url" content="https://hydrologymip.org/" />
   <meta property="og:image" content="https://hydrologymip.org/og-card.png" />
   <meta property="og:image:width" content="1200" />
@@ -62,7 +62,7 @@
           <p class="editorial-kicker">Hydrological Model Intercomparison Project</p>
           <h1 class="editorial-headline">Standardized benchmarking for large-sample hydrology.</h1>
           <p class="editorial-lede">
-            Shared experimental protocols, common catchments, and open daily hydrograph archives so hydrological modeling studies can be compared directly and built on cumulatively.
+            HydrologyMIP evaluates hydrological models on the same catchments, dates, and input data so results from different studies can be compared directly.
           </p>
           <div class="editorial-actions">
             <button type="button" class="btn-primary-cta" id="hero-btn-open-camels-us">
@@ -70,9 +70,6 @@
             </button>
             <button type="button" class="btn-secondary" id="hero-btn-open-contribute">
               Contribute a Model
-            </button>
-            <button type="button" class="btn-text-link" id="hero-btn-open-about">
-              Protocol &rarr;
             </button>
           </div>
         </div>
@@ -137,40 +134,36 @@
           <a href="#leaderboards-hub" class="resource-cell" id="resource-card-leaderboards">
             <div class="resource-cell-top">
               <span class="resource-label">Benchmarks</span>
-              <span class="resource-status">Active</span>
             </div>
             <h3>Leaderboards &amp; Hydrographs</h3>
-            <p>Standardized multi-metric tables, spatial maps, and interactive daily hydrograph comparison.</p>
+            <p>Standardized tables, spatial maps, and interactive hydrographs.</p>
             <span class="resource-link-line">Leaderboards &rarr;</span>
           </a>
 
           <a href="https://zenodo.org/search?q=hydrologymip" target="_blank" rel="noopener noreferrer" class="resource-cell">
             <div class="resource-cell-top">
               <span class="resource-label">Archive</span>
-              <span class="resource-status">DOI</span>
             </div>
             <h3>Zenodo DOI Archives</h3>
-            <p>DOI-minted daily hydrograph predictions and per-basin diagnostic tables.</p>
+            <p>DOI-minted prediction archives.</p>
             <span class="resource-link-line">zenodo.org &#8599;</span>
           </a>
 
           <a href="#about" class="resource-cell" id="resource-card-protocol">
             <div class="resource-cell-top">
               <span class="resource-label">Protocol</span>
-              <span class="resource-status">Open</span>
             </div>
-            <h3>Canonical Splits &amp; Metrics</h3>
-            <p>Shared catchment lists, spatial cross-validation folds, and Gauch et al. (2023) diagnostics.</p>
+            <h3>Canonical Splits</h3>
+            <p>Spatial cross-validation folds.</p>
             <span class="resource-link-line">Protocol &rarr;</span>
           </a>
 
           <a href="#publications" class="resource-cell" id="resource-card-publications">
             <div class="resource-cell-top">
               <span class="resource-label">Papers</span>
-              <span class="resource-status">In Prep</span>
             </div>
             <h3>Publications</h3>
-            <p>Living intercomparison manuscripts and protocol specifications across MIP suites.</p>
+            <p>Papers describing each benchmark and its reference models.</p>
             <span class="resource-link-line">Publications &rarr;</span>
           </a>
         </div>
@@ -186,7 +179,7 @@
           <p class="editorial-kicker">Protocol &amp; Design</p>
           <h2 class="page-title">About HydrologyMIP</h2>
           <p class="page-sub">
-            Hydrological models are evaluated on identical catchments and dates within each benchmark suite, stratified by spatial regime and model inputs, and backed by DOI-minted prediction archives.
+            Hydrological models are evaluated on identical catchments and dates within each benchmark, stratified by spatial regime and model inputs, and backed by DOI-minted prediction archives.
           </p>
         </div>
       </div>
@@ -207,6 +200,10 @@
               <dt>Evaluation Metrics</dt>
               <dd>Leaderboards can be sorted by any metric. For rainfall&ndash;runoff models we use the metrics by Gauch et al. (2023).</dd>
             </div>
+            <div>
+              <dt>Community Trust</dt>
+              <dd>Contributing works on an honor system, and contributors are expected to follow the <a href="#about-protocol" id="link-open-general-protocol">experimental protocol</a> honestly.</dd>
+            </div>
           </dl>
         </div>
 
@@ -219,7 +216,7 @@
             </div>
             <div>
               <dt>Model Inputs</dt>
-              <dd>This MIP is designed to test model structures and not end-to-end modeling systems. Different leaderboards for different model inputs help isolate differences in model structures.</dd>
+              <dd>MIPs are designed to test model structures and not end-to-end modeling systems. Different leaderboards for different model inputs help isolate differences in model structures.</dd>
             </div>
             <div>
               <dt>Open Archives</dt>
@@ -233,7 +230,7 @@
           <dl class="spec-dl">
             <div>
               <dt>Literature</dt>
-              <dd>Metrics were extracted from prior published literature where experiments used the same splits as a MIP and are therefore directly comparable.</dd>
+              <dd>Metrics were extracted from prior published literature where experiments used the same splits as a MIP and are directly comparable.</dd>
             </div>
             <div>
               <dt>MIP Re-run</dt>
@@ -261,13 +258,95 @@
             </div>
             <h3 class="lsc-title">CAMELS-US Benchmark</h3>
             <p class="lsc-desc">
-              Periods, canonical 12-fold PUB and 18-fold HUC-02 PUR split files, and the 4 CAMELS-US forcing categories.
+              Daily streamflow benchmarking across 531 U.S. catchments, with fixed training and testing dates, spatial splits, and forcing rules.
             </p>
             <div class="lsc-footer">
               <span class="lsc-cta">CAMELS-US Protocol &amp; Splits &rarr;</span>
             </div>
           </article>
         </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         2P. GENERAL EXPERIMENTAL PROTOCOL
+         =================================================================== -->
+    <section id="view-about-protocol" role="tabpanel" aria-labelledby="nav-tab-about" style="display: none;">
+      <div class="page-head">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-about-from-protocol">
+            &larr; About HydrologyMIP
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">Experimental Protocol</h2>
+          <p class="page-sub">
+            HydrologyMIP scores submitted prediction archives rather than re-running every model from scratch. Benchmarks therefore rely on an honor system: contributors must follow these rules so entries stay directly comparable.
+          </p>
+        </div>
+      </div>
+
+      <div class="spec-grid-3">
+        <div class="spec-block">
+          <h3>Holdout &amp; Split Integrity</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Blind Test Period</dt>
+              <dd>Keep the evaluation period strictly blind. All model design choices, hyperparameter tuning, early stopping, and checkpoint selection must happen strictly within the training window.</dd>
+            </div>
+            <div>
+              <dt>No Test-Set Selection</dt>
+              <dd>Do not run multiple architectures or hyperparameter sweeps on the evaluation window and submit only the highest-scoring run. Select the final model before evaluating on the holdout period.</dd>
+            </div>
+            <div>
+              <dt>Spatial Holdouts (PUB &amp; PUR)</dt>
+              <dd>For ungauged basin (PUB) and ungauged region (PUR) folds, never use observed streamflow, target-derived statistics, or locally calibrated parameters from held-out catchments when training or tuning that fold.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>Inputs &amp; Model Accounting</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Full Input Declaration</dt>
+              <dd>Declare every meteorological forcing product, static catchment attribute set, and observed streamflow input (including lagged discharge or data assimilation) used by the model so it is placed on the right leaderboard.</dd>
+            </div>
+            <div>
+              <dt>No Hidden Target Information</dt>
+              <dd>Do not pass future forcing values, target-period streamflow, or derived basin signatures computed from the test period into the model.</dd>
+            </div>
+            <div>
+              <dt>Ensembles vs. Single Runs</dt>
+              <dd>State whether a submission is a single trained model or an ensemble, and report the number of ensemble members or random seeds. Ensembles and single-model runs are tracked separately.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>Archiving &amp; Corrections</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Permanent DOI Archive</dt>
+              <dd>Deposit daily streamflow predictions (in mm/day on the exact benchmark catchment list and evaluation dates) in a permanent DOI-minted repository such as Zenodo or HydroShare.</dd>
+            </div>
+            <div>
+              <dt>Reproducibility</dt>
+              <dd>Link open-source code or a clear method description whenever possible so other researchers can inspect how the model was trained and run.</dd>
+            </div>
+            <div>
+              <dt>Honor System &amp; Corrections</dt>
+              <dd>If you discover data leakage, a split mismatch, or an implementation bug after submitting, email <a href="mailto:contact@hydrologymip.org">contact@hydrologymip.org</a> so the entry can be updated or withdrawn.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.65rem; flex-wrap: wrap;">
+        <button type="button" class="btn-primary-cta" id="btn-open-camels-spec-from-protocol">
+          CAMELS-US Benchmark Specification &rarr;
+        </button>
+        <button type="button" class="btn-secondary" id="btn-open-contribute-from-protocol">
+          Contribute a Model
+        </button>
       </div>
     </section>
 
@@ -727,32 +806,40 @@
           <p class="editorial-kicker">Community Submissions</p>
           <h2 class="page-title">Contribute a Model</h2>
           <p class="page-sub" id="contrib-page-sub">
-            Inspect and score daily discharge predictions right away in a browser-local leaderboard preview, then publish permanently via an automated GitHub PR.
+            Test and score your daily discharge predictions privately in your browser first, then publish to the leaderboard through GitHub.
           </p>
+        </div>
+        <div class="page-head-actions">
+          <button type="button" class="btn-secondary" id="btn-open-contrib-rules">
+            Contribution Rules &rarr;
+          </button>
         </div>
       </div>
 
       <div class="contrib-layout-grid">
         <div class="protocol-rules-col">
-          <h3 class="sub-heading" id="contrib-rules-heading">Submission Rules &mdash; CAMELS-US</h3>
+          <h3 class="sub-heading" id="contrib-rules-heading">Before You Submit &mdash; CAMELS-US</h3>
           <ol class="clean-rule-list" id="contrib-rules-list">
             <li>
-              <strong>Blind Evaluation Window</strong>
-              <span>Select architectures, hyperparameters, and early stopping strictly on <code>1999-10-01</code> to <code>2008-09-30</code>; evaluate blindly on <code>1989-10-01</code> to <code>1999-09-30</code>.</span>
+              <strong>Keep the test years blind</strong>
+              <span>Train and tune your model on Oct 1999 through Sep 2008 only. Do not use the Oct 1989 through Sep 1999 test years to choose architectures, tune hyperparameters, or stop training early.</span>
             </li>
             <li>
-              <strong>Canonical Spatial Folds</strong>
-              <span>Use the canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> basin splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target-basin leakage.</span>
+              <strong>Use the standard basins and folds</strong>
+              <span>Predict daily streamflow (mm/day) for all <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>. For ungauged runs, hold out the test catchments strictly using the <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> or <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold PUR</a> splits.</span>
             </li>
             <li>
-              <strong>Forcing Inputs &amp; 14 Canonical Metrics</strong>
-              <span>Declare all meteorological and lagged streamflow inputs used. Models are scored across the 14 canonical Gauch et al. (2023) deterministic metrics including <code>logNSE</code> and <code>logKGE</code> (<code>mm/day</code> specific discharge).</span>
+              <strong>Declare every input you used</strong>
+              <span>List all meteorological datasets and any lagged streamflow inputs so your model lands on the right leaderboard.</span>
             </li>
             <li>
-              <strong>Instant Preview + Open GitHub PR</strong>
-              <span>Step 1&ndash;3 previews remain strictly local in your browser (<code>localStorage</code>). Permanent leaderboard publication requires a DOI-minted prediction archive, codebase URL (or Closed-Source declaration), and automated CI verification via GitHub.</span>
+              <strong>Preview privately, then publish</strong>
+              <span>Upload a local prediction file to check scores privately in your browser without a DOI. Publishing permanently to the public leaderboard requires a Zenodo or HydroShare DOI archive, a code link (or closed-source note), and an automated GitHub check.</span>
             </li>
           </ol>
+          <p style="margin: 1rem 0 0; font-size: 0.82rem; color: var(--color-muted); line-height: 1.5;">
+            Need full details on splits, file formats, or ensembles? Read the <a href="#contribute-rules" id="link-open-contrib-rules-sidebar" style="font-weight: 500;">complete contribution rules &rarr;</a>
+          </p>
         </div>
 
         <div class="workbench-card">
@@ -1073,6 +1160,100 @@
             </div>
           </form>
         </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================
+         5B. CONTRIBUTION RULES (DETAILED GUIDE)
+         =================================================================== -->
+    <section id="view-contribute-rules" role="tabpanel" aria-labelledby="nav-tab-contribute" style="display: none;">
+      <div class="page-head">
+        <div>
+          <button type="button" class="breadcrumb-back-btn" id="btn-back-to-contribute-from-rules">
+            &larr; Contribute a Model
+          </button>
+          <h2 class="page-title" style="margin-top: 0.25rem;">Contribution Rules</h2>
+          <p class="page-sub">
+            How to run a valid benchmark experiment, package your daily predictions, and submit a model to HydrologyMIP.
+          </p>
+        </div>
+      </div>
+
+      <div class="spec-grid-3">
+        <div class="spec-block">
+          <h3>1. Splits &amp; Preventing Leakage</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Training &amp; Test Dates (CAMELS-US)</dt>
+              <dd>Train, validate, and tune strictly within Oct 1, 1999 through Sep 30, 2008. Hold out Oct 1, 1989 through Sep 30, 1999 exclusively for final scoring. Meteorological spin-up before Oct 1, 1989 is allowed as long as no test-period streamflow is used.</dd>
+            </div>
+            <div>
+              <dt>No Peeking at Test Scores</dt>
+              <dd>Do not use 1989&ndash;1999 test scores to pick architectures, tune hyperparameters, stop training early, or select the best run out of multiple trials. Make all modeling decisions using validation splits inside the training period.</dd>
+            </div>
+            <div>
+              <dt>Ungauged Folds (PUB &amp; PUR)</dt>
+              <dd>For <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a>, train a separate model for each fold using only that fold&rsquo;s training basins. Never use observed streamflow, locally calibrated parameters, or test-period basin statistics from held-out basins.</dd>
+            </div>
+            <div>
+              <dt>Honor System</dt>
+              <dd>Automated checks verify your file format and compute metrics, but cannot audit your training code line by line. Contributors are expected to follow the <a href="#about-protocol" id="link-protocol-from-contrib-rules">Experimental Protocol</a> honestly and contact us if an error is discovered later.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>2. Inputs, Forcings &amp; Ensembles</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Single vs. Multiple CAMELS Forcings</dt>
+              <dd>Models driven by one standard CAMELS-US forcing product (Daymet, Maurer, or NLDAS) belong on Single CAMELS. Models combining two or three of those products belong on Multiple CAMELS.</dd>
+            </div>
+            <div>
+              <dt>Lagged Streamflow &amp; Assimilation</dt>
+              <dd>Any model that takes past observed streamflow as input (autoregression, error updating, or data assimilation) must go on the Lagged Streamflow leaderboard (Gauged only), never on an open-loop leaderboard.</dd>
+            </div>
+            <div>
+              <dt>External (Freeform) Forcings</dt>
+              <dd>If you use meteorological data outside the standard CAMELS-US forcings (for example AORC, ERA5-Land, or EM-Earth), submit under Freeform.</dd>
+            </div>
+            <div>
+              <dt>Ensembles vs. Single Runs</dt>
+              <dd>State clearly whether your predictions are a single run or an ensemble (and how many members or random seeds were averaged). Ensembles and single-model runs are tracked separately. If you run multiple seeds, archiving all members lets us score both.</dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="spec-block">
+          <h3>3. File Format &amp; Publication</h3>
+          <dl class="spec-dl">
+            <div>
+              <dt>Units, Shape &amp; Missing Values</dt>
+              <dd>Submit deterministic daily discharge in <code>mm/day</code> covering all <a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a> across all 3,652 days (1989-10-01 to 1999-09-30). Mark missing days as <code>NaN</code>, not <code>0</code> or <code>-999</code>.</dd>
+            </div>
+            <div>
+              <dt>Supported File Types</dt>
+              <dd>Upload NetCDF (<code>.nc</code>), zipped Zarr (<code>.zarr.zip</code>), Parquet (<code>.parquet</code>), CSV (<code>.csv</code>), or NumPy (<code>.npz</code>) with 8-digit USGS basin IDs and <code>YYYY-MM-DD</code> dates. Pickle files (<code>.pkl</code>) are blocked for security.</dd>
+            </div>
+            <div>
+              <dt>Permanent DOI Archive</dt>
+              <dd>You can upload a local file to inspect and score your predictions privately in your browser without minting a DOI first. Publishing permanently to the public leaderboard requires archiving your predictions in a permanent DOI repository (Zenodo or HydroShare).</dd>
+            </div>
+            <div>
+              <dt>Code &amp; Closed-Source Models</dt>
+              <dd>Include a link to your public code repository whenever possible. Closed-source or proprietary models are welcome as long as the predictions are archived under a permanent DOI and marked as Closed-Source in the form.</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; gap: 0.65rem; flex-wrap: wrap;">
+        <button type="button" class="btn-primary-cta" id="btn-start-sub-from-rules">
+          Start a Model Submission &rarr;
+        </button>
+        <button type="button" class="btn-secondary" id="btn-open-camels-from-rules">
+          CAMELS-US Splits &amp; Specification
+        </button>
       </div>
     </section>
 
