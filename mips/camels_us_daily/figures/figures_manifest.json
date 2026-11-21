@@ -1,10 +1,10 @@
 {
   "source_leaderboards_dir": "mips/camels_us_daily/leaderboards",
   "output_figures_dir": "mips/camels_us_daily/figures",
-  "total_leaderboard_entries": 117,
+  "total_leaderboard_entries": 119,
   "mip_study_year": 2026,
   "panel_entry_counts": {
-    "gauged": 78,
+    "gauged": 80,
     "pub": 19,
     "pur": 20
   },
@@ -134,6 +134,17 @@
         "entry_id": "t4_05",
         "category": "Archive",
         "provenance": "literature"
+      },
+      {
+        "year": 2026,
+        "nse": 0.827,
+        "model_category": "Machine learning",
+        "input_regime": "Multiple CAMELS Forcings",
+        "model_name": "ERA-Multi-Paradigm-Gauged (10-model ensemble)",
+        "leaderboard_id": "gauged__multi_camels",
+        "entry_id": "contrib_era_multi_paradigm_gauged_gh6",
+        "category": "Contribution",
+        "provenance": "mip_rerun"
       },
       {
         "year": 2020,
