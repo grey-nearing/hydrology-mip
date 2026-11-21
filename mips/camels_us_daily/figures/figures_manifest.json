@@ -1,12 +1,12 @@
 {
   "source_leaderboards_dir": "mips/camels_us_daily/leaderboards",
   "output_figures_dir": "mips/camels_us_daily/figures",
-  "total_leaderboard_entries": 127,
+  "total_leaderboard_entries": 129,
   "mip_study_year": 2026,
   "panel_entry_counts": {
     "gauged": 84,
     "pub": 23,
-    "pur": 20
+    "pur": 22
   },
   "excluded_rows": {
     "gauged": [],
@@ -302,6 +302,17 @@
         "leaderboard_id": "pur__multi_camels",
         "entry_id": "k21_lstm_pur_3f",
         "category": "MIP Re-run",
+        "provenance": "mip_rerun"
+      },
+      {
+        "year": 2026,
+        "nse": 0.696,
+        "model_category": "Machine learning",
+        "input_regime": "Multiple CAMELS Forcings",
+        "model_name": "ERA-Unguided-PUR (10-model ensemble)",
+        "leaderboard_id": "pur__multi_camels",
+        "entry_id": "contrib_era_unguided_pur_10_model_ensemb_gh20",
+        "category": "Contribution",
         "provenance": "mip_rerun"
       },
       {

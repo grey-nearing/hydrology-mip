@@ -1,6 +1,30 @@
 {
-  "total_families": 34,
+  "total_families": 35,
   "families": [
+    {
+      "family_id": "contrib_contrib_era_unguided_pur_10_model_ensemb_gh20",
+      "name": "ERA-Unguided-PUR (10-model ensemble)",
+      "category": "Machine learning",
+      "model_category": "Machine learning",
+      "provenance_category": "Contribution",
+      "paradigm": "Machine learning",
+      "citation": "Nearing et al. (2026)",
+      "paper_url": "",
+      "github_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pur_minimal_guidance",
+      "code_dir": "",
+      "zenodo_doi": "10.5281/zenodo.23639429",
+      "zenodo_url": "https://doi.org/10.5281/zenodo.23639429",
+      "hydroshare_url": "",
+      "description": "Community contribution: ERA-Unguided-PUR (10-model ensemble).",
+      "asterisk": false,
+      "asterisk_reason": null,
+      "n_entries": 2,
+      "leaderboards_covered": [
+        "pur__multi_camels"
+      ],
+      "best_nse": 0.696,
+      "year": 2026
+    },
     {
       "family_id": "contrib_contrib_era_multi_paradigm_gauged_gh6",
       "name": "Empirical Research Assistant (LSTM Seeded)",
@@ -841,6 +865,6 @@
       "model_category": "Statistical"
     }
   ],
-  "num_families": 34,
-  "n_families": 34
+  "num_families": 35,
+  "n_families": 35
 }
