@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.1",
+  "benchmark": "camels_us_daily",
+  "evaluation_window": "1989-10-01 to 1999-09-30",
+  "spatial_regime": "pur",
+  "leaderboard_id": "pur__multi_camels",
+  "model_name": "ERA-Unguided-PUR (10-model ensemble)",
+  "entry_id": "contrib_era_unguided_pur_10_model_ensemb_gh20",
+  "family_id": null,
+  "new_family_name": "ERA-Unguided-PUR (10-model ensemble)",
+  "category": "Contribution",
+  "paradigm": "Machine learning",
+  "forcing": "Daymet + Maurer + NLDAS",
+  "ensemble_info": "10-seed ensemble",
+  "include_single_model": true,
+  "single_member_selection": 0,
+  "single_member_label": "Member 1",
+  "citation": "Nearing et al. (2026)",
+  "archive_url": "https://doi.org/10.5281/zenodo.23639429",
+  "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_pur_minimal_guidance",
+  "closed_source": false,
+  "confirmed_recipe": {
+    "var": "qsim",
+    "basin_dim": "basin",
+    "time_dim": "date",
+    "member_dim": "member"
+  },
+  "preview_summary": {
+    "median_nse": 0.6956,
+    "mean_nse": 0.4937,
+    "median_kge": 0.6424,
+    "nse_le_0": 35
+  },
+  "compliance_attestation": {
+    "blind_holdout_window": true,
+    "strict_spatial_holdout_folds": true,
+    "all_forcing_inputs_declared": true,
+    "deterministic_daily_predictions_mm_per_day": true
+  },
+  "generated_at": "2026-11-21T18:31:53.879Z",
+  "submitted_by_github": "grey-nearing",
+  "source_issue": 20
+}
