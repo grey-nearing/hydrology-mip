@@ -3366,6 +3366,48 @@
     };
   }
 
+  function startWorkingProgress(statusEl, stages) {
+    if (!statusEl) return () => {};
+    const startedAt = Date.now();
+    const list = Array.isArray(stages) && stages.length > 0 ? stages : [{ atSec: 0, text: "Working..." }];
+
+    const formatElapsed = (sec) => {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${String(s).padStart(2, "0")}`;
+    };
+
+    const render = () => {
+      const elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
+      let activeText = list[0].text;
+      for (const st of list) {
+        if (elapsedSec >= (st.atSec || 0)) activeText = st.text;
+      }
+      const textSpan = statusEl.querySelector(".working-progress-text");
+      const timerSpan = statusEl.querySelector(".working-progress-timer");
+      if (textSpan && timerSpan) {
+        textSpan.textContent = activeText;
+        timerSpan.textContent = formatElapsed(elapsedSec);
+      } else {
+        statusEl.style.color = "";
+        statusEl.innerHTML =
+          `<div class="working-progress-box" role="status" aria-live="polite">` +
+          `<div class="working-progress-head">` +
+          `<span class="working-progress-label"><span class="working-progress-dot" aria-hidden="true"></span><span class="working-progress-text">${esc(activeText)}</span></span>` +
+          `<span class="working-progress-timer">${formatElapsed(elapsedSec)}</span>` +
+          `</div>` +
+          `<div class="working-progress-track" aria-label="Working"><div class="working-progress-bar"></div></div>` +
+          `</div>`;
+      }
+    };
+
+    render();
+    const timerId = window.setInterval(render, 1000);
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }
+
   async function inspectPreviewSubmission(isOverrideReinspect = false) {
     const statusEl = document.getElementById("inspect-status-msg");
     const step1Diag = document.getElementById("step1-diagnostic-card");
@@ -3406,13 +3448,25 @@
     }
 
     const btn = document.getElementById("btn-preview-inspect");
-    if (btn) btn.disabled = true;
-    if (statusEl) {
-      statusEl.textContent = file
-        ? `Inspecting '${file.name}' schema and 531-basin physical sanity...`
-        : "Fetching remote archive metadata and inspecting hydrograph schema...";
-      statusEl.style.color = "var(--color-ink-2)";
+    const prevBtnHtml = btn ? btn.innerHTML : "";
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = file ? "Inspecting file..." : "Fetching archive...";
     }
+    const stopProgress = startWorkingProgress(
+      statusEl,
+      file
+        ? [
+            { atSec: 0, text: `Uploading & inspecting '${file.name}' schema and 531-basin sanity...` },
+            { atSec: 8, text: `Checking basin coordinates, units, and physical sanity for '${file.name}'...` },
+            { atSec: 20, text: "Still working — large files can take 20–45 seconds to parse..." },
+          ]
+        : [
+            { atSec: 0, text: "Fetching remote archive metadata and inspecting hydrograph schema..." },
+            { atSec: 6, text: "Downloading prediction file from archive and inspecting coordinates..." },
+            { atSec: 18, text: "Still working — remote archives can take 20–60 seconds to download and verify..." },
+          ]
+    );
 
     try {
       const recipeOverride = isOverrideReinspect ? getConfirmedRecipeFromStep2() : null;
@@ -3443,6 +3497,7 @@
       }
 
       const payload = await parseApiJson(res);
+      stopProgress();
       if (!res.ok) {
         const msg = payload.error || payload.detail || `HTTP ${res.status}`;
         if (payload.code === "SCORER_UNCONFIGURED" || res.status === 503) {
@@ -3470,6 +3525,7 @@
       }
       renderInspectResponseStep2(payload);
     } catch (err) {
+      stopProgress();
       const msg = err && err.message ? err.message : String(err);
       if (statusEl) {
         statusEl.textContent = `Inspection failed: ${msg}`;
@@ -3482,7 +3538,11 @@
         true
       );
     } finally {
-      if (btn) btn.disabled = false;
+      stopProgress();
+      if (btn) {
+        btn.disabled = false;
+        if (prevBtnHtml) btn.innerHTML = prevBtnHtml;
+      }
     }
   }
 
@@ -3514,11 +3574,16 @@
 
     const recipe = getConfirmedRecipeFromStep2();
     const btn = document.getElementById("btn-preview-score");
-    if (btn) btn.disabled = true;
-    if (scoreStatusEl) {
-      scoreStatusEl.textContent = "Computing 14 canonical Gauch et al. (2023) metrics (including logNSE & logKGE) across 531 basins...";
-      scoreStatusEl.style.color = "var(--color-ink-2)";
+    const prevScoreBtnHtml = btn ? btn.innerHTML : "";
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Scoring 531 basins...";
     }
+    const stopScoreProgress = startWorkingProgress(scoreStatusEl, [
+      { atSec: 0, text: "Computing 14 canonical Gauch et al. (2023) metrics across 531 basins..." },
+      { atSec: 10, text: "Calculating peak timing, flow duration curve signatures, and basin rankings..." },
+      { atSec: 25, text: "Still scoring — multi-seed ensembles can take up to a minute..." },
+    ]);
 
     try {
       const res = await fetch("/api/preview/score", {
@@ -3593,6 +3658,12 @@
       renderActiveLeaderboardPanel();
       renderFamiliesGrid();
 
+      stopScoreProgress();
+      if (scoreStatusEl) {
+        scoreStatusEl.textContent = "Scoring complete — opening your local leaderboard preview.";
+        scoreStatusEl.style.color = "var(--status-success)";
+      }
+
       // Switch directly to target leaderboard and scroll to highlighted preview row
       setContribStep(3);
       switchMainTab("leaderboards");
@@ -3604,13 +3675,18 @@
         }
       });
     } catch (err) {
+      stopScoreProgress();
       const msg = err && err.message ? err.message : String(err);
       if (scoreStatusEl) {
         scoreStatusEl.textContent = `Scoring failed: ${msg}`;
         scoreStatusEl.style.color = "var(--status-danger)";
       }
     } finally {
-      if (btn) btn.disabled = false;
+      stopScoreProgress();
+      if (btn) {
+        btn.disabled = false;
+        if (prevScoreBtnHtml) btn.innerHTML = prevScoreBtnHtml;
+      }
     }
   }
 

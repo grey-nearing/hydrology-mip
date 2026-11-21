@@ -2197,6 +2197,90 @@ tr.pulse-highlight-row td {
   margin-top: 0.8rem;
 }
 
+/* Working / indeterminate progress bar for archive inspection & scoring */
+.working-progress-box {
+  margin-top: 0.4rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-sm, 6px);
+  background: var(--color-paper);
+}
+
+.working-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.8rem;
+  color: var(--color-ink);
+}
+
+.working-progress-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.working-progress-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+  animation: hmip-pulse-dot 1.2s ease-in-out infinite;
+}
+
+.working-progress-timer {
+  font-family: var(--font-mono);
+  font-size: 0.73rem;
+  color: var(--color-muted);
+  flex-shrink: 0;
+}
+
+.working-progress-track {
+  position: relative;
+  width: 100%;
+  height: 5px;
+  border-radius: 999px;
+  background: #e5e1d8;
+  overflow: hidden;
+}
+
+.working-progress-bar {
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(27, 94, 85, 0.25), var(--color-accent), rgba(27, 94, 85, 0.25));
+  animation: hmip-indeterminate 1.45s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes hmip-indeterminate {
+  0% { left: -40%; width: 38%; }
+  50% { left: 28%; width: 52%; }
+  100% { left: 100%; width: 38%; }
+}
+
+@keyframes hmip-pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.82); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .working-progress-bar,
+  .working-progress-dot {
+    animation: none;
+  }
+  .working-progress-bar {
+    left: 0;
+    width: 100%;
+    opacity: 0.65;
+  }
+}
+
 .form-field label {
   font-size: 0.75rem;
   font-weight: 500;
