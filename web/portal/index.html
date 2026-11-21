@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=20261121_v6" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261121_v7" />
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -1047,19 +1047,19 @@
               <div class="checklist-box" id="contrib-checklist-box">
                 <div class="checklist-header">Confirm benchmark compliance</div>
                 <label class="checklist-label">
-                  <input type="checkbox" id="chk-rule-1" checked required />
+                  <input type="checkbox" id="chk-rule-1" required />
                   <span id="chk-rule-1-text">Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)</span>
                 </label>
                 <label class="checklist-label">
-                  <input type="checkbox" id="chk-rule-2" checked required />
+                  <input type="checkbox" id="chk-rule-2" required />
                   <span id="chk-rule-2-text">Standard <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target leakage</span>
                 </label>
                 <label class="checklist-label">
-                  <input type="checkbox" id="chk-rule-3" checked required />
+                  <input type="checkbox" id="chk-rule-3" required />
                   <span id="chk-rule-3-text">Selected forcing inputs include all meteorological and lagged streamflow inputs used</span>
                 </label>
                 <label class="checklist-label">
-                  <input type="checkbox" id="chk-rule-4" checked required />
+                  <input type="checkbox" id="chk-rule-4" required />
                   <span id="chk-rule-4-text">Deterministic daily predictions in mm/day across the 531 CAMELS-US basins</span>
                 </label>
               </div>
@@ -1383,6 +1383,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261121_v6"></script>
+  <script src="/static/app.js?v=20261121_v7"></script>
 </body>
 </html>

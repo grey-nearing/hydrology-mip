@@ -3519,20 +3519,21 @@
       return;
     }
 
-    // Clear any prior local preview when starting verification of a new model
-    if (!isOverrideReinspect && loadLocalPreviews().length > 0) {
-      removeLocalPreview(null);
-    }
-
     for (const chkId of ["chk-rule-1", "chk-rule-2", "chk-rule-3", "chk-rule-4"]) {
       const chk = document.getElementById(chkId);
       if (chk && !chk.checked) {
         if (statusEl) {
-          statusEl.textContent = "Please confirm all benchmark compliance checkboxes before inspecting.";
+          statusEl.textContent = "Please check all 4 benchmark compliance boxes before continuing.";
           statusEl.style.color = "var(--status-danger)";
         }
+        chk.focus();
         return;
       }
+    }
+
+    // Clear any prior local preview when starting verification of a new model
+    if (!isOverrideReinspect && loadLocalPreviews().length > 0) {
+      removeLocalPreview(null);
     }
 
     const btn = document.getElementById("btn-preview-inspect");
@@ -3615,16 +3616,31 @@
     } catch (err) {
       stopProgress();
       const msg = err && err.message ? err.message : String(err);
+      const isRemoteDownloadErr =
+        /Archive download failed|timed out|HTTP (429|500|502|503|504)|Failed to fetch|network/i.test(msg);
       if (statusEl) {
         statusEl.textContent = `Inspection failed: ${msg}`;
         statusEl.style.color = "var(--status-danger)";
       }
-      renderDiagnosticCard(
-        "step1-diagnostic-card",
-        "Unable to Parse or Validate File",
-        [msg],
-        true
-      );
+      if (isRemoteDownloadErr) {
+        renderDiagnosticCard(
+          "step1-diagnostic-card",
+          "Remote Archive Host Returned a Temporary Error",
+          [
+            msg,
+            "The remote archive host (e.g., Zenodo or HydroShare) had a temporary server error. Click Continue to retry in a few seconds, or drop your local prediction file above while keeping the DOI filled in.",
+          ],
+          true,
+          false
+        );
+      } else {
+        renderDiagnosticCard(
+          "step1-diagnostic-card",
+          "Unable to Parse or Validate File",
+          [msg],
+          true
+        );
+      }
     } finally {
       stopProgress();
       if (btn) {
