@@ -17,9 +17,12 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
 
-from hydromip.metrics.deterministic_daily import (
-    calculate_all_metrics as calculate_gauch_2023_metrics,
-)
+
+def _compute_gauch_2023_metrics(*args: Any, **kwargs: Any) -> dict[str, float]:
+    """Lazily import ``deterministic_daily`` so core metadata/guardrails stay lightweight."""
+    from hydromip.metrics.deterministic_daily import calculate_all_metrics
+
+    return calculate_all_metrics(*args, **kwargs)
 
 
 @dataclass(frozen=True)
@@ -60,7 +63,7 @@ GAUCH_2023_DETERMINISTIC_SUITE = MetricSuiteSpec(
     ),
     primary_metric="NSE",
     higher_is_better=True,
-    compute_fn=calculate_gauch_2023_metrics,
+    compute_fn=_compute_gauch_2023_metrics,
     citation="Gauch et al. (2023), Water Resources Research, 10.1029/2022WR033918",
 )
 
