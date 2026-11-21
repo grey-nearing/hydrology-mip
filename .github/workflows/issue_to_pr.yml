@@ -21,15 +21,102 @@ jobs:
       pull-requests: write
       issues: write
     if: >-
-      !github.event.issue.pull_request &&
-      contains(github.event.issue.labels.*.name, 'community-submission')
+      !github.event.issue.pull_request && (
+        (github.event.action == 'opened' && (
+          contains(github.event.issue.labels.*.name, 'community-submission') ||
+          (contains(github.event.issue.body, '"schema_version"') && contains(github.event.issue.body, '"leaderboard_id"'))
+        )) ||
+        (github.event.action == 'labeled' && github.event.label.name == 'community-submission')
+      )
     steps:
+      - name: Acknowledge submission and ensure labels
+        id: ack
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          EVENT_ACTION: ${{ github.event.action }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          import os
+          import subprocess
+          from datetime import datetime, timezone
+
+          repo = os.environ["REPO"]
+          action = os.environ["EVENT_ACTION"]
+          issue_num = os.environ["ISSUE_NUMBER"]
+          run_url = os.environ["RUN_URL"]
+
+          # Deduplicate template-triggered `labeled` events that fire alongside `opened`.
+          if action == "labeled":
+              issue_json = json.loads(
+                  subprocess.check_output(
+                      ["gh", "issue", "view", issue_num, "--repo", repo, "--json", "comments"],
+                      text=True,
+                  )
+              )
+              comments = issue_json.get("comments") or []
+              last_ack = None
+              last_fail = None
+              pr_opened_marker = False
+              for c in comments:
+                  body = c.get("body") or ""
+                  ts = c.get("createdAt") or ""
+                  if "<!-- hydromip-submission-ack -->" in body:
+                      last_ack = ts
+                  if "<!-- hydromip-submission-failed -->" in body:
+                      last_fail = ts
+                  if "<!-- hydromip-submission-pr-opened -->" in body:
+                      pr_opened_marker = True
+              if pr_opened_marker and (not last_fail or (last_ack and last_ack > last_fail)):
+                  open_prs = json.loads(
+                      subprocess.check_output(
+                          ["gh", "pr", "list", "--repo", repo, "--state", "open", "--search", f"Closes #{issue_num} in:body", "--json", "number"],
+                          text=True,
+                      )
+                  )
+                  if open_prs:
+                      print("skip=true")
+                      raise SystemExit(0)
+              if last_ack and (not last_fail or last_ack > last_fail):
+                  ack_dt = datetime.fromisoformat(last_ack.replace("Z", "+00:00"))
+                  age_sec = (datetime.now(timezone.utc) - ack_dt).total_seconds()
+                  if age_sec < 600:
+                      print("skip=true")
+                      raise SystemExit(0)
+
+          # Use GITHUB_TOKEN so adding labels does not recursively re-trigger this workflow.
+          subprocess.run(
+              ["gh", "issue", "edit", issue_num, "--repo", repo, "--add-label", "community-submission,pending-review"],
+              check=False,
+          )
+          ack_body = (
+              "<!-- hydromip-submission-ack -->\n"
+              "Thanks for submitting your model to **HydrologyMIP**! Automated verification has started.\n\n"
+              f"- **Live progress log:** {run_url}\n\n"
+              "### What happens next\n"
+              "1. **Automated scoring (~3–5 min):** GitHub Actions downloads your public archive, verifies the 531-basin alignment and physical sanity checks, computes all 14 Gauch et al. (2023) metrics, and updates the leaderboard tables and figures.\n"
+              "2. **Automated Pull Request:** Once scoring passes, a Pull Request is opened automatically and linked back on this issue for CI checks and maintainer review.\n"
+              "3. **Review & publication:** After a maintainer approves and merges the Pull Request, your model goes live on https://hydrologymip.org/ and its standardized Zarr v2 hydrograph archive is mirrored to https://data.hydrologymip.org/.\n\n"
+              "No further action is needed from you right now — GitHub will notify you on this issue when the Pull Request is ready or if anything needs attention.\n"
+          )
+          subprocess.run(
+              ["gh", "issue", "comment", issue_num, "--repo", repo, "--body", ack_body],
+              check=True,
+          )
+          print("skip=false")
+          PY
+
       - name: Checkout repository
+        if: steps.ack.outputs.skip != 'true'
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.PR_BOT_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Set up Python 3.11
+        if: steps.ack.outputs.skip != 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -37,12 +124,14 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install scoring dependencies
+        if: steps.ack.outputs.skip != 'true'
         run: |
           python -m pip install --upgrade pip
           python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0"
           python -m pip install -e ".[dev]" "pydantic>=2.7.0"
 
       - name: Parse manifest, score (14 metrics), update leaderboards/figures, and open PR
+        if: steps.ack.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ secrets.PR_BOT_TOKEN || secrets.GITHUB_TOKEN }}
           HYDROMIP_GCS_ANON: "1"
@@ -194,7 +283,7 @@ jobs:
               ["git", "commit", "-m", f"feat(submission): score & register {model_name} for {lb_id} (#{issue_num})"],
               check=True,
           )
-          subprocess.run(["git", "push", "-u", "--force-with-lease", "origin", branch], check=True)
+          subprocess.run(["git", "push", "-u", "--force", "origin", branch], check=True)
 
           pr_body = (
               f"Automated submission PR opened from issue #{issue_num} by @{issue_author}.\n\n"
@@ -229,6 +318,16 @@ jobs:
                   text=True,
               ).strip()
 
+          closing_body = (
+              "<!-- hydromip-submission-pr-opened -->\n"
+              f"Automated scoring succeeded and opened Pull Request {pr_url} for maintainer review.\n\n"
+              "### Next steps\n"
+              "- Automated CI and scoring parity checks are now running on the Pull Request.\n"
+              "- Once a maintainer approves and merges the Pull Request, your model will go live on "
+              "https://hydrologymip.org/ and its standardized Zarr v2 archive will be mirrored to "
+              "https://data.hydrologymip.org/.\n"
+              "- No further action is needed from you unless a reviewer requests a change."
+          )
           subprocess.run(
               [
                   "gh",
@@ -236,17 +335,18 @@ jobs:
                   "comment",
                   str(issue_num),
                   "--body",
-                  f"Automated scoring succeeded and opened submission pull request for maintainer review: {pr_url}",
+                  closing_body,
               ],
               check=True,
           )
           PY
 
       - name: Notify contributor on automated failure
-        if: failure()
+        if: failure() && steps.ack.outputs.skip != 'true'
         env:
-          GH_TOKEN: ${{ secrets.PR_BOT_TOKEN || secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          gh issue comment "${ISSUE_NUMBER}" --body "Automated submission processing failed — please inspect the workflow logs for schema/DOI or compliance diagnostics: ${RUN_URL}"
+          gh issue comment "${ISSUE_NUMBER}" --repo "${REPO}" --body $'<!-- hydromip-submission-failed -->\nAutomated submission processing failed — please inspect the workflow logs for schema/DOI or compliance diagnostics: '"${RUN_URL}"

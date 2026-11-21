@@ -1176,6 +1176,15 @@
                 </button>
               </div>
 
+              <div class="diagnostic-card" style="border-color: var(--color-rule); background: var(--color-paper); margin-top: 0.9rem;">
+                <strong>What happens after you click Create on GitHub</strong>
+                <ol style="margin: 0.45rem 0 0; padding-left: 1.2rem; font-size: 0.8rem; line-height: 1.55; color: var(--color-ink-2);">
+                  <li><strong>Immediate confirmation (~10 sec):</strong> GitHub Actions replies on your issue with a live progress link.</li>
+                  <li><strong>Automated scoring &amp; Pull Request (~3&ndash;5 min):</strong> Your archive is downloaded, checked against the benchmark protocol, scored across all 14 metrics, and opened as a Pull Request linked back to your issue.</li>
+                  <li><strong>Review &amp; publication:</strong> Once a maintainer merges the Pull Request, your model goes live on <code>hydrologymip.org</code> and its Zarr v2 archive is mirrored to <code>data.hydrologymip.org</code>. No further action is needed &mdash; GitHub will notify you on the issue.</li>
+                </ol>
+              </div>
+
               <details class="advanced-pr-details">
                 <summary>Advanced: Submit via Pull Request instead</summary>
                 <div class="advanced-pr-body">

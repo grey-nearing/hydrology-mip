@@ -36,6 +36,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -53,6 +55,7 @@ jobs:
       - name: Discover changed submission manifests
         id: discover
         env:
+          EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
           MANUAL_FILE: ${{ github.event.inputs.submission_file }}
@@ -66,11 +69,24 @@ jobs:
           if manual:
               files = [manual]
           else:
+              event_name = os.environ.get("EVENT_NAME", "").strip()
               base = os.environ.get("BASE_SHA", "").strip()
               head = os.environ.get("HEAD_SHA", "HEAD").strip()
-              if base and base != "0" * 40:
+              has_merge_parent = (
+                  event_name == "pull_request"
+                  and subprocess.run(["git", "rev-parse", "--verify", "HEAD^2"], capture_output=True).returncode == 0
+              )
+              if has_merge_parent:
                   out = subprocess.check_output(
-                      ["git", "diff", "--name-only", base, head, "--", "submissions/"],
+                      ["git", "diff", "--name-only", "HEAD^1", "HEAD", "--", "submissions/"],
+                      text=True,
+                  ).splitlines()
+              elif base and base != "0" * 40:
+                  if subprocess.run(["git", "cat-file", "-e", f"{base}^{{commit}}"]).returncode != 0:
+                      subprocess.run(["git", "fetch", "--no-tags", "origin", base], check=False)
+                  diff_range = f"{base}...{head}" if event_name == "pull_request" else f"{base}..{head}"
+                  out = subprocess.check_output(
+                      ["git", "diff", "--name-only", diff_range, "--", "submissions/"],
                       text=True,
                   ).splitlines()
               else:
@@ -194,6 +210,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -231,6 +249,8 @@ jobs:
               base = os.environ.get("BASE_SHA", "").strip()
               head = os.environ.get("HEAD_SHA", "HEAD").strip()
               if base and base != "0" * 40:
+                  if subprocess.run(["git", "cat-file", "-e", f"{base}^{{commit}}"]).returncode != 0:
+                      subprocess.run(["git", "fetch", "--no-tags", "origin", base], check=False)
                   out = subprocess.check_output(
                       ["git", "diff", "--name-only", base, head, "--", "submissions/"],
                       text=True,
