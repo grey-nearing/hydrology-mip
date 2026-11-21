@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=20261121_form" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261121_gh" />
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -1142,11 +1142,11 @@
             <!-- STEP 4: 1-Click Official GitHub Submission -->
             <div class="contrib-step-section" id="contrib-step-4" hidden>
               <div class="contrib-step-head">
-                <h3>4. Official GitHub Submission</h3>
-                <span class="contrib-step-tag">Permanent Publication</span>
+                <h3>4. Publish to Leaderboard</h3>
+                <span class="contrib-step-tag">Step 4 of 4</span>
               </div>
-              <p style="margin: 0 0 0.8rem; font-size: 0.82rem; color: var(--color-ink-2); line-height: 1.5;">
-                Official leaderboard publication requires a permanent archive DOI/URL (Zenodo or HydroShare) and either a public codebase URL or a Closed-Source / Proprietary declaration. All metadata is validated below before generating your GitHub issue and manifest.
+              <p style="margin: 0 0 0.85rem; font-size: 0.83rem; color: var(--color-ink-2); line-height: 1.55;">
+                Publishing permanently requires a DOI archive (Zenodo or HydroShare) and either a public code link or the Closed-Source option. Clicking <strong>Submit on GitHub</strong> opens a pre-filled GitHub issue with all of your model details already entered &mdash; just review it and click Create.
               </p>
 
               <div class="form-grid" style="margin-bottom: 0.85rem;">
@@ -1168,35 +1168,46 @@
 
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                 <button type="button" class="btn-primary-cta" id="btn-open-github-issue">
-                  Open GitHub Submission Issue &#8599;
-                </button>
-                <button type="button" class="btn-secondary" id="btn-export-pr-manifest">
-                  Download Manifest &amp; Open PR Guide
-                </button>
-                <button type="button" class="btn-secondary" id="btn-copy-manifest-json">
-                  Copy Manifest JSON
+                  Submit on GitHub &#8599;
                 </button>
                 <button type="button" class="btn-secondary" id="btn-back-from-step4">
-                  &larr; Edit Metadata
+                  &larr; Edit Model Details
                 </button>
               </div>
 
-              <div class="score-preview-card visible" id="score-preview-card" style="margin-top: 0.9rem;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.45rem;">
-                  <strong style="font-size: 0.84rem;" id="preview-headline">Canonical Submission Manifest (JSON)</strong>
-                </div>
-                <div style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 0.55rem;" id="preview-subline"></div>
-                <pre id="submission-manifest-preview" style="margin: 0; padding: 0.65rem; background: var(--color-paper, #faf8f4); border: 1px solid var(--color-rule, #e2ddd5); border-radius: 6px; font-family: var(--font-mono); font-size: 0.72rem; max-height: 220px; overflow: auto; white-space: pre-wrap;"></pre>
-              </div>
+              <details class="advanced-pr-details">
+                <summary>Advanced: Submit via Pull Request instead</summary>
+                <div class="advanced-pr-body">
+                  <p style="margin: 0 0 0.65rem; font-size: 0.8rem; color: var(--color-ink-2); line-height: 1.5;">
+                    Most contributors only need <strong>Submit on GitHub</strong> above. If you prefer to fork the repository and open a Pull Request directly, you can save your submission details as a JSON file below.
+                  </p>
+                  <div style="display: flex; align-items: center; gap: 0.55rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                    <button type="button" class="btn-secondary" id="btn-export-pr-manifest">
+                      Download Submission File (.json)
+                    </button>
+                    <button type="button" class="btn-secondary" id="btn-copy-manifest-json">
+                      Copy JSON
+                    </button>
+                  </div>
 
-              <div id="step4-pr-guide" class="diagnostic-card" style="border-color: var(--color-rule); background: var(--color-paper); margin-top: 0.85rem;" hidden>
-                <strong>Direct GitHub Pull Request Guide</strong>
-                <ol style="margin: 0.45rem 0 0; padding-left: 1.2rem; font-size: 0.8rem; line-height: 1.55;">
-                  <li>Fork <code>grey-nearing/hydrology-mip</code> and follow <a href="https://github.com/grey-nearing/hydrology-mip/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><code>CONTRIBUTING.md</code> &#8599;</a>.</li>
-                  <li>Place the downloaded manifest JSON in your branch submission directory (or attach it to the automated issue above) and ensure <code>archive_url</code> + <code>code_url</code> resolve cleanly.</li>
-                  <li>Open a Pull Request targeting <code>main</code> &mdash; CI verifies schema hygiene, 14 canonical metrics, and regenerates leaderboard figures automatically upon review.</li>
-                </ol>
-              </div>
+                  <div class="score-preview-card visible" id="score-preview-card" style="margin-top: 0;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.35rem;">
+                      <strong style="font-size: 0.82rem;" id="preview-headline">Submission Details (JSON)</strong>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;" id="preview-subline"></div>
+                    <pre id="submission-manifest-preview" style="margin: 0; padding: 0.65rem; background: var(--color-paper, #faf8f4); border: 1px solid var(--color-rule, #e2ddd5); border-radius: 6px; font-family: var(--font-mono); font-size: 0.72rem; max-height: 220px; overflow: auto; white-space: pre-wrap;"></pre>
+                  </div>
+
+                  <div id="step4-pr-guide" class="diagnostic-card" style="border-color: var(--color-rule); background: var(--color-paper); margin-top: 0.75rem;">
+                    <strong>Manual Pull Request Steps</strong>
+                    <ol style="margin: 0.45rem 0 0; padding-left: 1.2rem; font-size: 0.8rem; line-height: 1.55;">
+                      <li>Fork <code>grey-nearing/hydrology-mip</code> and read <a href="https://github.com/grey-nearing/hydrology-mip/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer"><code>CONTRIBUTING.md</code> &#8599;</a>.</li>
+                      <li>Add the downloaded JSON file to the appropriate <code>submissions/&lt;leaderboard_id&gt;/</code> folder on your branch.</li>
+                      <li>Open a Pull Request targeting <code>main</code> so automated checks can verify your archive and update the leaderboard.</li>
+                    </ol>
+                  </div>
+                </div>
+              </details>
             </div>
           </form>
         </div>
@@ -1362,6 +1373,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261121_form"></script>
+  <script src="/static/app.js?v=20261121_gh"></script>
 </body>
 </html>

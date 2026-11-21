@@ -1686,10 +1686,7 @@
         </div>
         <div class="local-preview-banner-actions">
           <button type="button" class="btn-primary-cta" data-preview-submit-pr="1" style="padding: 0.36rem 0.75rem; font-size: 0.76rem;">
-            Submit Official GitHub PR
-          </button>
-          <button type="button" class="btn-secondary" data-preview-download-manifest="1" style="padding: 0.34rem 0.65rem; font-size: 0.76rem;">
-            Download Manifest JSON
+            Publish to Leaderboard &rarr;
           </button>
           <button type="button" class="btn-danger-ghost" data-preview-clear-all="1">
             Clear Preview
@@ -1881,8 +1878,7 @@
           ? `<div style="margin-top: 0.28rem;">
               <span class="local-preview-badge">LOCAL PREVIEW &middot; PENDING PR</span>
               <div class="preview-row-actions">
-                <button type="button" class="btn-preview-inline" data-preview-submit-row="${esc(row.entry_id)}">Submit Official GitHub PR</button>
-                <button type="button" class="btn-preview-inline" data-preview-download-row="${esc(row.entry_id)}">Download Manifest JSON</button>
+                <button type="button" class="btn-preview-inline" data-preview-submit-row="${esc(row.entry_id)}">Publish to Leaderboard &rarr;</button>
                 <button type="button" class="btn-preview-inline" data-preview-clear-row="${esc(row.entry_id)}">Clear Preview</button>
               </div>
             </div>`
@@ -3812,20 +3808,40 @@
     const manifest = validateStep4RequiredUrls();
     if (!manifest) return;
     const jsonText = JSON.stringify(manifest, null, 2);
+    const codeDisplay = manifest.closed_source
+      ? "Closed-Source / Proprietary"
+      : manifest.code_url || "Not provided";
+    const familyDisplay = manifest.family_id || manifest.new_family_name || manifest.model_name;
+    const ensDisplay = manifest.ensemble_info || "Not specified";
+    const summaryLines = [
+      "Submitted via [hydrologymip.org](https://hydrologymip.org/#contribute). Review the summary below and click **Create** to trigger automated verification and leaderboard inclusion.",
+      "",
+      "| Field | Value |",
+      "| :--- | :--- |",
+      `| **Model Name** | ${manifest.model_name} |`,
+      `| **Target Leaderboard** | \`${manifest.leaderboard_id}\` |`,
+      `| **Category** | ${manifest.paradigm} |`,
+      `| **Forcing Inputs** | ${manifest.forcing} |`,
+      `| **Model Family** | ${familyDisplay} |`,
+      `| **Ensemble / Seed Info** | ${ensDisplay} |`,
+      `| **Archive DOI / URL** | ${manifest.archive_url} |`,
+      `| **Code Repository** | ${codeDisplay} |`,
+      `| **Citation** | ${manifest.citation || "Community Contribution (2026)"} |`,
+      "| **Compliance** | All 4 benchmark compliance rules confirmed on hydrologymip.org |",
+      "",
+      "<details>",
+      "<summary>Automated scoring payload (do not edit)</summary>",
+      "",
+      "```json",
+      jsonText,
+      "```",
+      "",
+      "</details>",
+    ].join("\n");
     const params = new URLSearchParams({
-      template: "model_submission.yml",
+      template: "portal_submission.md",
       title: `[Model Submission] ${manifest.model_name} (${manifest.leaderboard_id})`,
-      leaderboard_id: manifest.leaderboard_id,
-      model_name: manifest.model_name,
-      entry_id: manifest.entry_id || "",
-      family_id: manifest.family_id || "",
-      forcing: manifest.forcing,
-      category: manifest.category,
-      paradigm: manifest.paradigm,
-      archive_url: manifest.archive_url,
-      code_url: manifest.closed_source ? "Closed-Source" : manifest.code_url || "",
-      citation: manifest.citation || "Community Contribution (2026)",
-      canonical_manifest: jsonText,
+      body: summaryLines,
     });
     const issueUrl =
       `https://github.com/grey-nearing/hydrology-mip/issues/new?${params.toString()}`;
