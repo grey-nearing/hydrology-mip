@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import socket
 import stat
+import time
 import urllib.error
 import urllib.request
 import zipfile
@@ -942,4 +943,76 @@ def test_scorer_api_caps_auto_scoring_at_10_members_and_scores_additional_on_dem
     assert extra["member_label"] == "Member 12"
     assert extra["entry"]["selected_member_index"] == 11
     assert set(extra["entry"]["gauch_2023_metrics"].keys()) == set(GAUCH_2023_METRICS)
+
+
+def test_async_preview_inspect_and_score_job_polling(
+    tmp_path: Path,
+    isolated_api: TestClient,
+    canonical_qobs_bundle: tuple[list[str], list[str], list[str], np.ndarray],
+) -> None:
+    basins, dates, _, qobs = canonical_qobs_bundle
+    qsim = _synthetic_qsim(qobs)
+    nc_path = tmp_path / "async_model.nc"
+    xr.Dataset(
+        data_vars={"qsim": (("basin", "date"), qsim)},
+        coords={"basin": np.asarray(basins), "date": pd.to_datetime(dates)},
+    ).to_netcdf(nc_path)
+
+    with open(nc_path, "rb") as f:
+        q_insp = isolated_api.post(
+            "/api/preview/inspect-async",
+            files={"file": ("async_model.nc", f, "application/octet-stream")},
+            data={"leaderboard_id": "gauged__single_camels", "model_name": "AsyncModel"},
+        )
+    assert q_insp.status_code == 202, q_insp.text
+    insp_job_id = q_insp.json()["job_id"]
+
+    insp_result = None
+    for _ in range(120):
+        st = isolated_api.get(f"/api/preview/jobs/{insp_job_id}")
+        assert st.status_code == 200, st.text
+        body = st.json()
+        if body["status"] == "completed":
+            insp_result = body["result"]
+            break
+        assert body["status"] == "running", body
+        time.sleep(0.05)
+    assert insp_result is not None
+    assert insp_result["sanity"]["checks_passed"] is True
+
+    q_score = isolated_api.post(
+        "/api/preview/score-async",
+        json={
+            "preview_token": insp_result["preview_token"],
+            "recipe": {
+                "var": insp_result["schema"]["var"],
+                "basin_dim": insp_result["schema"]["basin_dim"],
+                "time_dim": insp_result["schema"]["time_dim"],
+                "member_dim": insp_result["schema"]["member_dim"],
+            },
+            "metadata": {
+                "leaderboard_id": "gauged__single_camels",
+                "spatial_regime": "gauged",
+                "forcing": "Daymet",
+                "model_name": "AsyncModel",
+            },
+        },
+    )
+    assert q_score.status_code == 202, q_score.text
+    score_job_id = q_score.json()["job_id"]
+
+    score_result = None
+    for _ in range(120):
+        st = isolated_api.get(f"/api/preview/jobs/{score_job_id}")
+        assert st.status_code == 200, st.text
+        body = st.json()
+        if body["status"] == "completed":
+            score_result = body["result"]
+            break
+        assert body["status"] == "running", body
+        time.sleep(0.05)
+    assert score_result is not None
+    assert score_result["status"] == "scored"
+    assert set(score_result["entry"]["gauch_2023_metrics"].keys()) == set(GAUCH_2023_METRICS)
+
 

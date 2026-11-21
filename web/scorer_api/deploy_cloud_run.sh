@@ -85,6 +85,7 @@ DEPLOY_ARGS=(
   --platform=managed
   --allow-unauthenticated
   --cpu=2
+  --no-cpu-throttling
   --memory=4Gi
   --concurrency=8
   --timeout=300

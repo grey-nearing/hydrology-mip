@@ -17,6 +17,7 @@ Designed to live in ``web/scorer_api/app.py``:
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import json
 import os
 import re
@@ -26,7 +27,7 @@ import threading
 import time
 import uuid
 from collections import deque
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -416,6 +417,104 @@ class LLMBudgetLimiter:
 RATE_LIMITER = SlidingWindowRateLimiter()
 LLM_BUDGET_LIMITER = LLMBudgetLimiter()
 PREVIEW_STORE = EphemeralPreviewStore()
+
+JOB_ID_RE = re.compile(r"^job_[a-f0-9]{16}$")
+MAX_ACTIVE_JOBS: int = 64
+
+
+class PreviewJobManager:
+    """Bounded in-memory background job manager for Cloudflare-timeout-proof async preview operations.
+
+    Uses ``concurrent.futures.ThreadPoolExecutor`` so exceptions are captured without ``try``/``except``.
+    """
+
+    def __init__(self, max_workers: int = 4, ttl_seconds: int = TOKEN_TTL_SECONDS) -> None:
+        self._executor = concurrent.futures.ThreadPoolExecutor(max_workers=max_workers)
+        self._ttl_seconds = ttl_seconds
+        self._lock = threading.Lock()
+        self._jobs: dict[str, dict[str, Any]] = {}
+
+    def _prune_locked(self) -> None:
+        now = time.time()
+        expired = [
+            jid
+            for jid, rec in self._jobs.items()
+            if rec["future"].done() and (now - rec["created_at"]) > self._ttl_seconds
+        ]
+        for jid in expired:
+            self._jobs.pop(jid, None)
+        while len(self._jobs) >= MAX_ACTIVE_JOBS:
+            oldest_done = next((k for k, v in self._jobs.items() if v["future"].done()), None)
+            if oldest_done is None:
+                break
+            self._jobs.pop(oldest_done, None)
+
+    def submit(
+        self,
+        kind: str,
+        initial_stage: str,
+        fn: Callable[[Callable[[str], None]], dict[str, Any]],
+    ) -> str:
+        job_id = f"job_{uuid.uuid4().hex[:16]}"
+        rec: dict[str, Any] = {
+            "job_id": job_id,
+            "kind": kind,
+            "stage": initial_stage,
+            "created_at": time.time(),
+            "future": None,
+        }
+
+        def _set_stage(stage_text: str) -> None:
+            rec["stage"] = stage_text
+
+        with self._lock:
+            self._prune_locked()
+            rec["future"] = self._executor.submit(fn, _set_stage)
+            self._jobs[job_id] = rec
+        return job_id
+
+    def get_status(self, job_id: str) -> dict[str, Any]:
+        if not JOB_ID_RE.fullmatch(job_id):
+            raise HTTPException(status_code=400, detail="Invalid job_id format.")
+        with self._lock:
+            rec = self._jobs.get(job_id)
+        if rec is None:
+            raise HTTPException(
+                status_code=404,
+                detail="Preview job not found or expired; please retry.",
+            )
+        fut: concurrent.futures.Future[dict[str, Any]] = rec["future"]
+        elapsed = round(max(0.0, time.time() - float(rec["created_at"])), 1)
+        if not fut.done():
+            return {
+                "status": "running",
+                "job_id": job_id,
+                "kind": rec["kind"],
+                "stage": rec["stage"],
+                "elapsed_seconds": elapsed,
+            }
+        exc = fut.exception(timeout=0)
+        if exc is not None:
+            status_code = int(getattr(exc, "status_code", 400))
+            detail = str(getattr(exc, "detail", str(exc)))
+            return {
+                "status": "failed",
+                "job_id": job_id,
+                "kind": rec["kind"],
+                "http_status": status_code,
+                "error": detail,
+                "elapsed_seconds": elapsed,
+            }
+        return {
+            "status": "completed",
+            "job_id": job_id,
+            "kind": rec["kind"],
+            "result": fut.result(timeout=0),
+            "elapsed_seconds": elapsed,
+        }
+
+
+JOB_MANAGER = PreviewJobManager()
 
 
 def _client_ip(request: Request) -> str:
@@ -1300,6 +1399,132 @@ async def score_preview_member(request: Request, payload: ScoreMemberRequest) ->
     """Score one additional individual ensemble member on demand (for ensembles > 10 members)."""
     RATE_LIMITER.check_and_record(_client_ip(request))
     return await asyncio.to_thread(_score_single_member_sync, payload)
+
+
+@app.post("/api/preview/inspect-async", status_code=202)
+async def inspect_preview_async(request: Request) -> dict[str, Any]:
+    """Queue an inspection job and return job_id immediately so slow archives never hit 100s proxy timeouts."""
+    client_ip = _client_ip(request)
+    RATE_LIMITER.check_and_record(client_ip)
+    content_type = request.headers.get("content-type", "").lower()
+
+    upload_obj: UploadFile | None = None
+    archive_url = ""
+    leaderboard_id = "gauged__single_camels"
+    recipe_override: dict[str, Any] | None = None
+
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        maybe_file = form.get("file")
+        if isinstance(maybe_file, UploadFile):
+            upload_obj = maybe_file
+        archive_url = str(form.get("archive_url") or "").strip()
+        leaderboard_id = str(form.get("leaderboard_id") or "gauged__single_camels").strip()
+        raw_override = str(form.get("recipe_override") or "").strip()
+        if raw_override:
+            parsed_ov = json.loads(raw_override)
+            if isinstance(parsed_ov, dict):
+                recipe_override = parsed_ov
+    else:
+        body = await request.json()
+        if not isinstance(body, dict):
+            raise HTTPException(status_code=400, detail="Request body must be a JSON object.")
+        archive_url = str(body.get("archive_url") or "").strip()
+        leaderboard_id = str(body.get("leaderboard_id") or "gauged__single_camels").strip()
+        if isinstance(body.get("recipe_override"), dict):
+            recipe_override = body["recipe_override"]
+
+    if upload_obj is None and not archive_url:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide either a multipart hydrograph file upload or a trusted HTTPS archive_url / DOI.",
+        )
+
+    token, token_dir = await asyncio.to_thread(PREVIEW_STORE.allocate_token_dir)
+    if upload_obj is not None:
+        safe_name = Path(upload_obj.filename or "upload.nc").name
+        staged_path = token_dir / safe_name
+        total_bytes = 0
+        chunk_bytes = 1024 * 1024
+        first_chunk = True
+        while True:
+            buf = await upload_obj.read(chunk_bytes)
+            if not buf:
+                if first_chunk:
+                    await asyncio.to_thread(_append_upload_chunk, staged_path, b"", create=True)
+                break
+            total_bytes += len(buf)
+            if total_bytes > MAX_UPLOAD_BYTES:
+                await asyncio.to_thread(PREVIEW_STORE.delete_token_dir, token_dir)
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Uploaded file exceeds maximum allowed size ({MAX_UPLOAD_BYTES // (1024 * 1024)} MiB).",
+                )
+            await asyncio.to_thread(_append_upload_chunk, staged_path, buf, create=first_chunk)
+            first_chunk = False
+
+        def _run_upload_job(set_stage: Callable[[str], None]) -> dict[str, Any]:
+            set_stage("Inspecting uploaded file schema and 531-basin physical sanity...")
+            return _record_staged_path_and_inspect(
+                staged_path,
+                token,
+                token_dir,
+                leaderboard_id,
+                recipe_override,
+                client_ip=client_ip,
+            )
+
+        job_id = JOB_MANAGER.submit(
+            "inspect",
+            "Upload received — inspecting hydrograph schema and coordinates...",
+            _run_upload_job,
+        )
+        return {"status": "queued", "job_id": job_id}
+
+    def _run_remote_job(set_stage: Callable[[str], None]) -> dict[str, Any]:
+        set_stage("Downloading prediction archive from remote DOI/URL (retrying transient host hiccups)...")
+        staged = resolve_and_download_archive(archive_url, token_dir)
+        set_stage("Archive downloaded — inspecting schema, coordinates, and 531-basin sanity...")
+        return _record_staged_path_and_inspect(
+            staged,
+            token,
+            token_dir,
+            leaderboard_id,
+            recipe_override,
+            client_ip=client_ip,
+        )
+
+    job_id = JOB_MANAGER.submit(
+        "inspect",
+        "Resolving remote DOI/URL metadata...",
+        _run_remote_job,
+    )
+    return {"status": "queued", "job_id": job_id}
+
+
+@app.post("/api/preview/score-async", status_code=202)
+async def score_preview_async(request: Request, payload: ScorePreviewRequest) -> dict[str, Any]:
+    """Queue a 14-metric scoring job and return job_id immediately so large ensembles never time out."""
+    RATE_LIMITER.check_and_record(_client_ip(request))
+    # Validate token exists upfront so expired tokens fail fast with 404
+    PREVIEW_STORE.resolve_token_dir(payload.preview_token)
+
+    def _run_score_job(set_stage: Callable[[str], None]) -> dict[str, Any]:
+        set_stage("Computing 14 Gauch et al. (2023) metrics across 531 basins (and up to 10 ensemble members)...")
+        return _score_and_cleanup_sync(payload)
+
+    job_id = JOB_MANAGER.submit(
+        "score",
+        "Starting 14-metric evaluation across 531 basins...",
+        _run_score_job,
+    )
+    return {"status": "queued", "job_id": job_id}
+
+
+@app.get("/api/preview/jobs/{job_id}")
+async def get_preview_job_status(job_id: str) -> dict[str, Any]:
+    """Poll status/result of an async inspect or score preview job."""
+    return JOB_MANAGER.get_status(job_id)
 
 
 def _active_mips_root() -> Path:

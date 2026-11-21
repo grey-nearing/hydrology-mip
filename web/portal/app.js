@@ -3480,9 +3480,14 @@
   }
 
   function startWorkingProgress(statusEl, stages) {
-    if (!statusEl) return () => {};
+    if (!statusEl) {
+      const noop = () => {};
+      noop.setStage = () => {};
+      return noop;
+    }
     const startedAt = Date.now();
     const list = Array.isArray(stages) && stages.length > 0 ? stages : [{ atSec: 0, text: "Working..." }];
+    let liveStageOverride = "";
 
     const formatElapsed = (sec) => {
       const m = Math.floor(sec / 60);
@@ -3492,9 +3497,11 @@
 
     const render = () => {
       const elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
-      let activeText = list[0].text;
-      for (const st of list) {
-        if (elapsedSec >= (st.atSec || 0)) activeText = st.text;
+      let activeText = liveStageOverride || list[0].text;
+      if (!liveStageOverride) {
+        for (const st of list) {
+          if (elapsedSec >= (st.atSec || 0)) activeText = st.text;
+        }
       }
       const textSpan = statusEl.querySelector(".working-progress-text");
       const timerSpan = statusEl.querySelector(".working-progress-timer");
@@ -3516,9 +3523,43 @@
 
     render();
     const timerId = window.setInterval(render, 1000);
-    return () => {
+    const stop = () => {
       window.clearInterval(timerId);
     };
+    stop.setStage = (txt) => {
+      if (txt) {
+        liveStageOverride = String(txt);
+        render();
+      }
+    };
+    return stop;
+  }
+
+  async function pollPreviewAsyncJob(jobId, onStageUpdate = null, maxWaitMs = 420000) {
+    const deadline = Date.now() + maxWaitMs;
+    while (Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 2500));
+      const pollRes = await fetch(`/api/preview/jobs/${encodeURIComponent(jobId)}`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+      });
+      const pollData = await parseApiJson(pollRes);
+      if (!pollRes.ok) {
+        throw new Error(pollData.error || pollData.detail || `HTTP ${pollRes.status}`);
+      }
+      if (pollData.status === "completed") {
+        return pollData.result;
+      }
+      if (pollData.status === "failed") {
+        const err = new Error(pollData.error || "Preview job failed");
+        err.httpStatus = pollData.http_status || 400;
+        throw err;
+      }
+      if (onStageUpdate && pollData.stage) {
+        onStageUpdate(pollData.stage);
+      }
+    }
+    throw new Error("Timed out waiting for preview job to finish. Please retry in a moment.");
   }
 
   async function inspectPreviewSubmission(isOverrideReinspect = false) {
@@ -3609,25 +3650,40 @@
         fd.append("model_name", modelName);
         if (archiveUrl) fd.append("archive_url", archiveUrl);
         if (recipeOverride) fd.append("recipe_override", JSON.stringify(recipeOverride));
-        res = await fetch("/api/preview/inspect", { method: "POST", body: fd });
+        res = await fetch("/api/preview/inspect-async", { method: "POST", body: fd });
+        if (res.status === 404 || res.status === 405) {
+          res = await fetch("/api/preview/inspect", { method: "POST", body: fd });
+        }
       } else {
-        res = await fetch("/api/preview/inspect", {
+        const jsonBody = JSON.stringify({
+          archive_url: archiveUrl,
+          leaderboard_id: lbId,
+          spatial_regime: spatialRegime,
+          forcing: forcing,
+          model_name: modelName,
+          ...(recipeOverride ? { recipe_override: recipeOverride } : {}),
+        });
+        res = await fetch("/api/preview/inspect-async", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            archive_url: archiveUrl,
-            leaderboard_id: lbId,
-            spatial_regime: spatialRegime,
-            forcing: forcing,
-            model_name: modelName,
-            ...(recipeOverride ? { recipe_override: recipeOverride } : {}),
-          }),
+          body: jsonBody,
         });
+        if (res.status === 404 || res.status === 405) {
+          res = await fetch("/api/preview/inspect", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: jsonBody,
+          });
+        }
       }
 
-      const payload = await parseApiJson(res);
-      stopProgress();
-      if (!res.ok) {
+      let payload = await parseApiJson(res);
+      if (res.status === 202 && payload && payload.job_id) {
+        payload = await pollPreviewAsyncJob(payload.job_id, (st) => {
+          if (stopProgress && stopProgress.setStage) stopProgress.setStage(st);
+        });
+      } else if (!res.ok) {
+        stopProgress();
         const msg = payload.error || payload.detail || `HTTP ${res.status}`;
         if (payload.code === "SCORER_UNCONFIGURED" || res.status === 503) {
           if (statusEl) {
@@ -3647,6 +3703,7 @@
         }
         throw new Error(msg);
       }
+      stopProgress();
 
       if (statusEl) {
         statusEl.textContent = "Inspection complete — review Step 2 mappings and sanity plots below.";
@@ -3657,7 +3714,7 @@
       stopProgress();
       const msg = err && err.message ? err.message : String(err);
       const isRemoteDownloadErr =
-        /Archive download failed|timed out|HTTP (429|500|502|503|504)|Failed to fetch|network/i.test(msg);
+        /Archive download failed|timed out|HTTP (429|500|502|503|504|520|522|524)|Failed to fetch|network/i.test(msg);
       if (statusEl) {
         statusEl.textContent = `Inspection failed: ${msg}`;
         statusEl.style.color = "var(--status-danger)";
@@ -3739,30 +3796,42 @@
     ]);
 
     try {
-      const res = await fetch("/api/preview/score", {
+      const scoreBody = JSON.stringify({
+        preview_token: STATE.previewInspectData.preview_token,
+        recipe,
+        metadata: {
+          leaderboard_id: lbId,
+          spatial_regime: spatialRegime,
+          forcing,
+          model_name: modelName,
+          family_id: familyId || null,
+          new_family_name: familyId ? null : newFamilyName || modelName,
+          paradigm,
+          category,
+          ensemble_info: ensembleInfo,
+          code_url: codeUrl,
+          archive_url: archiveUrl,
+          citation: citation || "Community Contribution (2026)",
+        },
+      });
+      let res = await fetch("/api/preview/score-async", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          preview_token: STATE.previewInspectData.preview_token,
-          recipe,
-          metadata: {
-            leaderboard_id: lbId,
-            spatial_regime: spatialRegime,
-            forcing,
-            model_name: modelName,
-            family_id: familyId || null,
-            new_family_name: familyId ? null : newFamilyName || modelName,
-            paradigm,
-            category,
-            ensemble_info: ensembleInfo,
-            code_url: codeUrl,
-            archive_url: archiveUrl,
-            citation: citation || "Community Contribution (2026)",
-          },
-        }),
+        body: scoreBody,
       });
-      const data = await parseApiJson(res);
-      if (!res.ok) {
+      if (res.status === 404 || res.status === 405) {
+        res = await fetch("/api/preview/score", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: scoreBody,
+        });
+      }
+      let data = await parseApiJson(res);
+      if (res.status === 202 && data && data.job_id) {
+        data = await pollPreviewAsyncJob(data.job_id, (st) => {
+          if (stopScoreProgress && stopScoreProgress.setStage) stopScoreProgress.setStage(st);
+        });
+      } else if (!res.ok) {
         throw new Error(data.error || data.detail || `HTTP ${res.status}`);
       }
 

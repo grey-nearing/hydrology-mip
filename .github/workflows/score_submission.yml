@@ -20,17 +20,18 @@ on:
         required: false
         default: "false"
 
-# Strictly read-only default permissions (main is protected; no git push from CI).
+# Strictly read-only default permissions; only publish-on-main requests contents: write.
 permissions:
   contents: read
 
 concurrency:
-  group: score-submission-${{ github.event.pull_request.number || github.sha }}
+  group: score-submission-${{ github.event.pull_request.number || 'main-publish' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   validate-and-score:
     name: Validate, Score (14 Metrics) & Verify Leaderboard Parity
+    if: github.event_name == 'pull_request' || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -200,18 +201,19 @@ jobs:
           gh pr comment "${PR_NUMBER}" --body-file downloaded_report/combined_pr_summary.md
 
   publish-on-main:
-    name: Publish Merged Submission Zarr v2 Archive to R2/GCS
-    needs: validate-and-score
+    name: Register Merged Submissions, Update Leaderboards/Figures & Upload Zarr v2 to R2
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run != 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
-      contents: read
+      contents: write
     steps:
-      - name: Checkout repository
+      - name: Checkout latest main
         uses: actions/checkout@v4
         with:
+          ref: main
           fetch-depth: 0
+          token: ${{ secrets.PR_BOT_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v5
@@ -226,7 +228,7 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0"
           python -m pip install -e ".[dev]" "pydantic>=2.7.0"
 
-      - name: Materialize Zarr v2 from merged manifests (no push to main)
+      - name: Register pending merged manifests, update leaderboards/figures & materialize Zarr v2
         env:
           HYDROMIP_GCS_ANON: "1"
           BASE_SHA: ${{ github.event.before }}
@@ -237,47 +239,93 @@ jobs:
           python - <<'PY'
           import json
           import os
+          import subprocess
           from pathlib import Path
           from hydromip.evaluation.zarr_io import open_zarr_store
-          from hydromip.tools.process_submission import process_submission
+          from hydromip.tools.process_submission import _derive_entry_id, process_submission
+
+          mip_dir = Path("mips/camels_us_daily")
+          contrib_path = mip_dir / "leaderboards" / "contributions_index.json"
+          registered_ids: set[str] = set()
+          if contrib_path.is_file():
+              cdoc = json.loads(contrib_path.read_text(encoding="utf-8"))
+              raw_entries = cdoc.get("entries") or {}
+              if isinstance(raw_entries, dict):
+                  registered_ids.update(str(k) for k in raw_entries.keys())
+              elif isinstance(raw_entries, list):
+                  registered_ids.update(str(item.get("entry_id")) for item in raw_entries if isinstance(item, dict) and item.get("entry_id"))
 
           manual = os.environ.get("MANUAL_FILE", "").strip()
+          to_register: list[Path] = []
+          already_registered_changed: list[Path] = []
+
           if manual:
-              files = [manual]
+              to_register = [Path(manual)]
           else:
-              import subprocess
+              # Scan ALL merged manifests under submissions/ so even rapid back-to-back PR merges
+              # never drop an entry if GitHub collapses intermediate queued push runs.
+              all_manifests = sorted(Path("submissions").rglob("*.json"))
+              changed_set: set[str] = set()
               base = os.environ.get("BASE_SHA", "").strip()
               head = os.environ.get("HEAD_SHA", "HEAD").strip()
               if base and base != "0" * 40:
                   if subprocess.run(["git", "cat-file", "-e", f"{base}^{{commit}}"]).returncode != 0:
                       subprocess.run(["git", "fetch", "--no-tags", "origin", base], check=False)
-                  out = subprocess.check_output(
+                  changed_out = subprocess.check_output(
                       ["git", "diff", "--name-only", base, head, "--", "submissions/"],
                       text=True,
                   ).splitlines()
-              else:
-                  out = subprocess.check_output(["git", "ls-files", "submissions/"], text=True).splitlines()
-              files = [f for f in out if f.endswith(".json")]
+                  changed_set = {Path(f).as_posix() for f in changed_out if f.endswith(".json")}
 
-          if not files:
-              print("No submission manifests changed; exiting.")
+              for mf in all_manifests:
+                  doc = json.loads(mf.read_text(encoding="utf-8"))
+                  eid = _derive_entry_id(doc, mf)
+                  if eid not in registered_ids:
+                      to_register.append(mf)
+                  elif mf.as_posix() in changed_set:
+                      already_registered_changed.append(mf)
+
+          if not to_register and not already_registered_changed:
+              print("All merged submission manifests are already registered; exiting cleanly.")
               raise SystemExit(0)
 
-          local_targets = Path("mips/camels_us_daily/observations/newman_eval_targets.zarr")
+          local_targets = mip_dir / "observations" / "newman_eval_targets.zarr"
           if not local_targets.exists():
               local_targets.parent.mkdir(parents=True, exist_ok=True)
               obs_ds = open_zarr_store(os.environ["TARGET_OBSERVATIONS_URI"])
               obs_ds.to_zarr(str(local_targets), mode="w", consolidated=True, zarr_format=2)
 
-          for idx, manifest_file in enumerate(files):
-              process_submission(
-                  manifest_path=Path(manifest_file),
-                  mip_dir=Path("mips/camels_us_daily"),
+          processed_ids: list[str] = []
+          for idx, mf in enumerate(to_register):
+              print(f"Registering & scoring pending submission manifest: {mf}")
+              res = process_submission(
+                  manifest_path=mf,
+                  mip_dir=mip_dir,
                   out_zarr_dir=Path("staging_zarr"),
-                  summary_md_path=Path(f"staging_reports/main_{idx}.md"),
+                  summary_md_path=Path(f"staging_reports/main_reg_{idx}.md"),
+                  dry_run=False,
+                  update_figures=(idx == len(to_register) - 1),
+              )
+              processed_ids.append(str(res["entry"]["entry_id"]))
+
+          for idx, mf in enumerate(already_registered_changed):
+              print(f"Materializing Zarr v2 for already-registered manifest: {mf}")
+              process_submission(
+                  manifest_path=mf,
+                  mip_dir=mip_dir,
+                  out_zarr_dir=Path("staging_zarr"),
+                  summary_md_path=Path(f"staging_reports/main_zarr_{idx}.md"),
                   dry_run=True,
               )
+
+          Path("staging_reports").mkdir(exist_ok=True)
+          Path("staging_reports/registered_ids.json").write_text(
+              json.dumps(processed_ids), encoding="utf-8"
+          )
           PY
+
+      - name: Run protocol & AST guardrails before publishing
+        run: python -m hydromip.tools.ci_guardrails --mode all
 
       - name: Upload Zarr v2 & refreshed manifest_index.json to R2/GCS
         env:
@@ -355,3 +403,26 @@ jobs:
           elif [[ -z "${GCS_HYDROGRAPH_BUCKET:-}" ]]; then
             echo "No cloud hydrograph bucket configured; skipping remote Zarr upload."
           fi
+
+      - name: Commit regenerated leaderboards & figures to main (triggers website deploy)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add mips/camels_us_daily/leaderboards/ mips/camels_us_daily/figures/
+          if git diff --cached --quiet; then
+            echo "No leaderboard or figure changes to commit."
+            exit 0
+          fi
+          IDS="$(python -c 'import json; from pathlib import Path; p=Path("staging_reports/registered_ids.json"); print(", ".join(json.loads(p.read_text())) if p.is_file() else "submissions")')"
+          git commit -m "chore(leaderboards): register merged submission(s) (${IDS})"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Pushed regenerated leaderboards & figures to main."
+              exit 0
+            fi
+            echo "Push attempt ${attempt} hit concurrent commit on main; rebasing..."
+            git fetch origin main
+            git rebase origin/main
+          done
+          echo "ERROR: Failed to push regenerated leaderboards after 3 attempts." >&2
+          exit 1

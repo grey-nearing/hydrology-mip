@@ -264,7 +264,7 @@ jobs:
                   "staging_zarr",
                   "--summary-md",
                   summary_path.as_posix(),
-                  "--update-figures",
+                  "--dry-run",
               ],
               check=True,
           )
@@ -274,18 +274,12 @@ jobs:
           subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
           subprocess.run(["git", "config", "user.email", "41898282+github-actions[bot]@users.noreply.github.com"], check=True)
           subprocess.run(["git", "checkout", "-B", branch], check=True)
+          # Commit ONLY the unique per-submission manifest so concurrent PRs NEVER conflict
+          # on shared leaderboard JSONs or binary figure PNG/PDFs. Leaderboards, figures, and R2
+          # archives are updated atomically on main immediately after merge by score_submission.yml.
+          subprocess.run(["git", "add", sub_path.as_posix()], check=True)
           subprocess.run(
-              [
-                  "git",
-                  "add",
-                  sub_path.as_posix(),
-                  "mips/camels_us_daily/leaderboards/",
-                  "mips/camels_us_daily/figures/",
-              ],
-              check=True,
-          )
-          subprocess.run(
-              ["git", "commit", "-m", f"feat(submission): score & register {model_name} for {lb_id} (#{issue_num})"],
+              ["git", "commit", "-m", f"feat(submission): add verified manifest for {model_name} ({lb_id}, #{issue_num})"],
               check=True,
           )
           subprocess.run(["git", "push", "-u", "--force", "origin", branch], check=True)
