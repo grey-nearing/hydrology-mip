@@ -1,10 +1,10 @@
 {
   "source_leaderboards_dir": "mips/camels_us_daily/leaderboards",
   "output_figures_dir": "mips/camels_us_daily/figures",
-  "total_leaderboard_entries": 121,
+  "total_leaderboard_entries": 123,
   "mip_study_year": 2026,
   "panel_entry_counts": {
-    "gauged": 82,
+    "gauged": 84,
     "pub": 19,
     "pur": 20
   },
