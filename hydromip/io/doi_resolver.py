@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import ipaddress
 import json
+import os
 import re
 import socket
 import time
@@ -27,7 +28,9 @@ DEFAULT_MAX_DOWNLOAD_BYTES: int = 500 * 1024 * 1024  # 500 MiB ceiling
 DEFAULT_METADATA_MAX_BYTES: int = 10 * 1024 * 1024
 MAX_REDIRECT_HOPS: int = 5
 ARCHIVE_TIMEOUT_SECONDS: int = 120
+DEFAULT_USER_AGENT: str = "HydrologyMIP/1.0 (+https://github.com/grey-nearing/hydrology-mip)"
 TRANSIENT_HTTP_STATUSES: frozenset[int] = frozenset({429, 500, 502, 503, 504})
+ZENODO_AUTH_HOSTS: frozenset[str] = frozenset({"zenodo.org"})
 DEFAULT_HTTP_MAX_RETRIES: int = 4
 DEFAULT_RETRY_BACKOFF_SECONDS: float = 2.0
 
@@ -152,24 +155,50 @@ class _NonRaisingHTTPErrorProcessor(urllib.request.HTTPErrorProcessor):
     https_response = http_response
 
 
-def validate_and_fetch_archive_url(
+def _build_request_headers(current_url: str, user_agent: str) -> dict[str, str]:
+    """Construct per-hop HTTP headers with strict host-pinned Zenodo auth.
+
+    Security invariants:
+      - ``Authorization: Bearer`` is ONLY attached when scheme is ``https`` AND
+        exact hostname is in ``ZENODO_AUTH_HOSTS`` (``zenodo.org``).
+      - Rebuilt fresh on every redirect hop so credentials are NEVER forwarded
+        across a redirect to any third-party or CDN host.
+      - Token is NEVER placed in URL query strings.
+    """
+    headers: dict[str, str] = {"User-Agent": user_agent}
+    parsed = urllib.parse.urlparse(current_url)
+    host = (parsed.hostname or "").lower()
+    if parsed.path.startswith("/api/"):
+        headers["Accept"] = "application/json"
+    token = os.environ.get("ZENODO_API_TOKEN", "").strip()
+    if token and parsed.scheme.lower() == "https" and host in ZENODO_AUTH_HOSTS:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
+def _validate_and_fetch_with_status(
     url: str,
     dest_path: Path | None = None,
     *,
     max_bytes: int = DEFAULT_MAX_DOWNLOAD_BYTES,
     timeout: int = ARCHIVE_TIMEOUT_SECONDS,
-    user_agent: str = "HydrologyMIP/1.0",
+    user_agent: str = DEFAULT_USER_AGENT,
     max_retries: int = DEFAULT_HTTP_MAX_RETRIES,
     retry_backoff_seconds: float = DEFAULT_RETRY_BACKOFF_SECONDS,
-) -> bytes:
-    """Fetch a remote HTTPS resource while re-validating every HTTP redirect hop."""
+) -> tuple[int, bytes, str]:
+    """Fetch an HTTPS URL with per-hop SSRF validation, returning ``(status, body, final_url)``."""
     current_url = validate_https_target_url(url)
     opener = urllib.request.build_opener(_NoRedirectHandler(), _NonRaisingHTTPErrorProcessor())
 
     for _hop in range(MAX_REDIRECT_HOPS + 1):
         redirected = False
+        host = (urllib.parse.urlparse(current_url).hostname or "").lower()
+        max_403_retries = min(2, max(0, int(max_retries))) if host in ZENODO_AUTH_HOSTS else 0
         for attempt in range(max(0, int(max_retries)) + 1):
-            req = urllib.request.Request(current_url, headers={"User-Agent": user_agent})
+            req = urllib.request.Request(
+                current_url,
+                headers=_build_request_headers(current_url, user_agent),
+            )
             with opener.open(req, timeout=timeout) as resp:
                 status = int(getattr(resp, "status", None) or resp.getcode() or 200)
                 if status in (301, 302, 303, 307, 308):
@@ -180,7 +209,9 @@ def validate_and_fetch_archive_url(
                     current_url = validate_https_target_url(next_url)
                     redirected = True
                     break
-                if status in TRANSIENT_HTTP_STATUSES and attempt < max_retries:
+                retry_transient = status in TRANSIENT_HTTP_STATUSES and attempt < max_retries
+                retry_zenodo_403 = status == 403 and attempt < max_403_retries
+                if retry_transient or retry_zenodo_403:
                     retry_after = str(resp.headers.get("Retry-After", "") or "").strip()
                     wait_s = (
                         min(30.0, float(retry_after))
@@ -191,9 +222,7 @@ def validate_and_fetch_archive_url(
                         time.sleep(wait_s)
                     continue
                 if status >= 400:
-                    raise ValueError(
-                        f"Archive download failed with HTTP {status} from {current_url}."
-                    )
+                    return status, b"", current_url
 
                 content_len = resp.headers.get("Content-Length")
                 if content_len and content_len.isdigit() and int(content_len) > max_bytes:
@@ -216,7 +245,7 @@ def validate_and_fetch_archive_url(
                                     f"Downloaded archive exceeded {max_bytes} byte limit."
                                 )
                             out_f.write(buf)
-                    return b""
+                    return status, b"", current_url
 
                 chunks: list[bytes] = []
                 while True:
@@ -227,13 +256,40 @@ def validate_and_fetch_archive_url(
                     if total > max_bytes:
                         raise ValueError(f"Downloaded payload exceeded {max_bytes} byte limit.")
                     chunks.append(buf)
-                return b"".join(chunks)
+                return status, b"".join(chunks), current_url
         if redirected:
             continue
 
     raise ValueError(
         f"Exceeded maximum HTTP redirect limit ({MAX_REDIRECT_HOPS}) fetching archive."
     )
+
+
+def validate_and_fetch_archive_url(
+    url: str,
+    dest_path: Path | None = None,
+    *,
+    max_bytes: int = DEFAULT_MAX_DOWNLOAD_BYTES,
+    timeout: int = ARCHIVE_TIMEOUT_SECONDS,
+    user_agent: str = DEFAULT_USER_AGENT,
+    max_retries: int = DEFAULT_HTTP_MAX_RETRIES,
+    retry_backoff_seconds: float = DEFAULT_RETRY_BACKOFF_SECONDS,
+) -> bytes:
+    """Fetch a remote HTTPS resource while re-validating every HTTP redirect hop."""
+    status, payload, final_url = _validate_and_fetch_with_status(
+        url,
+        dest_path=dest_path,
+        max_bytes=max_bytes,
+        timeout=timeout,
+        user_agent=user_agent,
+        max_retries=max_retries,
+        retry_backoff_seconds=retry_backoff_seconds,
+    )
+    if status >= 400:
+        raise ValueError(
+            f"Archive download failed with HTTP {status} from {final_url}."
+        )
+    return payload
 
 
 def archive_file_priority(filename: str) -> int:
@@ -288,22 +344,68 @@ def resolve_archive_download_url(
     if m_zen:
         rec_id = m_zen.group(1)
         api_url = f"https://zenodo.org/api/records/{rec_id}"
-        rec_json = json.loads(
-            fetcher(api_url, max_bytes=DEFAULT_METADATA_MAX_BYTES).decode("utf-8")
-        )
         files: list[tuple[int, str, str]] = []
-        for entry in rec_json.get("files", []):
-            key = str(entry.get("key") or entry.get("filename") or "")
-            links = entry.get("links") or {}
-            dl_url = str(
-                links.get("content")
-                or links.get("download")
-                or links.get("self")
-                or f"https://zenodo.org/records/{rec_id}/files/{urllib.parse.quote(key)}?download=1"
+        if fetch_fn is None or fetch_fn is validate_and_fetch_archive_url:
+            api_status, api_bytes, api_final_url = _validate_and_fetch_with_status(
+                api_url, max_bytes=DEFAULT_METADATA_MAX_BYTES
             )
-            size = int(entry.get("size") or 0)
-            if _is_eligible_archive_entry(key, size, max_bytes):
-                files.append((archive_file_priority(key), key, dl_url))
+            if api_status == 200:
+                rec_json = json.loads(api_bytes.decode("utf-8"))
+                for entry in rec_json.get("files", []):
+                    key = str(entry.get("key") or entry.get("filename") or "")
+                    links = entry.get("links") or {}
+                    dl_url = str(
+                        links.get("content")
+                        or links.get("download")
+                        or links.get("self")
+                        or f"https://zenodo.org/records/{rec_id}/files/{urllib.parse.quote(key)}?download=1"
+                    )
+                    size = int(entry.get("size") or 0)
+                    if _is_eligible_archive_entry(key, size, max_bytes):
+                        files.append((archive_file_priority(key), key, dl_url))
+            elif api_status == 403:
+                # Safe SSRF-validated fallback to public record landing page when Zenodo's
+                # /api/records endpoint rate-limits anonymous cloud runner IPs with HTTP 403.
+                landing_url = f"https://zenodo.org/records/{rec_id}"
+                land_status, land_bytes, land_final_url = _validate_and_fetch_with_status(
+                    landing_url, max_bytes=DEFAULT_METADATA_MAX_BYTES
+                )
+                if land_status >= 400:
+                    raise ValueError(
+                        f"Archive download failed with HTTP {api_status} from {api_final_url} "
+                        f"(fallback landing page returned HTTP {land_status} from {land_final_url})."
+                    )
+                html = land_bytes.decode("utf-8", errors="ignore")
+                seen_names: set[str] = set()
+                pattern = rf"/records/{re.escape(rec_id)}/files/([^\"'<>?/\s]+)"
+                for raw_name in re.findall(pattern, html):
+                    decoded = urllib.parse.unquote(raw_name).strip()
+                    if not decoded or decoded in seen_names:
+                        continue
+                    seen_names.add(decoded)
+                    if _is_eligible_archive_entry(decoded, 0, max_bytes):
+                        dl_url = f"https://zenodo.org/records/{rec_id}/files/{urllib.parse.quote(decoded)}?download=1"
+                        files.append((archive_file_priority(decoded), decoded, dl_url))
+            else:
+                raise ValueError(
+                    f"Archive download failed with HTTP {api_status} from {api_final_url}."
+                )
+        else:
+            rec_json = json.loads(
+                fetcher(api_url, max_bytes=DEFAULT_METADATA_MAX_BYTES).decode("utf-8")
+            )
+            for entry in rec_json.get("files", []):
+                key = str(entry.get("key") or entry.get("filename") or "")
+                links = entry.get("links") or {}
+                dl_url = str(
+                    links.get("content")
+                    or links.get("download")
+                    or links.get("self")
+                    or f"https://zenodo.org/records/{rec_id}/files/{urllib.parse.quote(key)}?download=1"
+                )
+                size = int(entry.get("size") or 0)
+                if _is_eligible_archive_entry(key, size, max_bytes):
+                    files.append((archive_file_priority(key), key, dl_url))
         if not files:
             raise ValueError(
                 f"No supported hydrograph files (<= {max_bytes // (1024 * 1024)} MiB) found in Zenodo record {rec_id}."

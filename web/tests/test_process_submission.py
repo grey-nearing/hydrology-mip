@@ -549,3 +549,108 @@ def test_process_submission_ensemble_opt_out_and_specific_member_selection(
     assert res_pick["ensemble_single_entry"]["selected_member_index"] == 2
     assert res_pick["ensemble_single_entry"]["primary_ranking_nse"] > 0.99
 
+
+def test_doi_resolver_zenodo_token_host_pinned_and_stripped_on_redirect(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ZENODO_API_TOKEN is sent ONLY to https://zenodo.org via Bearer header and stripped on redirects."""
+    fake_tok = "zntok_test_readonly_0000"
+    monkeypatch.setenv("ZENODO_API_TOKEN", fake_tok)
+    seen_requests: list[tuple[str, dict[str, str]]] = []
+
+    class _FakeResp:
+        def __init__(self, status: int, headers: dict[str, str], body: bytes) -> None:
+            self.status = status
+            self.headers = headers
+            self._body = body
+            self._sent = False
+
+        def read(self, _n: int = -1) -> bytes:
+            if self._sent:
+                return b""
+            self._sent = True
+            return self._body
+
+        def __enter__(self) -> "_FakeResp":
+            return self
+
+        def __exit__(self, *_a: object) -> None:
+            return None
+
+    class _FakeOpener:
+        def open(self, req: object, timeout: int = 120) -> _FakeResp:
+            _ = timeout
+            url = req.full_url
+            hdrs = {k.lower(): v for k, v in req.header_items()}
+            seen_requests.append((url, hdrs))
+            if url == "https://zenodo.org/records/12345/files/q.nc?download=1":
+                return _FakeResp(
+                    302,
+                    {"Location": "https://objects.githubusercontent.com/bucket/q.nc"},
+                    b"",
+                )
+            if url == "https://zenodo.org/api/records/99999":
+                return _FakeResp(401, {}, b"unauthorized")
+            return _FakeResp(200, {}, b"ok")
+
+    monkeypatch.setattr(doi_resolver, "validate_https_target_url", lambda u: u)
+    monkeypatch.setattr(doi_resolver.urllib.request, "build_opener", lambda *_a: _FakeOpener())
+
+    # 1. Redirect from zenodo.org -> objects.githubusercontent.com strips Authorization on hop 2
+    out = doi_resolver.validate_and_fetch_archive_url(
+        "https://zenodo.org/records/12345/files/q.nc?download=1",
+        max_retries=0,
+        retry_backoff_seconds=0.0,
+    )
+    assert out == b"ok"
+    assert seen_requests[0][0].startswith("https://zenodo.org/")
+    assert fake_tok not in seen_requests[0][0]
+    assert seen_requests[0][1].get("authorization") == f"Bearer {fake_tok}"
+    assert seen_requests[1][0].startswith("https://objects.githubusercontent.com/")
+    assert "authorization" not in seen_requests[1][1]
+
+    # 2. Non-Zenodo trusted host NEVER receives Authorization header
+    seen_requests.clear()
+    doi_resolver.validate_and_fetch_archive_url(
+        "https://www.hydroshare.org/hsapi/resource/abc/files/",
+        max_retries=0,
+        retry_backoff_seconds=0.0,
+    )
+    assert "authorization" not in seen_requests[0][1]
+
+    # 3. Error messages NEVER leak the token
+    with pytest.raises(ValueError) as exc_info:
+        doi_resolver.validate_and_fetch_archive_url(
+            "https://zenodo.org/api/records/99999",
+            max_retries=0,
+            retry_backoff_seconds=0.0,
+        )
+    assert fake_tok not in str(exc_info.value)
+
+
+def test_doi_resolver_zenodo_403_falls_back_to_record_landing_page(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """When /api/records/<id> returns HTTP 403, safely fall back to /records/<id> file links."""
+    monkeypatch.delenv("ZENODO_API_TOKEN", raising=False)
+    html = (
+        '<a href="/records/23639347/files/README.md">README</a>'
+        '<a href="/records/23639347/files/evil.pkl">evil</a>'
+        '<a href="/records/23639347/files/era_model.zarr.zip">zarr</a>'
+    ).encode("utf-8")
+
+    def _fake_fetch_status(url: str, **_kwargs: object) -> tuple[int, bytes, str]:
+        if url == "https://zenodo.org/api/records/23639347":
+            return 403, b"", url
+        if url == "https://zenodo.org/records/23639347":
+            return 200, html, url
+        raise AssertionError(f"Unexpected URL: {url}")
+
+    monkeypatch.setattr(doi_resolver, "_validate_and_fetch_with_status", _fake_fetch_status)
+    fname, dl_url = doi_resolver.resolve_archive_download_url(
+        "https://doi.org/10.5281/zenodo.23639347"
+    )
+    assert fname == "era_model.zarr.zip"
+    assert dl_url == "https://zenodo.org/records/23639347/files/era_model.zarr.zip?download=1"
+
+

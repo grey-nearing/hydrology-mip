@@ -107,6 +107,7 @@ jobs:
         if: steps.discover.outputs.has_files == 'true'
         env:
           HYDROMIP_GCS_ANON: "1"
+          ZENODO_API_TOKEN: ${{ secrets.ZENODO_API_TOKEN }}
           SUBMISSION_FILES: ${{ steps.discover.outputs.files }}
           TARGET_OBSERVATIONS_URI: ${{ vars.CAMELS_OBSERVATIONS_URI || 'https://data.hydrologymip.org/camels_us_daily/observations/newman_eval_targets.zarr' }}
         run: |
@@ -231,6 +232,7 @@ jobs:
       - name: Register pending merged manifests, update leaderboards/figures & materialize Zarr v2
         env:
           HYDROMIP_GCS_ANON: "1"
+          ZENODO_API_TOKEN: ${{ secrets.ZENODO_API_TOKEN }}
           BASE_SHA: ${{ github.event.before }}
           HEAD_SHA: ${{ github.sha }}
           MANUAL_FILE: ${{ github.event.inputs.submission_file }}
