@@ -1,18 +1,24 @@
-# Yin et al. (2022) RR-Former
+# Yin et al. (2022) Rainfall-Runoff Transformer (`RR-Former`)
 
-Reference:
-> Yin, H., Guo, Z., Zhang, X., Chen, J., & Zhang, Y. (2022). RR-Former: Rainfall-runoff modeling based on Transformer. *Journal of Hydrology*, 609, 127781. https://doi.org/10.1016/j.jhydrol.2022.127781
+Independent clean-room PyTorch implementation of **RR-Former** from **Yin, Guo, Zhang, Chen, & Zhang (2022)** (*Journal of Hydrology*, 609, 127781, <https://doi.org/10.1016/j.jhydrol.2022.127781>).
 
-## Architecture
-- **Model**: Encoder-decoder Transformer (`d_model=64`, `nhead=4`, `num_encoder_layers=4`, `num_decoder_layers=4`, `dim_feedforward=256`, `dropout=0.1`) with meteorological forcings, 27 static catchment attributes, and lagged observed specific discharge (`[q_lag_std, q_lag_valid]`).
-- **Pretraining + Fine-Tuning**: Global regional pretraining across all training basins followed by basin-specific ridge-regularized readout fine-tuning ($\lambda = 10.0$) anchored to the global parameters for gauged basins.
+## Architecture & Two-Stage Training Protocol
 
-## Stage-1 Author-Protocol Confirmation Run (`status: "PASS"`)
-- **Published Target (`author_published_med_nse = 0.8265`)**: In Yin et al. (2022), Section 4.1 (`p. 6`), Abstract, Fig. 4a, and Tables 5–6 report a 1-day-ahead **Median NSE of `0.8265`** (Mean NSE = `0.7904`, and `0.7598` Median NSE for global pretraining without fine-tuning, `RR-Former2`) on the `1980–1995` train / `2000–2014` test split with Daymet forcings and lagged streamflow. Note that the number `0.862` in Table 4 is **Mean NSE on a 40-basin hyperparameter-tuning subset** (and matches the Feng et al., 2020 `DI(1)` LSTM benchmark), not the full-cohort Median NSE.
-- **Stage-1 Reproduction**: Our 3-seed Stage-1 reproduction (`seeds=[601, 602, 603]`, trained `1980-10-01` to `1995-09-30` on 531 CAMELS-US basins with Daymet + lagged streamflow) achieves **Median NSE = `0.816`** on the `2000–2014` test split ($\Delta = -0.0105$) and **`0.8009`** across the full `1995-10-01` to `2010-09-30` evaluation window ($\Delta = -0.0256$, single-seed `0.7919 ± 0.0042`, Mean NSE = `0.7706`, Median KGE = `0.8375`), passing within tolerance (`status: "PASS"`).
+- **Encoder-Decoder Transformer:** `d_model=64`, `nhead=4`, `num_encoder_layers=4`, `num_decoder_layers=4`, `dim_feedforward=256`, `dropout=0.1`, `decode_mode="NAR"`, learnable `src_pos_emb` / `tgt_pos_emb`, causal + past-only key self-attention mask, linear head `Linear(64, 1)`, `use_static=False`, `use_future_fea=True`.
+- **Inputs:** Daymet 5 dynamic meteorological channels (`prcp, srad, tmax, tmin, vp`) over `[t_0 - past_len .. t_0 + pred_len - 1]` and standardized lagged discharge history `[q_std, q_valid]` over `[t_0 - past_len .. t_0 - 1]` followed by zero target queries.
+- **Stage A (Global Pretraining):** `NSELoss`, `Adam(lr=1e-3)`, `batch_size=512`, linear warmup (`0.25 * epochs`) + `0.99` exponential decay, selecting the best global checkpoint by validation NSE.
+- **Stage B (Full-Network Per-Basin Fine-Tuning):** Every basin initializes from the best global pretrained checkpoint and fine-tunes **all Transformer weights** via `Adam(lr=1e-3)` and `MSELoss` with warmup + `0.99` decay and per-basin validation NSE early stopping.
 
-## Stage-2 CAMELS-US MIP Protocol (`gauged__lagged_streamflow`, Table 5)
-- **Zarr Store**: `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/yin2022_rrformer_daymet.zarr` (`num_members = 3`, `seeds = [601, 602, 603]` per the store's `.zattrs`, trained `1999-10-01` to `2008-09-30`, evaluated `1989-10-01` to `1999-09-30` across 531 basins).
-- **Competing Rows**:
-  - `yin2022_rrformer_daymet` (`Rainfall-Runoff Transformer (RR-Former) (3-model ensemble)`, `is_ensemble: true`, `evaluation_mode: "ensemble"`): Median NSE = `0.847`, Mean NSE = `0.822`, Median KGE = `0.862`.
-  - `yin2022_rrformer_daymet_single` (`Rainfall-Runoff Transformer (RR-Former) (single model)`, `is_ensemble: false`, `evaluation_mode: "single_member_mean"`): Single-Model Median NSE = `0.833 ± 0.004` (Mean NSE = `0.807`, Median KGE = `0.859`) across all 3 seeds.
+## Stage-1 Author-Protocol Probe Results
+
+- **Protocol (`models/yin2022_rrformer/reproduce_author_metrics.py`):** 671 CAMELS-US basins present in `camels_671_1980_2014.npz` (`06775500` and `06846500` absent), Daymet 5 dynamic channels, `use_static=False`, `past_len=15`, `pred_len=7`, train `1980-10-01`–`1995-09-30`, val `1995-10-01`–`2000-09-30`, test `2000-10-01`–`2014-09-30`, global pretraining (`epochs=120`, `n_batches_per_epoch=1024`) + per-basin full-network fine-tuning (`finetune_epochs=200`), seed `601` (`10,586.2 s` on 2x NVIDIA T4).
+- **Results (`models/yin2022_rrformer/stage1_author_reproduction_results.json`):**
+  - **Day-1 Median NSE (`nse1_median`):** **0.8294** (mean `0.7881`; published `0.8265` median / `0.7904` mean, $\Delta = +0.0029$).
+  - **7-Day Mean NSE (`test_nse_mean_median`):** **0.7723** (mean `0.7206`; per-lead medians Days 1–7: `[0.8294, 0.7896, 0.7731, 0.7655, 0.7576, 0.7552, 0.7422]`).
+  - **Gate Status:** **`FAIL`** (`|0.7723 - 0.8265| = 0.0542 > 0.01` hard gate on 7-day `test_nse_mean`, with global pretraining `best_val_nse` reaching `0.6890` before early stop at epoch `79`). Per the Stage-1 hard gate, Stage-2 re-training was halted and existing `gauged__lagged_streamflow.json` RR-Former rows were left unchanged pending lead review.
+
+## Usage
+
+```bash
+python -m models.yin2022_rrformer.reproduce_author_metrics --smoke
+```

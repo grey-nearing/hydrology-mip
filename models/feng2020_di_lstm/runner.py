@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from pathlib import Path
 
 import numpy as np
@@ -28,15 +28,15 @@ def run_fold(
     seeds: Sequence[int] = DEFAULT_SEEDS,
     hidden_size: int = 256,
     seq_len: int = 365,
-    dropout: float = 0.4,
-    batch_size: int = 256,
-    epochs: int = 30,
-    lr_schedule: Mapping[int, float] | None = None,
+    dropout: float = 0.5,
+    batch_size: int = 100,
+    epochs: int = 300,
+    lr: float = 1.0,
     n_batches_per_epoch: int | None = None,
-    clip_grad_norm: float = 1.0,
+    clip_grad_norm: float = 0.0,
     eval_batch_size: int = 256,
     lag_days: int = 1,
-    lag_dropout_prob: float = 0.02,
+    lag_dropout_prob: float = 0.0,
     device: str | torch.device | None = None,
     return_members: bool = False,
     fold_id: str | None = None,
@@ -73,7 +73,7 @@ def run_fold(
         dropout=dropout,
         batch_size=batch_size,
         epochs=epochs,
-        lr_schedule=lr_schedule,
+        lr=lr,
         n_batches_per_epoch=n_batches_per_epoch,
         clip_grad_norm=clip_grad_norm,
         eval_batch_size=eval_batch_size,
@@ -90,6 +90,10 @@ def run_fold(
         x_stat_test=test_slice["x_stat"],
         qobs_test=test_slice["qobs"],
         spinup_days_test=int(test_slice["spinup_days"]),
+        x_aux_train=train_slice.get("x_aux"),
+        x_aux_test=test_slice.get("x_aux"),
+        train_basins=list(train_basins),
+        test_basins=list(test_basins),
         seeds=seeds,
     )
     if return_members:

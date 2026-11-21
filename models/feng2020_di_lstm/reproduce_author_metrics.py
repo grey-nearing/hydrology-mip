@@ -40,7 +40,7 @@ PUBLISHED_ENSEMBLE_MEDIAN_NSE = 0.859
 PUBLISHED_SOURCE = (
     "Feng, Fang & Shen (2020), WRR, Table 3 (DI(1), 671 basins, NLDAS, 1995-2005 eval)"
 )
-TOLERANCE = 0.04
+TOLERANCE = 0.01
 SMOKE_KWARGS = {"hidden_size": 16, "seq_len": 30, "batch_size": 32}
 
 

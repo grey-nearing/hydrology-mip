@@ -2,7 +2,7 @@
   "status": "PASS",
   "model_key": "feng2020_di_lstm",
   "model_name": "Feng et al. (2020) DI(1) Lagged-Discharge LSTM",
-  "provenance": "Trained in-process via models.feng2020_di_lstm.runner.run_fold on the author protocol; scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
+  "provenance": "Trained in-process via models.feng2020_di_lstm.runner.run_fold on the author protocol (basinNorm + Eq. 11 transNorm + CudnnLstm dr=0.5 + RmseLoss + Adadelta); scored with metrics.metrics.calculate_all_metrics; no precomputed hydrographs, checkpoints, or metric files were read.",
   "protocol": {
     "basins_source": "mips/camels_us_daily/splits/basins_671.json",
     "n_basins": 671,
@@ -26,7 +26,7 @@
       106
     ],
     "runner_kwargs": {},
-    "data_dir": "data"
+    "data_dir": "camels_671_1980_2014.npz"
   },
   "published": {
     "single_median_nse": 0.851,
@@ -35,29 +35,29 @@
   },
   "reference_used": "ensemble",
   "published_median_nse": 0.859,
-  "tolerance": 0.04,
-  "abs_diff_median_nse": 0.03876857724827065,
-  "ours_median_nse": 0.8202314227517293,
-  "ours_mean_nse": 0.7955341343197185,
-  "ours_median_kge": 0.8338,
-  "ours_nse_le_zero_count": 4,
+  "tolerance": 0.01,
+  "abs_diff_median_nse": 0.006212574773148183,
+  "ours_median_nse": 0.8652125747731482,
+  "ours_mean_nse": 0.8290136513482933,
+  "ours_median_kge": 0.8951579724383734,
+  "ours_nse_le_zero_count": 2,
   "ours_n_scored_basins": 671,
   "unscored_basins": [],
   "pred_nan_when_obs_valid": 0,
   "single_seed_median_nse_per_member": [
-    0.8143007207702406,
-    0.813685306109012,
-    0.8148926053585666,
-    0.8091185503377126,
-    0.8127762983980577,
-    0.8150558245092387
+    0.8560557951524399,
+    0.859393028699555,
+    0.8554934065674558,
+    0.8547340831893775,
+    0.862454519852244,
+    0.8604465229761982
   ],
-  "single_seed_median_nse_mean": 0.8133048842471379,
-  "single_seed_median_nse_std": 0.002021874373937498,
+  "single_seed_median_nse_mean": 0.8580962260728783,
+  "single_seed_median_nse_std": 0.002841430090099362,
   "hydrograph_path": "models/feng2020_di_lstm/stage1_author_reproduction_hydrograph.npz",
-  "train_and_predict_seconds": 295.5777220726013,
-  "generated_at_utc": "2026-10-24T16:13:01Z",
-  "reproduced_median_kge": 0.8338,
+  "train_and_predict_seconds": 9714.65,
+  "generated_at_utc": "2026-11-21T01:14:44Z",
+  "reproduced_median_kge": 0.8952,
   "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm.zarr",
   "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm_results.json"
 }

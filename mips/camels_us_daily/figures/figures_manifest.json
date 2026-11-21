@@ -37,7 +37,7 @@
     "pur": {
       "ylim": [
         0.3,
-        0.767
+        0.762
       ],
       "xlim": [
         2016.4,
@@ -148,7 +148,7 @@
       },
       {
         "year": 2020,
-        "nse": 0.801,
+        "nse": 0.833,
         "model_category": "Machine learning",
         "input_regime": "With Lagged Streamflow",
         "model_name": "DI(1)-LSTM (NLDAS, 6-model ensemble)",
@@ -238,7 +238,7 @@
       },
       {
         "year": 2020,
-        "nse": 0.775,
+        "nse": 0.787,
         "model_category": "Machine learning",
         "input_regime": "With Lagged Streamflow",
         "model_name": "DI(1)-LSTM (3-model ensemble)",
@@ -317,7 +317,7 @@
       },
       {
         "year": 2020,
-        "nse": 0.747,
+        "nse": 0.742,
         "model_category": "Machine learning",
         "input_regime": "With Lagged Streamflow",
         "model_name": "DI(1)-LSTM (3-model ensemble)",

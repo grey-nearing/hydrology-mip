@@ -279,7 +279,7 @@
       "zenodo_doi": "",
       "zenodo_url": "",
       "hydroshare_url": "",
-      "description": "Clean-room PyTorch re-implementation of the Feng et al. (2020) 256-unit Data-Integration LSTM (DI(1)-LSTM) ingesting daily meteorological forcings, standardized 1-day lagged target-basin observed specific discharge Q(t-1) with binary validity indicator, and 27 static catchment attributes, trained with basin-variance-weighted NSE* loss over 365-day sequences across 6 random seeds on the canonical 531-basin Newman Split-1 Gauged protocol (1999-10-01 to 2008-09-30 training, 1989-10-01 to 1999-09-30 evaluation).",
+      "description": "Clean-room PyTorch re-implementation of the Feng et al. (2020) 256-unit Data-Integration LSTM (DI(1)-LSTM) using basinNorm (Q/p_mean from training-split dates/basins), Eq. 11 transNorm compression log10(sqrt(x)+0.1) on prcp and Q/Q(t-1), CudnnLstm (dropout=0.5), RmseLoss, and Adadelta over 365-day sequences (300 epochs) across 6 seeds (Gauged) and 3 seeds (12-fold PUB, 18-fold PUR) on CAMELS-US with NLDAS + Q(t-1).",
       "asterisk": false,
       "asterisk_reason": null,
       "n_entries": 6,
@@ -288,7 +288,7 @@
         "pub__lagged_streamflow",
         "pur__lagged_streamflow"
       ],
-      "best_nse": 0.801,
+      "best_nse": 0.833,
       "year": 2020,
       "model_category": "Machine learning"
     },

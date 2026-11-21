@@ -1,35 +1,40 @@
-# Feng, Fang & Shen (2020) Data-Integration Lagged-Discharge LSTM (`DI(1)-LSTM`)
+# Feng et al. (2020) Data-Integration Lagged-Discharge LSTM (`DI(1)-LSTM`)
 
-## Canonical Reference
-> Feng, D., Fang, K., & Shen, C. (2020). Enhancing Streamflow Forecast and Extracting Insights Using Long-Short Term Memory Networks With Data Integration at Continental Scales. *Water Resources Research*, 56(9), e2019WR026793. https://doi.org/10.1029/2019WR026793
+Clean-room PyTorch implementation of the regional Data-Integration Long Short-Term Memory network (`DI(1)`) from **Feng, Fang, & Shen (2020)** (*Water Resources Research*, 56(9), e2019WR026793, <https://doi.org/10.1029/2019WR026793>), matching `mhpi/hydroDL` (`flow_regime == 0`).
 
-- **Original Author Code**: [`https://github.com/mhpi/hydroDL`](https://github.com/mhpi/hydroDL)
-- **Provenance**:
-  - `feng2020_di_lstm_lit` (`Literature*`): Published Daymet + $Q(t-1)$ benchmark evaluated on `WY1991–1999` (9 water years; `1989–1990` used as 365-day spin-up) across all 531 Newman basins as reported by Jamaat et al. (2025, *J. Hydrol.*, Table 1, p. 15) for the Feng et al. (2020) `DI(1)-LSTM` benchmark (`Single-Model Median NSE = 0.840`, `Median KGE = 0.855`).
-  - `feng2020_di_lstm_rerun` (`MIP Re-run (Our Code)`): Clean-room PyTorch implementation in `models/feng2020_di_lstm/` evaluated on the canonical 531-basin Newman Split-1 Gauged protocol (`1999-10-01` to `2008-09-30` training; `1989-10-01` to `1999-09-30` evaluation) in **Table 5 (`gauged__lagged_streamflow`)**, plus the PUB/PUR lagged-streamflow rows in Tables 9 and 13 (see *Scope* below).
+## Architecture & Training Protocol
 
-## Architecture (`models/feng2020_di_lstm/model.py`)
-- **Model**: 1-layer 256-unit LSTM (`DILSTM`) with output dropout `0.4`, initial forget-gate bias `3.0`, and linear readout head.
-- **Dynamic Inputs**: Daily meteorological forcings plus two lagged-discharge Data-Integration (`DI(1)`) channels at day $t$:
-  1. Standardized 1-day-lagged target-basin specific discharge $\tilde{Q}_{t-1} = (Q_{t-1} - \mu_Q) / \sigma_Q$ when $Q_{t-1}$ is valid, and $0.0$ when missing.
-  2. Binary validity indicator $v_{t-1} \in \{0.0, 1.0\}$ (`lag_dropout_prob = 0.02` during training).
-- **Static Inputs**: 27 CAMELS catchment attributes standardized on the training period and broadcast across time.
-- **Training Objective**: Basin-variance-weighted $\text{NSE}^*$ loss (`nse_eps = 0.1`) over sequence length `seq_len = 365` days (`targ_len = 183` post-warmup target steps), trained for `30` epochs (`batch_size = 256`, `clip_grad_norm = 1.0`, `6` random seeds `101..106`).
+- **Meteorological Inputs (NLDAS, 5 channels):** `['dayl', 'prcp', 'srad', 'tmax', 'vp']`, where `prcp` is compressed with Eq. (11) `transNorm`: $\log_{10}(\sqrt{\max(x, 0)} + 0.1)$, then z-score standardized on training-split target-window statistics.
+- **Lagged Observed Streamflow (`DI(1)`):** 1-day lagged specific discharge $Q_{t-1}$ normalized by training-split basin mean precipitation `basinNorm` ($Q / \bar{P}_{\text{train}}$; out-of-sample PUB/PUR basins fall back to the training global mean $\bar{P}$ with zero eval-period or test-basin leakage), compressed symmetrically with Eq. (11) `transNorm`, z-scored using training target `(y_mean, y_std)`, and paired with a binary validity flag `q_lag_valid` $\in \{0, 1\}$.
+- **Static Attributes:** 27 CAMELS catchment attributes z-score standardized on training basins.
+- **Network:** `Linear(nx, 256) -> ReLU -> CudnnLstm(256, dr=0.5) -> Linear(256, 1)`.
+- **Objective & Optimization:** `RmseLoss` in z-scored transformed space, `Adadelta(lr=1.0, rho=0.9, eps=1e-6)`, `rho=365`, `batch_size=100`, `epochs=300`, `hydroDL` iteration schedule `nIterEp`.
 
-## Scope: Lagged-Streamflow Leaderboards Only
-`DI(1)-LSTM` takes the **target basin's own observed streamflow from the previous day, $Q(t-1)$**, as an input at every timestep $t$. Lagged values are offset by one day, so $Q(t)$ never leaks into its own prediction, and spin-up discharge in the evaluation slice is masked. The model is therefore valid **only on the `lagged_streamflow` forcing-regime leaderboards**:
+## Stage-1 Author-Protocol Confirmation
 
-| Leaderboard | Table | Entry IDs |
-|---|---|---|
-| `gauged__lagged_streamflow` | 5 | `feng2020_di_lstm_nldas`, `feng2020_di_lstm_nldas_single` |
-| `pub__lagged_streamflow` | 9 | `feng2020_di_lstm_pub_nldas`, `feng2020_di_lstm_pub_nldas_single` |
-| `pur__lagged_streamflow` | 13 | `feng2020_di_lstm_pur_nldas`, `feng2020_di_lstm_pur_nldas_single` |
+- **Protocol:** 671 CAMELS-US basins, NLDAS forcing + $Q_{t-1}$, train `1985-10-01`–`1995-09-30`, evaluate `1995-10-01`–`2005-09-30`, 6 seeds (`101..106`).
+- **Results (`models/feng2020_di_lstm/stage1_author_reproduction_results.json`):**
+  - **6-seed Ensemble Median NSE:** **0.8652** (published `0.859`, $\Delta = +0.0062 \le 0.01$, **PASS**; Mean NSE `0.8290`, Med KGE `0.8952`, `NSE <= 0`: `2/671`, `0` NaNs).
+  - **Single-seed Median NSE:** **0.8581 ± 0.0028** (`[0.8561, 0.8594, 0.8555, 0.8547, 0.8625, 0.8604]`; published `0.851`, $\Delta = +0.0071 \le 0.01$).
+  - **Stage-1 Zarr:** `gs://camels-us-mip/stage1_author_reproductions/feng2020_di_lstm.zarr`.
 
-The PUB (`pub_12fold`) and PUR (`pur_18huc02`) rows follow a data-assimilation definition of "ungauged". The network weights are trained only on the fold's training basins. At prediction time, however, the held-out basins' own past streamflow $Q(t-1)$ is assumed to be available as an input, as it would be for a newly installed gauge with a short record. These rows answer a different question from the `single_camels` / `multi_camels` PUB/PUR tables and must not be compared with them directly.
+## Stage-2 CAMELS-US MIP Protocol (`NLDAS + Q(t-1)`, 531 basins)
 
-`run_fold` itself has no spatial-regime guard: it accepts and ignores the `spatial_regime` and `forcing_regime` keywords. The restriction to `lagged_streamflow` leaderboards is enforced in `models/run_model.py` through the model registry.
+Train `1999-10-01`–`2008-09-30`, blind evaluation `1989-10-01`–`1999-09-30`:
 
-## Stage-1 Author-Protocol Confirmation (`reproduce_author_metrics.py`)
-- **Author Split**: 671 CAMELS-US basins, single-forcing `NLDAS` + $Q(t-1)$, trained on `1985-10-01` to `1995-09-30` and evaluated on `1995-10-01` to `2005-09-30` across 6 random seeds (`[101, 102, 103, 104, 105, 106]`).
-- **Published Benchmark (Feng et al., 2020, Table 3, p. 28)**: 6-seed ensemble Median NSE = `0.859`, single-seed Median NSE = `0.851 ± 0.0097`.
-- **Stage-1 Reproduction**: 6-seed ensemble Median NSE = `0.820` (`0.8202`), single-seed Median NSE = `0.813 ± 0.002` (`0.8133 ± 0.0020`), Median KGE = `0.834` (`status: PASS` within `0.04` tolerance).
+- **Gauged (`gauged__lagged_streamflow`, 6 seeds `101..106`):**
+  - Ensemble Median NSE: **0.8333** (`mean_nse=0.7107`, `med_kge=0.8669`, `logNSE=0.9726`, `logKGE=0.9622`, `|FHV|=7.37%`).
+  - Single-Model Median NSE: **0.8251 ± 0.0061** (`mean_nse=0.6809`, `med_kge=0.8503`, `logNSE=0.9703`, `logKGE=0.9446`, `|FHV|=9.15%`).
+- **12-Fold Random PUB (`pub__lagged_streamflow`, 3 seeds `101..103`):**
+  - Ensemble Median NSE: **0.7866** (`mean_nse=0.6166`, `med_kge=0.7975`, `logNSE=0.9643`, `logKGE=0.9448`, `|FHV|=12.70%`).
+  - Single-Model Median NSE: **0.7790 ± 0.0074** (`mean_nse=0.5914`, `med_kge=0.7792`, `logNSE=0.9623`, `logKGE=0.9286`, `|FHV|=14.06%`).
+- **18-Fold HUC-02 PUR (`pur__lagged_streamflow`, 3 seeds `101..103`):**
+  - Ensemble Median NSE: **0.7424** (`mean_nse=0.2995`, `med_kge=0.7448`, `logNSE=0.9576`, `logKGE=0.9230`, `|FHV|=16.33%`).
+  - Single-Model Median NSE: **0.7344 ± 0.0020** (`mean_nse=0.2272`, `med_kge=0.7377`, `logNSE=0.9556`, `logKGE=0.9122`, `|FHV|=17.19%`).
+
+## Usage
+
+```bash
+python -m models.feng2020_di_lstm.reproduce_author_metrics --smoke
+python -m models.run_model --model feng2020_di_lstm --spatial-regime gauged --forcings nldas --forcing-regime lagged_streamflow
+```
