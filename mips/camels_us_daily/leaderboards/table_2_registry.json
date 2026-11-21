@@ -18,9 +18,10 @@
       "description": "Community contribution: ERA-Multi-Paradigm-Gauged.",
       "asterisk": false,
       "asterisk_reason": null,
-      "n_entries": 6,
+      "n_entries": 10,
       "leaderboards_covered": [
-        "gauged__multi_camels"
+        "gauged__multi_camels",
+        "pub__multi_camels"
       ],
       "best_nse": 0.827,
       "year": 2026
