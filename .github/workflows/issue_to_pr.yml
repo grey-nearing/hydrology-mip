@@ -38,11 +38,16 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          python3 - <<'PY' >> "$GITHUB_OUTPUT"
+          python3 - <<'PY'
           import json
           import os
           import subprocess
           from datetime import datetime, timezone
+          from pathlib import Path
+
+          def set_output(key: str, val: str) -> None:
+              with Path(os.environ["GITHUB_OUTPUT"]).open("a", encoding="utf-8") as fh:
+                  fh.write(f"{key}={val}\n")
 
           repo = os.environ["REPO"]
           action = os.environ["EVENT_ACTION"]
@@ -78,13 +83,13 @@ jobs:
                       )
                   )
                   if open_prs:
-                      print("skip=true")
+                      set_output("skip", "true")
                       raise SystemExit(0)
               if last_ack and (not last_fail or last_ack > last_fail):
                   ack_dt = datetime.fromisoformat(last_ack.replace("Z", "+00:00"))
                   age_sec = (datetime.now(timezone.utc) - ack_dt).total_seconds()
                   if age_sec < 600:
-                      print("skip=true")
+                      set_output("skip", "true")
                       raise SystemExit(0)
 
           # Use GITHUB_TOKEN so adding labels does not recursively re-trigger this workflow.
@@ -106,7 +111,7 @@ jobs:
               ["gh", "issue", "comment", issue_num, "--repo", repo, "--body", ack_body],
               check=True,
           )
-          print("skip=false")
+          set_output("skip", "false")
           PY
 
       - name: Checkout repository
