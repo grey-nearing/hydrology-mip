@@ -1,5 +1,5 @@
 {
-  "protocol": "CAMELS-US 531-Basin Canonical 18-Fold Leave-One-HUC02-Out PUR Cross-Validation",
+  "protocol": "CAMELS-US 531-Basin 18-Fold Leave-One-HUC02-Out PUR Cross-Validation",
   "n_basins": 531,
   "n_folds": 18,
   "train_period": "1999-10-01 to 2008-09-30 (with 1-year spin-up from 1998-10-01)",

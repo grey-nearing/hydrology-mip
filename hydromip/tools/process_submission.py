@@ -290,11 +290,11 @@ def _render_pr_summary_markdown(
         f"- **Estimated Rank:** **#{rank}** of {total_count} (`Δ Med NSE vs. {sota_name}`: `{delta_nse}`, Wilcoxon `p = {p_str}`)",
         "",
         "#### Physical Sanity & Protocol Checks",
-        f"- **Basin Coverage:** `{sanity['n_basins_matched']}/{sanity['n_basins_expected']}` canonical CAMELS-US basins",
+        f"- **Basin Coverage:** `{sanity['n_basins_matched']}/{sanity['n_basins_expected']}` CAMELS-US basins",
         f"- **Anti-Masking:** `{sanity['nan_count']}` NaNs on valid observation days, `{sanity['inf_count']}` Inf values",
         f"- **Evaluation Window:** `{sanity['date_start']}` to `{sanity['date_end']}` ({EXPECTED_NUM_DAYS} days)",
         f"- **Runoff Scale Ratio:** `{sanity['median_sim_obs_ratio']}x` (`mm/day` check passed: `{sanity['checks_passed']}`)",
-        f"- **Canonical Zarr v2 Output:** `{zarr_path}` (`is_ensemble={entry['is_ensemble']}`, `num_members={entry['num_members']}`)",
+        f"- **Zarr v2 Output:** `{zarr_path}` (`is_ensemble={entry['is_ensemble']}`, `num_members={entry['num_members']}`)",
         "",
     ]
 
@@ -308,7 +308,7 @@ def _render_pr_summary_markdown(
 
     lines.extend(
         [
-            "#### Canonical 14-Metric Evaluation Summary",
+            "#### 14-Metric Evaluation Summary",
             "| Metric | Median | Mean (NSE/KGE only) | Q25 | Q75 | SOTA Median |",
             "| :--- | ---: | ---: | ---: | ---: | ---: |",
         ]
@@ -331,10 +331,10 @@ def _render_pr_summary_markdown(
         [
             "",
             "#### Reviewer Verification Checklist",
-            "- [x] Schema, 531-basin alignment, zero NaN masking, and canonical Zarr v2 validated automatically",
-            f"- [x] All {len(GAUCH_2023_METRICS)} canonical metrics scored cleanly via `metrics.evaluator`",
+            "- [x] Schema, 531-basin alignment, zero NaN masking, and Zarr v2 output validated automatically",
+            f"- [x] All {len(GAUCH_2023_METRICS)} metrics scored cleanly via `metrics.evaluator`",
             "- [ ] Confirmed blind 1989–1999 temporal holdout (Rule 1)",
-            "- [ ] Confirmed canonical spatial holdout fold isolation (Rule 2)",
+            "- [ ] Confirmed spatial holdout fold isolation (Rule 2)",
             "- [ ] Confirmed forcing declarations & immutable DOI match manifest (Rule 3 & 4)",
         ]
     )
@@ -367,13 +367,13 @@ def process_submission(
         raise ValueError("Submission manifest must define 'forcing'.")
 
     att = manifest.get("compliance_attestation") or {}
+    spatial_ok = bool(att.get("strict_spatial_holdout_folds") or att.get("strict_spatial_holdout_canonical_folds"))
     required_rules = (
         "blind_holdout_window",
-        "strict_spatial_holdout_canonical_folds",
         "all_forcing_inputs_declared",
         "deterministic_daily_predictions_mm_per_day",
     )
-    if not all(bool(att.get(r)) for r in required_rules):
+    if not (spatial_ok and all(bool(att.get(r)) for r in required_rules)):
         raise ValueError("All 4 benchmark compliance_attestation checkboxes must be true.")
 
     code_url = str(manifest.get("code_url") or manifest.get("github_url") or "").strip()

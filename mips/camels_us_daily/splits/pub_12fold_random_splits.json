@@ -1,5 +1,5 @@
 {
-  "protocol": "CAMELS-US 531-Basin Canonical 12-Fold Random PUB Cross-Validation",
+  "protocol": "CAMELS-US 531-Basin 12-Fold Random PUB Cross-Validation",
   "reference": "Kratzert et al. (2019a, Water Resources Research, 10.1029/2019WR026065) & Newman et al. (2017)",
   "n_basins": 531,
   "n_folds": 12,

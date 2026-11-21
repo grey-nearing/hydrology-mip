@@ -2,7 +2,7 @@
 name: contribute-mip
 description: >-
   Workflow and contract for adding a new self-contained benchmark (MIP) under mips/<mip_id>/ in
-  HydrologyMIP: proposal issue, protocol.json schema and validation, canonical splits with
+  HydrologyMIP: proposal issue, protocol.json schema and validation, standard splits with
   cross-validation hygiene checks, adapter.py, empty leaderboard files, optional metric-suite
   registration, model catalog updates, tests, and docs, plus the parts of the toolchain that are
   still specific to CAMELS-US. Use when proposing, scaffolding, or reviewing a new MIP.
@@ -72,7 +72,7 @@ python -c "from hydromip.protocol import get_mip, validate_mip_assets; p = get_m
 
 ## 3. Splits and cross-validation hygiene
 
-- Store the canonical entity list (sorted, unique) and one JSON file per multi-fold regime, with a
+- Store the standard entity list (sorted, unique) and one JSON file per multi-fold regime, with a
   `folds` object. Each fold has `train_basins` and `test_basins` (or your entity name). Follow
   `mips/camels_us_daily/splits/pub_12fold_random_splits.json`.
 - Load and check folds with `hydromip.splits.load_cv_splits_json(path, canonical_entities, expected_num_folds=..., require_disjoint_train_test=True, require_exact_test_partition=True, entity_to_group=...)`.
@@ -81,7 +81,7 @@ python -c "from hydromip.protocol import get_mip, validate_mip_assets; p = get_m
 
 ## 4. `adapter.py`
 
-Follow `mips/camels_us_daily/adapter.py`: small functions that load the protocol, the canonical
+Follow `mips/camels_us_daily/adapter.py`: small functions that load the protocol, the standard
 entities, and the folds for each regime, and that validate everything with `hydromip.splits`. Zero
 `try`/`except`; raise on any problem.
 

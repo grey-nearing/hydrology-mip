@@ -1,6 +1,6 @@
 # Mass-Conserving LSTM (MC-LSTM) — Hoedt et al. (2021)
 
-## 1. Canonical Provenance & References
+## 1. Provenance & References
 
 - **Primary Publication**: Hoedt, P.-J., Kratzert, F., Klotz, D., Halmich, C., Holzleitner, M., Nearing, G., Hochreiter, S., & Klambauer, G. (2021). *MC-LSTM: Mass-Conserving LSTM*. Proceedings of the 38th International Conference on Machine Learning (ICML 2021), PMLR 139:4275–4286. [https://arxiv.org/abs/2101.05186](https://arxiv.org/abs/2101.05186) / [https://proceedings.mlr.press/v139/hoedt21a.html](https://proceedings.mlr.press/v139/hoedt21a.html)
 - **Official Author Code Repository**: [https://github.com/ml-jku/mc-lstm](https://github.com/ml-jku/mc-lstm) (`hydrology/mclstm/` and `NeuralHydrology` integration)

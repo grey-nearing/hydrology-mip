@@ -26,7 +26,7 @@ Output".
 | :--- | :--- |
 | Format | Consolidated Zarr v2. `qsim` is one chunk; `qsim_members` is one chunk per member. |
 | Dimensions | `basin` = 531, `date` = 3,652; plus `member` = N for ensembles |
-| Coordinates | `basin` (`<U8`, sorted canonical IDs); `date` (`datetime64[ns]`, `1989-10-01`..`1999-09-30`); `huc_02` (`<U2` on `basin`); `member` (`int64`) |
+| Coordinates | `basin` (`<U8`, sorted 8-digit USGS IDs); `date` (`datetime64[ns]`, `1989-10-01`..`1999-09-30`); `huc_02` (`<U2` on `basin`); `member` (`int64`) |
 | `qsim` | `float32`, mm/day, `(basin, date)`, finite everywhere |
 | `qsim_members` | optional `float32` `(member, basin, date)`. For an ensemble, `qsim` must equal the member mean (tolerance 1e-4). |
 | Required attributes | `entry_id`, `model_name`, `family_id`, `provenance_category`, `leaderboard_id`, `spatial_regime` (`gauged`/`pub`/`pur`), `forcing_regime`, `forcings_used`, `is_ensemble`, `num_members`, `train_period`, `test_period` (`A/B`), `units`, `code_url` (non-empty), `archive_url` |
@@ -50,7 +50,7 @@ evaluator.
 
 ## 3. Split files (`mips/camels_us_daily/splits/`)
 
-- `basins_531.txt` / `.json`: the sorted canonical IDs. `basins_671.*` and
+- `basins_531.txt` / `.json`: the sorted 8-digit USGS IDs. `basins_671.*` and
   `basins_447_kratzert2019b.*` are reference lists.
 - `pub_12fold_random_splits.json` and `pur_18fold_huc02_splits.json`: top-level `folds`. Each fold
   (`fold_00`.., `huc_01`..) has `fold_index`, `n_train`, `n_test`, `train_basins`, `test_basins`,

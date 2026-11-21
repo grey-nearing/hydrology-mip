@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Submit a deterministic daily streamflow archive covering the **531 CAMELS-US benchmark basins** across the canonical Newman evaluation decade (**1989-10-01 to 1999-09-30**, 3,652 daily steps, units `mm/day`).
+        Submit a deterministic daily streamflow archive covering the **531 CAMELS-US benchmark basins** across the Newman evaluation decade (**1989-10-01 to 1999-09-30**, 3,652 daily steps, units `mm/day`).
 
         Tip: Preview your predictions first at <https://hydrologymip.org/#contribute> — it checks file alignment and opens a pre-filled submission automatically.
 
@@ -105,7 +105,7 @@ body:
       options:
         - label: "Rule 1 (Temporal Holdout): Parameters, early stopping, scalers, and losses were never tuned on 1989-10-01 to 1999-09-30."
           required: true
-        - label: "Rule 2 (Spatial Holdout): PUB uses canonical 12-fold splits and PUR uses canonical 18 HUC-02 splits (zero target leakage)."
+        - label: "Rule 2 (Spatial Holdout): PUB uses the 12-fold splits and PUR uses the 18 HUC-02 splits (zero target leakage)."
           required: true
         - label: "Rule 3 (Inputs Declared): All meteorological, static, or lagged-streamflow inputs match the declared leaderboard forcing tier."
           required: true

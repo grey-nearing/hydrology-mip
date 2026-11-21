@@ -40,7 +40,7 @@ gs://camels-us-mip/
     └── <leaderboard_id>/<entry_id>.zarr
 ```
 
-Every store lives directly under its canonical leaderboard folder. There are no other partitions.
+Every store lives directly under its leaderboard folder. There are no other partitions.
 
 ## 3. Access
 

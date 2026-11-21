@@ -358,7 +358,7 @@ The keyword options add more checks:
 | Option | Default | Extra check |
 | :--- | :--- | :--- |
 | `require_disjoint_train_test` | `True` | No entity is in both the train set and the test set of a fold. |
-| `require_exact_test_partition` | `True` | Every canonical entity is tested exactly once over all folds. |
+| `require_exact_test_partition` | `True` | Every benchmark entity is tested exactly once over all folds. |
 | `entity_to_group` | `None` | A map from entity to group (for example basin to HUC-02 region). With `require_disjoint_train_test=True`, no group is in both the train and the test set of a fold. |
 | `require_train_test_union_equals_cohort` | `False` | In every fold, train plus test covers the whole cohort. |
 | `require_single_test_group` | `False` | Every test set is exactly one group (leave one group out). Needs `entity_to_group`. |
@@ -450,7 +450,7 @@ The checks read all files that git tracks, plus new files that git does not igno
   warnings;
 - `np.load` passes `allow_pickle=False`, and `torch.load` passes `weights_only=True`;
 - non-test Python files and notebooks do not hard-code temporary-folder paths;
-- model code in `models/<name>/` does not name split files or the canonical protocol dates
+- model code in `models/<name>/` does not name split files or the protocol dates
   (`reproduce_author_metrics.py` files and tests are exempt).
 
 `docs-and-registry` checks that:

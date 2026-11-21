@@ -3,7 +3,7 @@ name: maintainer-ingest-submission
 description: >-
   Maintainer-only workflow to turn an accepted HydrologyMIP submission (model PR or
   hydrograph-submission issue) into official leaderboard entries: triage, store validation,
-  canonical entry IDs, upload to the archive bucket, official scoring with mip-update-leaderboard,
+  standard entry IDs, upload to the archive bucket, official scoring with mip-update-leaderboard,
   completing Table 2 and contributions_index metadata, regenerating tables, figures, and the
   manifest, and closing the loop. Use only when you have maintainer write access and are ingesting
   a contribution.
@@ -21,11 +21,11 @@ metadata:
 
 - Every field of the issue form or PR template is filled in, every attestation is checked, and CI
   is green (`CI Gate`).
-- Check the protocol answers: training only in `1999-10-01`..`2008-09-30`; canonical folds for
+- Check the protocol answers: training only in `1999-10-01`..`2008-09-30`; standard folds for
   PUB/PUR; all 531 basins and 3,652 days.
 - Check the licenses: hydrographs under CC-BY-4.0, and code under a permissive license (or the
   submission is marked closed-source).
-- Decide the leaderboard(s), the provenance category, the single canonical citation, and whether
+- Decide the leaderboard(s), the provenance category, the single primary citation, and whether
   this is a new family. If any answer is unclear, ask in the issue before you continue.
 - For a code PR: merge the code first, then run the model yourself
   (`python -m models.run_model ...`), or use the contributor's archived store.

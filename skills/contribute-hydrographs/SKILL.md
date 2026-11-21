@@ -2,7 +2,7 @@
 name: contribute-hydrographs
 description: >-
   Package daily streamflow predictions from a model that runs outside this repository (open- or
-  closed-source) into the canonical HydrologyMIP (531, 3652) Zarr store with models/zarr_writer.py,
+  closed-source) into the HydrologyMIP (531, 3652) Zarr store with models/zarr_writer.py,
   validate and self-score it locally without any Google Cloud account, deposit it on Zenodo, and
   submit it through the GitHub hydrograph issue form. Use when only hydrographs, not runnable code,
   are being contributed.
@@ -25,7 +25,7 @@ elsewhere. All paths are relative to the repository root. You never need write a
   and **all 3,652 days** from `1989-10-01` to `1999-09-30`. Daily specific discharge in mm/day,
   `float32`, with no NaN.
 - The model was trained or calibrated only on `1999-10-01`..`2008-09-30`. For PUB and PUR, it used
-  the canonical folds in `mips/camels_us_daily/splits/` and never saw a fold's test basins.
+  the standard folds in `mips/camels_us_daily/splits/` and never saw a fold's test basins.
 - Ensembles: also provide every member as `qsim_members` with shape `(N, 531, 3652)`. Then `qsim`
   must be the member mean.
 - If your model produced m³/s or ft³/s, convert to mm/day with the CAMELS basin area before you

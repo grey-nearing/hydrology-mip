@@ -56,7 +56,7 @@ These are the same in all three protocols, because the model has no parameters:
 - Median |FHV| 0.0 %
 - Median peak-timing error 1.0 day, an exact one-day phase shift
 
-The canonical stores are:
+The reference stores are:
 - `gs://camels-us-mip/hydrographs/gauged__lagged_streamflow/naive_lag1_persistence_gauged.zarr`
 - `gs://camels-us-mip/hydrographs/pub__lagged_streamflow/naive_lag1_persistence_pub.zarr`
 - `gs://camels-us-mip/hydrographs/pur__lagged_streamflow/naive_lag1_persistence_pur.zarr`

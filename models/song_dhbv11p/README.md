@@ -1,14 +1,14 @@
 # Song et al. (2024) — Differentiable HBV 1.1p ($\delta\text{HBV 1.1p}$ / $\delta\text{MG}$)
 
-## Canonical Metadata & Provenance
+## Metadata & Provenance
 
 | Field | Value |
 | :--- | :--- |
 | **Directory / Family ID** | `models/song_dhbv11p` (`song_dhbv11p`) |
-| **Canonical Model Name** | `δHBV 1.1p / δMG` (`Song et al. (2024) δHBV 1.1p (Dynamic Parameters)`) |
+| **Model Name** | `δHBV 1.1p / δMG` (`Song et al. (2024) δHBV 1.1p (Dynamic Parameters)`) |
 | **Model Category** | Differentiable / Hybrid |
 | **Provenance** | `MIP Re-run (Our Code)` (Clean-room PyTorch + C++/OpenMP autograd re-implementation) |
-| **Canonical Citation** | Song et al. (2024), *Hydrology and Earth System Sciences*, 28(13), 3051–3077 |
+| **Citation** | Song et al. (2024), *Hydrology and Earth System Sciences*, 28(13), 3051–3077 |
 | **Paper DOI / URL** | [https://doi.org/10.5194/hess-28-3051-2024](https://doi.org/10.5194/hess-28-3051-2024) |
 | **Upstream Reference Repo** | [https://github.com/mhpi/generic_deltamodel](https://github.com/mhpi/generic_deltamodel) |
 

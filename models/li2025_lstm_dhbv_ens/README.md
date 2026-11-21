@@ -1,15 +1,15 @@
 # Li et al. (2025) — $(\text{LSTM} + \delta\text{HBV 1.1p})$ Multi-Model Ensemble
 
-## Canonical Metadata & Provenance
+## Metadata & Provenance
 
 | Field | Value |
 | :--- | :--- |
 | **Directory / Family ID** | `models/li2025_lstm_dhbv_ens` (`li2025_lstm_dhbv_ens`) |
-| **Canonical Model Name** | `(LSTM + dHBV 1.1p) Multi-Model Ensemble` (`LSTM + dHBV 1.1p (Multi-Model Ensemble)`) |
+| **Model Name** | `(LSTM + dHBV 1.1p) Multi-Model Ensemble` (`LSTM + dHBV 1.1p (Multi-Model Ensemble)`) |
 | **Model Category** | Differentiable / Hybrid |
 | **Architecture Type** | Multi-Structure Hybrid Ensemble (Regional LSTM + Differentiable HBV 1.1p) |
 | **Provenance** | `MIP Re-run (Our Code)` |
-| **Canonical Citation** | Li, B., Song, Y., Pan, M., Lawson, K., & Shen, C. (2025), *Hydrology and Earth System Sciences*, 29, 6829–6861 |
+| **Citation** | Li, B., Song, Y., Pan, M., Lawson, K., & Shen, C. (2025), *Hydrology and Earth System Sciences*, 29, 6829–6861 |
 | **Paper DOI / URL** | [https://doi.org/10.5194/hess-29-6829-2025](https://doi.org/10.5194/hess-29-6829-2025) |
 | **Upstream Reference Repo** | [https://github.com/mhpi/generic_deltamodel](https://github.com/mhpi/generic_deltamodel) |
 | **Zenodo Archive** | [https://doi.org/10.5281/zenodo.16895228](https://doi.org/10.5281/zenodo.16895228) (`10.5281/zenodo.16895228`) |

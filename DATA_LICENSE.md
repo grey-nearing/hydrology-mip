@@ -9,7 +9,7 @@ Executable software and source code are licensed separately under the **Apache L
 ## 1. First-Party Data, Splits, Leaderboards, Figures, and MIP / ERA Hydrographs (`CC-BY-4.0`)
 
 All first-party data artifacts produced by HydrologyMIP for the CAMELS-US Daily MIP—including:
-- the canonical 531-basin list, 12-fold PUB splits, and 18-fold HUC-02 PUR splits (`mips/camels_us_daily/splits/` and `https://data.hydrologymip.org/camels_us_daily/splits/`),
+- the 531-basin list, 12-fold PUB splits, and 18-fold HUC-02 PUR splits (`mips/camels_us_daily/splits/` and `https://data.hydrologymip.org/camels_us_daily/splits/`),
 - all leaderboard JSON, CSV, and Markdown tables (`mips/camels_us_daily/leaderboards/*` and `https://data.hydrologymip.org/camels_us_daily/leaderboards/*`),
 - all manuscript figures (`mips/camels_us_daily/figures/*`),
 - all `MIP Re-run` and `Contribution` (`era_*`, `naive_lag1_persistence_*`) consolidated Zarr v2 hydrograph stores in `https://data.hydrologymip.org/camels_us_daily/hydrographs/`,

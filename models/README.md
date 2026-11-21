@@ -15,8 +15,8 @@ Run every command below from the repository root.
 
 ## Running a Model
 
-`models/run_model.py` is the **only** place that loads the canonical 531-basin list and the fold files
-from `mips/<mip>/splits/`, and the only place that defines the canonical windows: training
+`models/run_model.py` is the **only** place that loads the 531-basin list and the fold files
+from `mips/<mip>/splits/`, and the only place that defines the standard windows: training
 `1999-10-01`..`2008-09-30` and evaluation `1989-10-01`..`1999-09-30`. It:
 
 1. Checks that the model is registered for the requested spatial protocol and forcing regime (see
@@ -51,8 +51,8 @@ python -m models.run_model --model naive_lag1_persistence --spatial-regime gauge
 | `--spatial-regime` | `gauged` (default), `pub_12fold`, or `pur_18huc02`. |
 | `--forcings` | One or more **space-separated** products from `daymet`, `maurer`, `nldas`. One product gives `single_camels`; two or three give `multi_camels`. Duplicates are an error. |
 | `--forcing-regime` | Optional explicit regime. Required for `lagged_streamflow` models; a regime that contradicts `--forcings` is an error. |
-| `--data-dir` | The canonical bundle `camels_671_1980_2014.npz` or the directory that contains it, a raw NCAR CAMELS-US v1.2 directory, or a per-basin NetCDF layout. Default: `mips/<mip>/data`. See [`mips/camels_us_daily/data/README.md`](../mips/camels_us_daily/data/README.md). |
-| `--splits-dir` | Directory with the canonical split files. Default: `mips/<mip>/splits`. |
+| `--data-dir` | The bundled `camels_671_1980_2014.npz` or the directory that contains it, a raw NCAR CAMELS-US v1.2 directory, or a per-basin NetCDF layout. Default: `mips/<mip>/data`. See [`mips/camels_us_daily/data/README.md`](../mips/camels_us_daily/data/README.md). |
+| `--splits-dir` | Directory with the split files. Default: `mips/<mip>/splits`. |
 | `--mip` | Registered MIP under `mips/`. Default: `camels_us_daily`. |
 | `--output-zarr` | Target store path or `gs://` URI. Default: the local `./outputs/<leaderboard_id>/<model_id>.zarr`. The shared bucket is never written unless you pass a `gs://` URI and have write access. |
 | `--model-id` | Explicit entry ID, used for the attributes and the store name. Default: `<model>[_<model_kind>]_<spatial_regime>_<forcing_regime>`. |
@@ -60,7 +60,7 @@ python -m models.run_model --model naive_lag1_persistence --spatial-regime gauge
 | `--max-workers`, `--executor`, `--threads-per-worker` | Parallelism over `(fold, seed)` tasks. With `thread` (the default), runs are reproducible only if the runner uses seed-local RNGs. `process` uses spawned workers, each capped at `--threads-per-worker` BLAS/torch threads; prefer it for CPU-bound calibrations. |
 | `--runner-kwarg KEY=JSON` | Extra `run_fold` keyword argument, repeatable. The value is parsed as JSON. Unknown keys raise inside the runner. Every kwarg is recorded in the store's `runner_kwargs_json` attribute. |
 
-The store's `archive_url`/`data_url` attributes always record the canonical bucket location
+The store's `archive_url`/`data_url` attributes always record the standard bucket location
 `gs://camels-us-mip/hydrographs/<leaderboard_id>/<model_id>.zarr`, which is used for registration.
 The run provenance attributes are `seeds`, `fold_ids`, `runner_kwargs_json`, `git_commit`, `git_dirty`,
 `created_utc` and `data_source`. `data_source` records only the final path component, so stores never
@@ -176,14 +176,14 @@ def run_fold(
 4. Add the directory name to `EXPECTED_MODEL_DIRS` in `models/tests/test_run_model.py`, then run
    `pytest models/tests` and `ruff check models`.
 
-Model directories never load split files or hard-code canonical dates. They receive `train_basins`,
+Model directories never load split files or hard-code benchmark dates. They receive `train_basins`,
 `test_basins`, `train_period` and `eval_period` from `run_model.py`. Reproduction scripts import
 `CANONICAL_*` from `models.zarr_writer`. All data comes through `load_camels_slice`, which:
 - masks spin-up discharge;
 - sanitizes negative sentinels;
 - raises on missing forcings or attributes;
 - returns the auxiliary `dayl`/`swe` channels (`x_aux`) only when the source provides them. The
-  canonical bundle provides Daymet's for every product, and `aux_sources` records this.
+  standard bundle provides Daymet's for every product, and `aux_sources` records this.
 
 ## Zarr Hydrograph Output
 
@@ -192,7 +192,7 @@ store:
 
 - **Dimensions**: `("basin", "date")` with shape `(531, 3652)`, plus `("member", "basin", "date")` for
   `qsim_members`.
-- **Coordinates**: `basin` (`<U8`, sorted canonical IDs); `date` (`datetime64[ns]`,
+- **Coordinates**: `basin` (`<U8`, sorted 8-digit USGS IDs); `date` (`datetime64[ns]`,
   `1989-10-01`..`1999-09-30`, derived from the evaluation period); `huc_02` (`<U2` on `basin`);
   `member` (`int64`).
 - **Variables**: `qsim` (`float32`, mm/day, finite everywhere, equal to the mean of `qsim_members`) and

@@ -850,7 +850,7 @@ def _align_axes_and_slice(
     if strict and n_dates_matched != len(canon_dates):
         missing_dates = [str(canon_dates[i]) for i in np.where(~matched_date_mask)[0][:3]]
         raise ValueError(
-            f"Archive covers only {n_dates_matched}/{len(canon_dates)} canonical evaluation days "
+            f"Archive covers only {n_dates_matched}/{len(canon_dates)} evaluation days "
             f"({EVAL_START_DATE}..{EVAL_END_DATE}); first missing: {missing_dates}."
         )
 
@@ -860,7 +860,7 @@ def _align_axes_and_slice(
     if strict and n_basins_matched != len(canon_basins):
         missing_basins = [canon_basins[i] for i in np.where(~matched_basin_mask)[0][:5]]
         raise ValueError(
-            f"Archive matched only {n_basins_matched}/{len(canon_basins)} canonical CAMELS-US basins "
+            f"Archive matched only {n_basins_matched}/{len(canon_basins)} CAMELS-US basins "
             f"(first missing: {missing_basins})."
         )
 
@@ -872,7 +872,7 @@ def _align_axes_and_slice(
     diagnostics: list[str] = []
     if len(norm_dates) > len(canon_dates) and n_dates_matched == len(canon_dates):
         diagnostics.append(
-            f"Sliced {len(norm_dates)}-day input down to canonical {len(canon_dates)}-day "
+            f"Sliced {len(norm_dates)}-day input down to the {len(canon_dates)}-day "
             f"Newman window ({EVAL_START_DATE} to {EVAL_END_DATE})."
         )
 
@@ -1064,11 +1064,11 @@ def _load_tabular_to_canonical(
 
     if strict and int(np.sum(matched_b)) != len(canon_basins):
         raise ValueError(
-            f"Long table matched only {int(np.sum(matched_b))}/{len(canon_basins)} canonical basins."
+            f"Long table matched only {int(np.sum(matched_b))}/{len(canon_basins)} benchmark basins."
         )
     if strict and int(np.sum(matched_d)) != len(canon_dates):
         raise ValueError(
-            f"Long table matched only {int(np.sum(matched_d))}/{len(canon_dates)} canonical evaluation days."
+            f"Long table matched only {int(np.sum(matched_d))}/{len(canon_dates)} evaluation days."
         )
 
     keep = valid_b_mask & valid_d_mask
@@ -1337,7 +1337,7 @@ def run_physical_sanity_checks(
         )
     if n_basins_matched != n_basins_expected:
         diagnostics.append(
-            f"Matched {n_basins_matched}/{n_basins_expected} canonical CAMELS-US basins."
+            f"Matched {n_basins_matched}/{n_basins_expected} CAMELS-US basins."
         )
     if nan_count > 0:
         diagnostics.append(

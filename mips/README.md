@@ -39,7 +39,7 @@ The subfolder names are fixed. `protocol.json` cannot rename them (see
 ### What `adapter.py` does
 
 `hydromip` never imports `adapter.py`. In `camels_us_daily`, the adapter loads the protocol, the
-canonical basin list, and the basin-to-region map. It also loads the folds of each spatial regime
+standard basin list, and the basin-to-region map. It also loads the folds of each spatial regime
 and checks them with `hydromip.splits.validate_cv_folds`. The tests use it to prove that the
 splits do not leak.
 

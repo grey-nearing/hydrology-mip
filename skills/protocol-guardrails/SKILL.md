@@ -53,9 +53,9 @@ def run_fold(
 - It is called **once per seed** with `seeds=(seed,)`. Never average seeds inside `run_fold`. The
   runner stores every seed in `qsim_members` and their mean in `qsim`.
 - Never replace NaN predictions with numbers. The runner rejects non-finite output on purpose.
-- Model code never reads split files and never hard-codes the canonical dates. CI checks this.
+- Model code never reads split files and never hard-codes the benchmark dates. CI checks this.
   Exception: `reproduce_author_metrics.py` may hold the *author's* dates, and it imports the
-  canonical ones from `models.zarr_writer`.
+  standard ones from `models.zarr_writer`.
 - Each `ModelRegistryEntry` declares `allowed_forcing_regimes` and `allowed_spatial_regimes`. The
   runner refuses any other combination.
 
@@ -84,7 +84,7 @@ def run_fold(
   flow-derived features go to `freeform` leaderboards.
 - ERA notebooks under `mips/camels_us_daily/era_experiments/` never use evaluation-period
   discharge. They train on `2003-10-01`..`2008-09-30` and select on `1999-10-01`..`2003-09-30`. For
-  PUB and PUR they loop over all canonical folds.
+  PUB and PUR they loop over all benchmark folds.
 
 ## 5. Missing data and errors
 
@@ -113,7 +113,7 @@ def run_fold(
   `Peak-Timing`. `logNSE` and `logKGE` are NSE and KGE computed on `log(max(Q, 0) + 1e-5)` of the
   observed and simulated flows. Leaderboards show 16 summary columns: the 531-basin median of all
   14 metrics, plus the mean NSE and mean KGE. Never type or copy a metric by hand.
-- **Official** leaderboard scores are computed by maintainers from the canonical store.
+- **Official** leaderboard scores are computed by maintainers from the official store.
 - **Contributors self-check** with the same code against a local copy of the layout:
   `python -m metrics.build_eval_targets ... --output ./local_bucket/observations/newman_eval_targets.zarr`,
   then `mip-score-model ... --bucket-uri ./local_bucket`. See `skills/contribute-model/SKILL.md`.

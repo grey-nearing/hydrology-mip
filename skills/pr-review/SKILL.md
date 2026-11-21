@@ -32,7 +32,7 @@ All paths are relative to the repository root.
 ## 2. Protocol and leakage
 
 - [ ] Model code gets basins, folds, and periods only through `run_fold(...)`. No split files are
-      read and no canonical dates are hard-coded.
+      read and no benchmark dates are hard-coded.
 - [ ] Scalers, loss weights, early stopping, and hyperparameter choices use training basins and the
       training period only. Held-out PUB/PUR basins are never used within their fold.
 - [ ] Spin-up discharge stays masked. Test-basin discharge is used only by models registered for
@@ -73,7 +73,7 @@ All paths are relative to the repository root.
       credited in `THIRD_PARTY_NOTICES.md`. No GPL, LGPL, or non-commercial code is copied in.
 - [ ] Hydrographs are offered under CC-BY-4.0, or their upstream license is recorded in
       `DATA_LICENSE.md`.
-- [ ] The entry has one canonical citation and one correct provenance category
+- [ ] The entry has one primary citation and one correct provenance category
       (`skills/leaderboard-norms/SKILL.md`). For a MIP Re-run, a Stage-1 reproduction is included.
 - [ ] The PR template's contributor attestation is checked, and AI assistance is disclosed.
 

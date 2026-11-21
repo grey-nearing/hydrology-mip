@@ -62,7 +62,7 @@ benchmark-mip-metrics --bucket-uri gs://camels-us-mip --output-json ./outputs/be
 ```
 
 Write every report to `./outputs/`. Never write a report into `leaderboards/` or
-`mips/*/leaderboards/`, where it could overwrite canonical files. A partial `Archive*` store stops a
+`mips/*/leaderboards/`, where it could overwrite official files. A partial `Archive*` store stops a
 whole-bucket `benchmark-mip-metrics` run, so give it `--manifest-path` or `--leaderboard-id`
 filters.
 

@@ -91,7 +91,7 @@ def _manifest_payload(
         "citation": "Community Test (2026)",
         "compliance_attestation": {
             "blind_holdout_window": True,
-            "strict_spatial_holdout_canonical_folds": True,
+            "strict_spatial_holdout_folds": True,
             "all_forcing_inputs_declared": True,
             "deterministic_daily_predictions_mm_per_day": True,
         },
@@ -211,7 +211,7 @@ def test_process_submission_open_source_dry_run_and_closed_source_update(
     assert (Path(res_open["zarr_path"]) / ".zmetadata").is_file()
     assert (mip_copy / "leaderboards" / "gauged__single_camels.json").read_text(encoding="utf-8") == lb_before
     md_text = md_open.read_text(encoding="utf-8")
-    assert "Canonical 14-Metric Evaluation Summary" in md_text
+    assert "14-Metric Evaluation Summary" in md_text
     assert "`logNSE`" in md_text and "`logKGE`" in md_text
     assert "Public Repository" in md_text
 

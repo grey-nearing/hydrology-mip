@@ -1,6 +1,6 @@
 # Kratzert et al. (2019a) — Entity-Aware LSTM (`kratzert_ealstm`) & LSTM without Static Attributes (`kratzert_lstm_nostatic`)
 
-## Canonical Reference & Links
+## Reference & Links
 - **Citation**: Kratzert, F., Klotz, D., Shalev, G., Klambauer, G., Hochreiter, S., & Nearing, G. (2019a). Towards learning universal, regional, and local hydrological behaviors via machine learning applied to large-sample datasets. *Hydrology and Earth System Sciences*, 23(12), 5089–5110.
 - **Paper URL**: https://doi.org/10.5194/hess-23-5089-2019
 - **Official Code Repository**: https://github.com/kratzert/ealstm_regional_modeling (Zenodo archive: `10.5281/zenodo.3530884`, Apache-2.0)

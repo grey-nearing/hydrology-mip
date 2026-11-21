@@ -3,7 +3,7 @@
 In accordance with the CAMELS-US MIP single-citation and single-provenance attribution norms, the coupled US National Weather Service **Snow-17** snow accumulation/ablation model (Anderson, 1973, 2006) and **Sacramento Soil Moisture Accounting (SAC-SMA)** conceptual rainfall-runoff model (Burnash et al., 1973; Burnash, 1995) routed with a Duamel Gamma unit hydrograph is represented by two distinct entries in `leaderboards/table_2_registry.json`:
 
 1. **Entry #1 — `newman_sacsma`: `SAC-SMA + Snow-17 (Basin-Calibrated)` (`Archive*`)**
-   - **Canonical Citation**: Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Nijssen, B., & Nearing, G. (2017). Benchmarking of a physically based hydrologic model. *Journal of Hydrometeorology*, 18(8), 2215–2225.
+   - **Citation**: Newman, A. J., Mizukami, N., Clark, M. P., Wood, A. W., Nijssen, B., & Nearing, G. (2017). Benchmarking of a physically based hydrologic model. *Journal of Hydrometeorology*, 18(8), 2215–2225.
    - **Paper URL**: https://doi.org/10.1175/JHM-D-16-0284.1
    - **Official Code / Dataset Repository**: https://github.com/NCAR/camels
    - **Data / Archive DOIs**: `10.5065/D6MW2F4D` (NCAR GDEX CAMELS-US dataset); `10.4211/hs.474ecc37e7db45baa425cdb4fc1b61e1` (HydroShare benchmark archive, Kratzert et al., 2019b)
@@ -11,11 +11,11 @@ In accordance with the CAMELS-US MIP single-citation and single-provenance attri
    - **Leaderboards**: `gauged__single_camels` (`id: "t3_48"`)
 
 2. **Entry #2 — `nearing_sacsma`: `SAC-SMA + Snow-17 (DDS & Donor Transfer)` (`MIP Re-run (Our Code)`)**
-   - **Canonical Citation**: Nearing, G., Sampson, A., Kratzert, F., & Frame, J. (2020). Post-Processing a Conceptual Rainfall-Runoff Model with an LSTM. *EarthArXiv Preprint*.
+   - **Citation**: Nearing, G., Sampson, A., Kratzert, F., & Frame, J. (2020). Post-Processing a Conceptual Rainfall-Runoff Model with an LSTM. *EarthArXiv Preprint*.
    - **Paper URL**: https://doi.org/10.31223/osf.io/53te4
    - **Reference Code Repository**: https://github.com/Upstream-Tech/SACSMA-SNOW17
    - **MIP Clean-Room Code Directory**: `models/newman_sacsma`
-   - **Provenance Category**: `MIP Re-run (Our Code)` (`code_provenance: "Our Code"`, `asterisk: false`, evaluated on all 531 canonical CAMELS-US basins)
+   - **Provenance Category**: `MIP Re-run (Our Code)` (`code_provenance: "Our Code"`, `asterisk: false`, evaluated on all 531 CAMELS-US basins)
    - **Leaderboards**: `gauged__single_camels`, `gauged__multi_camels`, `pub__single_camels`, `pub__multi_camels`, `pur__single_camels`, `pur__multi_camels`
 
 ---

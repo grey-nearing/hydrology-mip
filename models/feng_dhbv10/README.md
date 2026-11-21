@@ -5,7 +5,7 @@
 - **Model Name**: $\delta\text{HBV 1.0}$ (Dynamic-Parameter LSTM + 16-Bucket Differentiable HBV)
 - **Category**: Differentiable / Hybrid
 - **Provenance Category**: `MIP Re-run (Our Code)`
-- **Canonical Citation**: Feng et al. (2022) — Feng, D., Liu, J., Lawson, K., & Shen, C. (2022). Differentiable, learnable, regionalized process-based models with multiphysical outputs can approach state-of-the-art hydrologic prediction accuracy. *Water Resources Research*, 58(10), e2022WR032404.
+- **Citation**: Feng et al. (2022) — Feng, D., Liu, J., Lawson, K., & Shen, C. (2022). Differentiable, learnable, regionalized process-based models with multiphysical outputs can approach state-of-the-art hydrologic prediction accuracy. *Water Resources Research*, 58(10), e2022WR032404.
 - **Paper URL**: https://doi.org/10.1029/2022WR032404
 - **Upstream GitHub Repository**: https://github.com/mhpi/hydroDL (and successor https://github.com/mhpi/generic_deltamodel)
 - **Archive DOI**: `10.5281/zenodo.7091334` (Feng et al., 2022 source code archive; see also `10.5281/zenodo.7943626` for Feng et al., 2023 simulation outputs)
@@ -49,7 +49,7 @@ Our 3-seed Split-3 confirmation run (`seeds = [111111, 111112, 111113]`, 50 epoc
 ---
 
 ## 4. Stage-2 CAMELS-US MIP Protocol Results (`Split-1`: `WY1999–2008` Train / `WY1989–1999` Test)
-Under the standardized CAMELS-US MIP protocol (`1999-10-01` to `2008-09-30` training, `1989-10-01` to `1999-09-30` evaluation, 531 canonical basins, 5 random seeds `[111, 222, 333, 444, 555]`), `feng_dhbv10` is evaluated across all 3 single-forcing Daymet leaderboards (Supplement Tables S1, S4, and S7), emitting both the 5-model ensemble row (`evaluation_mode="ensemble"`) and the competing single-model row (`evaluation_mode="single_member_mean"` scored across all 5 seeds):
+Under the standardized CAMELS-US MIP protocol (`1999-10-01` to `2008-09-30` training, `1989-10-01` to `1999-09-30` evaluation, 531 basins, 5 random seeds `[111, 222, 333, 444, 555]`), `feng_dhbv10` is evaluated across all 3 single-forcing Daymet leaderboards (Supplement Tables S1, S4, and S7), emitting both the 5-model ensemble row (`evaluation_mode="ensemble"`) and the competing single-model row (`evaluation_mode="single_member_mean"` scored across all 5 seeds):
 
 | Leaderboard | Row ID | Mode | Forcing | Seeds | Med NSE | Zarr Store |
 | :--- | :--- | :--- | :--- | :---: | :---: | :--- |

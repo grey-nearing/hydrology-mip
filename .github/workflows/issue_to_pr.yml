@@ -121,7 +121,7 @@ jobs:
                   "citation": sections.get("Citation / Reference", "Community Contribution (2026)").strip(),
                   "compliance_attestation": {
                       "blind_holdout_window": True,
-                      "strict_spatial_holdout_canonical_folds": True,
+                      "strict_spatial_holdout_folds": True,
                       "all_forcing_inputs_declared": True,
                       "deterministic_daily_predictions_mm_per_day": True,
                   },

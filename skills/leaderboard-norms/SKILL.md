@@ -1,7 +1,7 @@
 ---
 name: leaderboard-norms
 description: >-
-  HydrologyMIP rules for what may appear on a leaderboard and how it is labeled: one canonical
+  HydrologyMIP rules for what may appear on a leaderboard and how it is labeled: one primary
   citation per entry, the provenance vocabulary (row category plus code_provenance, Table 2
   families, Zarr attributes), architecture classes, literature and archive priority, "if they
   didn't run it, we don't run it", ensemble versus single-model rows, routing to the 12 CAMELS-US
@@ -19,7 +19,7 @@ reject it. Maintainers write the leaderboard rows with the tools in `leaderboard
 JSON by hand. All paths are relative to the repository root. The data files are documented in
 `mips/camels_us_daily/leaderboards/README.md`.
 
-## 1. One canonical citation per entry
+## 1. One primary citation per entry
 
 - Every family in `table_2_registry.json` and every leaderboard row cites exactly **one** paper
   (`citation`, `paper_url`, `publication_year`). Never join several citations in one string.
@@ -42,12 +42,12 @@ JSON by hand. All paths are relative to the repository root. The data files are 
 
 What the categories mean:
 
-- **`Literature`**: metrics reported in a paper on the canonical 531-basin split, with no public
+- **`Literature`**: metrics reported in a paper on the 531-basin split, with no public
   daily hydrographs. Usually only NSE is known; the other metrics show `---`.
 - **`Literature*`**: like `Literature`, but on a slightly different evaluation window, such as water
   years 1991–1999.
 - **`Archive`**: daily hydrographs archived by the authors, covering all 531 basins and the
-  canonical evaluation window, and scored here by `metrics/evaluator.py`.
+  standard evaluation window, and scored here by `metrics/evaluator.py`.
 - **`Archive*`**: archived hydrographs that cover fewer than 531 basins or a different window.
 - **`MIP Re-run`**: a published model re-implemented (`Our Code`) or re-executed from the authors'
   code, run on the MIP protocol with `models/run_model.py`. It needs a Stage-1 reproduction
@@ -59,7 +59,7 @@ Architecture class (`model_category` on rows, `category` in Table 2): `Machine l
 
 ## 3. Priority and authorship
 
-- If a model was already published on the canonical split for a configuration, the leaderboard
+- If a model was already published on the standard split for a configuration, the leaderboard
   keeps the original `Literature` or `Archive` values. A re-run can be added as a separate,
   competing entry. It never replaces the original.
 - **If they didn't run it, we don't run it.** For published models by outside authors, run only the
@@ -94,7 +94,7 @@ Architecture class (`model_category` on rows, `category` in Table 2): `Machine l
   standard CAMELS attributes, flow-derived features, or foundation-model pretraining on target
   gauges.
 - Out of scope: sub-daily models that need hourly data for all basins. Also out of scope:
-  retrospective archives that were neither calibrated on the canonical training period nor
+  retrospective archives that were neither calibrated on the standard training period nor
   evaluated with a uniform split, such as the NOAA National Water Model retrospectives.
 - Any row with fewer than 531 basins or a non-standard window sets `asterisk: true`, gives a
   specific `asterisk_reason`, and ends its display name with `*`.
@@ -112,5 +112,5 @@ Architecture class (`model_category` on rows, `category` in Table 2): `Machine l
 ## Stop and ask a human if
 
 - a model fits more than one category or leaderboard;
-- you cannot tell which paper is canonical;
+- you cannot tell which paper is primary;
 - an outside author's configuration is not clearly stated in their paper.

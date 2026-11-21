@@ -921,7 +921,7 @@ def _cors_origins() -> list[str]:
     return origins
 
 
-app = FastAPI(title="HydrologyMIP Canonical Preview Scorer", version="1.0.0")
+app = FastAPI(title="HydrologyMIP Preview Scorer", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins(),

@@ -52,7 +52,7 @@ adds the rules an agent needs. All paths in this skill are relative to the repos
 
 ## Sources of truth
 
-| Fact | Canonical source |
+| Fact | Source of truth |
 | :--- | :--- |
 | Dates, spatial regimes, leaderboards of a MIP | `mips/<mip_id>/protocol.json` |
 | Registered models and their allowed regimes | `MODEL_REGISTRY` in `models/run_model.py` (mirrored in `models/catalog.json`; a test checks they match) |

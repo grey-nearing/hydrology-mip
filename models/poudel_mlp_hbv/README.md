@@ -1,6 +1,6 @@
 # Poudel & Steinschneider (2026) — Static-Parameter MLP + 16-HBV (`poudel_mlp_hbv`)
 
-## Canonical Reference & Links
+## Reference & Links
 - **Citation**: Poudel, S., & Steinschneider, S. (2026). An argument for parsimony in differentiable hydrologic models. *Hydrology and Earth System Sciences*, 30(15), 5173–5193.
 - **Paper URL**: https://doi.org/10.5194/hess-30-5173-2026
 - **Official Code Repository**: https://github.com/snpoudel/diff-hydro
@@ -37,7 +37,7 @@ The HBV kernels in `model.py` come in two forms: C++/OpenMP kernels, used for al
 - **GPU only:** an `nvcc` whose version matches `torch.version.cuda`, with `CUDA_HOME` pointing at that toolkit.
 
 ## Stage-2 CAMELS-US MIP Protocol Results (Supplement Tables S1, S4, and S7)
-Evaluated on all 531 canonical basins over `1989-10-01` to `1999-09-30` (trained on `1999-10-01` to `2008-09-30`, Daymet forcing, 3 random seeds `[101, 102, 103]`):
+Evaluated on all 531 basins over `1989-10-01` to `1999-09-30` (trained on `1999-10-01` to `2008-09-30`, Daymet forcing, 3 random seeds `[101, 102, 103]`):
 
 | Leaderboard | Row ID | Mode | Members | Med NSE | Mean NSE | Med KGE | Med \|FHV\| (%) | `NSE <= 0` | Zarr Path |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |

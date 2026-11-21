@@ -208,7 +208,7 @@ jobs:
           python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch>=2.2.0"
           python -m pip install -e ".[dev]" "pydantic>=2.7.0"
 
-      - name: Materialize canonical Zarr v2 from merged manifests (no push to main)
+      - name: Materialize Zarr v2 from merged manifests (no push to main)
         env:
           HYDROMIP_GCS_ANON: "1"
           BASE_SHA: ${{ github.event.before }}
@@ -259,7 +259,7 @@ jobs:
               )
           PY
 
-      - name: Upload canonical Zarr v2 & refreshed manifest_index.json to R2/GCS
+      - name: Upload Zarr v2 & refreshed manifest_index.json to R2/GCS
         env:
           GCS_HYDROGRAPH_BUCKET: ${{ vars.GCS_HYDROGRAPH_BUCKET }}
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}

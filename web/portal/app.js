@@ -2926,7 +2926,7 @@
         </li>
       `,
       chk1Html: `Blind <code>1989-10-01</code> to <code>1999-09-30</code> evaluation holdout (trained on <code>1999-10-01</code> to <code>2008-09-30</code>)`,
-      chk2Html: `Canonical <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target leakage`,
+      chk2Html: `Standard <a href="/api/splits/pub_12fold_random_splits.json" target="_blank" rel="noopener noreferrer">12-fold PUB</a> and <a href="/api/splits/pur_18fold_huc02_splits.json" target="_blank" rel="noopener noreferrer">18-fold HUC-02 PUR</a> splits (<a href="/api/splits/basins_531.txt" target="_blank" rel="noopener noreferrer">531 basins</a>) with zero target leakage`,
       chk3Html: `Selected forcing inputs include all meteorological and lagged streamflow inputs used`,
       chk4Html: `Deterministic daily predictions in mm/day across the 531 CAMELS-US basins`,
     },
@@ -3677,7 +3677,7 @@
       btn.textContent = "Scoring 531 basins...";
     }
     const stopScoreProgress = startWorkingProgress(scoreStatusEl, [
-      { atSec: 0, text: "Computing 14 canonical Gauch et al. (2023) metrics across 531 basins..." },
+      { atSec: 0, text: "Computing 14 Gauch et al. (2023) metrics across 531 basins..." },
       { atSec: 10, text: "Calculating peak timing, flow duration curve signatures, and basin rankings..." },
       { atSec: 25, text: "Still scoring — multi-seed ensembles can take up to a minute..." },
     ]);
@@ -3901,7 +3901,7 @@
         : null,
       compliance_attestation: {
         blind_holdout_window: Boolean((document.getElementById("chk-rule-1") || {}).checked),
-        strict_spatial_holdout_canonical_folds: Boolean((document.getElementById("chk-rule-2") || {}).checked),
+        strict_spatial_holdout_folds: Boolean((document.getElementById("chk-rule-2") || {}).checked),
         all_forcing_inputs_declared: Boolean((document.getElementById("chk-rule-3") || {}).checked),
         deterministic_daily_predictions_mm_per_day: Boolean((document.getElementById("chk-rule-4") || {}).checked),
       },
