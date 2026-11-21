@@ -9,14 +9,8 @@ and shared cloud Zarr I/O so new MIPs (global Caravan, probabilistic streamflow,
 moisture, 2D flood inundation, real-time, forecasting) plug in cleanly under ``mips/``.
 """
 
-from hydromip.metrics.registry import (
-    GAUCH_2023_DETERMINISTIC_SUITE,
-    METRIC_SUITES,
-    MetricSuiteSpec,
-    get_metric_suite,
-    list_metric_suites,
-    register_metric_suite,
-)
+from typing import Any
+
 from hydromip.paths import (
     DEFAULT_MIP_ID,
     MIPS_DIR,
@@ -40,6 +34,26 @@ from hydromip.protocol import (
     validate_protocol_dict,
 )
 from hydromip.splits import CvFold, load_cv_splits_json, validate_cv_folds
+
+_METRICS_REGISTRY_EXPORTS: frozenset[str] = frozenset(
+    {
+        "GAUCH_2023_DETERMINISTIC_SUITE",
+        "METRIC_SUITES",
+        "MetricSuiteSpec",
+        "get_metric_suite",
+        "list_metric_suites",
+        "register_metric_suite",
+    }
+)
+
+
+def __getattr__(name: str) -> Any:
+    """Defer importing scientific metric dependencies until metric exports are accessed."""
+    if name in _METRICS_REGISTRY_EXPORTS:
+        from hydromip.metrics import registry as _registry
+
+        return getattr(_registry, name)
+    raise AttributeError(f"module 'hydromip' has no attribute {name!r}")
 
 __all__ = [
     "DEFAULT_MIP_ID",
