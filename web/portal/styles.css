@@ -3565,4 +3565,160 @@ tr.pulse-highlight-row td {
   display: inline-block;
 }
 
+/* Step 3 Multi-Member Ensemble & Single-Model Selector */
+.ensemble-options-card {
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-md, 8px);
+  background: var(--color-paper, #faf8f4);
+}
+
+.ensemble-options-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.ensemble-optin-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-ink);
+}
+
+.ensemble-explanation-text {
+  margin: 0.35rem 0 0.75rem 1.45rem;
+  font-size: 0.8rem;
+  color: var(--color-ink-2);
+  line-height: 1.52;
+}
+
+.ensemble-selector-prompt {
+  font-size: 0.79rem;
+  font-weight: 600;
+  color: var(--color-ink);
+  margin-bottom: 0.45rem;
+}
+
+.ensemble-members-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-rule);
+  border-radius: 6px;
+  background: var(--color-surface, #ffffff);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.ensemble-members-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.74rem;
+  white-space: nowrap;
+}
+
+.ensemble-members-table th,
+.ensemble-members-table td {
+  padding: 0.42rem 0.55rem;
+  border-bottom: 1px solid var(--color-rule);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ensemble-members-table th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--color-paper, #faf8f4);
+  font-weight: 600;
+  color: var(--color-ink-2);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.ensemble-members-table th.sticky-col-radio,
+.ensemble-members-table td.sticky-col-radio {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  text-align: center;
+  width: 30px;
+  background: var(--color-surface, #ffffff);
+}
+
+.ensemble-members-table th.sticky-col-radio {
+  z-index: 4;
+  background: var(--color-paper, #faf8f4);
+}
+
+.ensemble-members-table th.sticky-col-name,
+.ensemble-members-table td.sticky-col-name {
+  position: sticky;
+  left: 30px;
+  z-index: 3;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-ink);
+  background: var(--color-surface, #ffffff);
+  border-right: 1px solid var(--color-rule);
+}
+
+.ensemble-members-table th.sticky-col-name {
+  z-index: 4;
+  background: var(--color-paper, #faf8f4);
+}
+
+.ensemble-members-table tbody tr {
+  cursor: pointer;
+  transition: background-color 110ms ease;
+}
+
+.ensemble-members-table tbody tr:hover td {
+  background: rgba(15, 118, 110, 0.05);
+}
+
+.ensemble-members-table tbody tr.is-selected-member td {
+  background: rgba(15, 118, 110, 0.11);
+}
+
+.ensemble-members-table tbody tr.is-mean-row td.sticky-col-name {
+  color: var(--color-accent);
+}
+
+.ensemble-extra-member-box {
+  margin-top: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid rgba(217, 119, 6, 0.35);
+  background: rgba(254, 243, 199, 0.45);
+}
+
+.ensemble-extra-note {
+  margin: 0 0 0.55rem;
+  font-size: 0.79rem;
+  color: var(--color-ink);
+  line-height: 1.48;
+}
+
+.ensemble-extra-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+}
+
+.ensemble-extra-status {
+  font-size: 0.76rem;
+  color: var(--color-ink-2);
+}
+
+.ensemble-selector-disabled {
+  opacity: 0.52;
+  pointer-events: none;
+}
+
+
 

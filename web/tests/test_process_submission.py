@@ -463,3 +463,89 @@ def test_doi_resolver_retries_transient_http_504(monkeypatch: pytest.MonkeyPatch
     )
     assert body == b'{"ok": true}'
     assert len(calls) == 3
+
+
+def test_process_submission_ensemble_opt_out_and_specific_member_selection(
+    tmp_path: Path,
+) -> None:
+    """Contributors can opt out of a single-model row or pick a specific member index."""
+    mip_copy = _make_temp_mip_dir(tmp_path)
+    qobs_npz = tmp_path / "qobs_531.npz"
+    basins, dates, qobs = _write_hermetic_qobs_npz(qobs_npz)
+
+    # 3 distinct members so Member 2 clearly differs from Member 0 and the mean
+    m0 = np.maximum(np.nan_to_num(qobs * np.float32(0.70), nan=0.1), np.float32(0.0)).astype(np.float32)
+    m1 = np.maximum(np.nan_to_num(qobs * np.float32(0.85), nan=0.1), np.float32(0.0)).astype(np.float32)
+    m2 = np.maximum(np.nan_to_num(qobs * np.float32(0.99), nan=0.1), np.float32(0.0)).astype(np.float32)
+    members = np.stack([m0, m1, m2], axis=0)
+    qsim_mean = np.mean(members, axis=0).astype(np.float32)
+
+    ens_nc = tmp_path / "distinct_3_members.nc"
+    xr.Dataset(
+        data_vars={
+            "qsim": (("basin", "date"), qsim_mean),
+            "qsim_members": (("member", "basin", "date"), members),
+        },
+        coords={
+            "basin": np.asarray(basins, dtype="<U8"),
+            "date": pd.to_datetime(dates),
+            "member": np.arange(3, dtype=np.int64),
+        },
+    ).to_netcdf(ens_nc)
+
+    # 1. Opt-out (include_single_model=False) -> 1 row only + general Option A ensemble suffix
+    optout_manifest = {
+        **_manifest_payload(
+            model_name="HydroOptOut",
+            archive_url=ens_nc.as_uri(),
+            code_url="https://github.com/example/optout",
+        ),
+        "leaderboard_id": "gauged__multi_camels",
+        "entry_id": "hydro_optout_test",
+        "include_single_model": False,
+    }
+    optout_path = tmp_path / "optout.json"
+    optout_path.write_text(json.dumps(optout_manifest), encoding="utf-8")
+    res_optout = process_submission.process_submission(
+        manifest_path=optout_path,
+        mip_dir=mip_copy,
+        out_zarr_dir=tmp_path / "z1",
+        summary_md_path=tmp_path / "s1.md",
+        qobs_npz_path=qobs_npz,
+        dry_run=True,
+        update_figures=False,
+    )
+    assert res_optout["entry"]["model_name"] == "HydroOptOut (3-model ensemble)"
+    assert res_optout["ensemble_single_entry"] is None
+    assert "include_single_model=false" in (tmp_path / "s1.md").read_text(encoding="utf-8")
+
+    # 2. Specific member selection (single_member_selection=2) -> picks Member 3 specifically
+    pick_manifest = {
+        **_manifest_payload(
+            model_name="HydroPickMember",
+            archive_url=ens_nc.as_uri(),
+            code_url="https://github.com/example/pick",
+        ),
+        "leaderboard_id": "gauged__multi_camels",
+        "entry_id": "hydro_pick_test",
+        "include_single_model": True,
+        "single_member_selection": 2,
+        "single_member_label": "Member 3",
+    }
+    pick_path = tmp_path / "pick.json"
+    pick_path.write_text(json.dumps(pick_manifest), encoding="utf-8")
+    res_pick = process_submission.process_submission(
+        manifest_path=pick_path,
+        mip_dir=mip_copy,
+        out_zarr_dir=tmp_path / "z2",
+        summary_md_path=tmp_path / "s2.md",
+        qobs_npz_path=qobs_npz,
+        dry_run=True,
+        update_figures=False,
+    )
+    assert res_pick["entry"]["model_name"] == "HydroPickMember (3-model ensemble)"
+    assert res_pick["ensemble_single_entry"] is not None
+    assert res_pick["ensemble_single_entry"]["model_name"] == "HydroPickMember (single model)"
+    assert res_pick["ensemble_single_entry"]["selected_member_index"] == 2
+    assert res_pick["ensemble_single_entry"]["primary_ranking_nse"] > 0.99
+

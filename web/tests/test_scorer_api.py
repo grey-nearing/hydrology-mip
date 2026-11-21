@@ -860,6 +860,83 @@ def test_3d_531_3652_m_npz_ingestion_and_api_preview(
     scored = score_resp.json()
     assert scored["entry"]["is_ensemble"] is True
     assert scored["entry"]["num_members"] == 2
+    assert scored["entry"]["model_name"] == "Test 3D NPZ Ens (2-model ensemble)"
     assert set(scored["entry"]["gauch_2023_metrics"].keys()) == set(GAUCH_2023_METRICS)
     assert scored["ensemble_single_entry"] is not None
     assert scored["ensemble_single_entry"]["num_members"] == 2
+    assert scored["ensemble_members"]["total_members"] == 2
+    assert len(scored["ensemble_members"]["members"]) == 2
+    assert scored["ensemble_members"]["truncated"] is False
+
+
+def test_scorer_api_caps_auto_scoring_at_10_members_and_scores_additional_on_demand(
+    tmp_path: Path,
+    isolated_api: TestClient,
+    canonical_qobs_bundle: tuple[list[str], list[str], list[str], np.ndarray],
+) -> None:
+    basins, dates, _, qobs = canonical_qobs_bundle
+    base_sim = _synthetic_qsim(qobs)
+    # 12 members with monotonically increasing accuracy so member 11 is distinct
+    scales = [0.75 + 0.02 * i for i in range(12)]
+    members = np.stack([(base_sim * np.float32(s)).astype(np.float32) for s in scales], axis=0)
+    npz_path = tmp_path / "ensemble_12_members.npz"
+    np.savez(
+        npz_path,
+        qsim=members,
+        basins=np.asarray(basins),
+        dates=np.asarray(dates),
+    )
+
+    with open(npz_path, "rb") as f:
+        inspect_resp = isolated_api.post(
+            "/api/preview/inspect",
+            files={"file": ("ensemble_12_members.npz", f, "application/octet-stream")},
+            data={"leaderboard_id": "gauged__single_camels", "model_name": "TwelveMemberModel"},
+        )
+    assert inspect_resp.status_code == 200, inspect_resp.text
+    insp = inspect_resp.json()
+    assert insp["ensemble_detected"]["is_ensemble"] is True
+    assert insp["ensemble_detected"]["num_members"] == 12
+    assert insp["ensemble_detected"]["auto_score_limit"] == 10
+    assert insp["ensemble_detected"]["truncated"] is True
+
+    score_resp = isolated_api.post(
+        "/api/preview/score",
+        json={
+            "preview_token": insp["preview_token"],
+            "recipe": {
+                "var": insp["schema"]["var"],
+                "basin_dim": insp["schema"]["basin_dim"],
+                "time_dim": insp["schema"]["time_dim"],
+                "member_dim": insp["schema"]["member_dim"],
+            },
+            "metadata": {
+                "leaderboard_id": "gauged__single_camels",
+                "spatial_regime": "gauged",
+                "forcing": "Daymet",
+                "model_name": "TwelveMemberModel",
+            },
+        },
+    )
+    assert score_resp.status_code == 200, score_resp.text
+    scored = score_resp.json()
+    em = scored["ensemble_members"]
+    assert em["total_members"] == 12
+    assert em["auto_score_limit"] == 10
+    assert em["truncated"] is True
+    assert len(em["members"]) == 10
+    assert [m["member_index"] for m in em["members"]] == list(range(10))
+    assert scored["preview_token"] == insp["preview_token"]
+
+    # Score member #12 (index 11) on demand via /api/preview/score-member
+    extra_resp = isolated_api.post(
+        "/api/preview/score-member",
+        json={"preview_token": scored["preview_token"], "member_index": 11},
+    )
+    assert extra_resp.status_code == 200, extra_resp.text
+    extra = extra_resp.json()
+    assert extra["member_index"] == 11
+    assert extra["member_label"] == "Member 12"
+    assert extra["entry"]["selected_member_index"] == 11
+    assert set(extra["entry"]["gauch_2023_metrics"].keys()) == set(GAUCH_2023_METRICS)
+

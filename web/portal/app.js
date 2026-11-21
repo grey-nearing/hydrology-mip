@@ -275,26 +275,31 @@
     const previews = loadLocalPreviews();
 
     for (const item of previews) {
-      const entry = { ...item.entry, is_local_preview: true };
-      if (!entry.leaderboard_id) continue;
-      const lb = lbs.find((b) => b.id === entry.leaderboard_id);
-      if (!lb) continue;
-      if (!Array.isArray(lb.rows)) lb.rows = [];
-      const rIdx = lb.rows.findIndex((r) => r.entry_id === entry.entry_id);
-      if (rIdx >= 0) {
-        lb.rows[rIdx] = { ...lb.rows[rIdx], ...entry };
-      } else {
-        lb.rows.push(entry);
+      const entriesToInject = [{ ...item.entry, is_local_preview: true }];
+      if (item.include_single_model && item.single_entry && item.single_entry.entry_id) {
+        entriesToInject.push({ ...item.single_entry, is_local_preview: true });
       }
-      lb.rows.sort((a, b) => {
-        const na = typeof a.primary_ranking_nse === "number" ? a.primary_ranking_nse : -999;
-        const nb = typeof b.primary_ranking_nse === "number" ? b.primary_ranking_nse : -999;
-        if (nb !== na) return nb - na;
-        return (a.rank || 9999) - (b.rank || 9999);
-      });
-      lb.rows.forEach((r, idx) => {
-        r.rank = idx + 1;
-      });
+      for (const entry of entriesToInject) {
+        if (!entry.leaderboard_id) continue;
+        const lb = lbs.find((b) => b.id === entry.leaderboard_id);
+        if (!lb) continue;
+        if (!Array.isArray(lb.rows)) lb.rows = [];
+        const rIdx = lb.rows.findIndex((r) => r.entry_id === entry.entry_id);
+        if (rIdx >= 0) {
+          lb.rows[rIdx] = { ...lb.rows[rIdx], ...entry };
+        } else {
+          lb.rows.push(entry);
+        }
+        lb.rows.sort((a, b) => {
+          const na = typeof a.primary_ranking_nse === "number" ? a.primary_ranking_nse : -999;
+          const nb = typeof b.primary_ranking_nse === "number" ? b.primary_ranking_nse : -999;
+          if (nb !== na) return nb - na;
+          return (a.rank || 9999) - (b.rank || 9999);
+        });
+        lb.rows.forEach((r, idx) => {
+          r.rank = idx + 1;
+        });
+      }
     }
 
     STATE.allLeaderboards = lbs;
@@ -3312,9 +3317,17 @@
 
     if (tierBadge) tierBadge.textContent = `${tierLabel} · ${fmt}`;
     if (summaryEl) {
+      const ensDet = inspectData.ensemble_detected || {};
+      const nDet = Number(ensDet.num_members || 1);
+      let ensNote = "";
+      if (ensDet.is_ensemble && nDet >= 2) {
+        ensNote = ensDet.truncated
+          ? ` Detected <strong>${nDet} ensemble members</strong> (the backend auto-scores the first ${Number(ensDet.auto_score_limit || 10)} members; you can score additional individual members and choose whether to include a single-model row in Step 3).`
+          : ` Detected <strong>${nDet} ensemble members</strong> (in Step 3 you can view all 14 metrics per member and choose whether to include a single-model row).`;
+      }
       summaryEl.innerHTML =
         `Detected <code>${esc(fmt)}</code> schema via <strong>${esc(tierLabel)}</strong>. ` +
-        `Verify variable/dimension mappings below before scoring.`;
+        `Verify variable/dimension mappings below before scoring.${ensNote}`;
     }
 
     const availVars = schema.available_vars || (schema.var ? [schema.var] : ["qsim"]);
@@ -3730,34 +3743,85 @@
       const entryId =
         rawEntry.entry_id ||
         `local_preview_${Date.now().toString(36)}`;
-      const entry = ensureFlatGauchMetrics({
-        ...rawEntry,
-        entry_id: entryId,
-        leaderboard_id: rawEntry.leaderboard_id || lbId,
-        model_name: rawEntry.model_name || modelName,
-        family_id: rawEntry.family_id || familyId || `preview_${entryId}`,
-        family_name: rawEntry.family_name || newFamilyName || modelName,
-        paradigm: rawEntry.paradigm || paradigm,
-        category: rawEntry.category || category,
-        forcing: rawEntry.forcing || forcing,
-        ensemble_info: rawEntry.ensemble_info || ensembleInfo,
-        code_url: sanitizeExternalUrl(rawEntry.code_url || codeUrl),
-        github_url: sanitizeExternalUrl(rawEntry.github_url || codeUrl),
-        closed_source: closedSource || !codeUrl,
-        is_closed_source: closedSource || !codeUrl,
-        data_archive_url: sanitizeExternalUrl(rawEntry.data_archive_url || archiveUrl),
-        citation: rawEntry.citation || citation || "Community Contribution (2026)",
-        is_local_preview: true,
-        has_preview_hydrographs: Boolean(
-          rawEntry.hydrograph_samples || (STATE.previewInspectData && STATE.previewInspectData.sample_basins)
-        ),
-        hydrograph_samples: rawEntry.hydrograph_samples || null,
-      });
+      const decorateEntry = (raw, fallbackName, keepSamples = true) =>
+        ensureFlatGauchMetrics({
+          ...raw,
+          entry_id: raw.entry_id || entryId,
+          leaderboard_id: raw.leaderboard_id || lbId,
+          model_name: raw.model_name || fallbackName,
+          family_id: raw.family_id || familyId || `preview_${entryId}`,
+          family_name: raw.family_name || newFamilyName || modelName,
+          paradigm: raw.paradigm || paradigm,
+          category: raw.category || category,
+          forcing: raw.forcing || forcing,
+          ensemble_info: raw.ensemble_info || ensembleInfo,
+          code_url: sanitizeExternalUrl(raw.code_url || codeUrl),
+          github_url: sanitizeExternalUrl(raw.github_url || codeUrl),
+          closed_source: closedSource || !codeUrl,
+          is_closed_source: closedSource || !codeUrl,
+          data_archive_url: sanitizeExternalUrl(raw.data_archive_url || archiveUrl),
+          citation: raw.citation || citation || "Community Contribution (2026)",
+          is_local_preview: true,
+          has_preview_hydrographs: Boolean(
+            keepSamples && (raw.hydrograph_samples || (STATE.previewInspectData && STATE.previewInspectData.sample_basins))
+          ),
+          hydrograph_samples: keepSamples ? raw.hydrograph_samples || null : null,
+        });
+
+      const entry = decorateEntry(rawEntry, modelName, true);
+
+      // Prepare multi-member ensemble state (if archive has >= 2 individual members)
+      let ensembleState = null;
+      const rawEm = data.ensemble_members;
+      if (rawEm && Number(rawEm.total_members || 0) >= 2) {
+        const meanEntry = rawEm.mean_entry
+          ? decorateEntry(rawEm.mean_entry, `${modelName} (single model)`, false)
+          : data.ensemble_single_entry
+          ? decorateEntry(data.ensemble_single_entry, `${modelName} (single model)`, false)
+          : null;
+        const scoredMembers = (rawEm.members || []).map((m) => ({
+          member_index: Number(m.member_index),
+          member_label: String(m.member_label || `Member ${Number(m.member_index) + 1}`),
+          entry: decorateEntry(m.entry || {}, `${modelName} (single model)`, false),
+        }));
+        const defaultSelection = rawEm.truncated ? "mean_first_10" : "mean";
+        ensembleState = {
+          preview_token: data.preview_token || null,
+          total_members: Number(rawEm.total_members),
+          auto_score_limit: Number(rawEm.auto_score_limit || 10),
+          truncated: Boolean(rawEm.truncated),
+          member_labels: Array.isArray(rawEm.member_labels) ? rawEm.member_labels : [],
+          mean_entry: meanEntry,
+          members: scoredMembers,
+          include_single_model: true,
+          single_member_selection: defaultSelection,
+          single_member_label: rawEm.truncated
+            ? `Average across first ${Number(rawEm.auto_score_limit || 10)} members`
+            : `Average across all ${Number(rawEm.total_members)} members`,
+        };
+      }
+      STATE.activeEnsembleState = ensembleState;
+
+      const selectedSingleEntry =
+        ensembleState && ensembleState.include_single_model
+          ? resolveSelectedSingleMemberEntry(ensembleState)
+          : null;
 
       STATE.activePreviewEntryId = entry.entry_id;
       const manifest = buildSubmissionManifest(entry, recipe);
       const previewRecord = {
         entry,
+        include_single_model: ensembleState ? ensembleState.include_single_model : false,
+        single_member_selection: ensembleState ? ensembleState.single_member_selection : null,
+        single_member_label: ensembleState ? ensembleState.single_member_label : null,
+        single_entry: selectedSingleEntry,
+        ensemble_meta: ensembleState
+          ? {
+              total_members: ensembleState.total_members,
+              auto_score_limit: ensembleState.auto_score_limit,
+              truncated: ensembleState.truncated,
+            }
+          : null,
         manifest,
         recipe,
         sanity: STATE.previewInspectData.sanity || null,
@@ -3767,26 +3831,32 @@
       upsertLocalPreview(previewRecord);
       await loadHydrographIndex();
       populateStep3Summary(previewRecord);
+      renderStep3EnsembleOptions();
       renderLeaderboardTabs();
       renderActiveLeaderboardPanel();
       renderFamiliesGrid();
 
       stopScoreProgress();
       if (scoreStatusEl) {
-        scoreStatusEl.textContent = "Scoring complete — opening your local leaderboard preview.";
+        scoreStatusEl.textContent = ensembleState
+          ? `Scoring complete (${ensembleState.total_members} ensemble members detected) — review options in Step 3.`
+          : "Scoring complete — opening your local leaderboard preview.";
         scoreStatusEl.style.color = "var(--status-success)";
       }
 
-      // Switch directly to target leaderboard and scroll to highlighted preview row
       setContribStep(3);
-      switchMainTab("leaderboards");
-      selectLeaderboardTab(entry.leaderboard_id);
-      requestAnimationFrame(() => {
-        const targetTr = document.getElementById(`row-${entry.entry_id}`);
-        if (targetTr) {
-          targetTr.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
-      });
+      // For multi-member ensembles, keep the user on Step 3 so they can inspect per-member metrics
+      // and choose whether/which single model to include before viewing the leaderboard or publishing.
+      if (!ensembleState) {
+        switchMainTab("leaderboards");
+        selectLeaderboardTab(entry.leaderboard_id);
+        requestAnimationFrame(() => {
+          const targetTr = document.getElementById(`row-${entry.entry_id}`);
+          if (targetTr) {
+            targetTr.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        });
+      }
     } catch (err) {
       stopScoreProgress();
       const msg = err && err.message ? err.message : String(err);
@@ -3803,14 +3873,297 @@
     }
   }
 
+  function resolveSelectedSingleMemberEntry(ensState) {
+    if (!ensState) return null;
+    const sel = ensState.single_member_selection;
+    if (typeof sel === "number" && Number.isInteger(sel)) {
+      const found = (ensState.members || []).find((m) => Number(m.member_index) === sel);
+      if (found && found.entry) return found.entry;
+    }
+    return ensState.mean_entry || null;
+  }
+
+  function formatMetricCellValue(entry, key, decimals = 3, suffix = "") {
+    if (!entry) return "—";
+    const g = entry.gauch_2023_metrics || {};
+    let val = entry[key];
+    if (val === undefined || val === null) {
+      if (key === "gauch_mse") val = g.MSE && g.MSE.median;
+      else if (key === "gauch_rmse") val = g.RMSE && g.RMSE.median;
+      else if (key === "gauch_alpha_nse") val = g["Alpha-NSE"] && g["Alpha-NSE"].median;
+      else if (key === "gauch_pearson_r") val = g["Pearson-r"] && g["Pearson-r"].median;
+      else if (key === "gauch_beta_kge") val = g["Beta-KGE"] && g["Beta-KGE"].median;
+      else if (key === "gauch_beta_nse") val = g["Beta-NSE"] && g["Beta-NSE"].median;
+      else if (key === "gauch_fhv") val = g.FHV && g.FHV.median;
+      else if (key === "gauch_fms") val = g.FMS && g.FMS.median;
+      else if (key === "gauch_flv") val = g.FLV && g.FLV.median;
+      else if (key === "gauch_peak_timing") val = g["Peak-Timing"] && g["Peak-Timing"].median;
+      else if (key === "gauch_log_nse") val = g.logNSE && g.logNSE.median;
+      else if (key === "gauch_log_kge") val = g.logKGE && g.logKGE.median;
+    }
+    if (!isValidMetric(val)) return "—";
+    return `${Number(val).toFixed(decimals)}${suffix}`;
+  }
+
+  function applyEnsembleSelectionToPreviewAndManifest() {
+    const ensState = STATE.activeEnsembleState;
+    const list = loadLocalPreviews();
+    const rec =
+      list.find((p) => p.entry && p.entry.entry_id === STATE.activePreviewEntryId) ||
+      list[list.length - 1];
+    if (!rec || !ensState) return;
+    rec.include_single_model = Boolean(ensState.include_single_model);
+    rec.single_member_selection = ensState.single_member_selection;
+    rec.single_member_label = ensState.single_member_label;
+    rec.single_entry = rec.include_single_model
+      ? resolveSelectedSingleMemberEntry(ensState)
+      : null;
+    rec.manifest = buildSubmissionManifest(rec.entry, rec.recipe || null);
+    upsertLocalPreview(rec);
+    populateStep3Summary(rec);
+    renderLeaderboardTabs();
+    renderActiveLeaderboardPanel();
+    syncStep4UrlInputsAndManifest();
+  }
+
+  function renderStep3EnsembleOptions() {
+    const panel = document.getElementById("step3-ensemble-panel");
+    if (!panel) return;
+    const ensState = STATE.activeEnsembleState;
+    if (!ensState || Number(ensState.total_members || 0) < 2) {
+      panel.hidden = true;
+      return;
+    }
+    panel.hidden = false;
+
+    const total = Number(ensState.total_members);
+    const limit = Number(ensState.auto_score_limit || 10);
+    const countBadge = document.getElementById("step3-ensemble-count-badge");
+    if (countBadge) {
+      countBadge.textContent = `${total} members detected`;
+    }
+
+    const chk = document.getElementById("chk-include-single-model");
+    const lbl = document.getElementById("lbl-include-single-model");
+    const expl = document.getElementById("step3-ensemble-explanation");
+    const selectorWrap = document.getElementById("step3-member-selector-wrap");
+    if (chk) chk.checked = Boolean(ensState.include_single_model);
+    if (lbl) {
+      lbl.textContent = `Also submit a single-model row alongside the ${total}-model ensemble`;
+    }
+    if (expl) {
+      expl.innerHTML =
+        `Your file contains <strong>${total}</strong> individual ensemble members. Because ensembles typically score higher than individual models, ` +
+        `you can include a second <code>(single model)</code> row alongside the <code>(${total}-model ensemble)</code> row for fair comparison with single-seed models. ` +
+        `Uncheck this box if you only want to submit the ensemble row.`;
+    }
+    if (selectorWrap) {
+      selectorWrap.classList.toggle("ensemble-selector-disabled", !ensState.include_single_model);
+    }
+
+    const tbody = document.getElementById("step3-members-tbody");
+    if (tbody) {
+      const rowsHtml = [];
+      const curSel = ensState.single_member_selection;
+
+      const buildRowHtml = (radioVal, labelHtml, entryObj, isMeanRow) => {
+        const isSel = String(curSel) === String(radioVal);
+        const stdTag =
+          isMeanRow && isValidMetric(entryObj && entryObj.single_med_nse_std)
+            ? ` ± ${Number(entryObj.single_med_nse_std).toFixed(3)}`
+            : "";
+        return `
+          <tr class="${isMeanRow ? "is-mean-row" : ""} ${isSel ? "is-selected-member" : ""}" data-member-choice="${esc(String(radioVal))}">
+            <td class="sticky-col-radio">
+              <input type="radio" name="step3-single-member-choice" value="${esc(String(radioVal))}" ${isSel ? "checked" : ""} ${ensState.include_single_model ? "" : "disabled"} />
+            </td>
+            <td class="sticky-col-name">${labelHtml}</td>
+            <td>${entryObj && entryObj.rank ? `#${esc(entryObj.rank)}` : "—"}</td>
+            <td><strong>${esc(formatMetricCellValue(entryObj, "primary_ranking_nse", 3))}${esc(stdTag)}</strong></td>
+            <td>${esc(formatMetricCellValue(entryObj, "mean_nse", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "med_kge", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "mean_kge", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_log_nse", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_log_kge", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_mse", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_rmse", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_alpha_nse", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_pearson_r", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_beta_kge", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_beta_nse", 3))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_fhv", 1))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_fms", 1))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_flv", 1))}</td>
+            <td>${esc(formatMetricCellValue(entryObj, "gauch_peak_timing", 2))}</td>
+            <td>${entryObj && entryObj.nse_le_0 !== undefined && entryObj.nse_le_0 !== null ? esc(String(entryObj.nse_le_0)) : "—"}</td>
+          </tr>
+        `;
+      };
+
+      if (ensState.mean_entry) {
+        const meanVal = ensState.truncated ? "mean_first_10" : "mean";
+        const meanLabel = ensState.truncated
+          ? `Average across first ${limit} members`
+          : `Average across all ${total} members`;
+        rowsHtml.push(buildRowHtml(meanVal, esc(meanLabel), ensState.mean_entry, true));
+      }
+
+      const sortedMembers = (ensState.members || []).slice().sort((a, b) => a.member_index - b.member_index);
+      for (const m of sortedMembers) {
+        rowsHtml.push(
+          buildRowHtml(
+            m.member_index,
+            `${esc(m.member_label)} <span style="color:var(--color-muted); font-weight:400;">(idx ${m.member_index})</span>`,
+            m.entry,
+            false
+          )
+        );
+      }
+
+      tbody.innerHTML = rowsHtml.join("");
+      tbody.querySelectorAll("tr[data-member-choice]").forEach((tr) => {
+        tr.addEventListener("click", () => {
+          if (!ensState.include_single_model) return;
+          const choice = tr.getAttribute("data-member-choice");
+          if (choice === "mean" || choice === "mean_first_10") {
+            ensState.single_member_selection = choice;
+            ensState.single_member_label = ensState.truncated
+              ? `Average across first ${limit} members`
+              : `Average across all ${total} members`;
+          } else {
+            const idxNum = Number(choice);
+            const found = (ensState.members || []).find((x) => Number(x.member_index) === idxNum);
+            ensState.single_member_selection = idxNum;
+            ensState.single_member_label = found ? found.member_label : `Member ${idxNum + 1}`;
+          }
+          renderStep3EnsembleOptions();
+          applyEnsembleSelectionToPreviewAndManifest();
+        });
+      });
+    }
+
+    const extraBox = document.getElementById("step3-extra-member-box");
+    const extraNote = document.getElementById("step3-extra-member-note");
+    const extraSelect = document.getElementById("step3-extra-member-select");
+    const extraBtn = document.getElementById("btn-score-extra-member");
+    if (extraBox) {
+      if (ensState.truncated) {
+        extraBox.hidden = false;
+        const scoredSet = new Set((ensState.members || []).map((m) => Number(m.member_index)));
+        const remaining = [];
+        for (let i = 0; i < total; i++) {
+          if (!scoredSet.has(i)) {
+            const lblStr = (ensState.member_labels && ensState.member_labels[i]) || `Member ${i + 1}`;
+            remaining.push({ idx: i, label: lblStr });
+          }
+        }
+        if (extraNote) {
+          extraNote.innerHTML =
+            `This archive has <strong>${total}</strong> ensemble members. The backend does not auto-score more than ` +
+            `<strong>${limit}</strong> ensemble members, so only the first ${limit} were scored automatically. ` +
+            `You can request scoring for any additional individual member below to view all 14 metrics and select it.`;
+        }
+        if (extraSelect) {
+          if (remaining.length === 0) {
+            extraSelect.innerHTML = `<option value="">All ${total} members scored</option>`;
+            extraSelect.disabled = true;
+            if (extraBtn) extraBtn.disabled = true;
+          } else {
+            extraSelect.disabled = false;
+            if (extraBtn) extraBtn.disabled = false;
+            extraSelect.innerHTML = remaining
+              .map((r) => `<option value="${r.idx}">${esc(r.label)} (index ${r.idx})</option>`)
+              .join("");
+          }
+        }
+      } else {
+        extraBox.hidden = true;
+      }
+    }
+  }
+
+  async function scoreAdditionalEnsembleMember() {
+    const ensState = STATE.activeEnsembleState;
+    const selEl = document.getElementById("step3-extra-member-select");
+    const btn = document.getElementById("btn-score-extra-member");
+    const statusEl = document.getElementById("step3-extra-member-status");
+    if (!ensState || !ensState.preview_token || !selEl || selEl.value === "") return;
+
+    const memberIdx = Number(selEl.value);
+    if (!Number.isInteger(memberIdx) || memberIdx < 0) return;
+
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = "Scoring member...";
+    }
+    if (statusEl) {
+      statusEl.textContent = `Scoring Member ${memberIdx + 1} across 531 basins...`;
+      statusEl.style.color = "var(--color-ink-2)";
+    }
+    try {
+      const res = await fetch("/api/preview/score-member", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          preview_token: ensState.preview_token,
+          member_index: memberIdx,
+        }),
+      });
+      const data = await parseApiJson(res);
+      if (!res.ok) {
+        throw new Error(data.error || data.detail || `HTTP ${res.status}`);
+      }
+      const mEntry = ensureFlatGauchMetrics({
+        ...(data.entry || {}),
+        is_local_preview: true,
+        hydrograph_samples: null,
+      });
+      const mLabel = String(data.member_label || `Member ${memberIdx + 1}`);
+      ensState.members = (ensState.members || []).filter((x) => Number(x.member_index) !== memberIdx);
+      ensState.members.push({
+        member_index: memberIdx,
+        member_label: mLabel,
+        entry: mEntry,
+      });
+      ensState.include_single_model = true;
+      ensState.single_member_selection = memberIdx;
+      ensState.single_member_label = mLabel;
+      renderStep3EnsembleOptions();
+      applyEnsembleSelectionToPreviewAndManifest();
+      if (statusEl) {
+        statusEl.textContent = `Scored and selected ${mLabel} (Med NSE ${formatMetricCellValue(mEntry, "primary_ranking_nse", 3)}).`;
+        statusEl.style.color = "var(--status-success)";
+      }
+    } catch (err) {
+      const msg = err && err.message ? err.message : String(err);
+      if (statusEl) {
+        statusEl.textContent = `Unable to score member: ${msg}`;
+        statusEl.style.color = "var(--status-danger)";
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Score Selected Member";
+      }
+    }
+  }
+
   function populateStep3Summary(record) {
     const entry = (record && record.entry) || {};
     const noteEl = document.getElementById("step3-summary-note");
     const stripEl = document.getElementById("step3-metrics-strip");
     if (noteEl) {
+      let singleSummaryBit = "";
+      if (record && record.ensemble_meta && record.ensemble_meta.total_members >= 2) {
+        if (record.include_single_model && record.single_entry) {
+          singleSummaryBit = ` Also previewing <strong>${esc(record.single_entry.model_name)}</strong> (${esc(record.single_member_label || "single model")}).`;
+        } else {
+          singleSummaryBit = " Submitting ensemble row only (no single-model row).";
+        }
+      }
       noteEl.innerHTML =
         `Previewing <strong>${esc(entry.model_name || "Preview Model")}</strong> on <code>${esc(entry.leaderboard_id || "")}</code> ` +
-        `(#${esc(entry.rank || "?")} by Median NSE) alongside committed leaderboard models. Only visible in this browser until published on GitHub.`;
+        `(#${esc(entry.rank || "?")} by Median NSE) alongside committed leaderboard models.${singleSummaryBit} Only visible in this browser until published on GitHub.`;
     }
     if (stripEl) {
       const boxes = [
@@ -3888,6 +4241,25 @@
         ? (loadLocalPreviews().find((p) => p.entry && p.entry.entry_id === STATE.activePreviewEntryId) || {}).entry
         : null);
 
+    const ensState = STATE.activeEnsembleState;
+    const isMultiMember = Boolean(
+      (ensState && Number(ensState.total_members || 0) >= 2) ||
+      (activePreviewRec && activePreviewRec.is_ensemble && Number(activePreviewRec.num_members || 1) >= 2)
+    );
+    const includeSingleModel = isMultiMember
+      ? Boolean(ensState ? ensState.include_single_model : true)
+      : false;
+    const singleMemberSelection =
+      isMultiMember && includeSingleModel
+        ? ensState
+          ? ensState.single_member_selection
+          : "mean"
+        : null;
+    const singleMemberLabel =
+      isMultiMember && includeSingleModel && ensState
+        ? ensState.single_member_label || null
+        : null;
+
     return {
       schema_version: "1.1",
       benchmark: "camels_us_daily",
@@ -3902,6 +4274,9 @@
       paradigm: paradigm,
       forcing: forcing,
       ensemble_info: ensembleInfo || null,
+      include_single_model: isMultiMember ? includeSingleModel : null,
+      single_member_selection: singleMemberSelection,
+      single_member_label: singleMemberLabel,
       citation: cit || "Community Contribution (2026)",
       archive_url: archiveUrl || rawArch,
       code_url: closedSource ? "" : codeUrl || rawCode,
@@ -4011,6 +4386,12 @@
       : manifest.code_url || "Not provided";
     const familyDisplay = manifest.family_id || manifest.new_family_name || manifest.model_name;
     const ensDisplay = manifest.ensemble_info || "Not specified";
+    const singleRowDisplay =
+      manifest.include_single_model === false
+        ? "Omitted (ensemble row only)"
+        : manifest.include_single_model === true
+        ? `Included (${manifest.single_member_label || manifest.single_member_selection || "Average across members"})`
+        : "Not applicable (single hydrograph)";
     const summaryLines = [
       "Submitted via [hydrologymip.org](https://hydrologymip.org/#contribute). Review the summary below and click **Create** to trigger automated verification and leaderboard inclusion.",
       "",
@@ -4022,6 +4403,7 @@
       `| **Forcing Inputs** | ${manifest.forcing} |`,
       `| **Model Family** | ${familyDisplay} |`,
       `| **Ensemble / Seed Info** | ${ensDisplay} |`,
+      `| **Single-Model Row** | ${singleRowDisplay} |`,
       `| **Archive DOI / URL** | ${manifest.archive_url} |`,
       `| **Code Repository** | ${codeDisplay} |`,
       `| **Citation** | ${manifest.citation || "Community Contribution (2026)"} |`,
@@ -6771,9 +7153,26 @@
     const btnClearCurrentPreview = document.getElementById("btn-clear-current-preview");
     if (btnClearCurrentPreview) {
       btnClearCurrentPreview.addEventListener("click", () => {
+        STATE.activeEnsembleState = null;
+        renderStep3EnsembleOptions();
         removeLocalPreview(STATE.activePreviewEntryId);
         setContribStep(1);
       });
+    }
+
+    const chkIncludeSingle = document.getElementById("chk-include-single-model");
+    if (chkIncludeSingle) {
+      chkIncludeSingle.addEventListener("change", () => {
+        if (!STATE.activeEnsembleState) return;
+        STATE.activeEnsembleState.include_single_model = Boolean(chkIncludeSingle.checked);
+        renderStep3EnsembleOptions();
+        applyEnsembleSelectionToPreviewAndManifest();
+      });
+    }
+
+    const btnScoreExtraMember = document.getElementById("btn-score-extra-member");
+    if (btnScoreExtraMember) {
+      btnScoreExtraMember.addEventListener("click", scoreAdditionalEnsembleMember);
     }
 
     const btnBackFromStep4 = document.getElementById("btn-back-from-step4");

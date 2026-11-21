@@ -66,6 +66,7 @@ from metrics.evaluator import (
 
 MAX_DOWNLOAD_BYTES: int = DEFAULT_MAX_DOWNLOAD_BYTES
 DOWNLOAD_TIMEOUT_SECONDS: int = 120
+MAX_AUTO_SCORED_MEMBERS: int = 10
 SAFE_ID_RE = re.compile(r"[^a-z0-9_]+")
 ENSEMBLE_SUFFIX_RE = re.compile(r"\s*\(\d+-model ensemble\)\s*$")
 
@@ -239,12 +240,39 @@ def _derive_entry_id(manifest: Mapping[str, Any], manifest_path: Path) -> str:
     return cleaned[:48]
 
 
+def _ensemble_display_name(model_name: str, is_ensemble: bool, num_members: int) -> str:
+    """Format ensemble row display name uniformly across all models (Option A)."""
+    cleaned = str(model_name or "").strip()
+    if is_ensemble and int(num_members) >= 2 and "ensemble" not in cleaned.lower():
+        return f"{cleaned} ({int(num_members)}-model ensemble)"
+    return cleaned
+
+
 def _single_model_display_name(manifest: Mapping[str, Any], model_name: str) -> str:
     explicit_single = str(manifest.get("single_model_name") or "").strip()
     if explicit_single:
         return explicit_single
     base = ENSEMBLE_SUFFIX_RE.sub("", model_name).strip() or model_name
     return f"{base} (single model)"
+
+
+def _parse_single_member_selection(manifest: Mapping[str, Any]) -> tuple[bool, int | str]:
+    """Return ``(include_single_model, selection)`` where selection is int index or ``'mean'``."""
+    raw_inc = manifest.get("include_single_model")
+    include_single = True if raw_inc is None else bool(raw_inc)
+    raw_sel = manifest.get("single_member_selection")
+    if raw_sel is None:
+        return include_single, "mean"
+    if isinstance(raw_sel, bool):
+        return include_single, "mean"
+    if isinstance(raw_sel, int):
+        return include_single, raw_sel
+    sel_str = str(raw_sel).strip()
+    if sel_str.isdigit():
+        return include_single, int(sel_str)
+    if sel_str in ("mean", "mean_first_10"):
+        return include_single, sel_str
+    return include_single, "mean"
 
 
 def _render_pr_summary_markdown(
@@ -299,10 +327,24 @@ def _render_pr_summary_markdown(
     ]
 
     if ensemble_single_entry is not None:
+        sel_idx = ensemble_single_entry.get("single_seed_member_index")
+        sel_lbl = str(manifest.get("single_member_label") or "").strip()
+        if sel_idx is not None:
+            member_desc = f"Member {int(sel_idx) + 1} (`index={int(sel_idx)}`{f', {sel_lbl}' if sel_lbl else ''})"
+            lines.append(
+                f"- **Single-Model Row Included ({member_desc}):** "
+                f"`{ensemble_single_entry['model_name']}` — Med NSE `{ensemble_single_entry.get('primary_ranking_nse')}`"
+            )
+        else:
+            lines.append(
+                f"- **Single-Seed Skill (`n=1` across {entry['num_members']} members):** "
+                f"`{ensemble_single_entry.get('single_med_nse')} ± {ensemble_single_entry.get('single_med_nse_std')}` "
+                f"(per-member: `{ensemble_single_entry.get('single_med_nse_per_member')}`)"
+            )
+        lines.append("")
+    elif bool(entry.get("is_ensemble")) and int(entry.get("num_members") or 1) >= 2:
         lines.append(
-            f"- **Single-Seed Skill (`n=1` across {entry['num_members']} members):** "
-            f"`{ensemble_single_entry.get('single_med_nse')} ± {ensemble_single_entry.get('single_med_nse_std')}` "
-            f"(per-member: `{ensemble_single_entry.get('single_med_nse_per_member')}`)"
+            "- **Single-Model Row:** Omitted per contributor selection (`include_single_model=false`)."
         )
         lines.append("")
 
@@ -455,21 +497,39 @@ def process_submission(
         hydro_link.parent.mkdir(parents=True, exist_ok=True)
         hydro_link.symlink_to(out_zarr_path.resolve())
 
+        n_members_total = (
+            int(ingested["qsim_members"].shape[0])
+            if ingested["qsim_members"] is not None
+            else 1
+        )
         eval_res = calculate_model_leaderboard_metrics(
             model_id=entry_id,
             leaderboard_id=leaderboard_id,
             bucket_uri=str(eval_bucket),
             allow_partial_archive=False,
+            max_scored_members=MAX_AUTO_SCORED_MEMBERS if n_members_total > MAX_AUTO_SCORED_MEMBERS else None,
         )
+        include_single_model, single_selection = _parse_single_member_selection(manifest)
         ensemble_single_res: dict[str, Any] | None = None
-        if ingested["qsim_members"] is not None and int(ingested["qsim_members"].shape[0]) >= 2:
-            ensemble_single_res = calculate_model_leaderboard_metrics(
-                model_id=entry_id,
-                leaderboard_id=leaderboard_id,
-                bucket_uri=str(eval_bucket),
-                allow_partial_archive=False,
-                evaluation_mode="single_member_mean",
-            )
+        if include_single_model and ingested["qsim_members"] is not None and n_members_total >= 2:
+            if isinstance(single_selection, int):
+                ensemble_single_res = calculate_model_leaderboard_metrics(
+                    model_id=entry_id,
+                    leaderboard_id=leaderboard_id,
+                    bucket_uri=str(eval_bucket),
+                    allow_partial_archive=False,
+                    evaluation_mode="single_member",
+                    member_index=single_selection,
+                )
+            else:
+                ensemble_single_res = calculate_model_leaderboard_metrics(
+                    model_id=entry_id,
+                    leaderboard_id=leaderboard_id,
+                    bucket_uri=str(eval_bucket),
+                    allow_partial_archive=False,
+                    evaluation_mode="single_member_mean",
+                    max_scored_members=MAX_AUTO_SCORED_MEMBERS if n_members_total > MAX_AUTO_SCORED_MEMBERS else None,
+                )
 
     lb_dir = mip_dir / "leaderboards"
     reg_path = lb_dir / "table_2_registry.json"
@@ -566,16 +626,26 @@ def process_submission(
             row_dict["winner_notebook_url"] = winner_nb_url
         return row_dict
 
-    primary_entry = _assemble_entry(eval_res, entry_id, model_name)
+    primary_display_name = _ensemble_display_name(
+        model_name,
+        bool(eval_res.get("is_ensemble")),
+        int(eval_res.get("num_members") or 1),
+    )
+    primary_entry = _assemble_entry(eval_res, entry_id, primary_display_name)
     single_entry = (
         _assemble_entry(
             ensemble_single_res,
             f"{entry_id}_single",
-            _single_model_display_name(manifest, model_name),
+            _single_model_display_name(manifest, primary_display_name),
         )
         if ensemble_single_res is not None
         else None
     )
+    if single_entry is not None and isinstance(single_selection, int):
+        single_entry["selected_member_index"] = single_selection
+        sel_lbl = str(manifest.get("single_member_label") or "").strip()
+        if sel_lbl:
+            single_entry["selected_member_label"] = sel_lbl
 
     if not dry_run:
         family_record: dict[str, Any] | None = None

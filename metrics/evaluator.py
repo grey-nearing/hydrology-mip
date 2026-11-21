@@ -539,6 +539,10 @@ def calculate_model_leaderboard_metrics(
     bucket_uri: str = DEFAULT_BUCKET_URI,
     allow_partial_archive: bool = False,
     evaluation_mode: str | None = None,
+    *,
+    member_index: int | None = None,
+    max_scored_members: int | None = None,
+    include_per_member_results: bool = False,
 ) -> dict[str, Any]:
     """Calculate all 14 Gauch et al. (2023) & CAMELS-US MIP metrics for one model and leaderboard.
 
@@ -596,6 +600,9 @@ def calculate_model_leaderboard_metrics(
             bucket_uri=bucket_uri,
             allow_partial_archive=allow_partial_archive,
             evaluation_mode=evaluation_mode,
+            member_index=member_index,
+            max_scored_members=max_scored_members,
+            include_per_member_results=include_per_member_results,
         )
 
 
@@ -605,6 +612,10 @@ def _score_model_leaderboard(
     bucket_uri: str,
     allow_partial_archive: bool,
     evaluation_mode: str | None,
+    *,
+    member_index: int | None = None,
+    max_scored_members: int | None = None,
+    include_per_member_results: bool = False,
 ) -> dict[str, Any]:
     """Implementation of `calculate_model_leaderboard_metrics` (called inside scoped I/O)."""
     if leaderboard_id not in CANONICAL_LEADERBOARD_IDS:
@@ -617,11 +628,14 @@ def _score_model_leaderboard(
     if evaluation_mode is not None and evaluation_mode not in (
         "ensemble",
         "single_member_mean",
+        "single_member",
     ):
         raise ValueError(
             f"Unsupported evaluation_mode {evaluation_mode!r}; expected None, "
-            f"'ensemble', or 'single_member_mean'."
+            f"'ensemble', 'single_member_mean', or 'single_member'."
         )
+    if max_scored_members is not None and int(max_scored_members) < 1:
+        raise ValueError("max_scored_members must be a positive integer when provided.")
 
     root_uri = bucket_uri.rstrip("/")
     targets_uri = f"{root_uri}/observations/newman_eval_targets.zarr"
@@ -659,6 +673,18 @@ def _score_model_leaderboard(
             f"members in '{hydrograph_uri}', found {n_found}. The stored 'qsim' (possibly an "
             f"ensemble mean) is never substituted for a single-seed score."
         )
+    if evaluation_mode == "single_member":
+        if members is None or int(members.shape[0]) < 1:
+            raise ValueError(
+                f"evaluation_mode='single_member' requires 'qsim_members' in '{hydrograph_uri}'."
+            )
+        if member_index is None or isinstance(member_index, bool):
+            raise ValueError("evaluation_mode='single_member' requires an integer member_index.")
+        idx_int = int(member_index)
+        if idx_int < 0 or idx_int >= int(members.shape[0]):
+            raise ValueError(
+                f"member_index={idx_int} is out of range for {int(members.shape[0])} ensemble members."
+            )
     is_ensemble = _resolve_is_ensemble(hydrograph_ds, hydrograph_uri, members)
     if is_ensemble and members is None:
         declared = hydrograph_ds.attrs.get("num_members")
@@ -755,11 +781,27 @@ def _score_model_leaderboard(
     dates_ns = target_dates.astype("datetime64[ns]")
     obs_for_da = np.where(obs_valid, obs, np.nan)
 
+    per_member_results_payload: list[dict[str, Any]] | None = None
+    total_members_available = int(members.shape[0]) if members is not None else 1
+    scored_member_count = total_members_available
+    truncated_at_member_limit = False
+
     if evaluation_mode == "single_member_mean" and members is not None:
         is_ensemble = False
-        n_m = int(members.shape[0])
+        n_total = int(members.shape[0])
+        n_m = (
+            min(n_total, int(max_scored_members))
+            if max_scored_members is not None
+            else n_total
+        )
+        scored_member_count = n_m
+        truncated_at_member_limit = n_total > n_m
         member_info["num_members"] = n_m
-        member_info["ensemble_source"] = "mean_across_individual_members"
+        member_info["ensemble_source"] = (
+            f"mean_across_first_{n_m}_members"
+            if truncated_at_member_limit
+            else "mean_across_individual_members"
+        )
         member_info["single_seed_member_index"] = None
 
         member_per_basin: list[dict[str, np.ndarray]] = []
@@ -827,6 +869,47 @@ def _score_model_leaderboard(
                     if len(h_nses) > 0:
                         m_huc[str(h)] = float(np.median(h_nses))
             member_regional_huc02.append(m_huc)
+
+        if include_per_member_results:
+            per_member_results_payload = []
+            for m_idx in range(n_m):
+                md = member_distributions[m_idx]
+                m_gauch = {m_name: md[m_name] for m_name in GAUCH_2023_METRICS}
+                m_huc_round = {h: round(v, 4) for h, v in member_regional_huc02[m_idx].items()}
+                m_pb: dict[str, Any] = {
+                    "basins": [str(b) for b in target_basins],
+                    "huc_02": [str(h) for h in target_huc02],
+                    "is_evaluable": [bool(v) for v in good_b],
+                }
+                for m_name in GAUCH_2023_METRICS:
+                    ndigits = 4 if m_name in ("FHV", "FMS", "FLV") else 6
+                    vec_list = [
+                        float("nan") if np.isnan(v) else round(float(v), ndigits)
+                        for v in member_per_basin[m_idx][m_name]
+                    ]
+                    m_pb[m_name] = vec_list
+                    m_pb[GAUCH_METRIC_TO_SNAKE[m_name]] = vec_list
+                per_member_results_payload.append(
+                    {
+                        "member_index": m_idx,
+                        "is_ensemble": False,
+                        "num_members": 1,
+                        "has_qsim_members": True,
+                        "num_evaluated_basins": num_evaluated_basins,
+                        "ensemble_source": f"selected_single_member_{m_idx}",
+                        "single_seed_member_index": m_idx,
+                        "median_nse": m_gauch["NSE"]["median"],
+                        "mean_nse": m_gauch["NSE"]["mean"],
+                        "median_kge": m_gauch["KGE"]["median"],
+                        "mean_kge": m_gauch["KGE"]["mean"],
+                        "median_abs_fhv": md["abs_fhv"]["median"],
+                        "nse_le_zero_count": member_nse_le_zero_counts[m_idx],
+                        "gauch_2023_metrics": m_gauch,
+                        "regional_huc02": m_huc_round,
+                        "per_basin": m_pb,
+                        "pred_nan_when_obs_valid": pred_nan_when_obs_valid,
+                    }
+                )
 
         for m_name in GAUCH_2023_METRICS + ("abs_fhv", "abs_fms", "abs_flv"):
             stacked = np.stack([mpb[m_name] for mpb in member_per_basin], axis=0)
@@ -902,6 +985,20 @@ def _score_model_leaderboard(
             if h_vals_m:
                 regional_huc02[str(h)] = round(float(np.mean(h_vals_m)), 4)
     else:
+        active_sim = sim
+        if evaluation_mode == "single_member" and members is not None and member_index is not None:
+            idx_int = int(member_index)
+            is_ensemble = False
+            active_sim = members[idx_int]
+            member_info["num_members"] = 1
+            member_info["ensemble_source"] = f"selected_single_member_{idx_int}"
+            member_info["single_seed_member_index"] = idx_int
+            scored_member_count = 1
+            if not np.all(np.isfinite(active_sim[eval_valid])):
+                raise ValueError(
+                    f"Member {idx_int} in '{hydrograph_uri}' contains NaN or Inf values on valid observation days."
+                )
+
         for b_idx in np.where(good_b)[0]:
             obs_da = xr.DataArray(
                 obs_for_da[b_idx],
@@ -909,7 +1006,7 @@ def _score_model_leaderboard(
                 dims=("date",),
             )
             sim_da = xr.DataArray(
-                sim[b_idx],
+                active_sim[b_idx],
                 coords={"date": dates_ns},
                 dims=("date",),
             )
@@ -930,9 +1027,18 @@ def _score_model_leaderboard(
         # (population std, ddof=0) across members. For a store without members this is the
         # score of the stored hydrograph itself when it is a single model, and undefined (None)
         # when the store claims to be an ensemble mean without shipping its members.
-        if members is not None:
+        if evaluation_mode == "single_member":
+            stored_nse = per_basin_vectors["NSE"][good_b]
+            stored_nse = stored_nse[np.isfinite(stored_nse)]
+            single_seed_per_member = [float(np.median(stored_nse))]
+        elif members is not None:
+            members_for_seed = (
+                members[: int(max_scored_members)]
+                if max_scored_members is not None
+                else members
+            )
             single_seed_per_member = _per_member_median_nse(
-                members, obs_for_da, dates_ns, good_b
+                members_for_seed, obs_for_da, dates_ns, good_b
             )
         elif not is_ensemble:
             stored_nse = per_basin_vectors["NSE"][good_b]
@@ -1131,7 +1237,7 @@ def _score_model_leaderboard(
             for v in per_basin_vectors[abs_key]
         ]
 
-    return {
+    result_doc: dict[str, Any] = {
         "model_id": model_id,
         "leaderboard_id": leaderboard_id,
         "bucket_uri": root_uri,
@@ -1144,3 +1250,9 @@ def _score_model_leaderboard(
         "per_basin": per_basin,
         "attributes": dict(hydrograph_ds.attrs),
     }
+    if per_member_results_payload is not None:
+        result_doc["per_member_results"] = per_member_results_payload
+        result_doc["total_members_available"] = total_members_available
+        result_doc["scored_member_count"] = scored_member_count
+        result_doc["truncated_at_member_limit"] = truncated_at_member_limit
+    return result_doc

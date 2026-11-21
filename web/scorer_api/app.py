@@ -464,6 +464,31 @@ class ScorePreviewRequest(BaseModel):
     metadata: ScoreMetadataInput = Field(default_factory=ScoreMetadataInput)
 
 
+class ScoreMemberRequest(BaseModel):
+    preview_token: str
+    member_index: int
+
+
+MAX_AUTO_SCORED_MEMBERS: int = 10
+ENSEMBLE_SUFFIX_RE = re.compile(r"\s*\(\d+-model ensemble\)\s*$")
+
+
+def _format_ensemble_model_name(base_name: str, is_ensemble: bool, num_members: int) -> str:
+    cleaned = str(base_name or "").strip()
+    if is_ensemble and int(num_members) >= 2 and "ensemble" not in cleaned.lower():
+        return f"{cleaned} ({int(num_members)}-model ensemble)"
+    return cleaned
+
+
+def _format_single_model_name(base_name: str) -> str:
+    stripped = ENSEMBLE_SUFFIX_RE.sub("", str(base_name or "").strip()).strip() or str(base_name or "").strip()
+    return f"{stripped} (single model)"
+
+
+def _default_member_labels(num_members: int) -> list[str]:
+    return [f"Member {i + 1}" for i in range(max(0, int(num_members)))]
+
+
 def _schema_summary_from_meta(meta: Mapping[str, Any], recipe: IngestionRecipe | None) -> dict[str, Any]:
     avail_vars = list(meta.get("vars") or meta.get("columns") or [])
     avail_dims = list(meta.get("dims") or meta.get("columns") or [])
@@ -541,6 +566,9 @@ def _evaluator_result_to_entry(
     ref: CanonicalReference,
     lb_rows: list[dict[str, Any]],
     hydrograph_samples: dict[str, Any] | None = None,
+    model_name_override: str | None = None,
+    selected_member_index: int | None = None,
+    selected_member_label: str | None = None,
 ) -> dict[str, Any]:
     gauch = dict(eval_res["gauch_2023_metrics"])
     per_basin = eval_res["per_basin"]
@@ -570,9 +598,14 @@ def _evaluator_result_to_entry(
 
     is_ens = bool(eval_res["is_ensemble"])
     num_mem = int(eval_res["num_members"])
-    model_label = meta_in.model_name
-    if not is_ens and num_mem > 1:
-        model_label = f"{meta_in.model_name} (single-seed mean of {num_mem} members)"
+    if model_name_override is not None:
+        model_label = model_name_override
+    elif is_ens and num_mem >= 2:
+        model_label = _format_ensemble_model_name(meta_in.model_name, True, num_mem)
+    elif not is_ens and num_mem > 1:
+        model_label = _format_single_model_name(meta_in.model_name)
+    else:
+        model_label = meta_in.model_name
 
     family_id = meta_in.family_id or f"preview_{entry_id}"
     family_name = meta_in.new_family_name or meta_in.model_name
@@ -589,7 +622,7 @@ def _evaluator_result_to_entry(
         "ensemble_info": meta_in.ensemble_info,
         "is_ensemble": is_ens,
         "num_members": num_mem,
-        "has_qsim_members": bool(eval_res["has_qsim_members"]),
+        "has_qsim_members": bool(eval_res.get("has_qsim_members", False)),
         "ensemble_source": str(eval_res["ensemble_source"]),
         "ens_med_nse": round(median_nse, 4) if is_ens else None,
         "single_med_nse": eval_res.get("single_seed_median_nse_mean"),
@@ -602,7 +635,7 @@ def _evaluator_result_to_entry(
         "med_fhv_abs": float(eval_res["median_abs_fhv"]),
         "gauch_fhv": float(gauch["FHV"]["median"]),
         "nse_le_0": int(eval_res["nse_le_zero_count"]),
-        "num_evaluated_basins": int(eval_res["num_evaluated_basins"]),
+        "num_evaluated_basins": int(eval_res.get("num_evaluated_basins", len(ref.basins))),
         "pred_nan_when_obs_valid": int(eval_res["pred_nan_when_obs_valid"]),
         "per_basin_nse": per_basin_nse,
         "per_basin_kge": per_basin_kge,
@@ -618,6 +651,10 @@ def _evaluator_result_to_entry(
         "is_local_preview": True,
         "hydrograph_samples": hydrograph_samples,
     }
+    if selected_member_index is not None:
+        entry["selected_member_index"] = int(selected_member_index)
+    if selected_member_label is not None:
+        entry["selected_member_label"] = str(selected_member_label)
     return entry
 
 
@@ -723,12 +760,14 @@ def _run_canonical_scoring_sync(
         dates=ref.dates,
     )
 
+    n_members_total = int(qsim_members.shape[0]) if qsim_members is not None else 1
     eval_res = calculate_model_leaderboard_metrics(
         model_id=entry_id,
         leaderboard_id=meta_in.leaderboard_id,
         bucket_uri=str(score_bucket),
         allow_partial_archive=False,
         evaluation_mode=None,
+        max_scored_members=MAX_AUTO_SCORED_MEMBERS if n_members_total > MAX_AUTO_SCORED_MEMBERS else None,
     )
     lb_rows = _load_live_leaderboard_rows(meta_in.leaderboard_id)
     hydrograph_samples = _build_full_hydrograph_samples(qsim, ref, sample_basins)
@@ -742,14 +781,19 @@ def _run_canonical_scoring_sync(
     )
 
     ensemble_single_entry: dict[str, Any] | None = None
-    if qsim_members is not None and int(qsim_members.shape[0]) >= 2:
+    ensemble_members_payload: dict[str, Any] | None = None
+    if qsim_members is not None and n_members_total >= 2:
+        member_labels = _default_member_labels(n_members_total)
         single_eval = calculate_model_leaderboard_metrics(
             model_id=entry_id,
             leaderboard_id=meta_in.leaderboard_id,
             bucket_uri=str(score_bucket),
             allow_partial_archive=False,
             evaluation_mode="single_member_mean",
+            max_scored_members=MAX_AUTO_SCORED_MEMBERS,
+            include_per_member_results=True,
         )
+        single_name = _format_single_model_name(primary_entry["model_name"])
         ensemble_single_entry = _evaluator_result_to_entry(
             single_eval,
             entry_id=f"{entry_id}_single",
@@ -757,7 +801,54 @@ def _run_canonical_scoring_sync(
             ref=ref,
             lb_rows=lb_rows,
             hydrograph_samples=hydrograph_samples,
+            model_name_override=single_name,
         )
+        scored_members_list: list[dict[str, Any]] = []
+        for m_res in single_eval.get("per_member_results") or []:
+            m_idx = int(m_res["member_index"])
+            m_lbl = member_labels[m_idx] if m_idx < len(member_labels) else f"Member {m_idx + 1}"
+            m_entry = _evaluator_result_to_entry(
+                m_res,
+                entry_id=f"{entry_id}_single",
+                meta_in=meta_in,
+                ref=ref,
+                lb_rows=lb_rows,
+                hydrograph_samples=hydrograph_samples,
+                model_name_override=single_name,
+                selected_member_index=m_idx,
+                selected_member_label=m_lbl,
+            )
+            scored_members_list.append(
+                {
+                    "member_index": m_idx,
+                    "member_label": m_lbl,
+                    "entry": m_entry,
+                }
+            )
+        truncated = bool(single_eval.get("truncated_at_member_limit", n_members_total > MAX_AUTO_SCORED_MEMBERS))
+        ensemble_members_payload = {
+            "total_members": n_members_total,
+            "auto_score_limit": MAX_AUTO_SCORED_MEMBERS,
+            "scored_count": len(scored_members_list),
+            "truncated": truncated,
+            "member_labels": member_labels,
+            "mean_entry": ensemble_single_entry,
+            "members": scored_members_list,
+        }
+        if truncated:
+            score_ctx = {
+                "entry_id": entry_id,
+                "leaderboard_id": meta_in.leaderboard_id,
+                "primary_model_name": primary_entry["model_name"],
+                "single_model_name": single_name,
+                "total_members": n_members_total,
+                "member_labels": member_labels,
+                "metadata": meta_in.model_dump(),
+                "sample_basins": sample_basins,
+            }
+            (token_dir / "score_context.json").write_text(
+                json.dumps(score_ctx, indent=2), encoding="utf-8"
+            )
 
     canonical_manifest = {
         "schema_version": "1.1",
@@ -785,8 +876,10 @@ def _run_canonical_scoring_sync(
     return {
         "status": "scored",
         "local_preview_only": True,
+        "preview_token": token_dir.name if (ensemble_members_payload and ensemble_members_payload["truncated"]) else None,
         "entry": primary_entry,
         "ensemble_single_entry": ensemble_single_entry,
+        "ensemble_members": ensemble_members_payload,
         "canonical_manifest": canonical_manifest,
         "sanity": sanity,
         "sample_basins": sample_basins,
@@ -893,12 +986,24 @@ def _run_inspect_sync(
         gauge_names=ref.gauge_names,
         initial_diagnostics=ingested["diagnostics"],
     )
+    n_members_detected = (
+        int(ingested["qsim_members"].shape[0])
+        if ingested["qsim_members"] is not None
+        else 1
+    )
     return {
         "status": "ok",
         "preview_token": token,
         "format": recipe.format,
         "recipe_source": recipe.recipe_source,
         "schema": _schema_summary_from_meta(meta, recipe),
+        "ensemble_detected": {
+            "is_ensemble": n_members_detected >= 2,
+            "num_members": n_members_detected,
+            "auto_score_limit": MAX_AUTO_SCORED_MEMBERS,
+            "truncated": n_members_detected > MAX_AUTO_SCORED_MEMBERS,
+            "member_labels": _default_member_labels(n_members_detected) if n_members_detected >= 2 else [],
+        },
         "sanity": sanity,
         "sample_basins": sample_basins,
         "stuck_report": None,
@@ -1023,8 +1128,71 @@ def _score_and_cleanup_sync(payload: ScorePreviewRequest) -> dict[str, Any]:
         payload.recipe,
         payload.metadata,
     )
-    PREVIEW_STORE.delete_token_dir(token_dir)
+    em = result.get("ensemble_members") or {}
+    if bool(em.get("truncated")) and (token_dir / "score_context.json").is_file():
+        # Purge raw upload/extract intermediates immediately; retain compact Zarr store until 15-min TTL
+        # so the contributor can score additional individual members (> 10) on demand.
+        if staged_path.is_file():
+            staged_path.unlink()
+        for sub in ("extract_inspect", "extract_preview", "extract_score"):
+            sub_dir = token_dir / sub
+            if sub_dir.exists():
+                shutil.rmtree(sub_dir)
+    else:
+        PREVIEW_STORE.delete_token_dir(token_dir)
     return result
+
+
+def _score_single_member_sync(payload: ScoreMemberRequest) -> dict[str, Any]:
+    token_dir = PREVIEW_STORE.resolve_token_dir(payload.preview_token)
+    ctx_path = token_dir / "score_context.json"
+    score_bucket = token_dir / "score_bucket"
+    if not ctx_path.is_file() or not score_bucket.is_dir():
+        raise HTTPException(
+            status_code=404,
+            detail="Staged ensemble session expired; please re-run Step 1 & Step 2 to score additional members.",
+        )
+    ctx = json.loads(ctx_path.read_text(encoding="utf-8"))
+    total_members = int(ctx["total_members"])
+    m_idx = int(payload.member_index)
+    if m_idx < 0 or m_idx >= total_members:
+        raise HTTPException(
+            status_code=400,
+            detail=f"member_index {m_idx} out of range (expected 0..{total_members - 1}).",
+        )
+    ref = get_canonical_reference()
+    entry_id = str(ctx["entry_id"])
+    leaderboard_id = str(ctx["leaderboard_id"])
+    meta_in = ScoreMetadataInput.model_validate(ctx["metadata"])
+    member_labels = list(ctx.get("member_labels") or _default_member_labels(total_members))
+    m_lbl = member_labels[m_idx] if m_idx < len(member_labels) else f"Member {m_idx + 1}"
+    single_name = str(ctx.get("single_model_name") or _format_single_model_name(meta_in.model_name))
+
+    m_eval = calculate_model_leaderboard_metrics(
+        model_id=entry_id,
+        leaderboard_id=leaderboard_id,
+        bucket_uri=str(score_bucket),
+        allow_partial_archive=False,
+        evaluation_mode="single_member",
+        member_index=m_idx,
+    )
+    lb_rows = _load_live_leaderboard_rows(leaderboard_id)
+    entry = _evaluator_result_to_entry(
+        m_eval,
+        entry_id=f"{entry_id}_single",
+        meta_in=meta_in,
+        ref=ref,
+        lb_rows=lb_rows,
+        model_name_override=single_name,
+        selected_member_index=m_idx,
+        selected_member_label=m_lbl,
+    )
+    return {
+        "status": "scored",
+        "member_index": m_idx,
+        "member_label": m_lbl,
+        "entry": entry,
+    }
 
 
 @app.post("/api/preview/inspect")
@@ -1114,6 +1282,13 @@ async def score_preview(request: Request, payload: ScorePreviewRequest) -> dict[
     """Run canonical metric evaluation for a staged token and purge ephemeral temp files."""
     RATE_LIMITER.check_and_record(_client_ip(request))
     return await asyncio.to_thread(_score_and_cleanup_sync, payload)
+
+
+@app.post("/api/preview/score-member")
+async def score_preview_member(request: Request, payload: ScoreMemberRequest) -> dict[str, Any]:
+    """Score one additional individual ensemble member on demand (for ensembles > 10 members)."""
+    RATE_LIMITER.check_and_record(_client_ip(request))
+    return await asyncio.to_thread(_score_single_member_sync, payload)
 
 
 def _active_mips_root() -> Path:

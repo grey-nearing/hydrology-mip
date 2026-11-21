@@ -1127,6 +1127,67 @@
               </div>
               <p style="margin: 0 0 0.75rem; font-size: 0.83rem; color: var(--color-ink-2); line-height: 1.5;" id="step3-summary-note"></p>
               <div class="score-metrics-strip" id="step3-metrics-strip" style="grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));"></div>
+
+              <!-- Multi-member Ensemble Options (auto-shown only when >= 2 members detected) -->
+              <div id="step3-ensemble-panel" class="ensemble-options-card" hidden>
+                <div class="ensemble-options-head">
+                  <strong>Ensemble &amp; Single-Model Options</strong>
+                  <span class="contrib-step-tag" id="step3-ensemble-count-badge"></span>
+                </div>
+                <label class="checklist-label ensemble-optin-label">
+                  <input type="checkbox" id="chk-include-single-model" checked />
+                  <span id="lbl-include-single-model">Also submit a single-model row alongside the ensemble</span>
+                </label>
+                <p id="step3-ensemble-explanation" class="ensemble-explanation-text"></p>
+
+                <div id="step3-member-selector-wrap">
+                  <div class="ensemble-selector-prompt" id="step3-member-selector-prompt">
+                    Choose which single model to include on the leaderboard (all 14 Gauch et al., 2023 metrics shown for each scored member):
+                  </div>
+                  <div class="ensemble-members-table-wrap">
+                    <table class="ensemble-members-table" id="step3-members-table">
+                      <thead>
+                        <tr>
+                          <th class="sticky-col-radio" aria-label="Select"></th>
+                          <th class="sticky-col-name">Member</th>
+                          <th>Rank</th>
+                          <th>Med NSE</th>
+                          <th>Mean NSE</th>
+                          <th>Med KGE</th>
+                          <th>Mean KGE</th>
+                          <th>logNSE</th>
+                          <th>logKGE</th>
+                          <th>MSE</th>
+                          <th>RMSE</th>
+                          <th>&alpha;-NSE</th>
+                          <th>r</th>
+                          <th>&beta;-KGE</th>
+                          <th>&beta;-NSE</th>
+                          <th>FHV (%)</th>
+                          <th>FMS (%)</th>
+                          <th>FLV (%)</th>
+                          <th>Peak-T (d)</th>
+                          <th>NSE &le; 0</th>
+                        </tr>
+                      </thead>
+                      <tbody id="step3-members-tbody"></tbody>
+                    </table>
+                  </div>
+
+                  <div id="step3-extra-member-box" class="ensemble-extra-member-box" hidden>
+                    <p id="step3-extra-member-note" class="ensemble-extra-note"></p>
+                    <div class="ensemble-extra-controls">
+                      <label for="step3-extra-member-select" class="sr-only">Select additional ensemble member to score</label>
+                      <select id="step3-extra-member-select" class="filter-select" style="min-width: 190px;"></select>
+                      <button type="button" class="btn-secondary" id="btn-score-extra-member">
+                        Score Selected Member
+                      </button>
+                      <span id="step3-extra-member-status" class="ensemble-extra-status"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem;">
                 <button type="button" class="btn-primary-cta" id="btn-view-preview-on-lb">
                   View on Leaderboard Table &rarr;
