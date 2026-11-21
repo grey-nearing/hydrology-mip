@@ -171,53 +171,74 @@ REGIME_STYLES: dict[str, dict[str, Any]] = {
 # These are cosmetic only: any (panel, regime, year) key that is absent falls back to a
 # data-derived default offset, so a label is always placed for every frontier leader.
 INITIAL_LABEL_OFFSETS: dict[tuple[int, str, int], tuple[float, float]] = {
-    (0, "Single CAMELS Forcing", 2015): (10.0, -24.0),
-    (0, "Single CAMELS Forcing", 2017): (10.0, -26.0),
-    (0, "Single CAMELS Forcing", 2018): (12.0, -34.0),
-    (0, "Single CAMELS Forcing", 2019): (-150.0, 6.0),
-    (0, "Single CAMELS Forcing", 2021): (14.0, -24.0),
+    (0, "Single CAMELS Forcing", 2017): (6.0, 22.0),
+    (0, "Single CAMELS Forcing", 2018): (-68.0, 18.0),
+    (0, "Single CAMELS Forcing", 2019): (-74.0, 18.0),
+    (0, "Single CAMELS Forcing", 2021): (14.0, -36.0),
     (0, "Single CAMELS Forcing", 2025): (10.0, -24.0),
-    (0, "Multiple CAMELS Forcings", 2020): (14.0, -42.0),
-    (0, "Multiple CAMELS Forcings", 2021): (-155.0, 14.0),
-    (0, "Multiple CAMELS Forcings", 2025): (-125.0, -22.0),
-    (0, "Multiple CAMELS Forcings", 2026): (-200.0, -26.0),
-    (0, "With Lagged Streamflow", 2020): (-145.0, 16.0),
-    (0, "With Lagged Streamflow", 2022): (14.0, -10.0),
-    (0, "Freeform Forcings", 2021): (-105.0, -26.0),
-    (0, "Freeform Forcings", 2023): (10.0, -24.0),
-    (1, "Single CAMELS Forcing", 2017): (10.0, -24.0),
-    (1, "Single CAMELS Forcing", 2018): (12.0, 10.0),
-    (1, "Single CAMELS Forcing", 2019): (-68.0, -26.0),
-    (1, "Single CAMELS Forcing", 2020): (-155.0, -18.0),
-    (1, "Single CAMELS Forcing", 2022): (16.0, -34.0),
-    (1, "Single CAMELS Forcing", 2024): (14.0, 22.0),
-    (1, "Multiple CAMELS Forcings", 2019): (-55.0, 16.0),
-    (1, "Multiple CAMELS Forcings", 2020): (14.0, -26.0),
-    (1, "Multiple CAMELS Forcings", 2021): (-165.0, -24.0),
-    (1, "Multiple CAMELS Forcings", 2022): (-95.0, 14.0),
-    (1, "Multiple CAMELS Forcings", 2023): (-115.0, -28.0),
-    (1, "Multiple CAMELS Forcings", 2024): (-95.0, 14.0),
-    (1, "Multiple CAMELS Forcings", 2025): (-115.0, 14.0),
-    (1, "Multiple CAMELS Forcings", 2026): (-125.0, 12.0),
-    (1, "With Lagged Streamflow", 2020): (14.0, -8.0),
+    (0, "Multiple CAMELS Forcings", 2020): (-36.0, -48.0),
+    (0, "Multiple CAMELS Forcings", 2021): (-72.0, -10.0),
+    (0, "Multiple CAMELS Forcings", 2025): (-64.0, -20.0),
+    (0, "Multiple CAMELS Forcings", 2026): (-64.0, 12.0),
+    (0, "With Lagged Streamflow", 2020): (-82.0, 14.0),
+    (0, "With Lagged Streamflow", 2022): (-76.0, -4.0),
+    (0, "Freeform Forcings", 2021): (-64.0, -22.0),
+    (0, "Freeform Forcings", 2023): (10.0, -20.0),
+    (1, "Single CAMELS Forcing", 2017): (10.0, -22.0),
+    (1, "Single CAMELS Forcing", 2018): (12.0, 18.0),
+    (1, "Single CAMELS Forcing", 2019): (-68.0, -22.0),
+    (1, "Single CAMELS Forcing", 2020): (-26.0, -30.0),
+    (1, "Single CAMELS Forcing", 2022): (12.0, -32.0),
+    (1, "Single CAMELS Forcing", 2024): (12.0, -32.0),
+    (1, "Multiple CAMELS Forcings", 2019): (-55.0, 14.0),
+    (1, "Multiple CAMELS Forcings", 2020): (-82.0, -10.0),
+    (1, "Multiple CAMELS Forcings", 2021): (-74.0, -14.0),
+    (1, "Multiple CAMELS Forcings", 2022): (-72.0, 12.0),
+    (1, "Multiple CAMELS Forcings", 2023): (-72.0, -24.0),
+    (1, "Multiple CAMELS Forcings", 2024): (-72.0, 12.0),
+    (1, "Multiple CAMELS Forcings", 2025): (-72.0, 12.0),
+    (1, "Multiple CAMELS Forcings", 2026): (-64.0, 12.0),
+    (1, "With Lagged Streamflow", 2020): (-86.0, -4.0),
     (1, "Freeform Forcings", 2021): (10.0, 10.0),
-    (1, "Freeform Forcings", 2023): (10.0, -24.0),
-    (2, "Single CAMELS Forcing", 2019): (10.0, -26.0),
-    (2, "Single CAMELS Forcing", 2020): (-155.0, -16.0),
-    (2, "Single CAMELS Forcing", 2021): (-155.0, 6.0),
-    (2, "Single CAMELS Forcing", 2022): (-95.0, -26.0),
-    (2, "Single CAMELS Forcing", 2023): (-95.0, -28.0),
-    (2, "Single CAMELS Forcing", 2024): (14.0, -34.0),
-    (2, "Single CAMELS Forcing", 2025): (-110.0, -28.0),
+    (1, "Freeform Forcings", 2023): (10.0, -20.0),
+    (2, "Single CAMELS Forcing", 2019): (10.0, -22.0),
+    (2, "Single CAMELS Forcing", 2020): (-26.0, -30.0),
+    (2, "Single CAMELS Forcing", 2021): (14.0, -38.0),
+    (2, "Single CAMELS Forcing", 2022): (-72.0, -22.0),
+    (2, "Single CAMELS Forcing", 2023): (-72.0, -24.0),
+    (2, "Single CAMELS Forcing", 2024): (12.0, -34.0),
+    (2, "Single CAMELS Forcing", 2025): (-72.0, -24.0),
     (2, "Multiple CAMELS Forcings", 2019): (10.0, 8.0),
-    (2, "Multiple CAMELS Forcings", 2020): (16.0, -16.0),
-    (2, "Multiple CAMELS Forcings", 2021): (-155.0, 16.0),
-    (2, "Multiple CAMELS Forcings", 2022): (-95.0, 12.0),
-    (2, "Multiple CAMELS Forcings", 2024): (-105.0, 10.0),
-    (2, "Multiple CAMELS Forcings", 2025): (-115.0, 14.0),
-    (2, "Multiple CAMELS Forcings", 2026): (-190.0, 14.0),
-    (2, "With Lagged Streamflow", 2020): (14.0, -16.0),
-    (2, "Freeform Forcings", 2023): (10.0, -24.0),
+    (2, "Multiple CAMELS Forcings", 2020): (-84.0, 2.0),
+    (2, "Multiple CAMELS Forcings", 2021): (-78.0, -4.0),
+    (2, "Multiple CAMELS Forcings", 2022): (-72.0, 12.0),
+    (2, "Multiple CAMELS Forcings", 2024): (-72.0, 10.0),
+    (2, "Multiple CAMELS Forcings", 2025): (-72.0, 12.0),
+    (2, "Multiple CAMELS Forcings", 2026): (-68.0, 12.0),
+    (2, "With Lagged Streamflow", 2020): (-88.0, -4.0),
+    (2, "Freeform Forcings", 2023): (10.0, -20.0),
+}
+
+#: Compact single-line pill labels `<short model> (<Table 3 row #>)` for Figure 2.
+TABLE_3_COMPACT_PILL_BY_FAMILY: dict[str, str] = {
+    "nearing2022_ar_da_lstm": "AR-LSTM (1)",
+    "feng2020_di_lstm": "DI(1)-LSTM (3)",
+    "feng2020_di_lstm_lit": "DI(1)-LSTM (3)",
+    "era_lstm_seeded": "ERA (4)",
+    "kratzert2019b_lstm": "LSTM (9)",
+    "kratzert2019a_pub_lstm": "LSTM (9)",
+    "kratzert_lstm": "LSTM (10)",
+    "kratzert2021_lstm_archive": "LSTM (11)",
+    "shahriar2026_mamba3": "Mamba (16)",
+    "yin2022_rrformer": "RR-Former (17)",
+    "feng_dhbv10": "δHBV 1.0 (23)",
+    "song_dhbv11p": "δHBV 1.1p (24)",
+    "fuse_suite": "FUSE* (26)",
+    "seibert_hbv": "HBV-light (27)",
+    "nearing_sacsma": "SAC-SMA (29)",
+    "newman_sacsma": "SAC-SMA (29)",
+    "mizukami_vic_mpr": "VIC (31)",
+    "newman_vic": "VIC (31)",
 }
 
 
@@ -560,6 +581,19 @@ def format_leader_label(row: dict[str, Any], year: int) -> str:
     return f"{short_model}\n({author_tag}: {nse_str})"
 
 
+def format_figure2_pill_label(row: dict[str, Any]) -> str:
+    """Format a compact single-line Figure 2 pill label `<short model> (<Table 3 row #>)`."""
+    fid = str(row.get("family_id") or "").strip().lower()
+    if fid in TABLE_3_COMPACT_PILL_BY_FAMILY:
+        return TABLE_3_COMPACT_PILL_BY_FAMILY[fid]
+    if fid.startswith("era_"):
+        return "ERA (4)"
+    raw_name = str(row.get("model_name") or "").strip()
+    short = re.sub(r"\s*\([^)]*\)\s*", " ", raw_name).strip()
+    short = re.sub(r"\s+", " ", short) or raw_name or fid or "Model"
+    return short[:24]
+
+
 def partition_panel_rows(
     all_leaderboards: dict[str, Any],
     spatial_regime: str,
@@ -612,15 +646,18 @@ def partition_panel_rows(
                 or is_partial_or_nonstandard
                 or str(row.get("family_id", "")).lower() == "naive_lag1_persistence"
             )
+            pill_label = format_figure2_pill_label(row)
             points.append(
                 {
                     "entry_id": str(row.get("entry_id", "")),
+                    "family_id": str(row.get("family_id", "")),
                     "leaderboard_id": lbid,
                     "year": year,
                     "nse": nse_val,
                     "model_category": mcat,
                     "input_regime": regime_label,
                     "label": label,
+                    "pill_label": pill_label,
                     "model_name": str(row.get("model_name", "")),
                     "exclude_frontier": exclude_frontier,
                     "category": row_source_category(row),
@@ -715,14 +752,16 @@ def _optimize_annotations(
     point_coords_disp: list[tuple[float, float]],
     pad_px: float = 6.0,
     n_iter: int = 80,
+    step_segments_disp: list[tuple[tuple[float, float], tuple[float, float]]] | None = None,
 ) -> None:
-    """Resolve annotation-annotation and annotation-border overlaps deterministically."""
+    """Resolve annotation-annotation, annotation-marker, annotation-step-line, and border overlaps."""
     if not annotations:
         return
     px_per_pt = fig.dpi / 72.0
     fig.canvas.draw()
     renderer = fig.canvas.get_renderer()
     ax_bbox = ax.get_window_extent(renderer)
+    segments = list(step_segments_disp or [])
 
     for it in range(n_iter):
         moved = False
@@ -754,7 +793,7 @@ def _optimize_annotations(
                     annotations[j].set_position((x2 - shift_x_pt, y2 - shift_y_pt))
                     moved = True
 
-        marker_pad = 14.0
+        marker_pad = 10.0
         for i, b in enumerate(bboxes):
             for px, py in point_coords_disp:
                 if (b.x0 - marker_pad <= px <= b.x1 + marker_pad) and (
@@ -767,10 +806,35 @@ def _optimize_annotations(
                     annotations[i].set_position((x1 + 1.5 * dx, y1 + 3.0 * dy))
                     moved = True
 
+        seg_pad = 5.0
+        for i, b in enumerate(bboxes):
+            cx, cy = 0.5 * (b.x0 + b.x1), 0.5 * (b.y0 + b.y1)
+            for (sx1, sy1), (sx2, sy2) in segments:
+                if abs(sy1 - sy2) <= 1.0:
+                    xlo, xhi = min(sx1, sx2), max(sx1, sx2)
+                    sy = 0.5 * (sy1 + sy2)
+                    if (b.x1 + seg_pad >= xlo and b.x0 - seg_pad <= xhi) and (
+                        b.y0 - seg_pad <= sy <= b.y1 + seg_pad
+                    ):
+                        dy = 1.0 if cy >= sy else -1.0
+                        x_pos, y_pos = annotations[i].get_position()
+                        annotations[i].set_position((x_pos, y_pos + 3.5 * dy))
+                        moved = True
+                elif abs(sx1 - sx2) <= 1.0:
+                    ylo, yhi = min(sy1, sy2), max(sy1, sy2)
+                    sx = 0.5 * (sx1 + sx2)
+                    if (b.y1 + seg_pad >= ylo and b.y0 - seg_pad <= yhi) and (
+                        b.x0 - seg_pad <= sx <= b.x1 + seg_pad
+                    ):
+                        dx = 1.0 if cx >= sx else -1.0
+                        x_pos, y_pos = annotations[i].get_position()
+                        annotations[i].set_position((x_pos + 3.5 * dx, y_pos))
+                        moved = True
+
         for i, b in enumerate(bboxes):
             x1, y1 = annotations[i].get_position()
             dx_pt, dy_pt = 0.0, 0.0
-            margin = 10.0
+            margin = 8.0
             if b.x0 < ax_bbox.x0 + margin:
                 dx_pt = (ax_bbox.x0 + margin - b.x0) / px_per_pt
             elif b.x1 > ax_bbox.x1 - margin:
@@ -1154,6 +1218,8 @@ def _plot_subpanel(
     panel_leaders: list[dict[str, Any]] = []
     annotations: list[Any] = []
     leader_coords: list[tuple[float, float]] = []
+    all_coords: list[tuple[float, float]] = []
+    step_segments_data: list[tuple[tuple[float, float], tuple[float, float]]] = []
     n_drawn = 0
 
     for regime, rstyle in REGIME_STYLES.items():
@@ -1162,6 +1228,7 @@ def _plot_subpanel(
             continue
 
         for pt in non_leaders:
+            all_coords.append((float(pt["year"]), float(pt["nse"])))
             if pt.get("entry_id") == "t3_43":
                 x_pt, y_pt = float(pt["year"]), float(pt["nse"])
                 c_pt = MODEL_CATEGORY_COLORS[pt["model_category"]]
@@ -1196,6 +1263,7 @@ def _plot_subpanel(
                     alpha=0.92,
                     zorder=rstyle["zorder_base"],
                 )
+                step_segments_data.append(((yr_curr, nse_curr), (yr_next, nse_curr)))
                 if i + 1 < len(leaders):
                     nse_next = float(leaders[i + 1]["nse"])
                     mcat_next = leaders[i + 1]["model_category"]
@@ -1208,20 +1276,22 @@ def _plot_subpanel(
                         alpha=0.85,
                         zorder=rstyle["zorder_base"],
                     )
+                    step_segments_data.append(((yr_next, nse_curr), (yr_next, nse_next)))
 
             for ldr in leaders:
                 yr = int(ldr["year"])
                 nse = float(ldr["nse"])
                 mcat = ldr["model_category"]
-                label = str(ldr["label"])
+                label = str(ldr.get("pill_label") or format_figure2_pill_label(ldr))
                 panel_leaders.append(ldr)
                 leader_coords.append((float(yr), nse))
+                all_coords.append((float(yr), nse))
                 _draw_point(ax, ldr, rstyle, is_leader=True)
                 n_drawn += 1
                 dx, dy = INITIAL_LABEL_OFFSETS.get(
                     (panel_idx, regime, yr),
                     (
-                        -95.0 if yr >= label_left_from_year else 10.0,
+                        -75.0 if yr >= label_left_from_year else 10.0,
                         12.0 if nse < y_mid else -24.0,
                     ),
                 )
@@ -1230,21 +1300,21 @@ def _plot_subpanel(
                     xy=(yr, nse),
                     xytext=(dx, dy),
                     textcoords="offset points",
-                    fontsize=8.1,
+                    fontsize=7.7,
                     fontweight="bold",
                     color="#0F172A",
                     bbox={
-                        "boxstyle": "round,pad=0.26",
+                        "boxstyle": "round,pad=0.22",
                         "facecolor": "white",
                         "edgecolor": MODEL_CATEGORY_COLORS[mcat],
-                        "linewidth": 1.3,
-                        "alpha": 0.95,
+                        "linewidth": 1.2,
+                        "alpha": 0.96,
                     },
                     arrowprops={
                         "arrowstyle": "->",
-                        "connectionstyle": "arc3,rad=0.08",
+                        "connectionstyle": "arc3,rad=0.06",
                         "color": MODEL_CATEGORY_COLORS[mcat],
-                        "linewidth": 1.1,
+                        "linewidth": 1.0,
                     },
                     zorder=rstyle["zorder_base"] + 5,
                 )
@@ -1289,24 +1359,24 @@ def _plot_subpanel(
             yr_pt, nse_pt = float(pt["year"]), float(pt["nse"])
             mcat_pt = pt["model_category"]
             f_ann = ax.annotate(
-                f"FUSE (902)* (479/531)\n(Addor 2017: {nse_pt:.3f}*)",
+                str(pt.get("pill_label") or format_figure2_pill_label(pt)),
                 xy=(yr_pt, nse_pt),
-                xytext=(12.0, -34.0),
+                xytext=(8.0, -34.0),
                 textcoords="offset points",
-                fontsize=7.9,
+                fontsize=7.7,
                 fontweight="bold",
                 color="#0F172A",
                 bbox={
-                    "boxstyle": "round,pad=0.24",
+                    "boxstyle": "round,pad=0.22",
                     "facecolor": "white",
                     "edgecolor": MODEL_CATEGORY_COLORS[mcat_pt],
                     "linewidth": 1.1,
                     "linestyle": "--",
-                    "alpha": 0.95,
+                    "alpha": 0.96,
                 },
                 arrowprops={
                     "arrowstyle": "->",
-                    "connectionstyle": "arc3,rad=0.08",
+                    "connectionstyle": "arc3,rad=0.06",
                     "color": MODEL_CATEGORY_COLORS[mcat_pt],
                     "linewidth": 1.0,
                 },
@@ -1321,6 +1391,8 @@ def _plot_subpanel(
         "extra_annotations": extra_annotations,
         "extra_coords": extra_coords,
         "leader_coords": leader_coords,
+        "all_coords": all_coords,
+        "step_segments_data": step_segments_data,
         "n_drawn": n_drawn,
         "ylim": ylim,
         "xlim": xlim,
@@ -1422,7 +1494,7 @@ def generate_figure_2_leaderboard_progress(
     }
     panel_order = ("gauged", "pub", "pur")
 
-    fig, axes = plt.subplots(3, 1, figsize=(12.2, 12.6), dpi=300, sharex=True)
+    fig, axes = plt.subplots(3, 1, figsize=(10.2, 11.8), dpi=300, sharex=True)
     fig.patch.set_facecolor("white")
 
     panel_results: dict[str, dict[str, Any]] = {}
@@ -1460,36 +1532,54 @@ def generate_figure_2_leaderboard_progress(
         frameon=True,
         facecolor="#F8FAFC",
         edgecolor="#CBD5E1",
-        fontsize=8.2,
+        fontsize=7.3,
+        columnspacing=0.9,
+        handletextpad=0.35,
         title=_CATEGORY_LEGEND_TITLE,
-        title_fontsize=9.5,
+        title_fontsize=9.0,
     )
     leg1.get_title().set_fontweight("bold")
 
     leg2 = fig.legend(
         handles=regime_handles,
         loc="upper center",
-        bbox_to_anchor=(0.5, 0.936),
+        bbox_to_anchor=(0.5, 0.935),
         ncol=max(1, len(regime_handles)),
         frameon=True,
         facecolor="#F8FAFC",
         edgecolor="#CBD5E1",
-        fontsize=9.3,
+        fontsize=8.6,
+        columnspacing=1.2,
         title=_REGIME_LEGEND_TITLE,
-        title_fontsize=9.5,
+        title_fontsize=9.0,
     )
     leg2.get_title().set_fontweight("bold")
     fig.add_artist(leg1)
 
-    plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.880])
+    plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.878])
     fig.canvas.draw()
     for p_idx, spatial in enumerate(panel_order):
         res = panel_results[spatial]
         all_anns = list(res["annotations"]) + list(res.get("extra_annotations", []))
-        all_pts = list(res["leader_coords"]) + list(res.get("extra_coords", []))
+        all_pts = list(res.get("all_coords") or res["leader_coords"]) + list(
+            res.get("extra_coords", [])
+        )
         disp_coords = [axes[p_idx].transData.transform(pt) for pt in all_pts]
+        segs_disp = [
+            (
+                tuple(axes[p_idx].transData.transform(p1)),
+                tuple(axes[p_idx].transData.transform(p2)),
+            )
+            for p1, p2 in res.get("step_segments_data", [])
+        ]
         _optimize_annotations(
-            fig, axes[p_idx], all_anns, disp_coords, pad_px=6.0, n_iter=70
+            fig,
+            axes[p_idx],
+            all_anns,
+            disp_coords,
+            pad_px=6.0,
+            n_iter=80,
+            step_segments_disp=segs_disp,
         )
 
     fig2_png = out_dir / "figure_2_leaderboard_progress_all_regimes.png"
@@ -1559,9 +1649,26 @@ def generate_figure_2_leaderboard_progress(
         plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.78])
         s_fig.canvas.draw()
         s_anns = list(s_res["annotations"]) + list(s_res.get("extra_annotations", []))
-        s_pts = list(s_res["leader_coords"]) + list(s_res.get("extra_coords", []))
+        s_pts = list(s_res.get("all_coords") or s_res["leader_coords"]) + list(
+            s_res.get("extra_coords", [])
+        )
         s_disp = [s_ax.transData.transform(pt) for pt in s_pts]
-        _optimize_annotations(s_fig, s_ax, s_anns, s_disp, pad_px=6.0, n_iter=70)
+        s_segs = [
+            (
+                tuple(s_ax.transData.transform(p1)),
+                tuple(s_ax.transData.transform(p2)),
+            )
+            for p1, p2 in s_res.get("step_segments_data", [])
+        ]
+        _optimize_annotations(
+            s_fig,
+            s_ax,
+            s_anns,
+            s_disp,
+            pad_px=6.0,
+            n_iter=80,
+            step_segments_disp=s_segs,
+        )
         s_fig.savefig(single_paths[spatial], dpi=300, metadata=PNG_SAVE_METADATA)
         plt.close(s_fig)
 
@@ -1629,8 +1736,26 @@ def generate_figure_2_leaderboard_progress(
             t_leg.get_title().set_fontweight("bold")
             plt.tight_layout(rect=[0.0, 0.0, 1.0, 0.86])
             t_fig.canvas.draw()
-            t_disp = [t_ax.transData.transform(pt) for pt in t_res["leader_coords"]]
-            _optimize_annotations(t_fig, t_ax, t_res["annotations"], t_disp, pad_px=5.0, n_iter=25)
+            t_pts = list(t_res.get("all_coords") or t_res["leader_coords"]) + list(
+                t_res.get("extra_coords", [])
+            )
+            t_disp = [t_ax.transData.transform(pt) for pt in t_pts]
+            t_segs = [
+                (
+                    tuple(t_ax.transData.transform(p1)),
+                    tuple(t_ax.transData.transform(p2)),
+                )
+                for p1, p2 in t_res.get("step_segments_data", [])
+            ]
+            _optimize_annotations(
+                t_fig,
+                t_ax,
+                list(t_res["annotations"]) + list(t_res.get("extra_annotations", [])),
+                t_disp,
+                pad_px=5.0,
+                n_iter=40,
+                step_segments_disp=t_segs,
+            )
         else:
             t_ax.set_facecolor("#F8FAFC")
             t_ax.set_xlim(2014.4, 2026.8)
