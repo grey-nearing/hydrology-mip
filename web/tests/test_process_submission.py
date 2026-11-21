@@ -366,3 +366,33 @@ def test_process_submission_zarr_targets_explicit_entry_id_and_ensemble_single_p
     assert refresh_registry_counts(mip_copy / "leaderboards") is False
     hm = build_hydrograph_manifest(leaderboards_dir=mip_copy / "leaderboards", updated_utc="2026-01-01T00:00:00Z")
     assert any(s["store_name"] == "custom_multiseed_model.zarr" for s in hm["stores"])
+
+    # Submit a second model into the same existing family (like portal dropdown reuse without new_family_name)
+    manifest_reuse = {
+        **_manifest_payload(
+            model_name="Multi-Seed Community PUB Follow-Up",
+            archive_url=ens_zip.as_uri(),
+            code_url="https://github.com/example/multiseed",
+        ),
+        "leaderboard_id": "pub__multi_camels",
+        "entry_id": "custom_multiseed_pub",
+        "family_id": "custom_multiseed_fam",
+        "new_family_name": None,
+    }
+    manifest_reuse_path = tmp_path / "ens_reuse_manifest.json"
+    manifest_reuse_path.write_text(json.dumps(manifest_reuse), encoding="utf-8")
+    res_reuse = process_submission.process_submission(
+        manifest_path=manifest_reuse_path,
+        mip_dir=mip_copy,
+        out_zarr_dir=tmp_path / "staged_zarr",
+        summary_md_path=tmp_path / "ens_reuse_summary.md",
+        qobs_npz_path=None,
+        dry_run=False,
+        update_figures=False,
+    )
+    assert res_reuse["entry"]["family_id"] == "custom_multiseed_fam"
+    assert res_reuse["entry"]["family_name"] == "Multi-Seed Community Family"
+    reg_after = json.loads((mip_copy / "leaderboards" / "table_2_registry.json").read_text(encoding="utf-8"))
+    fam_entries = [f for f in reg_after["families"] if f["family_id"] == "custom_multiseed_fam"]
+    assert len(fam_entries) == 1
+    assert set(fam_entries[0]["leaderboards_covered"]) == {"gauged__multi_camels", "pub__multi_camels"}

@@ -586,7 +586,8 @@ def format_figure2_pill_label(row: dict[str, Any]) -> str:
     fid = str(row.get("family_id") or "").strip().lower()
     if fid in TABLE_3_COMPACT_PILL_BY_FAMILY:
         return TABLE_3_COMPACT_PILL_BY_FAMILY[fid]
-    if fid.startswith("era_"):
+    fam_name = str(row.get("family_name") or "").strip().lower()
+    if fid.startswith(("era_", "contrib_era_")) or "empirical research assistance" in fam_name:
         return "ERA (4)"
     raw_name = str(row.get("model_name") or "").strip()
     short = re.sub(r"\s*\([^)]*\)\s*", " ", raw_name).strip()

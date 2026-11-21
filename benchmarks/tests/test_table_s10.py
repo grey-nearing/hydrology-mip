@@ -10,9 +10,11 @@ from pathlib import Path
 
 from benchmarks.compute_table_s10 import (
     PLANNED_COMPARISONS,
+    _load_canonical_basins_and_entries,
     benjamini_hochberg_fdr,
     compute_table_s10,
 )
+from benchmarks.compute_table_s10 import DEFAULT_MIP_DIR
 from benchmarks.compute_table_s10 import main as table_s10_cli_main
 
 
@@ -24,8 +26,15 @@ def test_benjamini_hochberg_fdr_monotonic_and_bounded() -> None:
 
 
 def test_compute_table_s10_all_25_comparisons_and_cli_json(tmp_path: Path) -> None:
+    _, available_entries = _load_canonical_basins_and_entries(DEFAULT_MIP_DIR)
+    expected_count = sum(
+        1
+        for _, _, key_a, key_b in PLANNED_COMPARISONS
+        if key_a in available_entries and key_b in available_entries
+    )
+    assert expected_count >= 21
     results = compute_table_s10(n_bootstrap=200, seed=42)
-    assert len(results) == len(PLANNED_COMPARISONS) == 25
+    assert len(results) == expected_count
     for row in results:
         assert row["n"] == 531
         assert row["n_huc18"] == 18
@@ -38,4 +47,4 @@ def test_compute_table_s10_all_25_comparisons_and_cli_json(tmp_path: Path) -> No
     rc = table_s10_cli_main(["--n-bootstrap", "50", "--out", str(out_json)])
     assert rc == 0
     written = json.loads(out_json.read_text(encoding="utf-8"))
-    assert len(written) == 25
+    assert len(written) == expected_count

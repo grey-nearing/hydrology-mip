@@ -459,6 +459,14 @@ def process_submission(
             )
 
     lb_dir = mip_dir / "leaderboards"
+    reg_path = lb_dir / "table_2_registry.json"
+    existing_fams_by_id: dict[str, dict[str, Any]] = {}
+    if reg_path.is_file():
+        reg_doc = json.loads(reg_path.read_text(encoding="utf-8"))
+        existing_fams_by_id = {
+            str(f.get("family_id", "")): f for f in reg_doc.get("families", []) if f.get("family_id")
+        }
+
     lb_file = lb_dir / f"{leaderboard_id}.json"
     lb_rows: list[dict[str, Any]] = []
     if lb_file.is_file():
@@ -486,8 +494,12 @@ def process_submission(
             sota_row.get("per_basin_kge") if sota_row else None,
         )
         family_id = str(manifest.get("family_id") or f"contrib_{entry_id}").strip()
+        existing_fam = existing_fams_by_id.get(family_id) or {}
         family_name = str(
-            manifest.get("family_name") or manifest.get("new_family_name") or model_name
+            manifest.get("family_name")
+            or manifest.get("new_family_name")
+            or existing_fam.get("name")
+            or model_name
         ).strip()
         category = str(manifest.get("category") or "Contribution").strip()
         num_mem = int(row_metrics.get("num_members") or 1)
@@ -553,14 +565,8 @@ def process_submission(
     )
 
     if not dry_run:
-        reg_path = lb_dir / "table_2_registry.json"
-        existing_fams: set[str] = set()
-        if reg_path.is_file():
-            reg_doc = json.loads(reg_path.read_text(encoding="utf-8"))
-            existing_fams = {str(f.get("family_id", "")) for f in reg_doc.get("families", [])}
-
         family_record: dict[str, Any] | None = None
-        if primary_entry["family_id"] not in existing_fams:
+        if primary_entry["family_id"] not in existing_fams_by_id:
             row_for_classify = {
                 **primary_entry,
                 "code_provenance": default_code_provenance(primary_entry),

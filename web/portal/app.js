@@ -6390,10 +6390,19 @@
         const fid = e.target.value;
         const fam = STATE.families.find((f) => f.family_id === fid);
         if (fam) {
-          document.getElementById("sub-github-url").value = fam.github_url || "";
-          if (fam.github_url) setClosedSourceSelection(false);
-          document.getElementById("sub-zenodo-doi").value = fam.zenodo_doi || fam.zenodo_url || "";
-          document.getElementById("sub-citation").value = fam.citation || "";
+          const ghEl = document.getElementById("sub-github-url");
+          const doiEl = document.getElementById("sub-zenodo-doi");
+          const citEl = document.getElementById("sub-citation");
+          if (ghEl && !ghEl.value.trim() && fam.github_url) {
+            ghEl.value = fam.github_url;
+            setClosedSourceSelection(false);
+          }
+          if (doiEl && !doiEl.value.trim() && (fam.zenodo_doi || fam.zenodo_url)) {
+            doiEl.value = fam.zenodo_doi || fam.zenodo_url;
+          }
+          if (citEl && !citEl.value.trim() && fam.citation) {
+            citEl.value = fam.citation;
+          }
           updateLiveRepoBadgePreview();
         }
       });
@@ -6401,7 +6410,18 @@
 
     ["sub-github-url", "sub-zenodo-doi"].forEach((id) => {
       const el = document.getElementById(id);
-      if (el) el.addEventListener("input", updateLiveRepoBadgePreview);
+      if (el) {
+        el.addEventListener("input", () => {
+          if (id === "sub-zenodo-doi") {
+            const s4Arch = document.getElementById("step4-archive-url");
+            if (s4Arch) s4Arch.value = el.value.trim();
+          } else if (id === "sub-github-url") {
+            const s4Code = document.getElementById("step4-code-url");
+            if (s4Code) s4Code.value = el.value.trim();
+          }
+          updateLiveRepoBadgePreview();
+        });
+      }
     });
 
     ["sub-closed-source", "step4-closed-source"].forEach((id) => {

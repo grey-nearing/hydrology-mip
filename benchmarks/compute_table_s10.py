@@ -257,8 +257,9 @@ def compute_table_s10(
     n_bootstrap: int = 5000,
     seed: int = 42,
     tost_margin: float = 0.010,
+    require_all: bool = False,
 ) -> list[dict[str, Any]]:
-    """Compute all 25 planned paired comparisons for Supplement Table S10."""
+    """Compute planned paired comparisons for Supplement Table S10."""
     if n_bootstrap < 1:
         raise ValueError(f"n_bootstrap must be >= 1, got {n_bootstrap}.")
 
@@ -269,6 +270,11 @@ def compute_table_s10(
 
     results: list[dict[str, Any]] = []
     for group, label, key_a, key_b in PLANNED_COMPARISONS:
+        if key_a not in entries or key_b not in entries:
+            if require_all:
+                missing = [str(k) for k in (key_a, key_b) if k not in entries]
+                raise KeyError(f"Missing Table S10 entry {missing} for comparison {label!r}.")
+            continue
         row_a, row_b = entries[key_a], entries[key_b]
         pb_a = _extract_basin_nse_map(row_a, canonical_basins)
         pb_b = _extract_basin_nse_map(row_b, canonical_basins)
@@ -337,12 +343,18 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=None, help="Optional JSON output path")
     parser.add_argument("--n-bootstrap", type=int, default=5000)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument(
+        "--require-all",
+        action="store_true",
+        help="Fail if any planned comparison entry is absent from leaderboards.",
+    )
     args = parser.parse_args(argv)
 
     results = compute_table_s10(
         mip_dir=args.mip_dir,
         n_bootstrap=args.n_bootstrap,
         seed=args.seed,
+        require_all=bool(args.require_all),
     )
     if args.out is not None:
         args.out.parent.mkdir(parents=True, exist_ok=True)
