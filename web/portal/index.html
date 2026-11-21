@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=20261120_v1" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261121_form" />
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -249,7 +249,7 @@
       </div>
 
       <p style="margin-top: 1.15rem; font-size: 0.86rem; color: var(--color-ink-2);">
-        Want to propose a new benchmark track or discuss protocol standards? Join the <a href="https://github.com/grey-nearing/hydrology-mip/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions &#8599;</a> forum.
+        Want to propose a new MIP or discuss protocol standards? Join the <a href="https://github.com/grey-nearing/hydrology-mip/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions &#8599;</a> forum.
       </p>
 
       <div style="margin-top: 2.25rem;">
@@ -886,136 +886,150 @@
                 <span class="contrib-step-tag">Step 1 of 4</span>
               </div>
 
-              <div class="form-field full-width" style="margin-bottom: 0.9rem;">
-                <label class="field-label" for="sub-file-input">Hydrograph File (<code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.tsv</code>, <code>.parquet</code>, <code>.npz</code>) &mdash; <code>.pkl</code> rejected for security</label>
-                <div class="upload-dropzone" id="sub-dropzone" tabindex="0" role="button" aria-label="Drop or choose prediction file">
-                  <div class="dropzone-title">
-                    Drag &amp; drop a prediction file here, or <strong style="color: var(--color-accent);">browse files</strong>
+              <!-- Section 1: Prediction Data -->
+              <div class="contrib-fieldset">
+                <div class="contrib-fieldset-title">Prediction Data</div>
+                <div class="form-field full-width" style="margin-bottom: 0.75rem;">
+                  <label class="field-label" for="sub-file-input">Hydrograph File (<code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.tsv</code>, <code>.parquet</code>, <code>.npz</code>) &mdash; <code>.pkl</code> rejected for security</label>
+                  <div class="upload-dropzone" id="sub-dropzone" tabindex="0" role="button" aria-label="Drop or choose prediction file">
+                    <div class="dropzone-title">
+                      Drag &amp; drop a prediction file here, or <strong style="color: var(--color-accent);">browse files</strong>
+                    </div>
+                    <div style="font-size: 0.74rem; color: var(--color-muted); margin-top: 0.2rem;">
+                      Accepted: <code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.tsv</code>, <code>.parquet</code>, <code>.npz</code> (<code>.pkl</code> / pickle files are blocked)
+                    </div>
+                    <input type="file" id="sub-file-input" accept=".nc,.nc4,.zip,.csv,.tsv,.parquet,.npz" hidden />
                   </div>
-                  <div style="font-size: 0.74rem; color: var(--color-muted); margin-top: 0.2rem;">
-                    Accepted: <code>.nc</code>, <code>.zarr.zip</code>, <code>.csv</code>, <code>.tsv</code>, <code>.parquet</code>, <code>.npz</code> (<code>.pkl</code> / pickle files are blocked)
+                  <div class="selected-file-bar" id="sub-selected-file-bar" hidden>
+                    <span id="sub-selected-file-label"></span>
+                    <button type="button" class="btn-row-link" id="btn-clear-selected-file">Remove</button>
                   </div>
-                  <input type="file" id="sub-file-input" accept=".nc,.nc4,.zip,.csv,.tsv,.parquet,.npz" hidden />
                 </div>
-                <div class="selected-file-bar" id="sub-selected-file-bar" hidden>
-                  <span id="sub-selected-file-label"></span>
-                  <button type="button" class="btn-row-link" id="btn-clear-selected-file">Remove</button>
+
+                <div class="form-field full-width">
+                  <label for="sub-zenodo-doi">Permanent Archive DOI / URL (Zenodo or HydroShare) &mdash; optional for local preview, required to publish</label>
+                  <input type="text" id="sub-zenodo-doi" placeholder="10.5281/zenodo.XXXXXXX or https://www.hydroshare.org/resource/..." />
                 </div>
               </div>
 
-              <div class="form-grid" style="margin-bottom: 0.9rem;">
-                <div class="form-field full-width">
-                  <label for="sub-zenodo-doi">Permanent Archive DOI / URL (Zenodo or HydroShare) &mdash; optional for file inspection, required for Step 4 PR</label>
-                  <input type="text" id="sub-zenodo-doi" placeholder="10.5281/zenodo.XXXXXXX or https://www.hydroshare.org/resource/..." />
+              <!-- Section 2: Benchmark & Experiment -->
+              <div class="contrib-fieldset">
+                <div class="contrib-fieldset-title">Benchmark &amp; Experiment</div>
+                <div class="form-grid">
+                  <div class="form-field full-width">
+                    <label for="sub-mip-benchmark">Benchmark (MIP) *</label>
+                    <select id="sub-mip-benchmark" required>
+                      <option value="camels_us" selected>CAMELS-US Daily Deterministic (531 basins)</option>
+                    </select>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="sub-spatial-regime">Spatial Regime *</label>
+                    <select id="sub-spatial-regime" required>
+                      <option value="gauged">Gauged Simulation</option>
+                      <option value="pub">12-Fold PUB (Ungauged Basins)</option>
+                      <option value="pur">18-Fold HUC-02 PUR (Ungauged Regions)</option>
+                    </select>
+                    <input type="hidden" id="sub-leaderboard-id" value="gauged__single_camels" />
+                  </div>
+
+                  <div class="form-field">
+                    <label for="sub-forcing">Forcing Inputs *</label>
+                    <select id="sub-forcing" required>
+                      <optgroup label="Single CAMELS Forcing">
+                        <option value="Daymet" selected>Daymet</option>
+                        <option value="Maurer">Maurer</option>
+                        <option value="NLDAS">NLDAS</option>
+                      </optgroup>
+                      <optgroup label="Multiple CAMELS Forcings">
+                        <option value="Daymet + Maurer">Daymet + Maurer</option>
+                        <option value="Daymet + NLDAS">Daymet + NLDAS</option>
+                        <option value="Maurer + NLDAS">Maurer + NLDAS</option>
+                        <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
+                      </optgroup>
+                      <optgroup label="With Lagged Streamflow">
+                        <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
+                        <option value="Maurer + Lagged Streamflow">Maurer + Lagged Streamflow</option>
+                        <option value="NLDAS + Lagged Streamflow">NLDAS + Lagged Streamflow</option>
+                        <option value="Daymet + Maurer + Lagged Streamflow">Daymet + Maurer + Lagged Streamflow</option>
+                        <option value="Daymet + NLDAS + Lagged Streamflow">Daymet + NLDAS + Lagged Streamflow</option>
+                        <option value="Maurer + NLDAS + Lagged Streamflow">Maurer + NLDAS + Lagged Streamflow</option>
+                        <option value="Daymet + Maurer + NLDAS + Lagged Streamflow">Daymet + Maurer + NLDAS + Lagged Streamflow</option>
+                      </optgroup>
+                      <optgroup label="Freeform (Non-CAMELS / External)">
+                        <option value="Freeform (None of the above)">Freeform (None of the above)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 3: Model Identity -->
+              <div class="contrib-fieldset">
+                <div class="contrib-fieldset-title">Model Details</div>
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label for="sub-model-name">Model Name *</label>
+                    <input type="text" id="sub-model-name" placeholder="e.g., HydroTransformer (10-seed)" required />
+                  </div>
+
+                  <div class="form-field">
+                    <label for="sub-paradigm">Category *</label>
+                    <select id="sub-paradigm" required>
+                      <option value="Machine learning">Machine learning</option>
+                      <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
+                      <option value="Conceptual">Conceptual</option>
+                      <option value="Process-based">Process-based</option>
+                      <option value="Statistical">Statistical</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div class="form-field full-width">
+                    <label for="sub-ensemble-info">Ensemble / Seed Info</label>
+                    <input type="text" id="sub-ensemble-info" placeholder="e.g., 10-seed ensemble or single seed (seed=42)" />
+                  </div>
+
+                  <!-- Grouped Model Family selector + New Family Name -->
+                  <div class="form-subgroup full-width">
+                    <div class="form-subgroup-head">Model Family</div>
+                    <div class="form-grid">
+                      <div class="form-field">
+                        <label for="sub-family-id">Existing or New Family</label>
+                        <select id="sub-family-id">
+                          <option value="">+ Register as New Model Family</option>
+                        </select>
+                      </div>
+
+                      <div class="form-field" id="sub-new-family-wrap">
+                        <label for="sub-new-family-name">New Model Family Name</label>
+                        <input type="text" id="sub-new-family-name" placeholder="Defaults to Model Name if blank" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Section 4: Code & Citation -->
+              <div class="contrib-fieldset">
+                <div class="contrib-fieldset-title">Code &amp; Citation</div>
+                <div class="form-grid">
+                  <div class="form-field">
+                    <label for="sub-github-url">Code Repository URL (optional if Closed-Source)</label>
+                    <input type="text" id="sub-github-url" placeholder="https://github.com/owner/repo" />
+                    <label class="checklist-label" style="margin-top: 0.35rem; font-size: 0.76rem;">
+                      <input type="checkbox" id="sub-closed-source" />
+                      <span>Closed-Source / Proprietary (no public code URL)</span>
+                    </label>
+                  </div>
+
+                  <div class="form-field">
+                    <label for="sub-citation">Citation</label>
+                    <input type="text" id="sub-citation" placeholder="Author et al. (2026)" />
+                  </div>
                 </div>
 
-                <div class="form-field full-width">
-                  <label for="sub-mip-benchmark">Benchmark (MIP) *</label>
-                  <select id="sub-mip-benchmark" required>
-                    <option value="camels_us" selected>CAMELS-US Daily Deterministic (531 basins)</option>
-                  </select>
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-spatial-regime">Spatial Regime *</label>
-                  <select id="sub-spatial-regime" required>
-                    <option value="gauged">Gauged Simulation</option>
-                    <option value="pub">12-Fold PUB (Ungauged Basins)</option>
-                    <option value="pur">18-Fold HUC-02 PUR (Ungauged Regions)</option>
-                  </select>
-                  <input type="hidden" id="sub-leaderboard-id" value="gauged__single_camels" />
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-forcing">Forcing Inputs *</label>
-                  <select id="sub-forcing" required>
-                    <optgroup label="Single CAMELS Forcing">
-                      <option value="Daymet" selected>Daymet</option>
-                      <option value="Maurer">Maurer</option>
-                      <option value="NLDAS">NLDAS</option>
-                    </optgroup>
-                    <optgroup label="Multiple CAMELS Forcings">
-                      <option value="Daymet + Maurer">Daymet + Maurer</option>
-                      <option value="Daymet + NLDAS">Daymet + NLDAS</option>
-                      <option value="Maurer + NLDAS">Maurer + NLDAS</option>
-                      <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
-                    </optgroup>
-                    <optgroup label="With Lagged Streamflow">
-                      <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
-                      <option value="Maurer + Lagged Streamflow">Maurer + Lagged Streamflow</option>
-                      <option value="NLDAS + Lagged Streamflow">NLDAS + Lagged Streamflow</option>
-                      <option value="Daymet + Maurer + Lagged Streamflow">Daymet + Maurer + Lagged Streamflow</option>
-                      <option value="Daymet + NLDAS + Lagged Streamflow">Daymet + NLDAS + Lagged Streamflow</option>
-                      <option value="Maurer + NLDAS + Lagged Streamflow">Maurer + NLDAS + Lagged Streamflow</option>
-                      <option value="Daymet + Maurer + NLDAS + Lagged Streamflow">Daymet + Maurer + NLDAS + Lagged Streamflow</option>
-                    </optgroup>
-                    <optgroup label="Freeform (Non-CAMELS / External)">
-                      <option value="Freeform (None of the above)">Freeform (None of the above)</option>
-                    </optgroup>
-                  </select>
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-model-name">Model Name *</label>
-                  <input type="text" id="sub-model-name" placeholder="e.g., HydroTransformer (10-seed)" required />
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-paradigm">Category *</label>
-                  <select id="sub-paradigm" required>
-                    <option value="Machine learning">Machine learning</option>
-                    <option value="Hybrid (ML + Physics)">Hybrid (ML + Physics)</option>
-                    <option value="Conceptual">Conceptual</option>
-                    <option value="Process-based">Process-based</option>
-                    <option value="Statistical">Statistical</option>
-                  </select>
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-entry-id">Entry ID (Optional)</label>
-                  <input type="text" id="sub-entry-id" placeholder="Auto-generated slug if blank" />
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-category">Provenance *</label>
-                  <select id="sub-category" required>
-                    <option value="Contribution" selected>Contribution</option>
-                    <option value="MIP Re-run (Author Code)">MIP Re-run (Author Code)</option>
-                    <option value="MIP Re-run (Our Code)">MIP Re-run (Our Code)</option>
-                  </select>
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-ensemble-info">Ensemble / Seed Info</label>
-                  <input type="text" id="sub-ensemble-info" placeholder="e.g., 10-seed ensemble or single seed (seed=42)" />
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-family-id">Model Family</label>
-                  <select id="sub-family-id">
-                    <option value="">+ Register as New Model Family</option>
-                  </select>
-                </div>
-
-                <div class="form-field" id="sub-new-family-wrap">
-                  <label for="sub-new-family-name">New Model Family Name</label>
-                  <input type="text" id="sub-new-family-name" placeholder="Defaults to Model Name if blank" />
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-github-url">Code Repository URL (optional if Closed-Source)</label>
-                  <input type="text" id="sub-github-url" placeholder="https://github.com/owner/repo" />
-                  <label class="checklist-label" style="margin-top: 0.35rem; font-size: 0.76rem;">
-                    <input type="checkbox" id="sub-closed-source" />
-                    <span>Closed-Source / Proprietary (no public code URL)</span>
-                  </label>
-                </div>
-
-                <div class="form-field">
-                  <label for="sub-citation">Citation</label>
-                  <input type="text" id="sub-citation" placeholder="Author et al. (2026)" />
-                </div>
-
+                <input type="hidden" id="sub-category" value="Contribution" />
                 <input type="hidden" id="sub-hydroshare-url" value="" />
                 <input type="hidden" id="sub-paper-url" value="" />
               </div>
@@ -1044,10 +1058,7 @@
 
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                 <button type="button" class="btn-primary-cta" id="btn-preview-inspect">
-                  Inspect &amp; Validate File
-                </button>
-                <button type="button" class="btn-secondary" id="btn-jump-step4-direct">
-                  Go to GitHub PR Submission (Step 4) &rarr;
+                  Continue to Sanity Check &rarr;
                 </button>
               </div>
               <div id="inspect-status-msg" style="font-size: 0.82rem; margin-top: 0.65rem; line-height: 1.5;"></div>
@@ -1300,7 +1311,7 @@
         <p style="margin: 0.45rem 0 0; font-size: 0.84rem; color: var(--color-muted, #5a626a);">
           Source repository: <a href="https://github.com/grey-nearing/hydrology-mip" target="_blank" rel="noopener noreferrer">github.com/grey-nearing/hydrology-mip &#8599;</a> &middot;
           Master data archive: <a href="https://doi.org/10.5281/zenodo.24383448" target="_blank" rel="noopener noreferrer">10.5281/zenodo.24383448 &#8599;</a> &middot;
-          Propose tracks: <a href="https://github.com/grey-nearing/hydrology-mip/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions &#8599;</a>
+          Propose new MIPs: <a href="https://github.com/grey-nearing/hydrology-mip/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions &#8599;</a>
         </p>
       </article>
     </section>
@@ -1344,6 +1355,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261120_v1"></script>
+  <script src="/static/app.js?v=20261121_form"></script>
 </body>
 </html>

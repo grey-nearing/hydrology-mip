@@ -2612,6 +2612,9 @@
     if (p.includes("statistical") || p.includes("donor")) {
       return { key: "statistical", label: "Statistical" };
     }
+    if (p === "other" || p.includes("other")) {
+      return { key: "other", label: "Other" };
+    }
     return { key: "ml", label: "Machine learning" };
   }
 
@@ -3068,7 +3071,7 @@
     };
     previewEl.style.display = "flex";
     previewEl.innerHTML =
-      `<span style="font-weight: 600; color: var(--text-secondary);">Validated Link Badges:</span>` +
+      `<span style="font-weight: 600; color: var(--text-secondary);">Leaderboard link preview:</span>` +
       renderDataArchiveButton(rowPreview) +
       renderCodebaseButton(rowPreview);
   }
@@ -3138,8 +3141,12 @@
       const pill = document.getElementById(`contrib-pill-${i}`);
       if (sec) sec.hidden = i !== s;
       if (pill) {
+        const isLocked =
+          (i === 2 && !STATE.previewInspectData) ||
+          ((i === 3 || i === 4) && !STATE.activePreviewEntryId);
         pill.classList.toggle("is-active", i === s);
         pill.classList.toggle("is-done", i < s);
+        pill.classList.toggle("is-locked", isLocked && i > s);
       }
     }
     if (s === 4) {
@@ -3449,10 +3456,10 @@
           }
           renderDiagnosticCard(
             "step1-diagnostic-card",
-            "Live Scoring Backend Unavailable on This Deployment — Use GitHub PR Submission",
+            "Live Scoring Backend Temporarily Unavailable",
             [
               msg,
-              "You can package & validate locally with `hydromip package` or jump straight to Step 4 to submit your official GitHub PR / Issue with your DOI.",
+              "Please retry in a moment or validate your prediction archive locally using `hydromip package`.",
             ],
             false
           );
@@ -3500,7 +3507,7 @@
     const familyId = ((document.getElementById("sub-family-id") || {}).value || "").trim();
     const newFamilyName = ((document.getElementById("sub-new-family-name") || {}).value || "").trim();
     const paradigm = ((document.getElementById("sub-paradigm") || {}).value || "Machine learning").trim();
-    const category = ((document.getElementById("sub-category") || {}).value || "Contribution").trim();
+    const category = "Contribution";
     const ensembleInfo = ((document.getElementById("sub-ensemble-info") || {}).value || "").trim();
     const closedSource = isClosedSourceSelected();
     const codeUrl = closedSource
@@ -3654,7 +3661,7 @@
     setVal("sub-forcing", e.forcing || "Daymet");
     setVal("sub-model-name", e.model_name || "");
     setVal("sub-paradigm", e.paradigm || "Machine learning");
-    setVal("sub-category", e.category || "Contribution");
+    setVal("sub-category", "Contribution");
     setVal("sub-ensemble-info", e.ensemble_info || "");
     setVal("sub-github-url", e.code_url || e.github_url || "");
     setClosedSourceSelection(Boolean(e.closed_source || e.is_closed_source));
@@ -3673,7 +3680,7 @@
     const entryId = ((document.getElementById("sub-entry-id") || {}).value || "").trim();
     const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
     const paradigm = ((document.getElementById("sub-paradigm") || {}).value || "Machine learning").trim();
-    const category = ((document.getElementById("sub-category") || {}).value || "Contribution").trim();
+    const category = "Contribution";
     const ensembleInfo = ((document.getElementById("sub-ensemble-info") || {}).value || "").trim();
 
     const step4CodeEl = document.getElementById("step4-code-url");
@@ -6463,10 +6470,11 @@
       btn.addEventListener("click", () => {
         const stepNum = Number(btn.getAttribute("data-contrib-step-btn")) || 1;
         if (stepNum === 2 && !STATE.previewInspectData) return;
-        if (stepNum === 3 && !STATE.activePreviewEntryId) return;
+        if ((stepNum === 3 || stepNum === 4) && !STATE.activePreviewEntryId) return;
         setContribStep(stepNum);
       });
     });
+    setContribStep(1);
 
     const dropzone = document.getElementById("sub-dropzone");
     const fileInput = document.getElementById("sub-file-input");
@@ -6510,9 +6518,6 @@
 
     const btnReinspect = document.getElementById("btn-reinspect-overrides");
     if (btnReinspect) btnReinspect.addEventListener("click", () => inspectPreviewSubmission(true));
-
-    const btnJumpStep4Direct = document.getElementById("btn-jump-step4-direct");
-    if (btnJumpStep4Direct) btnJumpStep4Direct.addEventListener("click", () => setContribStep(4));
 
     const btnScore = document.getElementById("btn-preview-score");
     if (btnScore) btnScore.addEventListener("click", scorePreviewSubmission);
