@@ -82,8 +82,10 @@ def _fetch_https(
         dest_path=dest_path,
         max_bytes=max_bytes,
         timeout=DOWNLOAD_TIMEOUT_SECONDS,
-        user_agent="HydrologyMIP-CI/1.0",
     )
+
+
+_DEFAULT_FETCH_HTTPS = _fetch_https
 
 
 def resolve_archive_to_local_file(
@@ -108,12 +110,13 @@ def resolve_archive_to_local_file(
     if not raw_url:
         raise ValueError("Submission manifest must define 'archive_url' (DOI or HTTPS file URL).")
 
+    active_fetcher = None if _fetch_https is _DEFAULT_FETCH_HTTPS else _fetch_https
     return resolve_and_download_archive(
         raw_url,
         work_dir,
         max_bytes=MAX_DOWNLOAD_BYTES,
         allow_file_uri=True,
-        fetch_fn=_fetch_https,
+        fetch_fn=active_fetcher,
     )
 
 
