@@ -198,7 +198,16 @@
       const raw = localStorage.getItem(LOCAL_PREVIEWS_STORAGE_KEY);
       if (!raw) return [];
       const parsed = JSON.parse(raw);
-      return Array.isArray(parsed) ? parsed.filter((x) => x && x.entry && x.entry.entry_id) : [];
+      const valid = Array.isArray(parsed)
+        ? parsed.filter((x) => x && x.entry && x.entry.entry_id)
+        : [];
+      // Only keep the single currently verified preview model alongside committed models
+      if (valid.length > 1) {
+        const latestOnly = [valid[valid.length - 1]];
+        localStorage.setItem(LOCAL_PREVIEWS_STORAGE_KEY, JSON.stringify(latestOnly));
+        return latestOnly;
+      }
+      return valid;
     } catch (_e) {
       return [];
     }
@@ -206,26 +215,48 @@
 
   function saveLocalPreviews(items) {
     try {
-      localStorage.setItem(LOCAL_PREVIEWS_STORAGE_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+      const clean = Array.isArray(items) && items.length > 0 ? [items[items.length - 1]] : [];
+      localStorage.setItem(LOCAL_PREVIEWS_STORAGE_KEY, JSON.stringify(clean));
     } catch (_e) {
       // ignore localStorage quota errors
     }
   }
 
+  function _prunePreviewKeysFromComparison(records, keepEntryId = null) {
+    if (!Array.isArray(records) || !Array.isArray(STATE.comparedModels)) return;
+    const dropKeys = new Set();
+    for (const rec of records) {
+      const e = rec && rec.entry;
+      if (!e || !e.entry_id) continue;
+      if (keepEntryId && e.entry_id === keepEntryId) continue;
+      dropKeys.add(e.model_key || `${e.leaderboard_id}__${e.entry_id}`);
+    }
+    if (dropKeys.size > 0) {
+      STATE.comparedModels = STATE.comparedModels.filter((mk) => !dropKeys.has(mk));
+    }
+  }
+
   function upsertLocalPreview(record) {
     if (!record || !record.entry || !record.entry.entry_id) return;
-    const list = loadLocalPreviews().filter((x) => x.entry.entry_id !== record.entry.entry_id);
-    list.push(record);
-    saveLocalPreviews(list);
+    const previous = loadLocalPreviews();
+    _prunePreviewKeysFromComparison(previous, record.entry.entry_id);
+    // Replace any prior local preview so only the currently verified model appears
+    saveLocalPreviews([record]);
     refreshLeaderboardsWithLocalPreviews();
   }
 
   function removeLocalPreview(entryId = null) {
+    const previous = loadLocalPreviews();
     if (!entryId) {
+      _prunePreviewKeysFromComparison(previous, null);
       saveLocalPreviews([]);
       STATE.activePreviewEntryId = null;
     } else {
-      const list = loadLocalPreviews().filter((x) => x.entry.entry_id !== entryId);
+      _prunePreviewKeysFromComparison(
+        previous.filter((x) => x.entry.entry_id === entryId),
+        null
+      );
+      const list = previous.filter((x) => x.entry.entry_id !== entryId);
       saveLocalPreviews(list);
       if (STATE.activePreviewEntryId === entryId) {
         STATE.activePreviewEntryId = null;
@@ -307,6 +338,7 @@
       renderActiveLeaderboardPanel();
       renderFamiliesGrid();
       populateContributeSelects();
+      updateDuplicateModelNameWarning();
       updateCompareUiState();
       if (STATE.activeView === "hydrographs") {
         openHydrographExplorer();
@@ -1667,6 +1699,10 @@
     const isFigHidden = STATE.figureMode === "hidden";
     const visibleMetrics = getActiveMetricColumns(activeSortCol);
     const allLocalPreviews = loadLocalPreviews();
+    const activePreviewRec = allLocalPreviews[0] || null;
+    const activePreviewEntry = activePreviewRec && activePreviewRec.entry ? activePreviewRec.entry : null;
+    const activePreviewName = (activePreviewEntry && activePreviewEntry.model_name) || "Preview model";
+    const activePreviewLbId = (activePreviewEntry && activePreviewEntry.leaderboard_id) || "";
     const boardPreviewCount = allLocalPreviews.filter(
       (p) => p.entry && p.entry.leaderboard_id === lb.id
     ).length;
@@ -1677,11 +1713,11 @@
       <div class="local-preview-banner" id="local-preview-banner" role="status">
         <div class="local-preview-banner-body">
           <div class="local-preview-banner-title">
-            <span class="local-preview-badge">LOCAL PREVIEW &middot; PENDING PR</span>
-            <span>${allLocalPreviews.length} local preview ${allLocalPreviews.length === 1 ? "entry" : "entries"} active (${boardPreviewCount} on this table)</span>
+            <span class="local-preview-badge">LOCAL PREVIEW &middot; UNCOMMITTED</span>
+            <span>Previewing <strong>${esc(activePreviewName)}</strong>${boardPreviewCount ? " alongside committed models on this table" : ` on ${esc(activePreviewLbId || "another table")}`}</span>
           </div>
           <div>
-            Local Preview Only &mdash; Your preview model is stored only in this browser so you can inspect its rank, metrics, and hydrographs right away. Other visitors cannot see it, and clearing browser storage or switching devices will remove it. To publish permanently to the official leaderboard, submit a GitHub PR below.
+            Local preview only &mdash; only the model you are currently verifying appears here alongside committed leaderboard models. Other visitors cannot see it. Click Publish to Leaderboard when you are ready to submit it on GitHub.
           </div>
         </div>
         <div class="local-preview-banner-actions">
@@ -2834,7 +2870,7 @@
   const MIP_BENCHMARK_CONFIGS = {
     camels_us: {
       title: "CAMELS-US",
-      defaultForcing: "Daymet",
+      defaultForcing: "Daymet + Maurer + NLDAS",
       spatialOptions: [
         { value: "gauged", label: "Gauged Simulation" },
         { value: "pub", label: "12-Fold PUB (Ungauged Basins)" },
@@ -3073,7 +3109,7 @@
   }
 
   function buildHydromipPackageCliSnippet() {
-    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet + Maurer + NLDAS").trim();
     const regime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
     return (
       `pip install git+https://github.com/grey-nearing/hydrology-mip.git\n` +
@@ -3366,6 +3402,43 @@
     };
   }
 
+  function findDuplicateCommittedModel(modelName, lbId) {
+    const norm = (s) => String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
+    const target = norm(modelName);
+    if (!target) return null;
+    const boards = Array.isArray(STATE.baseLeaderboards) && STATE.baseLeaderboards.length > 0
+      ? STATE.baseLeaderboards
+      : (Array.isArray(STATE.allLeaderboards) ? STATE.allLeaderboards : []);
+    const targetBoard = boards.find((b) => b.id === lbId);
+    if (targetBoard && Array.isArray(targetBoard.rows)) {
+      for (const r of targetBoard.rows) {
+        if (r && !r.is_local_preview && norm(r.model_name) === target) {
+          return { row: r, leaderboard_id: targetBoard.id };
+        }
+      }
+    }
+    return null;
+  }
+
+  function updateDuplicateModelNameWarning() {
+    const nameEl = document.getElementById("sub-model-name");
+    const warnEl = document.getElementById("sub-model-name-dup-msg");
+    if (!nameEl || !warnEl) return null;
+    const lbId = syncContributeTargetLeaderboard();
+    const dup = findDuplicateCommittedModel(nameEl.value, lbId);
+    if (dup) {
+      warnEl.textContent =
+        `A committed model named "${dup.row.model_name}" already exists on ${lbId}. Please choose a distinct Model Name.`;
+      warnEl.style.display = "block";
+      nameEl.setAttribute("aria-invalid", "true");
+    } else {
+      warnEl.textContent = "";
+      warnEl.style.display = "none";
+      nameEl.removeAttribute("aria-invalid");
+    }
+    return dup;
+  }
+
   function startWorkingProgress(statusEl, stages) {
     if (!statusEl) return () => {};
     const startedAt = Date.now();
@@ -3415,7 +3488,7 @@
 
     const lbId = syncContributeTargetLeaderboard();
     const spatialRegime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
-    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet + Maurer + NLDAS").trim();
     const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
     const rawArchive = ((document.getElementById("sub-zenodo-doi") || {}).value || "").trim();
     const archiveUrl = normalizeClientUrl(rawArchive, "zenodo");
@@ -3434,6 +3507,21 @@
         statusEl.style.color = "var(--status-danger)";
       }
       return;
+    }
+
+    const dupMatch = findDuplicateCommittedModel(modelName, lbId);
+    if (dupMatch) {
+      if (statusEl) {
+        statusEl.textContent =
+          `A committed model named "${dupMatch.row.model_name}" already exists on ${lbId}. Please use a distinct Model Name.`;
+        statusEl.style.color = "var(--status-danger)";
+      }
+      return;
+    }
+
+    // Clear any prior local preview when starting verification of a new model
+    if (!isOverrideReinspect && loadLocalPreviews().length > 0) {
+      removeLocalPreview(null);
     }
 
     for (const chkId of ["chk-rule-1", "chk-rule-2", "chk-rule-3", "chk-rule-4"]) {
@@ -3558,8 +3646,17 @@
 
     const lbId = syncContributeTargetLeaderboard();
     const spatialRegime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
-    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet + Maurer + NLDAS").trim();
     const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
+    const dupScoreMatch = findDuplicateCommittedModel(modelName, lbId);
+    if (dupScoreMatch) {
+      if (scoreStatusEl) {
+        scoreStatusEl.textContent =
+          `A committed model named "${dupScoreMatch.row.model_name}" already exists on ${lbId}. Please choose a distinct Model Name in Step 1.`;
+        scoreStatusEl.style.color = "var(--status-danger)";
+      }
+      return;
+    }
     const familyId = ((document.getElementById("sub-family-id") || {}).value || "").trim();
     const newFamilyName = ((document.getElementById("sub-new-family-name") || {}).value || "").trim();
     const paradigm = ((document.getElementById("sub-paradigm") || {}).value || "Machine learning").trim();
@@ -3696,9 +3793,8 @@
     const stripEl = document.getElementById("step3-metrics-strip");
     if (noteEl) {
       noteEl.innerHTML =
-        `Saved <strong>${esc(entry.model_name || "Preview Model")}</strong> locally under key ` +
-        `<code>${esc(LOCAL_PREVIEWS_STORAGE_KEY)}</code> on <code>${esc(entry.leaderboard_id || "")}</code> ` +
-        `(#${esc(entry.rank || "?")} by Median NSE). Only visible in this browser until published via GitHub PR.`;
+        `Previewing <strong>${esc(entry.model_name || "Preview Model")}</strong> on <code>${esc(entry.leaderboard_id || "")}</code> ` +
+        `(#${esc(entry.rank || "?")} by Median NSE) alongside committed leaderboard models. Only visible in this browser until published on GitHub.`;
     }
     if (stripEl) {
       const boxes = [
@@ -3730,7 +3826,7 @@
       if (el && v !== undefined && v !== null) el.value = String(v);
     };
     setVal("sub-spatial-regime", (e.leaderboard_id || "").split("__")[0] || "gauged");
-    setVal("sub-forcing", e.forcing || "Daymet");
+    setVal("sub-forcing", e.forcing || "Daymet + Maurer + NLDAS");
     setVal("sub-model-name", e.model_name || "");
     setVal("sub-paradigm", e.paradigm || "Machine learning");
     setVal("sub-category", "Contribution");
@@ -3750,7 +3846,7 @@
     const spatialRegime = ((document.getElementById("sub-spatial-regime") || {}).value || "gauged").trim();
     const modelName = ((document.getElementById("sub-model-name") || {}).value || "").trim();
     const entryId = ((document.getElementById("sub-entry-id") || {}).value || "").trim();
-    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet").trim();
+    const forcing = ((document.getElementById("sub-forcing") || {}).value || "Daymet + Maurer + NLDAS").trim();
     const paradigm = ((document.getElementById("sub-paradigm") || {}).value || "Machine learning").trim();
     const category = "Contribution";
     const ensembleInfo = ((document.getElementById("sub-ensemble-info") || {}).value || "").trim();
@@ -3845,6 +3941,16 @@
     if (!modelName) {
       if (msgEl) {
         msgEl.textContent = "Please enter a Model Name in Step 1 before generating an official submission.";
+        msgEl.style.color = "var(--status-danger)";
+      }
+      return null;
+    }
+    const lbIdStep4 = syncContributeTargetLeaderboard();
+    const dupStep4 = findDuplicateCommittedModel(modelName, lbIdStep4);
+    if (dupStep4) {
+      if (msgEl) {
+        msgEl.textContent =
+          `A committed model named "${dupStep4.row.model_name}" already exists on ${lbIdStep4}. Please go back to Step 1 and choose a distinct Model Name.`;
         msgEl.style.color = "var(--status-danger)";
       }
       return null;
@@ -6544,9 +6650,17 @@
     ["sub-spatial-regime", "sub-forcing"].forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
-        el.addEventListener("change", syncContributeTargetLeaderboard);
+        el.addEventListener("change", () => {
+          syncContributeTargetLeaderboard();
+          updateDuplicateModelNameWarning();
+        });
       }
     });
+
+    const subModelNameEl = document.getElementById("sub-model-name");
+    if (subModelNameEl) {
+      subModelNameEl.addEventListener("input", updateDuplicateModelNameWarning);
+    }
 
     const formSubmit = document.getElementById("form-score-submit");
     if (formSubmit) {
@@ -6670,7 +6784,7 @@
           }
           btnCopyManifest.textContent = "Copied JSON!";
           setTimeout(() => {
-            btnCopyManifest.textContent = "Copy Manifest JSON";
+            btnCopyManifest.textContent = "Copy JSON";
           }, 1800);
         } catch (_e) {
           // ignore

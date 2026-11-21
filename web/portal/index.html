@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/static/styles.css?v=20261121_prog" />
+  <link rel="stylesheet" href="/static/styles.css?v=20261121_v5" />
 </head>
 <body>
   <header class="site-header" id="site-header">
@@ -937,14 +937,14 @@
                       <option value="pub">12-Fold PUB (Ungauged Basins)</option>
                       <option value="pur">18-Fold HUC-02 PUR (Ungauged Regions)</option>
                     </select>
-                    <input type="hidden" id="sub-leaderboard-id" value="gauged__single_camels" />
+                    <input type="hidden" id="sub-leaderboard-id" value="gauged__multi_camels" />
                   </div>
 
                   <div class="form-field">
                     <label for="sub-forcing">Forcing Inputs *</label>
                     <select id="sub-forcing" required>
                       <optgroup label="Single CAMELS Forcing">
-                        <option value="Daymet" selected>Daymet</option>
+                        <option value="Daymet">Daymet</option>
                         <option value="Maurer">Maurer</option>
                         <option value="NLDAS">NLDAS</option>
                       </optgroup>
@@ -952,7 +952,7 @@
                         <option value="Daymet + Maurer">Daymet + Maurer</option>
                         <option value="Daymet + NLDAS">Daymet + NLDAS</option>
                         <option value="Maurer + NLDAS">Maurer + NLDAS</option>
-                        <option value="Daymet + Maurer + NLDAS">Daymet + Maurer + NLDAS</option>
+                        <option value="Daymet + Maurer + NLDAS" selected>Daymet + Maurer + NLDAS</option>
                       </optgroup>
                       <optgroup label="With Lagged Streamflow">
                         <option value="Daymet + Lagged Streamflow">Daymet + Lagged Streamflow</option>
@@ -978,6 +978,7 @@
                   <div class="form-field">
                     <label for="sub-model-name">Model Name *</label>
                     <input type="text" id="sub-model-name" placeholder="e.g., HydroTransformer (10-seed)" required />
+                    <div id="sub-model-name-dup-msg" style="font-size: 0.76rem; color: var(--status-danger); margin-top: 0.3rem; display: none;" role="alert"></div>
                   </div>
 
                   <div class="form-field">
@@ -1131,7 +1132,7 @@
                   View on Leaderboard Table &rarr;
                 </button>
                 <button type="button" class="btn-secondary" id="btn-goto-step4">
-                  Proceed to Step 4: Submit GitHub PR &rarr;
+                  Proceed to Step 4: Publish to Leaderboard &rarr;
                 </button>
                 <button type="button" class="btn-danger-ghost" id="btn-clear-current-preview">
                   Clear This Preview
@@ -1373,6 +1374,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=20261121_prog"></script>
+  <script src="/static/app.js?v=20261121_v5"></script>
 </body>
 </html>

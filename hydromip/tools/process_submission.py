@@ -385,6 +385,19 @@ def process_submission(
     basins, dates, huc_map, qobs = _load_canonical_targets(mip_dir, qobs_npz=qobs_npz_path)
     entry_id = _derive_entry_id(manifest, manifest_path)
 
+    existing_lb_file = mip_dir / "leaderboards" / f"{leaderboard_id}.json"
+    if existing_lb_file.is_file():
+        norm_new_name = " ".join(model_name.strip().lower().split())
+        existing_rows = json.loads(existing_lb_file.read_text(encoding="utf-8")).get("rows", [])
+        for existing_row in existing_rows:
+            existing_eid = str(existing_row.get("entry_id") or "").strip()
+            existing_name = str(existing_row.get("model_name") or "").strip()
+            if existing_eid != entry_id and " ".join(existing_name.lower().split()) == norm_new_name:
+                raise ValueError(
+                    f"Duplicate model_name {model_name!r} already exists on {leaderboard_id} "
+                    f"(entry_id={existing_eid!r}). Please choose a distinct model_name."
+                )
+
     with tempfile.TemporaryDirectory() as tmp_str:
         work_dir = Path(tmp_str)
         archive_file = resolve_archive_to_local_file(

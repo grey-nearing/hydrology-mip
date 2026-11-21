@@ -396,3 +396,24 @@ def test_process_submission_zarr_targets_explicit_entry_id_and_ensemble_single_p
     fam_entries = [f for f in reg_after["families"] if f["family_id"] == "custom_multiseed_fam"]
     assert len(fam_entries) == 1
     assert set(fam_entries[0]["leaderboards_covered"]) == {"gauged__multi_camels", "pub__multi_camels"}
+
+    # Duplicate model_name (case/whitespace-insensitive) on the SAME leaderboard with a different entry_id must be rejected
+    dup_manifest = {
+        **_manifest_payload(
+            model_name="  multi-seed   community (3-model ensemble) ",
+            archive_url=ens_zip.as_uri(),
+            code_url="https://github.com/example/multiseed",
+        ),
+        "leaderboard_id": "gauged__multi_camels",
+        "entry_id": "different_entry_id_dup_test",
+    }
+    dup_manifest_path = tmp_path / "dup_manifest.json"
+    dup_manifest_path.write_text(json.dumps(dup_manifest), encoding="utf-8")
+    with pytest.raises(ValueError, match="Duplicate model_name"):
+        process_submission.process_submission(
+            manifest_path=dup_manifest_path,
+            mip_dir=mip_copy,
+            out_zarr_dir=tmp_path / "staged_zarr",
+            qobs_npz_path=qobs_npz,
+            dry_run=True,
+        )
