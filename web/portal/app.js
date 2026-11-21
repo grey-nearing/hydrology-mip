@@ -2090,6 +2090,7 @@
       btn.addEventListener("click", () => {
         const targetLbId = btn.getAttribute("data-lb-id") || "";
         const [sp, fo] = targetLbId.split("__");
+        resetContributeWizard({ clearPreview: true, preserveTarget: true });
         const spSel = document.getElementById("sub-spatial-regime");
         const foSel = document.getElementById("sub-forcing");
         if (spSel && sp) spSel.value = sp;
@@ -2103,6 +2104,7 @@
           if (defaultForcingByCat[fo]) foSel.value = defaultForcingByCat[fo];
         }
         syncContributeTargetLeaderboard();
+        updateDuplicateModelNameWarning();
         switchMainTab("contribute");
       });
     });
@@ -3334,10 +3336,35 @@
     const availDims =
       schema.available_dims ||
       [schema.basin_dim, schema.time_dim, schema.member_dim].filter(Boolean);
+    const ensDet2 = inspectData.ensemble_detected || {};
+    const nDet2 = Number(ensDet2.num_members || 1);
+    let detectedMemberDim = schema.member_dim || "";
+    if (!detectedMemberDim && ensDet2.is_ensemble && nDet2 >= 2) {
+      const excludedDims = new Set([schema.basin_dim, schema.time_dim].filter(Boolean));
+      const remainingDims = availDims.filter((d) => d && !excludedDims.has(d));
+      const memberCandidates = [
+        "member",
+        "members",
+        "seed",
+        "seeds",
+        "ensemble",
+        "ens",
+        "run",
+        "runs",
+        "sample",
+        "samples",
+        "realization",
+        "model",
+      ];
+      detectedMemberDim =
+        remainingDims.find((d) => memberCandidates.includes(String(d).toLowerCase())) ||
+        (remainingDims.length === 1 ? remainingDims[0] : "") ||
+        "member";
+    }
     populateOverrideDropdown("override-var", availVars, schema.var || availVars[0] || "qsim", false);
     populateOverrideDropdown("override-basin-dim", availDims, schema.basin_dim || "basin", false);
     populateOverrideDropdown("override-time-dim", availDims, schema.time_dim || "date", false);
-    populateOverrideDropdown("override-member-dim", availDims, schema.member_dim || "", true);
+    populateOverrideDropdown("override-member-dim", availDims, detectedMemberDim, true);
 
     const nMatched = Number(sanity.n_basins_matched ?? 0);
     const nExpected = Number(sanity.n_basins_expected ?? 531);
@@ -4426,6 +4453,81 @@
     const issueUrl =
       `https://github.com/grey-nearing/hydrology-mip/issues/new?${params.toString()}`;
     window.open(issueUrl, "_blank", "noopener,noreferrer");
+    const msgEl = document.getElementById("step4-validation-msg");
+    if (msgEl) {
+      msgEl.textContent =
+        "Opened GitHub submission in a new tab. Click '+ Submit Another Model' when you are ready to submit another model.";
+      msgEl.style.color = "var(--status-success)";
+    }
+  }
+
+  function resetContributeWizard(opts = {}) {
+    const { clearPreview = true, preserveTarget = false } = opts;
+    const fileInput = document.getElementById("sub-file-input");
+    if (fileInput) fileInput.value = "";
+    handleSelectedPredictionFile(null);
+
+    STATE.previewInspectData = null;
+    STATE.lastScoringResult = null;
+    if (clearPreview) {
+      removeLocalPreview(null);
+    } else {
+      STATE.activePreviewEntryId = null;
+    }
+
+    const clearIds = [
+      "sub-zenodo-doi",
+      "sub-model-name",
+      "sub-ensemble-info",
+      "sub-new-family-name",
+      "sub-github-url",
+      "sub-citation",
+      "step4-archive-url",
+      "step4-code-url",
+    ];
+    for (const id of clearIds) {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    }
+
+    const famSel = document.getElementById("sub-family-id");
+    if (famSel) famSel.value = "";
+    const parSel = document.getElementById("sub-paradigm");
+    if (parSel) parSel.value = "Machine learning";
+    setClosedSourceSelection(false);
+
+    if (!preserveTarget) {
+      const spSel = document.getElementById("sub-spatial-regime");
+      const foSel = document.getElementById("sub-forcing");
+      if (spSel) spSel.value = "gauged";
+      if (foSel) foSel.value = "Daymet + Maurer + NLDAS";
+    }
+
+    for (const chkId of ["chk-rule-1", "chk-rule-2", "chk-rule-3", "chk-rule-4"]) {
+      const chk = document.getElementById(chkId);
+      if (chk) chk.checked = false;
+    }
+
+    for (const msgId of ["inspect-status-msg", "score-status-msg", "step4-validation-msg"]) {
+      const el = document.getElementById(msgId);
+      if (el) {
+        el.textContent = "";
+        el.style.color = "";
+      }
+    }
+    renderDiagnosticCard("step1-diagnostic-card", "", [], false, false);
+    renderDiagnosticCard("step2-diagnostic-card", "", [], false, false);
+    const ensPanel = document.getElementById("step3-ensemble-panel");
+    if (ensPanel) ensPanel.hidden = true;
+    const prGuide = document.getElementById("step4-pr-guide");
+    if (prGuide) prGuide.hidden = true;
+
+    syncContributeTargetLeaderboard();
+    syncNewFamilyNameVisibility();
+    updateLiveRepoBadgePreview();
+    updateDuplicateModelNameWarning();
+    setContribStep(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function downloadManifestJsonObject(manifest) {
@@ -6633,7 +6735,14 @@
     // Top Header Page Tabs
     document.querySelectorAll(".nav-tab-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
-        switchMainTab(btn.getAttribute("data-view"));
+        const targetView = btn.getAttribute("data-view");
+        if (
+          targetView === "contribute" &&
+          (STATE.contribStep === 4 || (STATE.activeView === "contribute" && STATE.contribStep > 1))
+        ) {
+          resetContributeWizard();
+        }
+        switchMainTab(targetView);
       });
     });
 
@@ -7177,6 +7286,11 @@
 
     const btnBackFromStep4 = document.getElementById("btn-back-from-step4");
     if (btnBackFromStep4) btnBackFromStep4.addEventListener("click", () => setContribStep(1));
+
+    const btnSubmitAnotherModel = document.getElementById("btn-submit-another-model");
+    if (btnSubmitAnotherModel) {
+      btnSubmitAnotherModel.addEventListener("click", () => resetContributeWizard());
+    }
 
     ["step4-archive-url", "step4-code-url"].forEach((id) => {
       const el = document.getElementById(id);

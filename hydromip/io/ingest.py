@@ -606,6 +606,13 @@ def resolve_deterministic_recipe(
             member_dim = _pick_first_matching(remaining, MEMBER_DIM_CANDIDATES) or (
                 remaining[0] if len(remaining) == 1 else None
             )
+        elif var == "qsim" and "qsim_members" in meta.get("var_dims", {}):
+            mem_var_dims = list(meta.get("var_dims", {}).get("qsim_members", []))
+            if len(mem_var_dims) == 3 and basin_dim in mem_var_dims and time_dim in mem_var_dims:
+                mem_remaining = [d for d in mem_var_dims if d not in (basin_dim, time_dim)]
+                member_dim = _pick_first_matching(mem_remaining, MEMBER_DIM_CANDIDATES) or (
+                    mem_remaining[0] if len(mem_remaining) == 1 else None
+                )
 
         # Verify that the basin dimension is identifiable via a coordinate or 1D variable
         has_basin_coord = basin_dim is not None and (
@@ -754,13 +761,21 @@ def resolve_deterministic_recipe(
         if issues:
             return None, issues
         shp = var_shapes.get(var or "", [])
+        has_3d_members = len(shp) == 3 or (
+            var != "qsim_members" and len(var_shapes.get("qsim_members", [])) == 3
+        )
+        npz_member_dim = (
+            (_pick_first_matching(coord_keys, MEMBER_DIM_CANDIDATES) or "member")
+            if has_3d_members
+            else None
+        )
         return (
             IngestionRecipe(
                 format="npz",
                 var=var,
                 basin_dim=basin_key,
                 time_dim=date_key,
-                member_dim="member" if len(shp) == 3 else None,
+                member_dim=npz_member_dim,
                 recipe_source="deterministic_tier1",
                 confidence=0.99,
                 notes="NPZ archive with explicit prediction, basin, and date arrays.",

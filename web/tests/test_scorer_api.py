@@ -202,6 +202,9 @@ def test_multiseed_zarr_zip_both_ensemble_and_single_seed_via_api(
     inspect_data = inspect_resp.json()
     assert inspect_data["format"] == "zarr.zip"
     assert inspect_data["sanity"]["checks_passed"] is True
+    assert inspect_data["ensemble_detected"]["is_ensemble"] is True
+    assert inspect_data["schema"]["member_dim"] == "member"
+    assert "member" in inspect_data["schema"]["available_dims"]
     token = inspect_data["preview_token"]
 
     score_resp = isolated_api.post(

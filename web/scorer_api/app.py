@@ -492,11 +492,14 @@ def _default_member_labels(num_members: int) -> list[str]:
 def _schema_summary_from_meta(meta: Mapping[str, Any], recipe: IngestionRecipe | None) -> dict[str, Any]:
     avail_vars = list(meta.get("vars") or meta.get("columns") or [])
     avail_dims = list(meta.get("dims") or meta.get("columns") or [])
+    member_dim = (recipe.member_dim or recipe.member_col) if recipe else None
+    if member_dim and member_dim not in avail_dims:
+        avail_dims.append(member_dim)
     return {
         "var": (recipe.var or recipe.value_col) if recipe else (avail_vars[0] if avail_vars else None),
         "basin_dim": (recipe.basin_dim or recipe.basin_col) if recipe else None,
         "time_dim": (recipe.time_dim or recipe.date_col) if recipe else None,
-        "member_dim": (recipe.member_dim or recipe.member_col) if recipe else None,
+        "member_dim": member_dim,
         "basin_col": recipe.basin_col if recipe else None,
         "date_col": recipe.date_col if recipe else None,
         "value_col": recipe.value_col if recipe else None,
@@ -991,12 +994,20 @@ def _run_inspect_sync(
         if ingested["qsim_members"] is not None
         else 1
     )
+    schema_summary = _schema_summary_from_meta(meta, recipe)
+    if n_members_detected >= 2 and not schema_summary.get("member_dim"):
+        excluded = {schema_summary.get("basin_dim"), schema_summary.get("time_dim")}
+        rem_dims = [d for d in schema_summary.get("available_dims", []) if d and d not in excluded]
+        inferred_md = rem_dims[0] if len(rem_dims) == 1 else "member"
+        schema_summary["member_dim"] = inferred_md
+        if inferred_md not in schema_summary["available_dims"]:
+            schema_summary["available_dims"].append(inferred_md)
     return {
         "status": "ok",
         "preview_token": token,
         "format": recipe.format,
         "recipe_source": recipe.recipe_source,
-        "schema": _schema_summary_from_meta(meta, recipe),
+        "schema": schema_summary,
         "ensemble_detected": {
             "is_ensemble": n_members_detected >= 2,
             "num_members": n_members_detected,
