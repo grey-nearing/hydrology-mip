@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.1",
+  "benchmark": "camels_us_daily",
+  "evaluation_window": "1989-10-01 to 1999-09-30",
+  "spatial_regime": "gauged",
+  "leaderboard_id": "gauged__multi_camels",
+  "model_name": "ERA-Physics-Guided-Gauged",
+  "entry_id": "contrib_era_physics_guided_gauged_gh8",
+  "family_id": "contrib_contrib_era_multi_paradigm_gauged_gh6",
+  "new_family_name": null,
+  "category": "Contribution",
+  "paradigm": "Machine learning",
+  "forcing": "Daymet + Maurer + NLDAS",
+  "ensemble_info": "10-seed ensemble",
+  "citation": "Nearing et al. (2026)",
+  "archive_url": "https://doi.org/10.5281/zenodo.23639367",
+  "code_url": "https://github.com/grey-nearing/hydrology-mip/tree/main/models/era_gauged_physics_guided",
+  "closed_source": false,
+  "confirmed_recipe": {
+    "var": "qsim",
+    "basin_dim": "basin",
+    "time_dim": "date",
+    "member_dim": null
+  },
+  "preview_summary": {
+    "median_nse": 0.8203,
+    "mean_nse": 0.7782,
+    "median_kge": 0.8207,
+    "nse_le_0": 1
+  },
+  "compliance_attestation": {
+    "blind_holdout_window": true,
+    "strict_spatial_holdout_folds": true,
+    "all_forcing_inputs_declared": true,
+    "deterministic_daily_predictions_mm_per_day": true
+  },
+  "generated_at": "2026-11-21T14:43:06.379Z",
+  "submitted_by_github": "grey-nearing",
+  "source_issue": 8
+}
