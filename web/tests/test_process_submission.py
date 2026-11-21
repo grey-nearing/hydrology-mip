@@ -417,3 +417,49 @@ def test_process_submission_zarr_targets_explicit_entry_id_and_ensemble_single_p
             qobs_npz_path=qobs_npz,
             dry_run=True,
         )
+
+
+def test_doi_resolver_retries_transient_http_504(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Transient Zenodo 504/503 responses retry cleanly without try/except."""
+    calls: list[int] = []
+
+    class _FakeResp:
+        def __init__(self, status: int, payload: bytes) -> None:
+            self.status = status
+            self.headers: dict[str, str] = {}
+            self._payload = payload
+            self._sent = False
+
+        def read(self, _n: int = -1) -> bytes:
+            if self._sent:
+                return b""
+            self._sent = True
+            return self._payload
+
+        def __enter__(self) -> "_FakeResp":
+            return self
+
+        def __exit__(self, *_args: object) -> None:
+            return None
+
+    class _FakeOpener:
+        def open(self, _req: object, timeout: int = 120) -> _FakeResp:
+            _ = timeout
+            idx = len(calls)
+            calls.append(idx)
+            if idx == 0:
+                return _FakeResp(504, b"gateway timeout")
+            if idx == 1:
+                return _FakeResp(503, b"service unavailable")
+            return _FakeResp(200, b'{"ok": true}')
+
+    monkeypatch.setattr(doi_resolver, "validate_https_target_url", lambda u: u)
+    monkeypatch.setattr(doi_resolver.urllib.request, "build_opener", lambda *_a: _FakeOpener())
+
+    body = doi_resolver.validate_and_fetch_archive_url(
+        "https://zenodo.org/api/records/23641695",
+        max_retries=3,
+        retry_backoff_seconds=0.0,
+    )
+    assert body == b'{"ok": true}'
+    assert len(calls) == 3

@@ -16,6 +16,7 @@ import ipaddress
 import json
 import re
 import socket
+import time
 import urllib.parse
 import urllib.request
 from collections.abc import Callable
@@ -26,6 +27,9 @@ DEFAULT_MAX_DOWNLOAD_BYTES: int = 500 * 1024 * 1024  # 500 MiB ceiling
 DEFAULT_METADATA_MAX_BYTES: int = 10 * 1024 * 1024
 MAX_REDIRECT_HOPS: int = 5
 ARCHIVE_TIMEOUT_SECONDS: int = 120
+TRANSIENT_HTTP_STATUSES: frozenset[int] = frozenset({429, 500, 502, 503, 504})
+DEFAULT_HTTP_MAX_RETRIES: int = 4
+DEFAULT_RETRY_BACKOFF_SECONDS: float = 2.0
 
 TRUSTED_EXACT_HOSTS: frozenset[str] = frozenset(
     {
@@ -155,60 +159,77 @@ def validate_and_fetch_archive_url(
     max_bytes: int = DEFAULT_MAX_DOWNLOAD_BYTES,
     timeout: int = ARCHIVE_TIMEOUT_SECONDS,
     user_agent: str = "HydrologyMIP/1.0",
+    max_retries: int = DEFAULT_HTTP_MAX_RETRIES,
+    retry_backoff_seconds: float = DEFAULT_RETRY_BACKOFF_SECONDS,
 ) -> bytes:
     """Fetch a remote HTTPS resource while re-validating every HTTP redirect hop."""
     current_url = validate_https_target_url(url)
     opener = urllib.request.build_opener(_NoRedirectHandler(), _NonRaisingHTTPErrorProcessor())
 
     for _hop in range(MAX_REDIRECT_HOPS + 1):
-        req = urllib.request.Request(current_url, headers={"User-Agent": user_agent})
-        with opener.open(req, timeout=timeout) as resp:
-            status = int(getattr(resp, "status", None) or resp.getcode() or 200)
-            if status in (301, 302, 303, 307, 308):
-                location = resp.headers.get("Location", "").strip()
-                if not location:
-                    raise ValueError(f"HTTP {status} redirect without Location header.")
-                next_url = urllib.parse.urljoin(current_url, location)
-                current_url = validate_https_target_url(next_url)
-                continue
-            if status >= 400:
-                raise ValueError(
-                    f"Archive download failed with HTTP {status} from {current_url}."
-                )
-
-            content_len = resp.headers.get("Content-Length")
-            if content_len and content_len.isdigit() and int(content_len) > max_bytes:
-                raise ValueError(
-                    f"Remote archive size {int(content_len)} bytes exceeds {max_bytes} byte cap."
-                )
-
-            chunk_size = 1024 * 1024
-            total = 0
-            if dest_path is not None:
-                dest_path.parent.mkdir(parents=True, exist_ok=True)
-                with open(dest_path, "wb") as out_f:
-                    while True:
-                        buf = resp.read(chunk_size)
-                        if not buf:
-                            break
-                        total += len(buf)
-                        if total > max_bytes:
-                            raise ValueError(
-                                f"Downloaded archive exceeded {max_bytes} byte limit."
-                            )
-                        out_f.write(buf)
-                return b""
-
-            chunks: list[bytes] = []
-            while True:
-                buf = resp.read(chunk_size)
-                if not buf:
+        redirected = False
+        for attempt in range(max(0, int(max_retries)) + 1):
+            req = urllib.request.Request(current_url, headers={"User-Agent": user_agent})
+            with opener.open(req, timeout=timeout) as resp:
+                status = int(getattr(resp, "status", None) or resp.getcode() or 200)
+                if status in (301, 302, 303, 307, 308):
+                    location = resp.headers.get("Location", "").strip()
+                    if not location:
+                        raise ValueError(f"HTTP {status} redirect without Location header.")
+                    next_url = urllib.parse.urljoin(current_url, location)
+                    current_url = validate_https_target_url(next_url)
+                    redirected = True
                     break
-                total += len(buf)
-                if total > max_bytes:
-                    raise ValueError(f"Downloaded payload exceeded {max_bytes} byte limit.")
-                chunks.append(buf)
-            return b"".join(chunks)
+                if status in TRANSIENT_HTTP_STATUSES and attempt < max_retries:
+                    retry_after = str(resp.headers.get("Retry-After", "") or "").strip()
+                    wait_s = (
+                        min(30.0, float(retry_after))
+                        if retry_after.isdigit()
+                        else retry_backoff_seconds * (2**attempt)
+                    )
+                    if wait_s > 0:
+                        time.sleep(wait_s)
+                    continue
+                if status >= 400:
+                    raise ValueError(
+                        f"Archive download failed with HTTP {status} from {current_url}."
+                    )
+
+                content_len = resp.headers.get("Content-Length")
+                if content_len and content_len.isdigit() and int(content_len) > max_bytes:
+                    raise ValueError(
+                        f"Remote archive size {int(content_len)} bytes exceeds {max_bytes} byte cap."
+                    )
+
+                chunk_size = 1024 * 1024
+                total = 0
+                if dest_path is not None:
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    with open(dest_path, "wb") as out_f:
+                        while True:
+                            buf = resp.read(chunk_size)
+                            if not buf:
+                                break
+                            total += len(buf)
+                            if total > max_bytes:
+                                raise ValueError(
+                                    f"Downloaded archive exceeded {max_bytes} byte limit."
+                                )
+                            out_f.write(buf)
+                    return b""
+
+                chunks: list[bytes] = []
+                while True:
+                    buf = resp.read(chunk_size)
+                    if not buf:
+                        break
+                    total += len(buf)
+                    if total > max_bytes:
+                        raise ValueError(f"Downloaded payload exceeded {max_bytes} byte limit.")
+                    chunks.append(buf)
+                return b"".join(chunks)
+        if redirected:
+            continue
 
     raise ValueError(
         f"Exceeded maximum HTTP redirect limit ({MAX_REDIRECT_HOPS}) fetching archive."
