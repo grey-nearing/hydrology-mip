@@ -977,7 +977,7 @@ function renderPreviewGateHtml(hasInvalidAttempt) {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow, noarchive" />
-  <title>HydrologyMIP — Launching Soon</title>
+  <title>HydrologyMIP — Waiting on Peer Review</title>
   <style>
     :root {
       --bg: #faf8f4;
@@ -993,12 +993,28 @@ function renderPreviewGateHtml(hasInvalidAttempt) {
       margin: 0;
       min-height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1.5rem;
+      flex-direction: column;
       background: var(--bg);
       color: var(--ink);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .review-banner {
+      width: 100%;
+      padding: 0.7rem 1.25rem;
+      background: #fef3c7;
+      border-bottom: 1px solid #f59e0b;
+      color: #78350f;
+      text-align: center;
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+    .gate-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
     }
     .gate-card {
       width: 100%;
@@ -1080,19 +1096,40 @@ function renderPreviewGateHtml(hasInvalidAttempt) {
   </style>
 </head>
 <body>
-  <main class="gate-card">
-    <p class="kicker">Launching Soon — Preview Access</p>
-    <h1>HydrologyMIP</h1>
-    <p>HydrologyMIP is in pre-launch preview. Enter the preview password or follow your preview invitation link to continue.</p>
-    ${errBanner}
-    <form method="POST" action="">
-      <label for="access-input">Preview Password</label>
-      <input id="access-input" name="access" type="password" placeholder="Enter preview password..." required autofocus autocomplete="off" />
-      <button type="submit">Enter Preview</button>
-    </form>
-  </main>
+  <div class="review-banner" role="status">
+    Waiting on peer review for public release — Password-protected preview access.
+  </div>
+  <div class="gate-wrap">
+    <main class="gate-card">
+      <p class="kicker">Preview Access — Waiting on Peer Review</p>
+      <h1>HydrologyMIP</h1>
+      <p>HydrologyMIP is currently password-protected while waiting on peer review for public release. Enter the preview password or follow your preview invitation link to continue.</p>
+      ${errBanner}
+      <form method="POST" action="">
+        <label for="access-input">Preview Password</label>
+        <input id="access-input" name="access" type="password" placeholder="Enter preview password..." required autofocus autocomplete="off" />
+        <button type="submit">Enter Preview</button>
+      </form>
+    </main>
+  </div>
 </body>
 </html>`;
+}
+
+const PEER_REVIEW_PORTAL_BANNER = `<div id="hmip-peer-review-banner" role="status" style="width:100%;padding:0.65rem 1.25rem;background:#fef3c7;border-bottom:1px solid #f59e0b;color:#78350f;text-align:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:0.86rem;font-weight:600;letter-spacing:0.01em;position:relative;z-index:9999;">Waiting on peer review for public release &mdash; This site is currently password-protected for pre-release preview.</div>`;
+
+async function maybeInjectPreviewBanner(resp) {
+  if (!PREVIEW_GATE_ENABLED) return resp;
+  const ct = (resp.headers.get("Content-Type") || "").toLowerCase();
+  if (!ct.includes("text/html")) return resp;
+  const html = await resp.text();
+  if (html.includes("hmip-peer-review-banner")) {
+    return new Response(html, { status: resp.status, statusText: resp.statusText, headers: resp.headers });
+  }
+  const injected = html.replace(/<body([^>]*)>/i, `<body$1>\n${PEER_REVIEW_PORTAL_BANNER}`);
+  const h = new Headers(resp.headers);
+  h.delete("Content-Length");
+  return new Response(injected, { status: resp.status, statusText: resp.statusText, headers: h });
 }
 
 function withHeaders(resp, extraHeaders = {}) {
@@ -1537,7 +1574,7 @@ export default {
     // 11. Static asset passthrough or 404 for missing static/asset files; SPA fallback only for extensionless routes
     const staticResp = await env.ASSETS.fetch(request);
     if (staticResp.status !== 404) {
-      return withHeaders(staticResp);
+      return withHeaders(await maybeInjectPreviewBanner(staticResp));
     }
     const isMissingAssetPath =
       p.startsWith("/static/") ||
@@ -1555,7 +1592,7 @@ export default {
       });
     }
     const fallbackIdx = await fetchAsset(env, url.origin, "/index.html");
-    return withHeaders(fallbackIdx, {
+    return withHeaders(await maybeInjectPreviewBanner(fallbackIdx), {
       "Content-Type": "text/html; charset=utf-8",
       "Cache-Control": "public, max-age=300",
     });

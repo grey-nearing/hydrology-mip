@@ -583,14 +583,14 @@
       "zenodo_doi": "",
       "zenodo_url": "",
       "hydroshare_url": "",
-      "description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, num_encoder_layers=1, num_decoder_layers=1, dim_feedforward=256, 3-layer MLP head 64->32->16->1 with LeakyReLU) ingesting 7-day meteorological forcing sequences, 27 static catchment attributes, and 7-day lagged observed streamflow Q(t-7..t-1), trained via 300-epoch regional pretraining across all 531 CAMELS-US basins followed by 40-epoch per-basin fine-tuning at lr=1e-4 with early stopping (Yin et al., 2022; iThronne/RR-Former).",
+      "description": "Encoder-decoder Transformer (RR-Former; d_model=64, 4 attention heads, 4 encoder layers, 4 decoder layers, dim_feedforward=256, 467,265 parameters, FFN-only dropout=0.1, non-autoregressive decoding with historical-only self-attention mask) ingesting 5 Daymet dynamic meteorological forcings without static attributes and 15-day lagged observed streamflow Q(t-15..t-1), trained via full 200-epoch regional NSELoss pretraining followed by 200-epoch per-basin-normalized MSE fine-tuning (Yin et al., 2022; iThronne/RR-Former).",
       "asterisk": false,
       "asterisk_reason": null,
       "n_entries": 2,
       "leaderboards_covered": [
         "gauged__lagged_streamflow"
       ],
-      "best_nse": 0.847,
+      "best_nse": 0.8,
       "year": 2022,
       "model_category": "Machine learning"
     },

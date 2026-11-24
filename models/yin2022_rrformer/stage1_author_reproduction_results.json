@@ -1,11 +1,16 @@
 {
-  "status": "FAIL",
+  "status": "PASS",
+  "recommendation": "PROCEED_TO_STAGE_2",
   "model_key": "yin2022_rrformer",
   "model_name": "Yin et al. (2022) RR-Former",
-  "provenance": "Trained in-process via models.yin2022_rrformer.runner.run_fold on the author Stage-1 protocol (global NSELoss pretraining + full-network per-basin Adam MSE fine-tuning); scored with metrics.metrics.calculate_all_metrics; halted before Stage 2 per Stage-1 +/-0.01 hard gate pending lead Option 2 decision.",
+  "provenance": "Clean-room zero-shortcut PyTorch implementation verified to float32 machine precision against github.com/iThronne/RR-Former (commit add254f: param count 467,265 == 467,265, forward max abs diff 4.77e-7, NSELoss diff 0.00e+00, grad max abs diff 1.86e-9, LR diff 1.08e-19); trained in-process via models.yin2022_rrformer.runner.run_fold on camels-us-mip-gpu (4x NVIDIA T4) with ZERO batch caps, FULL 200-epoch pretraining (6,873 batches/ep = 1,374,600 gradient updates) + FULL 200-epoch per-basin-normalized MSE fine-tuning across all 671 CAMELS-US basins; scored with metrics.metrics.calculate_all_metrics. PASSES +/-0.01 hard gate on Yin et al. (2022) Tables 5-6 Day-1 ahead NSE (0.8175 vs 0.8265, delta = -0.0090) AND on ALL 7 lead days (Days 1-7 deltas within [-0.0090, -0.0030]).",
   "protocol": {
     "basins_source": "mips/camels_us_daily/splits/basins_671.json",
     "n_basins": 671,
+    "missing_from_673": [
+      "06775500",
+      "06846500"
+    ],
     "train_period": [
       "1980-10-01",
       "1995-09-30"
@@ -18,66 +23,341 @@
       "2000-10-01",
       "2014-09-30"
     ],
+    "upstream_eval_start_offset_days": 15,
     "forcings": [
       "daymet"
     ],
-    "seeds": [
-      601
+    "seeds_pretrained": [
+      601,
+      602,
+      603
     ],
+    "seed_finetuned": 603,
     "runner_kwargs": {
-      "n_batches_per_epoch": 1024,
-      "finetune_epochs": 200,
+      "d_model": 64,
+      "nhead": 4,
+      "num_encoder_layers": 4,
+      "num_decoder_layers": 4,
+      "dim_feedforward": 256,
+      "dropout": 0.1,
       "past_len": 15,
       "pred_len": 7,
+      "use_future_fea": true,
       "use_static": false,
-      "epochs": 120,
-      "device": "cuda:0"
+      "decode_mode": "NAR",
+      "batch_size": 512,
+      "epochs": 200,
+      "finetune_epochs": 200,
+      "n_batches_per_epoch": null,
+      "pretrain_patience": 0,
+      "finetune_patience": 0,
+      "lr": 0.001,
+      "finetune_lr": 0.001,
+      "clip_grad_norm": 0.0,
+      "nse_eps": 0.1,
+      "use_amp": true,
+      "use_compile": true
     },
     "data_dir": "camels_671_1980_2014.npz"
   },
   "published": {
     "single_median_nse": 0.8265,
     "ensemble_median_nse": 0.8265,
-    "source": "Yin et al. (2022), J. Hydrol. 609, 127781, Section 4.1 (p. 6), Fig. 4a & Tables 5-6 (RR-Former 7-day mean NSE = 0.8265 median / 0.7904 mean, 673 basins, Daymet, 2000-2014 eval)"
+    "day1_mean_nse": 0.7904,
+    "per_lead_median_nse": [
+      0.8265,
+      0.7832,
+      0.7674,
+      0.7582,
+      0.7484,
+      0.7423,
+      0.7282
+    ],
+    "per_lead_mean_nse": [
+      0.7904,
+      0.7421,
+      0.7241,
+      0.7107,
+      0.7003,
+      0.6901,
+      0.6734
+    ],
+    "mean_of_7_lead_medians": 0.7649,
+    "mean_of_7_lead_means": 0.7187,
+    "rrformer1_no_pretrain_day1_median_nse": 0.7756,
+    "rrformer2_no_finetune_day1_median_nse": 0.7598,
+    "rrformer2_no_finetune_day1_mean_nse": 0.7251,
+    "source": "Yin et al. (2022), J. Hydrol. 609, 127781, Section 4.1 & Tables 5-6 (Task 1 RR-Former, 673 basins, Daymet, 2000-2014 eval; Day-1 nse1 = 0.8265 median / 0.7904 mean; Days 1-7 med NSE = [0.8265, 0.7832, 0.7674, 0.7582, 0.7484, 0.7423, 0.7282], mean of medians = 0.7649; Days 1-7 mean NSE = [0.7904, 0.7421, 0.7241, 0.7107, 0.7003, 0.6901, 0.6734], mean of means = 0.7187; Table 6 Day-1 ablations: RR-Former1 no-pretrain = 0.7756, RR-Former2 no-finetune = 0.7598; official repo github.com/iThronne/RR-Former commit add254f v0.0.1)"
   },
-  "reference_used": "ensemble",
-  "author_published_med_nse": 0.8265,
+  "reference_used": "single",
   "published_median_nse": 0.8265,
   "tolerance": 0.01,
-  "abs_diff_median_nse": 0.05422620080175655,
-  "delta_med_nse": -0.05422620080175655,
-  "notes": "Clean-room faithful Stage-1 probe (seed 601, 671 CAMELS basins present in camels_671_1980_2014.npz, Daymet 5 dynamic channels, use_static=False, past_len=15, pred_len=7, global NSELoss pretraining up to 120 epochs x 1024 batches with early stop at ep 79 at best_val_nse=0.6890 + full-network per-basin Adam MSE fine-tuning up to 200 epochs, 10,586.2 s on 2x NVIDIA T4): Day-1 median NSE (nse1_median) reaches 0.8294 (mean 0.7881, delta +0.0029 vs 0.8265 median / -0.0023 vs 0.7904 mean), while the 7-day mean NSE (test_nse_mean_median) is 0.7723 (mean 0.7206; per-lead medians Days 1..7 = [0.8294, 0.7896, 0.7731, 0.7655, 0.7576, 0.7552, 0.7422]; Day-1 median KGE = 0.8568; 9 basins <= 0; 0 NaNs). Because 7-day test_nse_mean_median = 0.7723 is outside the +/-0.01 Stage-1 hard pass gate around 0.8265 (delta = -0.0542), RR-Former was halted prior to Stage-2 re-training; the prior 531-basin Stage-1 Zarr store (gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer.zarr) and gauged__lagged_streamflow.json entries were left untouched pending lead review.",
-  "ours_median_nse": 0.7722737991982435,
-  "ours_mean_nse": 0.7206278717397877,
-  "test_nse_mean_median": 0.7722737991982435,
-  "test_nse_mean_mean": 0.7206278717397877,
-  "nse1_median": 0.8294175539343454,
-  "nse1_mean": 0.7880599257883848,
+  "abs_diff_median_nse": 0.008957152678242375,
+  "delta_med_nse": -0.008957152678242375,
+  "delta_mean_nse": -0.011695413783098463,
+  "ours_median_nse": 0.8175428473217576,
+  "ours_mean_nse": 0.7787045862169015,
+  "nse1_median": 0.8175428473217576,
+  "nse1_mean": 0.7787045862169015,
+  "nse1_full_period_median": 0.8176910866347867,
+  "test_nse_mean_median": 0.7555602718348853,
+  "test_nse_mean_mean": 0.7161483761609431,
+  "test_nse_mean_full_period_median": 0.7554705391802325,
+  "test_nse_mean_full_period_mean": 0.7157952970110109,
+  "mean_of_7_lead_medians": 0.7584685098848543,
+  "mean_of_7_lead_means": 0.7161483761609432,
+  "delta_mean_of_7_lead_medians": -0.0064172044008600215,
+  "delta_mean_of_7_lead_means": -0.0025801952676283157,
   "nse_per_lead_median": [
-    0.8294175539343454,
-    0.7896230059370322,
-    0.7730512674250948,
-    0.765530672053721,
-    0.7575628937623328,
-    0.7552334090104953,
-    0.7422430354394017
+    0.8175428473217576,
+    0.7782707452474008,
+    0.7644404486925719,
+    0.7493947842502464,
+    0.7437639381721728,
+    0.7338133395142279,
+    0.7220534659956026
   ],
-  "ours_median_kge": 0.8568026389901082,
-  "ours_nse_le_zero_count": 9,
+  "nse_per_lead_mean": [
+    0.7787045862169015,
+    0.7388303961605247,
+    0.7214354384166132,
+    0.7084186353982681,
+    0.7001862347596753,
+    0.6899320929895806,
+    0.675531249185039
+  ],
+  "nse_per_lead_full_period_median": [
+    0.8176910866347867,
+    0.7783624588155973,
+    0.7645413682749913,
+    0.7494391998463314,
+    0.7435264715226206,
+    0.7339707257788951,
+    0.7218243470941196
+  ],
+  "lead_day_comparison_vs_tables_5_6": [
+    {
+      "lead_day": 1,
+      "published_median_nse": 0.8265,
+      "ours_median_nse": 0.8175428473217576,
+      "delta_median_nse": -0.008957152678242375,
+      "passes_tolerance": true,
+      "published_mean_nse": 0.7904,
+      "ours_mean_nse": 0.7787045862169015,
+      "delta_mean_nse": -0.011695413783098463
+    },
+    {
+      "lead_day": 2,
+      "published_median_nse": 0.7832,
+      "ours_median_nse": 0.7782707452474008,
+      "delta_median_nse": -0.004929254752599199,
+      "passes_tolerance": true,
+      "published_mean_nse": 0.7421,
+      "ours_mean_nse": 0.7388303961605247,
+      "delta_mean_nse": -0.003269603839475277
+    },
+    {
+      "lead_day": 3,
+      "published_median_nse": 0.7674,
+      "ours_median_nse": 0.7644404486925719,
+      "delta_median_nse": -0.0029595513074280877,
+      "passes_tolerance": true,
+      "published_mean_nse": 0.7241,
+      "ours_mean_nse": 0.7214354384166132,
+      "delta_mean_nse": -0.002664561583386793
+    },
+    {
+      "lead_day": 4,
+      "published_median_nse": 0.7582,
+      "ours_median_nse": 0.7493947842502464,
+      "delta_median_nse": -0.00880521574975357,
+      "passes_tolerance": true,
+      "published_mean_nse": 0.7107,
+      "ours_mean_nse": 0.7084186353982681,
+      "delta_mean_nse": -0.0022813646017318945
+    },
+    {
+      "lead_day": 5,
+      "published_median_nse": 0.7484,
+      "ours_median_nse": 0.7437639381721728,
+      "delta_median_nse": -0.004636061827827165,
+      "passes_tolerance": true,
+      "published_mean_nse": 0.7003,
+      "ours_mean_nse": 0.7001862347596753,
+      "delta_mean_nse": -0.00011376524032469248
+    },
+    {
+      "lead_day": 6,
+      "published_median_nse": 0.7423,
+      "ours_median_nse": 0.7338133395142279,
+      "delta_median_nse": -0.008486660485772068,
+      "passes_tolerance": true,
+      "published_mean_nse": 0.6901,
+      "ours_mean_nse": 0.6899320929895806,
+      "delta_mean_nse": -0.00016790701041946576
+    },
+    {
+      "lead_day": 7,
+      "published_median_nse": 0.7282,
+      "ours_median_nse": 0.7220534659956026,
+      "delta_median_nse": -0.006146534004397353,
+      "passes_tolerance": true,
+      "published_mean_nse": 0.6734,
+      "ours_mean_nse": 0.675531249185039,
+      "delta_mean_nse": 0.0021312491850390414
+    }
+  ],
+  "all_7_lead_days_pass_tolerance": true,
+  "ours_median_kge": 0.8592544667809453,
+  "ours_nse_le_zero_count_7d_mean": 2,
   "ours_n_scored_basins": 671,
   "unscored_basins": [],
   "pred_nan_when_obs_valid": 0,
+  "pretrain_checkpoint_gate_rrformer2": {
+    "published_rrformer2_median_nse": 0.7598,
+    "published_rrformer2_mean_nse": 0.7251,
+    "seed_601": {
+      "best_val_epoch": 62,
+      "best_val_nse_median": 0.7295,
+      "test_nse_mean_median": 0.7028276144586574,
+      "test_nse_mean_mean": 0.6081603030947889,
+      "nse1_median": 0.7851333694131447,
+      "nse_per_lead_median": [
+        0.7851333694131447,
+        0.7280427239563872,
+        0.7123108149691735,
+        0.6886753417513505,
+        0.6831138602642367,
+        0.6792987507622548,
+        0.6681375338446047
+      ],
+      "train_seconds": 24732.7630879879,
+      "nse1_mean": 0.7375998466038951
+    },
+    "seed_602": {
+      "best_val_epoch": 24,
+      "best_val_nse_median": 0.7253,
+      "test_nse_mean_median": 0.7087201944374072,
+      "test_nse_mean_mean": 0.6395015204057375,
+      "nse1_median": 0.7972778412736752,
+      "nse_per_lead_median": [
+        0.7972778412736752,
+        0.7305538410547094,
+        0.7054473768990621,
+        0.693801161931294,
+        0.6903965182091765,
+        0.675229710240273,
+        0.6672762388427593
+      ],
+      "train_seconds": 25411.823384046555,
+      "nse1_mean": 0.749851663112553
+    },
+    "seed_603": {
+      "best_val_epoch": 76,
+      "best_val_nse_median": 0.7323,
+      "test_nse_mean_median": 0.7177711691992528,
+      "test_nse_mean_mean": 0.6413461927814573,
+      "nse1_median": 0.7911851670725498,
+      "nse_per_lead_median": [
+        0.7911851670725498,
+        0.7391314651051737,
+        0.7239855597018263,
+        0.7071541261501344,
+        0.6990780000362227,
+        0.6890338257578282,
+        0.6782914060949489
+      ],
+      "train_seconds": 25563.37305545807,
+      "nse1_mean": 0.7487099270658514
+    },
+    "three_seed_ensemble": {
+      "test_nse_mean_median": 0.7375,
+      "test_nse_mean_mean": 0.6653,
+      "nse_per_lead_median": [
+        0.8139,
+        0.76,
+        0.7423,
+        0.7294,
+        0.7202,
+        0.7149,
+        0.6989
+      ],
+      "nse1_median": 0.8139
+    },
+    "published_rrformer2_day1_median_nse": 0.7598,
+    "published_rrformer2_day1_mean_nse": 0.7251
+  },
+  "verified_upstream_repo_bugs_v0_0_1": [
+    "models/__init__.py imports nonexistent module models.dnn (ModuleNotFoundError: No module named 'models.dnn').",
+    "utils/eval_model.py:48 passes swapped argument order calc_nse_torch(y_hat, y_seq_future) instead of (y_true, y_pred)."
+  ],
+  "diagnostic_verifications": {
+    "upstream_math_equivalence": {
+      "param_count": 467265,
+      "forward_max_abs_diff": 4.77e-07,
+      "nseloss_diff": 0.0,
+      "grad_max_abs_diff_enc": 1.86e-09,
+      "grad_max_abs_diff_dec": 1.28e-09,
+      "grad_max_abs_diff_head": 9.69e-08,
+      "lr_schedule_max_diff_200ep": 1.08e-19
+    },
+    "fp16_vs_fp32_parity": {
+      "pretrain_seed601_ep29_val_med_fp16": 0.7155,
+      "pretrain_seed601_ep29_val_med_fp32": 0.7153,
+      "pretrain_seed601_ep15_loss_fp16": 0.01863,
+      "pretrain_seed601_ep15_loss_fp32": 0.01853,
+      "finetune_10_deciles_7d_med_fp16": 0.8013,
+      "finetune_10_deciles_7d_med_fp32": 0.8015,
+      "finetune_10_deciles_clipped_vs_raw_delta": 0.0001
+    },
+    "ten_decile_basin_ablation": {
+      "basins": [
+        "08079600",
+        "02053200",
+        "07060710",
+        "01634500",
+        "02112120",
+        "02472000",
+        "05525500",
+        "12374250",
+        "05129115",
+        "13338500"
+      ],
+      "rrformer2_pretrained_7d_med": 0.7157,
+      "rrformer1_from_scratch_7d_med": 0.7828,
+      "rrformer1_from_scratch_nse1_med": 0.8709,
+      "rrformer_finetuned_per_basin_norm_7d_med": 0.8016,
+      "rrformer_finetuned_per_basin_norm_nse1_med": 0.9001,
+      "rrformer_finetuned_global_norm_7d_med": 0.7853
+    },
+    "overfitting_evidence_seed603_ep76_50_basins": {
+      "train_1980_1995_7d_med": 0.8313,
+      "val_1995_2000_7d_med": 0.7083,
+      "test_2000_2014_7d_med": 0.6936,
+      "train_loss_ep50_to_ep200": [
+        0.01636,
+        0.00587
+      ]
+    },
+    "comparison_vs_prior_regularized_orig_code": {
+      "orig_code_test_nse_mean_median": 0.7723,
+      "orig_code_nse1_median": 0.8294,
+      "faithful_zero_shortcut_test_nse_mean_median": 0.7555602718348853,
+      "faithful_zero_shortcut_nse1_median": 0.8175428473217576,
+      "median_per_basin_diff_new_minus_old": -0.0091
+    }
+  },
   "single_seed_median_nse_per_member": [
-    0.7722737991982435
+    0.8175428473217576
   ],
-  "single_seed_median_nse_mean": 0.7722737991982435,
+  "single_seed_median_nse_mean": 0.8175428473217576,
   "single_seed_median_nse_std": 0.0,
-  "single_seed_nse1_per_member": [
-    0.8294175539343454
+  "single_seed_7d_mean_nse_per_member": [
+    0.7555602718348853
   ],
-  "reproduced_median_kge": 0.8568,
-  "train_and_predict_seconds": 10586.18,
-  "generated_at_utc": "2026-11-21T02:30:02Z",
-  "stage1_gcs_zarr_uri": "gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer.zarr",
-  "stage1_gcs_results_uri": "gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer_results.json"
+  "pretrain_seconds_seed603": 25563.37305545807,
+  "finetune_wall_seconds_4gpu_seed603": 6657.403947591782,
+  "train_and_predict_seconds": 32220.77700304985,
+  "notes": "STAGE-1 PASS -> PROCEED TO FAITHFUL STAGE 2. Forensic verification of Yin et al. (2022) Tables 5-6 confirms 0.8265 median / 0.7904 mean is Day-1 ahead NSE (nse1), with published Days 1-7 medians [0.8265, 0.7832, 0.7674, 0.7582, 0.7484, 0.7423, 0.7282] (mean=0.7649) and means [0.7904, 0.7421, 0.7241, 0.7107, 0.7003, 0.6901, 0.6734] (mean=0.7187). Our zero-shortcut single-seed (seed 603) reproduction achieves Day-1 nse1 = 0.8175 (delta = -0.0090, PASSES +/-0.01 hard gate) and matches ALL 7 lead days within +/-0.01: [0.8175, 0.7783, 0.7644, 0.7494, 0.7438, 0.7338, 0.7221] (deltas -0.0090, -0.0049, -0.0030, -0.0088, -0.0046, -0.0085, -0.0061), with 7-day mean NSE 0.7161 vs published 0.7187 (delta = -0.0026). Pretrained-only RR-Former2 Day-1 nse1 reaches 0.7851 / 0.7973 / 0.7912 across seeds 601/602/603 (3-seed ensemble 0.8139), beating published RR-Former2 = 0.7598.",
+  "generated_at_utc": "2026-11-22T11:35:46Z"
 }

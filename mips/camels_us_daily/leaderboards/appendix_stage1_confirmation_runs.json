@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T14:56:59Z",
+  "generated_at": "2026-11-24T11:44:13Z",
   "n_rows": 12,
   "rows": [
     {
@@ -129,16 +129,16 @@
       "num_seeds": 1,
       "author_published_med_nse": 0.8265,
       "author_published_single_med_nse": 0.8265,
-      "stage1_reproduced_med_nse": 0.7723,
-      "stage1_reproduced_single_med_nse": 0.7723,
-      "delta_med_nse": -0.0542,
+      "stage1_reproduced_med_nse": 0.8175,
+      "stage1_reproduced_single_med_nse": 0.8175,
+      "delta_med_nse": -0.009,
       "tolerance_abs_delta_med_nse": 0.01,
-      "status": "PARTIAL",
-      "status_reason": "Faithful clean-room Stage-1 probe (seed 601, 671 basins, Daymet, global NSELoss pretraining early stopped at ep 79 with best_val_nse=0.6890 + full-network per-basin Adam MSE fine-tuning) achieves Day-1 nse1_median = 0.8294 (mean 0.7881, delta +0.0029 vs 0.8265), but 7-day mean test_nse_mean_median = 0.7723 (per-lead medians Days 1..7 = [0.8294, 0.7896, 0.7731, 0.7655, 0.7576, 0.7552, 0.7422]), missing the +/-0.01 hard gate on 7-day test_nse_mean; RR-Former was halted prior to Stage-2 re-training pending lead Option 2 decision.",
+      "status": "PASS",
+      "status_reason": "Zero-shortcut clean-room reproduction (seed 603, 671 CAMELS basins, Daymet 5 forcings, use_static=False, full 200-epoch regional NSELoss pretraining + full 200-epoch per-basin-normalized MSE fine-tuning; verified to float32 precision against iThronne/RR-Former v0.0.1 with missing models.dnn import and reversed validation calc_nse_torch arguments fixed) matches Yin et al. (2022, Tables 5-6) within +/-0.01 median NSE across all seven forecast lead days: Day-1 median NSE = 0.8175 vs. 0.8265 (delta = -0.0090, PASS); Days 2-7 = [0.7783, 0.7644, 0.7494, 0.7438, 0.7338, 0.7221] vs. published [0.7832, 0.7674, 0.7582, 0.7484, 0.7423, 0.7282] (all deltas -0.0030 to -0.0088); 7-day average mean NSE = 0.7161 vs. 0.7187 (delta = -0.0026).",
       "zarr_path": "gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer.zarr",
       "data_archive_url": "gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer.zarr",
       "zenodo_url": "gs://camels-us-mip/stage1_author_reproductions/yin2022_rrformer.zarr",
-      "notes": "Faithful clean-room Stage-1 probe (seed 601, 671 basins, Daymet, global NSELoss pretraining early stopped at ep 79 with best_val_nse=0.6890 + full-network per-basin Adam MSE fine-tuning) achieves Day-1 nse1_median = 0.8294 (mean 0.7881, delta +0.0029 vs 0.8265), but 7-day mean test_nse_mean_median = 0.7723 (per-lead medians Days 1..7 = [0.8294, 0.7896, 0.7731, 0.7655, 0.7576, 0.7552, 0.7422]), missing the +/-0.01 hard gate on 7-day test_nse_mean; RR-Former was halted prior to Stage-2 re-training pending lead Option 2 decision."
+      "notes": "Zero-shortcut clean-room reproduction (seed 603, 671 CAMELS basins, Daymet 5 forcings, use_static=False, full 200-epoch regional NSELoss pretraining + full 200-epoch per-basin-normalized MSE fine-tuning; verified to float32 precision against iThronne/RR-Former v0.0.1 with missing models.dnn import and reversed validation calc_nse_torch arguments fixed) matches Yin et al. (2022, Tables 5-6) within +/-0.01 median NSE across all seven forecast lead days: Day-1 median NSE = 0.8175 vs. 0.8265 (delta = -0.0090, PASS); Days 2-7 = [0.7783, 0.7644, 0.7494, 0.7438, 0.7338, 0.7221] vs. published [0.7832, 0.7674, 0.7582, 0.7484, 0.7423, 0.7282] (all deltas -0.0030 to -0.0088); 7-day average mean NSE = 0.7161 vs. 0.7187 (delta = -0.0026)."
     },
     {
       "family_id": "poudel_mlp_hbv",
