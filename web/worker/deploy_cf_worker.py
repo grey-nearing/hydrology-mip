@@ -1381,7 +1381,7 @@ export default {
     // 4. Serve canonical root index.html with security headers
     if (p === "/" || p === "/index.html") {
       const idxResp = await fetchAsset(env, url.origin, "/index.html");
-      return withHeaders(idxResp, {
+      return withHeaders(await maybeInjectPreviewBanner(idxResp), {
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": PREVIEW_GATE_ENABLED ? "private, no-store" : "public, max-age=300, s-maxage=600",
       });
