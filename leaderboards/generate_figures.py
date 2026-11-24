@@ -225,6 +225,7 @@ TABLE_3_COMPACT_PILL_BY_FAMILY: dict[str, str] = {
     "feng2020_di_lstm": "DI(1)-LSTM (3)",
     "feng2020_di_lstm_lit": "DI(1)-LSTM (3)",
     "era_lstm_seeded": "ERA (4)",
+    "contrib_contrib_era_multi_paradigm_gauged_gh6": "ERA (4)",
     "kratzert2019b_lstm": "LSTM (9)",
     "kratzert2019a_pub_lstm": "LSTM (9)",
     "kratzert_lstm": "LSTM (10)",
